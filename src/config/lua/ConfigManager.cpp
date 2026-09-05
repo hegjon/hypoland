@@ -1096,6 +1096,10 @@ std::expected<void, std::string> CConfigManager::generateDefaultConfig(const std
     return {};
 }
 
+bool CConfigManager::configLoaded() {
+    return !(m_isFirstLaunch || m_isParsingConfig);
+}
+
 bool CConfigManager::configVerifPassed() {
     return m_lastConfigVerificationWasSuccessful;
 }

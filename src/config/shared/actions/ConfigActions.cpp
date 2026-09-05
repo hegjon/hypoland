@@ -1,4 +1,5 @@
 #include "ConfigActions.hpp"
+#include "../../lua/ConfigManager.hpp"
 #include "../parserUtils/ParserUtils.hpp"
 #include "../../../desktop/state/FocusState.hpp"
 #include "../../../desktop/state/GlobalWindowController.hpp"
@@ -19,6 +20,7 @@
 #include "../../../keybinds/Manager.hpp"
 #include "../../../managers/input/InputManager.hpp"
 #include "../../../managers/fullscreen/FullscreenController.hpp"
+#include "../../../managers/eventLoop/EventLoopManager.hpp"
 #include "../../../layout/LayoutManager.hpp"
 #include "../../../layout/space/Space.hpp"
 #include "../../../layout/target/Target.hpp"
@@ -1220,6 +1222,14 @@ ActionResult Actions::exit() {
         return {};
 
     g_pCompositor->stopCompositor();
+    return {};
+}
+
+ActionResult Actions::reloadConfig() {
+    if (!Config::Lua::mgr()->configLoaded())
+        return std::unexpected(std::string("Cannot trigger a reload while the config is already loading!"));
+    // probably don't tear down state while stuff is actively running
+    g_pEventLoopManager->doLater([] { Config::Lua::mgr()->reload(); });
     return {};
 }
 
