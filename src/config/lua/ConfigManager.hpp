@@ -82,6 +82,7 @@ namespace Config::Lua {
 
         virtual std::expected<void, std::string> generateDefaultConfig(const std::filesystem::path&, bool safeMode) override;
 
+        virtual bool                             configLoaded() override;
         virtual bool                             configVerifPassed() override;
 
         virtual std::vector<std::string>         deprecationNotices() const override;
