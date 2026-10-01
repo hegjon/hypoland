@@ -544,6 +544,7 @@ CXDGSurfaceResource::CXDGSurfaceResource(SP<CXdgSurface> resource_, SP<CXDGWMBas
             m_mapped = false;
             m_events.unmap.emit();
             m_surface->unmap();
+            m_initialCommit = true;
             return;
         }
 
