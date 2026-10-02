@@ -137,6 +137,9 @@ WP<CScreenshareSession> CScreenshareManager::getManagedSession(eScreenshareType 
             default: return {};
         }
 
+        if (!session->isActive())
+            return {};
+
         session->m_self = session;
         m_sessions.emplace_back(session);
 
