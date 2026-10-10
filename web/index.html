@@ -410,6 +410,17 @@ $ <span class="w">hypoland</span>
         </p>
       </details>
       <details>
+        <summary>Do Hyprland plugins work?</summary>
+        <p>
+          No, and they will not come back. The plugin system was removed on purpose: a plugin has to be built
+          against the exact Hyprland source it loads into, and most plugins draw with GLES&nbsp;3 renderer code
+          that Hypoland no longer has. <code>hl.plugin.load()</code> warns and does nothing, so configs that load
+          plugins still start. Tools that inject input can use the Wayland protocols instead,
+          <code>zwlr_virtual_pointer_manager_v1</code> and <code>zwp_virtual_keyboard_manager_v1</code> are
+          supported (<a href="https://github.com/hegjon/hypoland/issues/1">issue #1</a>).
+        </p>
+      </details>
+      <details>
         <summary>Is this an official Hyprland project?</summary>
         <p>
           No. Hypoland is an independent fork, not affiliated with or endorsed by Hyprland or its developers.

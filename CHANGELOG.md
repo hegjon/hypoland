@@ -38,6 +38,7 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 - The release workflow attaches the source tarball to Hypoland's own releases.
 - The web page's FAQ says why these changes are not part of Hyprland.
+- The web page's FAQ says that Hyprland plugins do not work and which protocols input tools can use instead.
 
 ## 0.1.0 - 2026-09-28
 
