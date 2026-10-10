@@ -40,6 +40,8 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
 - The web page hypoland.org is `web/`, served by a Cloudflare Pages project connected to this repository. Cloudflare
   deploys it from `master` by itself (no build command, output directory `web`, watch path `web/*`); there is no
   workflow for it. It was on GitHub Pages until 2026-10-10.
+  The link preview image `web/og.png` (1200x630) is rendered from `scripts/web/og.html` with `scripts/web/og.sh`.
+  Update `<lastmod>` in `web/sitemap.xml` when the page changes.
 - `CHANGELOG.md` lists Hypoland's changes per release. Add user-visible changes and measured speedups to
   "Unreleased" with the commit that makes them, and move them under the version when releasing.
 - aquamarine is embedded: `subprojects/aquamarine` is a squashed `git subtree` of

@@ -4,16 +4,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hypoland: Hyprland for GPUs that stop at OpenGL ES 2.0</title>
-<meta name="description" content="Hypoland is a fork of the Hyprland tiling Wayland compositor for old GPUs that only support OpenGL ES 2.0, such as the Intel GMA 4500MHD in the ThinkPad X200.">
+<meta name="description" content="Hypoland is a fork of the Hyprland tiling Wayland compositor for old laptops whose GPU only supports OpenGL ES 2.0, such as the Intel GMA 4500MHD in the ThinkPad X200, where Hyprland fails with eglCreateContext failed.">
 <meta name="theme-color" content="#efe6d2">
-<meta property="og:title" content="Hypoland">
+<meta property="og:site_name" content="Hypoland">
+<meta property="og:title" content="Hypoland: Hyprland for GPUs that stop at OpenGL ES 2.0">
 <meta property="og:description" content="Hyprland for GPUs that stop at OpenGL ES 2.0. Runs a full Omarchy desktop on a 2008 ThinkPad X200.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hypoland.org/">
 <meta property="og:image" content="https://hypoland.org/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Hypoland logo, pixel lettering whose O is a potato, above the line: Hyprland for GPUs that stop at OpenGL ES 2.0">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://hypoland.org/">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Hypoland",
+  "description": "A fork of the Hyprland tiling Wayland compositor for GPUs that only support OpenGL ES 2.0, such as the Intel GMA 4500MHD and GMA X3100.",
+  "url": "https://hypoland.org/",
+  "image": "https://hypoland.org/og.png",
+  "applicationCategory": "DesktopEnhancementApplication",
+  "operatingSystem": "Linux",
+  "softwareVersion": "0.1.0",
+  "license": "https://github.com/hegjon/hypoland/blob/master/LICENSE",
+  "isBasedOn": "https://github.com/hyprwm/Hyprland",
+  "sameAs": "https://github.com/hegjon/hypoland",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 <style>
 :root {
   --desk: #efe6d2;
@@ -50,6 +72,7 @@ body {
 a { color: var(--peel); text-decoration-thickness: 2px; text-underline-offset: 2px; }
 a:hover { background: var(--light); }
 code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 code { background: #f3ead6; padding: 0 0.1875rem; }
 
 /* Status bar, drawn like a Waybar */
@@ -217,10 +240,10 @@ footer img { vertical-align: middle; image-rendering: pixelated; }
 <main class="desk" id="top">
 
   <section class="win full hero" aria-labelledby="t-hero">
-    <h1 class="title" id="t-hero">hypoland.org</h1>
+    <p class="title">hypoland.org</p>
     <div class="body">
       <img src="header.svg" width="760" height="240" alt="Hypoland">
-      <p class="tagline">Hyprland for GPUs that stop at OpenGL&nbsp;ES&nbsp;2.0.</p>
+      <h1 class="tagline" id="t-hero"><span class="vh">Hypoland: </span>Hyprland for GPUs that stop at OpenGL&nbsp;ES&nbsp;2.0.</h1>
       <p class="sub">
         Hypoland is a fork of the Hyprland tiling Wayland compositor with a renderer rewritten for
         GLES&nbsp;2.0. It runs a complete desktop on a 2008 ThinkPad X200 at 60&nbsp;fps, and your
@@ -234,7 +257,7 @@ footer img { vertical-align: middle; image-rendering: pixelated; }
   </section>
 
   <section class="win term" id="why" aria-labelledby="t-why">
-    <h2 class="title" id="t-why">tty1: ThinkPad X200 console</h2>
+    <h2 class="title" id="t-why">tty1: Hyprland and Hypoland on a ThinkPad X200</h2>
     <div class="body tty">
 <pre><span class="w">Omarchy 7.2.5-4-omarchy (tty1)</span>
 
@@ -253,7 +276,7 @@ $ <span class="w">hypoland</span>
   </section>
 
   <section class="win" aria-labelledby="t-what">
-    <h2 class="title" id="t-what">why: the short version</h2>
+    <h2 class="title" id="t-what">why: Hyprland needs OpenGL ES 3.0</h2>
     <div class="body">
       <p>
         Hyprland needs OpenGL ES 3.0. Plenty of laptops that still work fine top out at GLES&nbsp;2.0,
@@ -272,7 +295,7 @@ $ <span class="w">hypoland</span>
   </section>
 
   <section class="win full" id="numbers" aria-labelledby="t-num">
-    <h2 class="title" id="t-num">btop: ThinkPad X200, Core 2 Duo, GMA 4500MHD, 1280x800</h2>
+    <h2 class="title" id="t-num">btop: performance on a ThinkPad X200, Core 2 Duo, GMA 4500MHD, 1280x800</h2>
     <div class="body">
       <div class="stats">
         <div class="stat"><b>0.1%</b><span>compositor CPU on an idle desktop</span></div>
@@ -291,19 +314,20 @@ $ <span class="w">hypoland</span>
   </section>
 
   <section class="win third" aria-labelledby="t-hw">
-    <h2 class="title" id="t-hw">lspci: target hardware</h2>
+    <h2 class="title" id="t-hw">lspci: supported GPUs and laptops</h2>
     <div class="body">
       <ul class="pixel-list">
-        <li>Intel GMA 4500MHD / GM45 (Gen4.5), the tested target</li>
-        <li>Intel GMA X3100 / 965GM (Gen4)</li>
+        <li>Intel GMA 4500MHD / GM45 (Gen4.5), the tested target: ThinkPad X200, X200s, X301, T400 and T500</li>
+        <li>Intel GMA X3100 / 965GM (Gen4): ThinkPad X61, X300 and T61 with Intel graphics</li>
+        <li>Desktops with Intel G41, G43, G45 or Q45 chipset graphics (GMA 4500 / X4500), the same generation</li>
         <li>Other GPUs with OpenGL ES 2.0 under Mesa should work, but are untested</li>
       </ul>
-      <p class="note">Developed on a ThinkPad X200 with Mesa's <code>crocus</code> driver.</p>
+      <p class="note">Developed on a ThinkPad X200 with Mesa's <code>crocus</code> driver. Only the X200 is tested.</p>
     </div>
   </section>
 
   <section class="win third" aria-labelledby="t-off">
-    <h2 class="title" id="t-off">removed</h2>
+    <h2 class="title" id="t-off">removed: GPU-heavy features</h2>
     <div class="body">
       <ul class="pixel-list">
         <li>Color management and HDR</li>
@@ -328,7 +352,7 @@ $ <span class="w">hypoland</span>
   </section>
 
   <section class="win full" id="compat" aria-labelledby="t-compat">
-    <h2 class="title" id="t-compat">compat: a drop-in replacement</h2>
+    <h2 class="title" id="t-compat">compat: a drop-in replacement for Hyprland</h2>
     <div class="body">
       <div class="scroll"><table>
         <thead><tr><th>What</th><th>In Hypoland</th><th></th></tr></thead>
@@ -346,7 +370,7 @@ $ <span class="w">hypoland</span>
   </section>
 
   <section class="win term" id="build" aria-labelledby="t-build">
-    <h2 class="title" id="t-build">foot: ~/src</h2>
+    <h2 class="title" id="t-build">foot: build from source</h2>
     <div class="body">
 <pre><span class="c"># same dependencies as Hyprland, but aquamarine
 # is embedded and udis86 is not needed</span>
@@ -361,7 +385,7 @@ $ <span class="w">hypoland</span>
   </section>
 
   <section class="win" aria-labelledby="t-build-notes">
-    <h2 class="title" id="t-build-notes">README: building</h2>
+    <h2 class="title" id="t-build-notes">README: build notes</h2>
     <div class="body">
       <p>
         See the <a href="https://wiki.hypr.land/Getting-Started/Installation/">Hyprland wiki</a> for the
@@ -380,7 +404,7 @@ $ <span class="w">hypoland</span>
   </section>
 
   <section class="win full" id="faq" aria-labelledby="t-faq">
-    <h2 class="title" id="t-faq">man hypoland: questions</h2>
+    <h2 class="title" id="t-faq">man hypoland: frequently asked questions</h2>
     <div class="body">
       <details open>
         <summary>Will it run on my GPU?</summary>

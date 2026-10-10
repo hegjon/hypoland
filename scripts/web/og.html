@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- The link preview image web/og.png (1200x630). Render it with scripts/web/og.sh. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; position: relative; }
+html {
+  background-color: #efe6d2;
+  background-image: radial-gradient(#e0d4b8 1.5px, transparent 1.5px);
+  background-size: 12px 12px;
+  font-family: "DejaVu Sans", system-ui, sans-serif;
+  color: #22252b;
+}
+.bar {
+  height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 22px;
+  background: #3a3f48; color: #e8e3d8; font: 20px "DejaVu Sans Mono", monospace;
+}
+.bar .on { background: #d9a05b; color: #4a2a10; padding: 0 10px; }
+.bar .right { margin-left: auto; }
+.win {
+  position: absolute; left: 60px; right: 60px; top: 84px; height: 490px; box-sizing: border-box;
+  background: #fffdf7; border: 3px solid #8a8f98; box-shadow: 8px 8px 0 rgba(58, 63, 72, 0.25);
+  display: flex; flex-direction: column;
+}
+.title {
+  display: flex; align-items: center; padding: 6px 16px;
+  background: #e7dcc4; border-bottom: 3px solid #8a8f98;
+  font: 600 20px "DejaVu Sans Mono", monospace; color: #3a3f48;
+}
+.title:after { content: ""; margin-left: auto; width: 16px; height: 16px; border: 3px solid currentColor; }
+.body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+.body img { width: 836px; height: 264px; image-rendering: pixelated; }
+.tagline { margin: 0; font-size: 34px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="bar"><span class="on">1</span><span>2</span><span>3</span><span class="right">GLES 2.0 | GLSL ES 1.00</span></div>
+<div class="win">
+  <div class="title">hypoland.org</div>
+  <div class="body">
+    <img src="../../web/header.svg" alt="">
+    <p class="tagline">Hyprland for GPUs that stop at OpenGL ES 2.0</p>
+  </div>
+</div>
+</body>
+</html>
