@@ -37,9 +37,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   the fork had before (copies of upstream branches, `main`, `gles2-legacy-renderer`) were deleted on 2026-09-27;
   their names and commits are listed in `docs/baseline/removed-branches.txt`.
   Commit and push only when the user asks.
-- The web page hypoland.org is `web/`, served by Cloudflare as the static assets of the Worker `hypoland`
-  (`wrangler.jsonc`). `.github/workflows/cloudflare.yml` deploys it on pushes to `master` that touch `web/`, with
-  the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. It was on GitHub Pages until 2026-10-10.
+- The web page hypoland.org is `web/`, served by a Cloudflare Pages project connected to this repository. Cloudflare
+  deploys it from `master` by itself (no build command, output directory `web`, watch path `web/*`); there is no
+  workflow for it. It was on GitHub Pages until 2026-10-10.
 - `CHANGELOG.md` lists Hypoland's changes per release. Add user-visible changes and measured speedups to
   "Unreleased" with the commit that makes them, and move them under the version when releasing.
 - aquamarine is embedded: `subprojects/aquamarine` is a squashed `git subtree` of
