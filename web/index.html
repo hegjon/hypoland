@@ -88,6 +88,14 @@ code { background: #f3ead6; padding: 0 0.1875rem; }
 .ws { display: flex; gap: 2px; margin: 0; padding: 0; list-style: none; }
 .ws a { display: block; padding: 0 0.5rem; }
 .ws a.on { background: var(--potato); color: var(--peel); }
+/* The workspace number follows the section that was clicked (the :target). No target: 1. */
+body:has(:target) .ws a.on { background: none; color: inherit; }
+body:has(#top:target) .ws a[href="#top"],
+body:has(#why:target) .ws a[href="#why"],
+body:has(#numbers:target) .ws a[href="#numbers"],
+body:has(#compat:target) .ws a[href="#compat"],
+body:has(#build:target) .ws a[href="#build"],
+body:has(#faq:target) .ws a[href="#faq"] { background: var(--potato); color: var(--peel); }
 .bar .right { margin-left: auto; display: flex; gap: 0.875rem; white-space: nowrap; }
 .bar .right span:before { content: "| "; color: var(--frame-dim); }
 .bar .right span:first-child:before { content: ""; }
