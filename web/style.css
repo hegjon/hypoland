@@ -1,0 +1,195 @@
+/* Styles of hypoland.org, used by index.html and 404.html. */
+:root {
+  --desk: #efe6d2;
+  --dot: #e0d4b8;
+  --paper: #fffdf7;
+  --ink: #22252b;
+  --muted: #5b606a;
+  --frame: #3a3f48;
+  --frame-dim: #8a8f98;
+  --potato: #d9a05b;
+  --potato-dark: #b07a3c;
+  --peel: #4a2a10;
+  --light: #f2cd98;
+  --term: #1d1f23;
+  --term-ink: #d8dbe0;
+  --ok: #7fb069;
+  --bad: #e06c5b;
+  --mono: ui-monospace, "DejaVu Sans Mono", "Liberation Mono", Menlo, Consolas, monospace;
+  --gap: 0.625rem;
+}
+* { box-sizing: border-box; }
+html { background: var(--desk); }
+/* Everything is in rem, so the page grows on wide (often high density) screens. */
+@media (min-width: 1400px) { html { font-size: 112.5%; } }
+@media (min-width: 1800px) { html { font-size: 125%; } }
+body {
+  margin: 0;
+  color: var(--ink);
+  font: 1rem/1.55 system-ui, -apple-system, "Segoe UI", "DejaVu Sans", sans-serif;
+  background-color: var(--desk);
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+  background-size: 0.5rem 0.5rem;
+  min-height: 100vh;
+}
+a { color: var(--peel); text-decoration-thickness: 2px; text-underline-offset: 2px; }
+a:hover { background: var(--light); }
+code, pre, kbd { font-family: var(--mono); font-size: 0.9em; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+code { background: #f3ead6; padding: 0 0.1875rem; }
+
+/* Status bar, drawn like a Waybar */
+.bar {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; gap: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--frame); color: #e8e3d8;
+  font: 0.8125rem/1.6 var(--mono);
+}
+.bar a { color: inherit; text-decoration: none; }
+.bar a:hover { background: none; color: var(--light); }
+.ws { display: flex; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.ws a { display: block; padding: 0 0.5rem; }
+.ws a.on { background: var(--potato); color: var(--peel); }
+/* The workspace number follows the section that was clicked (the :target). No target: 1.
+   Keep these in step with the links in nav.bar and the section ids in index.html. */
+body:has(:target) .ws a.on { background: none; color: inherit; }
+body:has(#top:target) .ws a[href="#top"],
+body:has(#why:target) .ws a[href="#why"],
+body:has(#numbers:target) .ws a[href="#numbers"],
+body:has(#compat:target) .ws a[href="#compat"],
+body:has(#build:target) .ws a[href="#build"],
+body:has(#faq:target) .ws a[href="#faq"] { background: var(--potato); color: var(--peel); }
+.bar .right { margin-left: auto; display: flex; gap: 0.875rem; white-space: nowrap; }
+.bar .right span:before { content: "| "; color: var(--frame-dim); }
+.bar .right span:first-child:before { content: ""; }
+
+/* The tiled "desktop" */
+.desk {
+  max-width: 70rem;
+  margin: 0 auto;
+  padding: var(--gap);
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(6, 1fr);
+}
+.win {
+  grid-column: span 3;
+  display: flex; flex-direction: column;
+  background: var(--paper);
+  border: 2px solid var(--frame-dim);
+  box-shadow: 0.25rem 0.25rem 0 rgba(58, 63, 72, 0.25);
+  min-width: 0;
+  scroll-margin-top: 2.5rem;
+}
+.win:hover, .win:target { border-color: var(--potato); }
+.win.full { grid-column: 1 / -1; }
+.win.third { grid-column: span 2; }
+.title {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin: 0; padding: 0.1875rem 0.625rem;
+  background: #e7dcc4; border-bottom: 2px solid var(--frame-dim);
+  font: 600 0.8125rem/1.6 var(--mono); color: var(--frame);
+}
+.win:hover .title, .win:target .title { background: var(--light); border-color: var(--potato); }
+.title:after {
+  content: ""; margin-left: auto;
+  width: 0.625rem; height: 0.625rem; border: 2px solid currentColor;
+}
+.body { padding: 0.875rem 1.125rem 1.125rem; flex: 1; }
+.body > :first-child { margin-top: 0; }
+.body > :last-child { margin-bottom: 0; }
+h2 { font-size: 1.15em; margin: 1.2em 0 0.4em; }
+ul { padding-left: 1.2em; }
+li { margin: 0.25em 0; }
+
+/* Hero */
+.hero .body { display: grid; grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 1.5rem 1.125rem 1.75rem; }
+.hero img { width: 100%; max-width: 47.5rem; height: auto; image-rendering: pixelated; }
+.tagline { font-size: 1.45em; line-height: 1.3; margin: 0.5rem 0 0.375rem; font-weight: 700; max-width: 30em; }
+.sub { color: var(--muted); max-width: 38em; margin: 0 0 1.125rem; }
+.buttons { display: flex; flex-wrap: wrap; gap: 0.625rem; justify-content: center; }
+.btn {
+  display: inline-block; padding: 0.4375rem 1rem;
+  font: 600 0.875rem/1.4 var(--mono); text-decoration: none;
+  color: var(--peel); background: var(--potato);
+  border: 2px solid var(--peel); box-shadow: 0.1875rem 0.1875rem 0 var(--peel);
+}
+.btn:hover { background: var(--light); }
+.btn:active { transform: translate(0.1875rem, 0.1875rem); box-shadow: none; }
+.btn.alt { background: var(--paper); }
+
+/* Terminal windows */
+.term { background: var(--term); color: var(--term-ink); }
+.term .title { background: #2c2f35; color: #c8ccd3; border-color: #50555e; }
+.term.win { border-color: #50555e; }
+.term:hover .title { background: #3a3f48; color: var(--light); }
+.term pre { margin: 0; white-space: pre; overflow-x: auto; font-size: 0.8438rem; line-height: 1.5; }
+.p { color: var(--potato); }
+.c { color: #8a8f98; }
+.e { color: var(--bad); }
+.g { color: var(--ok); }
+
+/* The Linux console: VGA colors */
+.term .body.tty { padding: 1.125rem 1.25rem 1.375rem; }
+.tty pre { color: #aaa; }
+.tty .w { color: #fff; }
+.tty .r { color: #ff5555; }
+.tty .n { color: #55ff55; }
+.tty .d { color: #777; }
+.tty .cur { display: inline-block; width: 0.6em; height: 0.2em; background: #aaa; vertical-align: -0.1em; }
+@media (prefers-reduced-motion: no-preference) {
+  .tty .cur { animation: blink 1.06s steps(1) infinite; }
+}
+@keyframes blink { 50% { visibility: hidden; } }
+
+/* Numbers */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.375rem, 1fr)); gap: var(--gap); margin: 0 0 0.75rem; }
+.stat { border: 2px dashed var(--frame-dim); padding: 0.625rem 0.75rem; }
+.stat b { display: block; font: 700 1.7em/1.1 var(--mono); color: var(--peel); }
+.stat span { font-size: 0.88em; color: var(--muted); }
+.note { font-size: 0.88em; color: var(--muted); }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.93em; }
+th, td { text-align: left; padding: 0.3125rem 0.5rem; border-bottom: 1px solid #e3d9c3; vertical-align: top; }
+th { font-family: var(--mono); font-size: 0.9em; color: var(--muted); font-weight: 600; }
+.yes { color: #3f7a2e; font-weight: 700; }
+.no { color: #a8402f; font-weight: 700; }
+td.yes, td.no { white-space: nowrap; }
+.scroll { overflow-x: auto; }
+
+.pixel-list { list-style: none; padding: 0; }
+.pixel-list li { padding-left: 1.25rem; position: relative; }
+.pixel-list li:before {
+  content: ""; position: absolute; left: 2px; top: 0.55em;
+  width: 0.5rem; height: 0.5rem; background: var(--potato); box-shadow: 2px 2px 0 var(--peel);
+}
+
+details { border-top: 1px solid #e3d9c3; padding: 0.5rem 0; }
+details:first-child { border-top: 0; padding-top: 0; }
+summary { cursor: pointer; font-weight: 600; }
+summary::marker { color: var(--potato-dark); }
+details p { margin: 0.375rem 0 2px; }
+
+footer { max-width: 70rem; margin: 0 auto; padding: 0.5rem var(--gap) 2.5rem; font-size: 0.85em; color: var(--muted); text-align: center; }
+footer img { vertical-align: middle; image-rendering: pixelated; }
+
+@media (max-width: 860px) {
+  .win, .win.third { grid-column: 1 / -1; }
+  .bar .right span.opt { display: none; }
+}
+@media (max-width: 480px) {
+  td code { word-break: break-all; }
+  th, td { padding: 0.3125rem 0.25rem; }
+  body { font-size: 0.9375rem; }
+  .tagline { font-size: 1.2em; }
+  .body { padding: 0.75rem 0.875rem 0.875rem; }
+  .bar .right { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn { transition: background 0.1s; }
+}
+
+/* 404.html: one window in a narrow column */
+.desk.narrow { max-width: 45rem; padding-top: 3rem; }
+.narrow > .buttons { grid-column: 1 / -1; margin-top: 0.875rem; }

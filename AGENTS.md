@@ -40,8 +40,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
 - The web page hypoland.org is `web/`, served by a Cloudflare Pages project connected to this repository. Cloudflare
   deploys it from `master` by itself (no build command, output directory `web`, watch path `web/*`); there is no
   workflow for it. It was on GitHub Pages until 2026-10-10.
-  The link preview image `web/og.png` (1200x630) is rendered from `scripts/web/og.html` with `scripts/web/og.sh`.
-  Update `<lastmod>` in `web/sitemap.xml` when the page changes.
+  Both pages share `web/style.css`. `web/header.svg`, `web/icon.svg` and `web/favicon.png` are copies of the logo
+  in `assets/logo/`: after regenerating the logo run `scripts/web/update-logo.sh`, which copies them and renders
+  the link preview image `web/og.png` (1200x630) from `scripts/web/og.html` with `scripts/web/og.sh`.
 - `CHANGELOG.md` lists Hypoland's changes per release. Add user-visible changes and measured speedups to
   "Unreleased" with the commit that makes them, and move them under the version when releasing.
 - aquamarine is embedded: `subprojects/aquamarine` is a squashed `git subtree` of
@@ -94,8 +95,8 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
 - Logo: the pixel potato in `assets/logo/` (icon `hypoland.svg` with PNG exports, and the pre-2000 style banner
   `header.svg` used by the README: bitmap lettering whose O is a pixel potato hanging below the baseline, since
   hypo- means "under"), generated with `scripts/logo/retro.py scripts/logo/potato-mask.txt assets/logo`.
-  `web/` has copies of the icon and banner. The smooth potato logos were removed on 2026-09-28 by decision of
-  the user. The README shows two X200 screenshots from `assets/screenshots/` (real, unmodified program output).
+  `web/` has copies of the icon and banner (`scripts/web/update-logo.sh`). The smooth potato logos were removed
+  on 2026-09-28 by decision of the user. The README shows two X200 screenshots from `assets/screenshots/` (real, unmodified program output).
   The Hyprland banner and screenshots were removed from `assets/`, the Hyprland wallpapers `wall0-2.png` and the
   wallpaper code on 2026-09-28
   (`misc:force_default_wallpaper` is a no-op). The screens shown when the lock screen app dies
