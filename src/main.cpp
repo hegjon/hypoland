@@ -237,9 +237,9 @@ int main(int argc, char** argv) {
     if (!verifyConfig) {
         std::println("Welcome to Hypoland, a fork of Hyprland!");
     }
-
+#if !defined(__OpenBSD__)
     NInit::lowerAmbientCaps();
-
+#endif
     // let's init the compositor.
     // it initializes basic Wayland stuff in the constructor.
     try {
