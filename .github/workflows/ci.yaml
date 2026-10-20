@@ -1,10 +1,24 @@
-name: Build Hyprland
+name: Build Hypoland
 
-on: [push, pull_request, workflow_dispatch]
+# the web page (Cloudflare Pages deploys it) and text-only changes need no build
+on:
+  push:
+    paths-ignore:
+      - 'web/**'
+      - 'scripts/web/**'
+      - 'docs/**'
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - 'web/**'
+      - 'scripts/web/**'
+      - 'docs/**'
+      - '**.md'
+  workflow_dispatch:
 jobs:
   gcc:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
-    name: "Build Hyprland (Arch)"
+    name: "Build Hypoland (Arch)"
     runs-on: ubuntu-latest
     container:
       image: archlinux
@@ -19,26 +33,49 @@ jobs:
         with:
           INSTALL_XORG_PKGS: true
 
-      - name: Build Hyprland
+      - name: Build Hypoland
         run: |
           CFLAGS=-Werror CXXFLAGS=-Werror make nopch
 
       - name: Compress and package artifacts
         run: |
-          mkdir x86_64-pc-linux-gnu
-          mkdir hyprland
-          cp ./LICENSE hyprland/
-          cp build/hypoland hyprland/
-          cp build/hyprctl/hyprctl hyprland/
-          cp -r example/ hyprland/
-          cp -r assets/ hyprland/
-          tar -cvJf Hyprland.tar.xz hyprland
+          mkdir hypoland
+          cp ./LICENSE hypoland/
+          cp build/hypoland hypoland/
+          cp build/hyprctl/hyprctl hypoland/
+          cp -r example/ hypoland/
+          cp -r assets/ hypoland/
+          tar -cvJf hypoland.tar.xz hypoland
 
       - name: Release
         uses: actions/upload-artifact@v7
         with:
           name: Build archive
-          path: Hyprland.tar.xz
+          path: hypoland.tar.xz
+
+  unit-tests:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
+    name: "Unit tests"
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    steps:
+      - name: Checkout repository actions
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: .github/actions
+
+      - name: Setup base
+        uses: ./.github/actions/setup_base
+
+      # a build of its own: WITH_TESTS also builds the compositor with coverage
+      - name: Build unit tests
+        run: |
+          cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DWITH_TESTS=ON -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -S . -B ./build-tests
+          cmake --build ./build-tests --target hyprland_gtests -j`nproc 2>/dev/null || getconf NPROCESSORS_CONF`
+
+      - name: Run unit tests
+        run: ./build-tests/hyprland_gtests
 
   clang-format:
     permissions: read-all
