@@ -33,6 +33,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 ### Changed
 
 - Transparent pixels of a wallpaper show over black instead of over `misc:background_color`.
+- The Arch package provides and conflicts with `omarchy-hyprland-titlebars`, a Hyprland plugin that needs
+  `hyprland=0.56.2` and stopped Omarchy updates. Hypoland has no plugins; Omarchy shows no titlebars without it.
 
 ### Other
 

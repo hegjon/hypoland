@@ -18,7 +18,7 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   `omarchy.desktop` -> `uwsm start ... hyprland.desktop` -> `/usr/bin/start-hypoland` -> `/usr/bin/hypoland`.
   Update it with `makepkg -f` in `packaging/arch`, `pacman -U` as root on the X200 and `systemctl restart sddm`
   (SDDM logs in again). See the testing pitfalls for the test loop setup.
-- X200 access: `ssh x200` (ssh config alias -> 192.168.95.91, user `a`, uid 1000, key auth works).
+- X200 access: `ssh x200` (ssh config alias -> 192.168.1.73, user `a`, uid 1000, key auth works).
   6 GB RAM, 2 cores, Arch kernel 7.1.x, Mesa 26.2, stock `hyprland` 0.56.2 installed, 100 GB free in `/home`.
 - Root on the X200: `ssh root@x200` (key auth). Test tools are installed: `waybar`, `weston-simple-egl`,
   `glmark2-es2-wayland`, `pidstat`, `eglinfo`, `grim`, `foot`.

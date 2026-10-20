@@ -72,8 +72,11 @@ optdepends=(
 _root="$(realpath "$startdir/../..")"
 
 # the Hyprland version it is based on, VERSION is the version of Hypoland
-provides=("hyprland=$(cat "$_root/VERSION_HYPRLAND")" wayland-compositor)
-conflicts=(hyprland)
+provides=("hyprland=$(cat "$_root/VERSION_HYPRLAND")" wayland-compositor
+  # a Hyprland plugin that Omarchy installs (it needs hyprland=0.56.2), Hypoland has no plugins.
+  # Providing it lets Omarchy's install and migration find it, its Lua skips titlebars without the .so
+  omarchy-hyprland-titlebars)
+conflicts=(hyprland omarchy-hyprland-titlebars)
 # the embedded aquamarine is linked statically and relies on weakened symbols
 options=(!lto)
 
