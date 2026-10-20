@@ -72,6 +72,9 @@ Hypoland is meant to be a drop-in replacement, everything that talks to Hyprland
 
 Use the `hyprctl` built from this repository, so the versions match.
 
+Screen recording: gpu-screen-recorder does not start on GLES 2 hardware (it cannot create its EGL context), so
+install `wf-recorder`. Omarchy falls back to it. It encodes on the CPU; a Core 2 Duo records 1280x800 at about 34 fps.
+
 Source: <https://github.com/hegjon/hypoland>
 
 ## Building

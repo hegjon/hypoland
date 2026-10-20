@@ -35,6 +35,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - Transparent pixels of a wallpaper show over black instead of over `misc:background_color`.
 - The Arch package provides and conflicts with `omarchy-hyprland-titlebars`, a Hyprland plugin that needs
   `hyprland=0.56.2` and stopped Omarchy updates. Hypoland has no plugins; Omarchy shows no titlebars without it.
+- The Arch package lists `wf-recorder` as an optional dependency: gpu-screen-recorder does not start on GLES 2
+  hardware, and Omarchy records with `wf-recorder` instead when it is installed.
 
 ### Fixed
 

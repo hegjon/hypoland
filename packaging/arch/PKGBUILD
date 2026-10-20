@@ -68,6 +68,7 @@ makedepends=(
 )
 optdepends=(
   'xdg-desktop-portal-hyprland: xdg-desktop-portal backend'
+  'wf-recorder: screen recording, gpu-screen-recorder needs GLES 3 (Omarchy falls back to wf-recorder)'
 )
 _root="$(realpath "$startdir/../..")"
 
