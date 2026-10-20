@@ -82,6 +82,8 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -----------------------
 
 -- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
+-- Hypoland's defaults are for old GPUs: rounded corners, gradient borders, shadows, blur and animations are off.
+-- Each of them costs fill rate on every redraw, turn on what your GPU can afford.
 hl.config({
     general = {
         gaps_in  = 5,
@@ -90,7 +92,8 @@ hl.config({
         border_size = 2,
 
         col = {
-            active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },
+            -- a gradient costs more than a single color: { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 }
+            active_border   = "rgba(33ccffee)",
             inactive_border = "rgba(595959aa)",
         },
 
@@ -104,7 +107,8 @@ hl.config({
     },
 
     decoration = {
-        rounding       = 10,
+        -- rounding = 0 skips the rounding shader
+        rounding       = 0,
         rounding_power = 2,
 
         -- Change transparency of focused and unfocused windows
@@ -112,14 +116,14 @@ hl.config({
         inactive_opacity = 1.0,
 
         shadow = {
-            enabled      = true,
+            enabled      = false,
             range        = 4,
             render_power = 3,
             color        = 0xee1a1a1a,
         },
 
         blur = {
-            enabled   = true,
+            enabled   = false,
             size      = 3,
             passes    = 1,
             vibrancy  = 0.1696,
@@ -127,11 +131,12 @@ hl.config({
     },
 
     animations = {
-        enabled = true,
+        enabled = false,
     },
 })
 
--- Default curves and animations, see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
+-- Curves and animations, used when animations.enabled is true.
+-- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })
 hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1}    } })
 hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}       } })
