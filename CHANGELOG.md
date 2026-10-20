@@ -62,6 +62,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 - The web page's FAQ says why these changes are not part of Hyprland.
 - The web page's FAQ says that Hyprland plugins do not work and which protocols input tools can use instead.
+- The web page's FAQ says how to record the screen (`wf-recorder`) and why Omarchy's floating workspaces have no
+  titlebars.
 - The documentation and the help of `hyprctl` and `start-hypoland` are up to date: `hyprctl keyword` is not
   available with a Lua config (use `eval`), plugin requests always fail, the splash text is off by default rather
   than removed.

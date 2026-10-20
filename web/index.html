@@ -250,7 +250,16 @@ $ <span class="w">hypoland</span>
         <p>
           Yes. Omarchy 4 is what the test machine runs: the Quickshell bar, notifications,
           wallpaper, windows and Xwayland all work. Chromium runs, but falls back to software rendering because it wants
-          GLES&nbsp;3 itself.
+          GLES&nbsp;3 itself. Floating workspaces have no titlebars: Omarchy draws them with a Hyprland plugin, and
+          Hypoland has no plugins.
+        </p>
+      </details>
+      <details>
+        <summary>Does screen recording work?</summary>
+        <p>
+          Yes, with <code>wf-recorder</code> installed. Omarchy records with gpu-screen-recorder, which does not
+          start on GLES&nbsp;2 hardware, and falls back to <code>wf-recorder</code>. It encodes on the CPU: the X200
+          records its 1280x800 screen at about 34&nbsp;fps.
         </p>
       </details>
       <details>
