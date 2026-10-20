@@ -19,7 +19,8 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   Update it with `makepkg -f` in `packaging/arch`, `pacman -U` as root on the X200 and `systemctl restart sddm`
   (SDDM logs in again). See the testing pitfalls for the test loop setup.
 - X200 access: `ssh x200` (ssh config alias -> 192.168.1.73, user `a`, uid 1000, key auth works).
-  6 GB RAM, 2 cores, Arch kernel 7.1.x, Mesa 26.2, stock `hyprland` 0.56.2 installed, 100 GB free in `/home`.
+  6 GB RAM, 2 cores, Arch kernel 7.1.x, Mesa 26.2, the `hypoland` package installed (`hyprland` 0.56.2-3 is in
+  `/var/cache/pacman/pkg`), 100 GB free in `/home`.
 - Root on the X200: `ssh root@x200` (key auth). Test tools are installed: `waybar`, `weston-simple-egl`,
   `glmark2-es2-wayland`, `pidstat`, `eglinfo`, `grim`, `foot`.
 
@@ -165,10 +166,12 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
 
 ## Testing workflow
 
-1. Build on the desktop, `rsync` into a prefix on the X200 (e.g. `~/hypoland/`). Never touch system packages.
-2. X200 autologins on tty1 into a loop script that runs `~/hypoland/bin/hypoland` and restarts it on exit
-   (a compositor started over SSH can't take the display). Restart with `pkill -x hypoland`.
-   Do not reboot for recovery, see the pitfalls below.
+1. Build on the desktop. Test builds go into a prefix on the X200 (`~/hypoland/`, with `rsync`); install the Arch
+   package there (Hardware above) only when the user asks.
+2. A compositor started over SSH can't take the display. The X200 runs the installed package through SDDM
+   (restart with `ssh root@x200 systemctl restart sddm`). For test builds in `~/hypoland` the tty1 loop has to be
+   set up again (see the pitfalls): it runs `~/hypoland/bin/hypoland` and restarts it on exit
+   (`pkill -x hypoland`). Do not reboot for recovery, see the pitfalls below.
 3. Over SSH, with `XDG_RUNTIME_DIR=/run/user/<uid>` set:
    - control: `hyprctl`
    - screenshots: `grim`, then `scp` back and inspect the image
@@ -213,13 +216,14 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
   screensaver or a lock screen. Keep profiling runs short after a restart, check `hyprctl clients` for the
   screensaver class and `solitaryBlockedBy` for `lock`, and look at `journalctl --user | grep "omarchy idle"`.
 
-## Status (2026-09-27)
+## Status
 
 The first milestone is reached: the GLES2-only build runs the full Omarchy session on the X200 (Quickshell bar,
-wallpaper, notifications, windows, Xwayland, Chromium). `./test-x200.sh` passes, including a check that the
-window is really drawn (the test terminal fills itself with magenta and the screenshot is checked for it).
+wallpaper, notifications, windows, Xwayland, Chromium). `./test-x200.sh` passed (2026-09-27, with the test loop),
+including a check that the window is really drawn (the test terminal fills itself with magenta and the screenshot
+is checked for it).
 
-Measured on the X200 (1280x800, Omarchy config):
+Measured on the X200 on 2026-09-27 (1280x800, Omarchy config; later numbers further down supersede these):
 - idle compositor CPU 0%, RSS about 100 MiB (about 73 MiB of it are file mappings, mostly Mesa and LLVM)
 - `weston-simple-egl` 60 fps, compositor 8-9% CPU; blur on costs about 1% more
 - 4 windows with rounding, shadows, blur, opacity, dim and animations: 58-60 fps, compositor 12% CPU
@@ -230,8 +234,10 @@ Findings worth keeping:
 - `quirks:skip_non_kms_dmabuf_formats` must default to false. Gen4 primary planes have no alpha formats, so with
   the upstream default no client gets an EGL config with alpha and Quickshell's fullscreen overlay turns black.
 - Omarchy 4 locks with its Quickshell shell, `hyprlock` / `hypridle` are not installed.
-- Defaults changed: blur, shadows, animations and hyprcursor off; logo background and splash are gone
-  (`misc:disable_hyprland_logo` is a no-op); hyprpm is removed.
+- Defaults changed: blur, shadows, animations, the splash text (`misc:disable_splash_rendering` is true, the option
+  still works) and hyprcursor off; the logo background is gone (`misc:disable_hyprland_logo` is a no-op); hyprpm is
+  removed. The config written for new users (`example/hyprland.lua`, embedded in the binary) keeps the same
+  defaults: effects and rounding off, a single-color border.
 - Removed on 2026-09-28 so Hypoland does not speak for Hyprland: the welcome app, update news and donation popup
   (`WelcomeManager`, `VersionKeeperManager`, `DonationNagManager`; `ecosystem:no_update_news` and
   `ecosystem:no_donation_nag` are no-ops), upstream's GitHub funding, issue / discussion / PR templates and the
@@ -242,8 +248,10 @@ Findings worth keeping:
 
 Tools:
 - `HYPOLAND_PROFILE_PASS=1` times every render pass element on the GPU (glFinish) and prints per-type totals to
-  stderr every 120 frames. On the X200 put it in `~/hypoland/env` (sourced by the loop), read `~/hypoland/loop.log`.
-  It slows rendering down, remove the env file afterwards.
+  stderr every 120 frames. With the test loop put it in `~/hypoland/env` (sourced by the loop) and read
+  `~/hypoland/loop.log`. In the SDDM session the loop's files are not used: the compositor's stderr goes to the
+  journal (`journalctl --user -u wayland-wm@hyprland.desktop.service`) and the variable has to reach the session
+  environment (e.g. `~/.config/uwsm/env`). It slows rendering down, remove it afterwards.
 - `debug:overlay` works and shows frame and render times.
 - `scripts/x200/kmsgrab.c` (installed on the X200 as root: `/usr/local/bin/hypoland-kmsgrab out.ppm`) saves the buffer
   the display scans out. Use it to check what really reaches the screen: a `grim` screenshot counts as screen
@@ -335,7 +343,8 @@ Findings:
     `rep movsb` is slower, and the best case (own WC mapped linear buffer) is 1.45 ms. Hand-written copies or
     inline assembly would not help.
   - `CEGLSync::create` is where Mesa's threaded context runs the whole frame (draws and batch submit). A frame
-    with one 60 fps client is only 2 draws and 16 ioctls, all needed except the mode re-read below.
+    with one 60 fps client was 2 draws and 16 ioctls, all needed except the mode re-read, which is fixed
+    (13 ioctls now, see below).
 
 Memory (X200, idle Omarchy session 60 s after start, `heaptrack` and `/proc/<pid>/smaps`):
 - Fixed: aquamarine created a second EGL context for the primary GPU, which is only needed when a secondary GPU
@@ -349,8 +358,8 @@ Memory (X200, idle Omarchy session 60 s after start, `heaptrack` and `/proc/<pid
   1.7 MiB the GL context. libLLVM shows 19 MiB RSS but only 6 MiB PSS, the pages are shared with Quickshell and
   Xwayland and come from loading the library (`DRAW_USE_LLVM=0` changes nothing). The Hypoland binary is about
   14 MiB of clean file pages.
-- The "started without start-hypoland" notification loads fontconfig and pango (about 1.5 MiB heap) on the X200
-  loop, a normal start does not.
+- The "started without start-hypoland" notification loads fontconfig and pango (about 1.5 MiB heap) when the test
+  loop starts `hypoland` directly; a start through `start-hypoland` (the SDDM session) does not.
 
 Overnight run 2026-09-28 (journal in `test-results/overnight/journal.md`), measured with `./bench.sh`
 (`performance` governor), before -> after:
@@ -411,11 +420,11 @@ startup and CPU time with animations. Measured on the X200 with the SDDM session
   every tick, although every rendered frame ticks right before it draws. The whole tick (all animated variables and
   their damage) ran up to 16 times per 60 Hz frame. Continuous ticking now uses the frame interval of the fastest
   monitor, a requested tick still comes after 1 ms. Same page flips, less than half the CPU.
-- Clock reads are not sampling skid (that note of 2026-09-27 was wrong): with the HPET clocksource every read is a
-  system call and an MMIO read, about 1.2% of the compositor's time per read and tick while animating. The tick
-  reads the clock once now. `Time::fromTimespec()` still makes four reads per presented frame (about 1% of the
-  GPU client's compositor time) because it does not trust `steady_clock` to be `CLOCK_MONOTONIC`, and Mesa's
-  `__crocus_bo_unreference` reads it for every buffer it caches (0.7%).
+- Clock reads cost real time, they are not sampling skid as a note of 2026-09-27 assumed: with the HPET
+  clocksource every read is a system call and an MMIO read, about 1.2% of the compositor's time per read and tick
+  while animating. The tick reads the clock once now. `Time::fromTimespec()` still makes four reads per presented
+  frame (about 1% of the GPU client's compositor time) because it does not trust `steady_clock` to be
+  `CLOCK_MONOTONIC`, and Mesa's `__crocus_bo_unreference` reads it for every buffer it caches (0.7%).
 - Startup, instructions of the main thread: keyboards with the same rules share one keymap (-5%), the "screen
   share denied" text is rendered on first use so pango and fontconfig (about 130 ms of CPU and a thread) are not
   loaded at all (-3%), XCursor shapes are loaded on first use (-6%).
@@ -449,7 +458,8 @@ Open decisions for the user:
 
 Work that is left from the plan above:
 - Remove screen shaders.
-- The X200 loop starts `hypoland` directly, so the "started without start-hypoland" notification shows.
+- `scripts/x200/run-loop.sh` starts `hypoland` directly, so the "started without start-hypoland" notification shows
+  when the test loop is used (not in the SDDM session).
 
 # Code guidelines
 
