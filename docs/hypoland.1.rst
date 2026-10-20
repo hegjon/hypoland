@@ -28,8 +28,9 @@ COMPATIBILITY
 Hypoland reads the configuration of Hyprland and answers on the same sockets, so configs and
 tools made for Hyprland keep working.
 
-Color management, HDR, motion blur, plugins and hyprpm are removed. Their config options
-are accepted and ignored.
+Color management, HDR, motion blur, the logo background, the default wallpapers, plugins and
+hyprpm are removed. Their config options are accepted and ignored. Blur, shadows, animations
+and the splash text are off by default.
 
 CONFIGURATION
 =============
@@ -61,6 +62,9 @@ OPTIONS
 
 **--systeminfo**
     Prints system infos.
+
+**--i-am-really-stupid**
+    Omits the check for root user privileges.
 
 **--verify-config**
     Do not run Hypoland, only print if the config has any errors.

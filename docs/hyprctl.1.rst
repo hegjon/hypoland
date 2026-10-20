@@ -35,16 +35,8 @@ CONTROL COMMANDS
 
 **keyword**
 
-    Set a config keyword dynamically.
-
-    This will not work if your config provider is lua (refer to **eval**)
-
-    Returns: *ok* on success, and an error message on failure.
-
-    Examples:
-        **hyprctl** *keyword bind SUPER,0,pseudo*
-
-        **hyprctl** *keyword general:border_size 10*
+    Not available: the config is Lua, the compositor answers *unknown request*. Use **eval** instead,
+    e.g. *eval 'hl.config({ general = { border_size = 10 } })'*.
 
 **eval**
 
@@ -113,7 +105,7 @@ OPTIONS
     Specify a batch of commands to execute.
 
     Example:
-        **hyprctl** *--batch "keyword general:border_size 2 ; keyword general:gaps_out 20"*
+        **hyprctl** *--batch "eval hl.config({ general = { border_size = 2 } }) ; eval hl.config({ general = { gaps_out = 20 } })"*
 
         *;* separates the commands.
 
@@ -130,7 +122,7 @@ Submit bug reports and request features online at:
 SEE ALSO
 ========
 
-**Hypoland**\(1)
+**hypoland**\(1)
 
 Sources at: <*https://github.com/hegjon/hypoland*>
 

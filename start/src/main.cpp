@@ -19,7 +19,8 @@ constexpr const char* HELP_INFO = R"#(start-hypoland - A binary to properly star
 Any arguments after -- are passed to Hypoland. For Hypoland help, run start-hypoland -- --help or hypoland --help
 
 Additional arguments for start-hypoland:
- --path [path]       -> Override Hypoland path
+ --path, -p [path]   -> Override Hypoland path
+ --help, -h          -> Show this help
 )#";
 
 //

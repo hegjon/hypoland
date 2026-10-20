@@ -154,19 +154,22 @@ $ <span class="w">hypoland</span>
         <li>Motion blur</li>
         <li>Blur variants other than dual Kawase</li>
         <li>Plugins and <code>hyprpm</code></li>
-        <li>Logo background and splash</li>
+        <li>Logo background and default wallpapers</li>
+        <li>Hyprland's welcome app, update news and donation popup</li>
       </ul>
       <p class="note">Their config options stay registered and are ignored, so your config loads without errors.</p>
     </div>
   </section>
 
   <section class="win third" aria-labelledby="t-defaults">
-    <h2 class="title" id="t-defaults">changed defaults</h2>
+    <h2 class="title" id="t-defaults">changed</h2>
     <div class="body">
       <ul class="pixel-list">
-        <li>Blur, shadows and animations are off, turn them on if you like</li>
+        <li>Blur, shadows, animations and the splash text are off, turn them on if you like</li>
         <li>XCursor themes instead of hyprcursor</li>
         <li><code>quirks:skip_non_kms_dmabuf_formats</code> is off, so transparent clients work on Gen4</li>
+        <li>Windows at 98% opacity or more and the wallpaper are drawn opaque, which saves fill rate</li>
+        <li>Xwayland starts when the first X11 program connects</li>
       </ul>
     </div>
   </section>
@@ -193,7 +196,8 @@ $ <span class="w">hypoland</span>
     <h2 class="title" id="t-build">foot: build from source</h2>
     <div class="body">
 <pre><span class="c"># same dependencies as Hyprland, but aquamarine
-# is embedded and udis86 is not needed</span>
+# is embedded, udis86, glaze and glslang are
+# not needed</span>
 <span class="p">$</span> git clone https://github.com/hegjon/hypoland
 <span class="p">$</span> cd hypoland
 <span class="p">$</span> cmake -S . -B build -DCMAKE_BUILD_TYPE=Release

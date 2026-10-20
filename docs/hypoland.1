@@ -38,8 +38,10 @@ You can launch Hypoland by either going into a TTY and executing
 Hypoland reads the configuration of Hyprland and answers on the same
 sockets, so configs and tools made for Hyprland keep working.
 .PP
-Color management, HDR, motion blur, plugins and hyprpm are removed.
+Color management, HDR, motion blur, the logo background, the default
+wallpapers, plugins and hyprpm are removed.
 Their config options are accepted and ignored.
+Blur, shadows, animations and the splash text are off by default.
 .SH CONFIGURATION
 .PP
 The configuration is read from
@@ -69,6 +71,9 @@ Starts Hypoland in safe mode.
 .TP
 \f[B]--systeminfo\f[R]
 Prints system infos.
+.TP
+\f[B]--i-am-really-stupid\f[R]
+Omits the check for root user privileges.
 .TP
 \f[B]--verify-config\f[R]
 Do not run Hypoland, only print if the config has any errors.

@@ -26,20 +26,18 @@ commands:
     hyprsunset ...      → Issue a hyprsunset request
     instances           → Lists all running instances of Hypoland with
                           their info
-    keyword <name> <value> → Issue a keyword to call a config keyword
-                          dynamically
+    keyword <name> <value> → Not available with a Lua config, use eval
     kill                → Issue a kill to get into a kill mode, where you can
                           kill an app by clicking on it. You can exit it
                           with ESCAPE
     layers              → Lists all the surface layers
-    layouts             → Lists all layouts available (including plugin'd ones)
     monitors            → Lists active outputs with their properties,
                           'monitors all' lists active and inactive outputs
     notify ...          → Sends a notification using the built-in Hypoland
                           notification system
     output ...          → Allows you to add and remove fake outputs to your
                           preferred backend
-    plugin ...          → Issue a plugin request
+    plugin ...          → Plugins are not supported, the list is always empty
     reload [config-only] → Issue a reload to force reload the config. Pass
                           'config-only' to disable monitor reload
     repl [code]         → Enter interactive Lua REPL mode (^D to exit)
@@ -134,10 +132,12 @@ flags:
 
 const std::string_view PLUGIN_HELP = R"#(usage: hyprctl [flags] plugin <request>
 
+Plugins are not supported by Hypoland.
+
 requests:
-    load <path>     → Loads a plugin. Path must be absolute
-    unload <path>   → Unloads a plugin. Path must be absolute
-    list            → Lists all loaded plugins
+    load <path>     → Fails
+    unload <path>   → Fails
+    list            → Lists no plugins
 
 flags:
     See 'hyprctl --help')#";

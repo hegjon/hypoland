@@ -47,15 +47,17 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
   a wallpaper show over black.
 - Xwayland starts when the first X11 program connects, not together with the compositor. `DISPLAY` is set from
   the start as before.
-- The logo background and splash text are removed, `misc:disable_hyprland_logo` and
-  `misc:disable_splash_rendering` are ignored.
+- The logo background and the default wallpapers are removed, `misc:disable_hyprland_logo` and
+  `misc:force_default_wallpaper` are ignored.
 - Hypoland does not start Hyprland's welcome app, update news or donation popup
   (`hyprland-welcome`, `hyprland-update-screen`, `hyprland-donate-screen`). `ecosystem:no_update_news` and
   `ecosystem:no_donation_nag` are ignored.
 
 ### Changed defaults
 
-- Blur, shadows and animations are off.
+- Blur, shadows and animations are off. The config Hypoland writes for new users (`example/hyprland.lua`)
+  keeps them off, with rounded corners off and a single-color border.
+- The splash text is off (`misc:disable_splash_rendering` is true).
 - `cursor:enable_hyprcursor` is off, XCursor themes are used.
 - `quirks:skip_non_kms_dmabuf_formats` is off. Gen4 display planes have no formats with alpha, so with the
   Hyprland default no client gets an EGL config with alpha and transparent surfaces turn black.
@@ -79,7 +81,7 @@ Source: <https://github.com/hegjon/hypoland>
 
 ## Building
 
-Dependencies are the same as for Hyprland, except aquamarine (embedded), udis86 and glaze (not needed). See the
+Dependencies are the same as for Hyprland, except aquamarine (embedded), udis86, glaze and glslang (not needed). See the
 [Hyprland wiki](https://wiki.hypr.land/Getting-Started/Installation/).
 
 ```sh

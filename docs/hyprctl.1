@@ -52,19 +52,10 @@ Examples:
 \f[B]keyword\f[R]
 .RS
 .PP
-Set a config keyword dynamically.
-.PP
-This will not work if your config provider is lua (refer to
-\f[B]eval\f[R])
-.PP
-Returns: \f[I]ok\f[R] on success, and an error message on failure.
-.TP
-Examples:
-\f[B]hyprctl\f[R] \f[I]keyword bind SUPER,0,pseudo\f[R]
-.RS
-.PP
-\f[B]hyprctl\f[R] \f[I]keyword general:border_size 10\f[R]
-.RE
+Not available: the config is Lua, the compositor answers
+\f[I]unknown request\f[R].
+Use \f[B]eval\f[R] instead, e.g.
+\f[I]eval \[aq]hl.config({ general = { border_size = 10 } })\[aq]\f[R].
 .RE
 .PP
 \f[B]eval\f[R]
@@ -161,8 +152,8 @@ Returns internal status information like config format or backend.
 Specify a batch of commands to execute.
 .TP
 Example:
-\f[B]hyprctl\f[R] \f[I]--batch \[dq]keyword general:border_size 2 ;
-keyword general:gaps_out 20\[dq]\f[R]
+\f[B]hyprctl\f[R] \f[I]--batch \[dq]eval hl.config({ general = {
+border_size = 2 } }) ; eval hl.config({ general = { gaps_out = 20 } })\[dq]\f[R]
 .RS
 .PP
 \f[I];\f[R] separates the commands.
@@ -180,7 +171,7 @@ Submit bug reports and request features online at:
 <\f[I]https://github.com/hegjon/hypoland/issues\f[R]>
 .SH SEE ALSO
 .PP
-\f[B]Hypoland\f[R](1)
+\f[B]hypoland\f[R](1)
 .PP
 Sources at: <\f[I]https://github.com/hegjon/hypoland\f[R]>
 .SH COPYRIGHT

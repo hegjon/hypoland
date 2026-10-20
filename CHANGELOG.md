@@ -33,6 +33,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 ### Changed
 
 - Transparent pixels of a wallpaper show over black instead of over `misc:background_color`.
+- The config written for new users (`example/hyprland.lua`) matches Hypoland's defaults: blur, shadows, animations
+  and rounded corners are off and the active border is a single color instead of a gradient.
 - The Arch package provides and conflicts with `omarchy-hyprland-titlebars`, a Hyprland plugin that needs
   `hyprland=0.56.2` and stopped Omarchy updates. Hypoland has no plugins; Omarchy shows no titlebars without it.
 - The Arch package lists `wf-recorder` as an optional dependency: gpu-screen-recorder does not start on GLES 2
@@ -52,9 +54,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Other
 
-- The release workflow attaches the source tarball to Hypoland's own releases.
 - The web page's FAQ says why these changes are not part of Hyprland.
 - The web page's FAQ says that Hyprland plugins do not work and which protocols input tools can use instead.
+- The documentation and the help of `hyprctl` and `start-hypoland` are up to date: `hyprctl keyword` is not
+  available with a Lua config (use `eval`), plugin requests always fail, the splash text is off by default rather
+  than removed.
 
 ## 0.1.0 - 2026-09-28
 
@@ -64,12 +68,14 @@ The first release: Hyprland 0.56.0 for GPUs that only support OpenGL ES 2.0 / Op
 - Drop-in for Hyprland: the same `hyprland.lua` config, `hyprctl`, IPC sockets, JSON output, event names and
   `XDG_CURRENT_DESKTOP=Hyprland`. Options of removed features are accepted and ignored.
 - Removed: color management and HDR, the ICC 3D LUT, motion blur, the plugin system and hyprpm, the blur variants
-  ripple, water, fluid_jar, prism and acrylic (they fall back to dual Kawase), the welcome app, update news and
-  donation popup.
-- Off by default: blur, shadows, animations and hyprcursor. `quirks:skip_non_kms_dmabuf_formats` defaults to off.
+  ripple, water, fluid_jar, prism and acrylic (they fall back to dual Kawase), the logo background and the default
+  wallpapers, the welcome app, update news and donation popup.
+- Off by default: blur, shadows, animations, the splash text and hyprcursor. `quirks:skip_non_kms_dmabuf_formats`
+  defaults to off.
 - Frames are drawn straight into the scanout buffer when nothing needs the work buffer, only the damage is cleared,
   and shm textures are double buffered (Chromium's compositor CPU 26.8% -> 12.8%).
 - Less memory: no second EGL context for the primary GPU, no glslang, the shader compiler is released after use,
   fewer and smaller GPU buffers.
 - The binaries are `hypoland` and `start-hypoland`, `start-hyprland` is a symlink. `hyprctl version` adds
   `Hypoland 0.1.0, based on Hyprland 0.56.0`.
+- The release workflow attaches a source tarball to Hypoland's releases.
