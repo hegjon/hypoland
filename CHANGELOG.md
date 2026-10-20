@@ -41,6 +41,12 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - Security and crash fixes from upstream Hyprland: an overflow in the X11 WM hints, new input grabs while the
   session is locked, crashes with a bell on a null surface, screen sharing on a removed monitor and Lua errors that
   are not strings, a leaked input capture fd and permission state kept after a client is gone.
+- Other fixes from upstream Hyprland: screen recording could keep direct scanout blocked, blur lost xray while a
+  window faded out, the cursor image did not follow a cursor theme change, X11 floating windows at 0,0 were
+  misplaced, X11 modal windows and urgency hints, primary selection with data control and old wlr clients,
+  `groupbar:disable_when_only`, tag rules that stopped matching, silent moves away from the focused window and
+  the scrolling layout's scroll inhibitor. `input:scroll_factor` goes up to 100 and spring curves take `damping`
+  (`dampening` still works).
 
 ### Other
 
