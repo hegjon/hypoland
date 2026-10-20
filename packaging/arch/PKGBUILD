@@ -23,8 +23,10 @@ depends=(
   hyprutils
   hyprwire
   lcms2
+  libcanberra
   libdisplay-info
   libdrm
+  libei
   libgcc
   libglvnd
   libinput
@@ -43,6 +45,8 @@ depends=(
   pango
   pixman
   re2
+  readline
+  sdbus-cpp
   seatd
   systemd-libs
   util-linux-libs
