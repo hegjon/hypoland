@@ -30,14 +30,16 @@ install:
 uninstall:
 	xargs rm < ./build/install_manifest.txt
 
+# pandoc writes into a temporary file, so a failed run leaves the man pages as they were
 man:
+	@command -v pandoc >/dev/null || { echo "make man needs pandoc"; exit 1; }
 	pandoc ./docs/hypoland.1.rst \
 		--standalone \
 		--variable=header:"Hypoland User Manual" \
 		--variable=date:"${DATE}" \
 		--variable=section:1 \
 		--from rst \
-		--to man > ./docs/hypoland.1
+		--to man > ./docs/hypoland.1.tmp && mv ./docs/hypoland.1.tmp ./docs/hypoland.1 || { rm -f ./docs/hypoland.1.tmp; exit 1; }
 
 	pandoc ./docs/hyprctl.1.rst \
 		--standalone \
@@ -45,7 +47,7 @@ man:
 		--variable=date:"${DATE}" \
 		--variable=section:1 \
 		--from rst \
-		--to man > ./docs/hyprctl.1
+		--to man > ./docs/hyprctl.1.tmp && mv ./docs/hyprctl.1.tmp ./docs/hyprctl.1 || { rm -f ./docs/hyprctl.1.tmp; exit 1; }
 
 asan:
 	@echo -en "!!WARNING!!\nOnly run this in the TTY.\n"
