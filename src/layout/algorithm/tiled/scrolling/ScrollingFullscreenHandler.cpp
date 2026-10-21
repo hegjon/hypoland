@@ -340,6 +340,8 @@ void CScrollingFullscreenHandler::setNoMembersAboveFullscreen(const std::optiona
                 w->updateFullscreenInputState();
             }
         }
+
+        // Hide the top layer window when fullscreening a window
         for (auto const& ls : Desktop::layerState()->layers()) {
             if (ls->m_monitor != MONITOR)
                 continue;
@@ -429,6 +431,8 @@ void CScrollingFullscreenHandler::setNoMembersAboveFullscreen(const std::optiona
                     w->updateFullscreenInputState();
                 }
             }
+
+            // Hide the top layer window when fullscreening a window
             for (auto const& ls : Desktop::layerState()->layers()) {
                 if (ls->m_monitor == MONITOR)
                     ls->m_flags &= ~Desktop::View::LAYER_FLAG_ABOVE_FULLSCREEN;
