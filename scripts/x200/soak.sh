@@ -192,6 +192,19 @@ w_idle() { sleep $T_IDLE; }
 
 # ---- report, also written when the run is stopped early
 
+# runs a workload and writes the compositor's CPU time during it to cpu.txt: a cost that grows from cycle to cycle
+# shows something that piles up (the screen share sessions of 0.2.0 doubled every frame's cost over a night)
+cputicks() { awk '{print $14 + $15}' "/proc/$(pgrep -u "$(id -u)" -x hypoland | head -1)/stat" 2>/dev/null; }
+measured() { # workload
+    local t0 c0 t1 c1
+    t0=$EPOCHREALTIME c0=$(cputicks)
+    "$1"
+    t1=$EPOCHREALTIME c1=$(cputicks)
+    [ -n "$c0" ] && [ -n "$c1" ] && [ "$c1" -ge "$c0" ] &&
+        awk -v w="$1" -v c="$CYCLE" -v d=$((c1 - c0)) -v t0="$t0" -v t1="$t1" -v hz="$(getconf CLK_TCK)" \
+            'BEGIN {printf "%s %s %.2f\n", c, w, 100 * d / hz / (t1 - t0)}' >>"$OUT/cpu.txt"
+}
+
 report() {
     {
         echo "Soak test $(basename "$OUT"): $(pacman -Q hypoland 2>/dev/null)"
@@ -218,6 +231,14 @@ report() {
                 printf "  %-14s %10s %10s\n", "IPC ms", med(lat, 1, h), med(lat, n - h + 1, n)
             }' "$OUT/samples.txt"
         echo
+        echo "compositor CPU % per workload, median of the first and the last cycles (up to 5 each):"
+        awk '{c[$2] = c[$2] " " $3} END {for (w in c) print w c[w]}' "$OUT/cpu.txt" 2>/dev/null | sort | awk '
+            function med(from, to,   i, k, v, t, x) {k = 0; for (i = from; i <= to; i++) v[++k] = $i
+                for (i = 1; i <= k; i++) for (t = i + 1; t <= k; t++) if (v[t] < v[i]) {x = v[i]; v[i] = v[t]; v[t] = x}
+                return k ? v[int((k + 1) / 2)] : "nan"}
+            {n = NF - 1; h = (n >= 10) ? 5 : int((n + 1) / 2)
+             printf "  %-22s %8s %8s  (%d cycles)\n", $1, med(2, h + 1), med(NF - h + 1, NF), n}'
+        echo
         echo "state other than ok in $(awk 'NR > 1 && $15 != "ok"' "$OUT/samples.txt" | wc -l) of $(($(wc -l <"$OUT/samples.txt") - 1)) samples"
     } >"$OUT/report.txt"
 }
@@ -233,10 +254,10 @@ while [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ]; do
     for w in w_gpu w_scroll w_xwayland_fullscreen w_workspaces w_churn w_capture w_reload w_dpms w_idle; do
         [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ] || break
         log "  $w"
-        $w
+        measured $w
     done
     # Chromium is heavy on this machine, every third cycle (and in the short run)
-    { [ $((CYCLE % 3)) = 0 ] || [ $MAX_CYCLES = 1 ]; } && [ "$(date +%s)" -lt "$END" ] && log "  w_chromium" && w_chromium
+    { [ $((CYCLE % 3)) = 0 ] || [ $MAX_CYCLES = 1 ]; } && [ "$(date +%s)" -lt "$END" ] && log "  w_chromium" && measured w_chromium
     now=$(date +%s)
     check_events "$LAST_EVENTS"
     LAST_EVENTS=$now
