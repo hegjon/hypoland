@@ -580,13 +580,14 @@ set(CMAKE_INSTALL_DEFAULT_DIRECTORY_PERMISSIONS
 # binary, all commands are lower case
 install(TARGETS Hyprland)
 
-# session file
+# session file, generated in the build directory: one in the source tree would carry the prefix of whichever build
+# directory was configured last into the others (a package built after a /usr/local build started nothing)
 configure_file(
     ${CMAKE_SOURCE_DIR}/example/hyprland.desktop.in
-    ${CMAKE_SOURCE_DIR}/example/hyprland.desktop
+    ${CMAKE_BINARY_DIR}/hyprland.desktop
     @ONLY
 )
-install(FILES ${CMAKE_SOURCE_DIR}/example/hyprland.desktop
+install(FILES ${CMAKE_BINARY_DIR}/hyprland.desktop
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/wayland-sessions)
 
 # allow Hyprland to find assets
