@@ -223,6 +223,10 @@ namespace Aquamarine {
         bool                                                            switchVT(uint32_t vt);
         void                                                            onReady();
 
+        void                                                            dispatchUdevEvents();
+        void                                                            dispatchLibinputEvents();
+        void                                                            dispatchLibseatEvents();
+
         struct SAddDrmCardEvent {
             std::string path;
         };
@@ -237,9 +241,6 @@ namespace Aquamarine {
         Hyprutils::Memory::CWeakPointer<CBackend>               backend;
         std::vector<Hyprutils::Memory::CSharedPointer<SPollFD>> polls;
 
-        void                                                    dispatchUdevEvents();
-        void                                                    dispatchLibinputEvents();
-        void                                                    dispatchLibseatEvents();
         void                                                    handleLibinputEvent(libinput_event* e);
         void                                                    handleLibinputTabletToolAxis(libinput_event* e);
 

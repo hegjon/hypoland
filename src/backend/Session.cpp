@@ -79,8 +79,10 @@ static void libinputLog(libinput*, libinput_log_priority level, const char* fmt,
 static void libseatEnableSeat(struct libseat* seat, void* data) {
     auto PSESSION    = (Aquamarine::CSession*)data;
     PSESSION->active = true;
-    if (PSESSION->libinputHandle)
+    if (PSESSION->libinputHandle) {
         libinput_resume(PSESSION->libinputHandle);
+        PSESSION->dispatchLibinputEvents();
+    }
     PSESSION->events.changeActive.emit();
 }
 
