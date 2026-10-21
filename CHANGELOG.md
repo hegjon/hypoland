@@ -69,6 +69,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   the ThinkPad T550 (scale 1.5) collected 13,500 sessions; the compositor grew by 21 MiB and its CPU time with a
   60 fps client went from 8% to 27%, as every frame and every timer went through all sessions and their timers.
   Now a recording uses one session and it is freed when the program quits.
+- Fixes from upstream aquamarine: input could stop after switching to a text console and back, a use after free
+  when an output goes away with a frame pending, stale state on a monitor that is plugged in again, a leaked fd
+  of CPU-side buffers and a crash when logging without a backend.
 
 ### Other
 
