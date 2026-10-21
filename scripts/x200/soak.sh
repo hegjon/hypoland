@@ -9,7 +9,7 @@
 # screenshots and recording, config reload, DPMS off/on, idle) and samples the compositor every minute:
 # memory (Pss, anonymous, GPU buffers), CPU time, fds, threads, IPC latency. It records compositor restarts,
 # core dumps, GPU hangs and journal errors, keeps an hourly screenshot and writes report.txt at the end.
-# Omarchy's screensaver is switched off for the run and put back afterwards. Stop early with
+# Omarchy's screensaver and idle lock are switched off for the run and put back afterwards. Stop early with
 # `touch <outdir>/stop`.
 set -u
 
@@ -41,8 +41,10 @@ H() { timeout 10 hyprctl "$@"; }
 dispatch() { H dispatch "$1" >/dev/null 2>&1; }
 
 OMARCHY=$HOME/.local/state/omarchy
-HAD_SAVER_OFF=0
+# screensaver-off only stops the screensaver, the lock after 300 s idle needs Omarchy's stay-awake indicator
+HAD_SAVER_OFF=0 HAD_STAY_AWAKE=0
 [ -e "$OMARCHY/toggles/screensaver-off" ] && HAD_SAVER_OFF=1
+[ -e "$OMARCHY/indicators/stay-awake" ] && HAD_STAY_AWAKE=1
 
 # clients run as leaders of their own process group, so stopping one takes its children along
 CLIENTS=()
@@ -63,6 +65,7 @@ restore() {
     stop_clients
     [ -n "$SAMPLER" ] && kill "$SAMPLER" 2>/dev/null
     [ $HAD_SAVER_OFF = 1 ] || rm -f "$OMARCHY/toggles/screensaver-off"
+    [ $HAD_STAY_AWAKE = 1 ] || rm -f "$OMARCHY/indicators/stay-awake"
     dispatch 'hl.dsp.dpms({action=[[on]]})'
     dispatch "hl.dsp.focus({workspace=1})"
     report
@@ -71,8 +74,8 @@ restore() {
 trap restore EXIT
 trap 'exit 1' HUP INT TERM
 
-mkdir -p "$OMARCHY/toggles"
-touch "$OMARCHY/toggles/screensaver-off"
+mkdir -p "$OMARCHY/toggles" "$OMARCHY/indicators"
+touch "$OMARCHY/toggles/screensaver-off" "$OMARCHY/indicators/stay-awake"
 pkill -f "[o]rg.omarchy.screensaver"
 dispatch 'hl.dsp.dpms({action=[[on]]})'
 
@@ -116,7 +119,7 @@ sampler() {
         }
         state=ok
         H clients 2>/dev/null | grep -q "org.omarchy.screensaver" && state=screensaver
-        H monitors -j 2>/dev/null | jq -e '.[0].solitaryBlockedBy // [] | index("lock")' >/dev/null 2>&1 && state=locked
+        H monitors -j 2>/dev/null | jq -e '.[0].solitaryBlockedBy // [] | map(ascii_downcase) | index("lock")' >/dev/null 2>&1 && state=locked
         echo "$(date +%T) $((($(date +%s) - START) / 60)) $pid $(kb /proc/"$pid"/smaps_rollup Pss) $(kb /proc/"$pid"/status RssAnon) $(kb /proc/"$pid"/status VmRSS) $(gpu_kb "$pid") $(ls /proc/"$pid"/fd 2>/dev/null | wc -l) $(kb /proc/"$pid"/status Threads) $cpu $lat $clients $(pss_of Xwayland) $(pss_of quickshell) $state" >>"$OUT/samples.txt"
         sleep 60
     done
