@@ -14,6 +14,11 @@ void CFadingOutState::add(SP<IFadeout> fadeout) {
     if (!fadeout)
         return;
 
+    // Finished fadeouts are only removed while their monitor renders, so with the screen off (DPMS) every closed
+    // window or layer would keep its monitor-sized snapshot until the screen comes back. Nobody sees the fade anyway.
+    if (const auto MONITOR = fadeout->monitor().lock(); MONITOR && !MONITOR->m_dpmsStatus)
+        return;
+
     m_fadeouts.emplace_back(fadeout);
 }
 
