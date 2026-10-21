@@ -1,10 +1,10 @@
 # Changelog
 
 Changes of Hypoland. Hyprland's own changes are in its [releases](https://github.com/hyprwm/Hyprland/releases);
-Hypoland 0.1.0 is based on Hyprland 0.56.0. Numbers are measured on a ThinkPad X200 (Core 2 Duo P8400,
+Hypoland 0.2.0 is based on Hyprland 0.56.0. Numbers are measured on a ThinkPad X200 (Core 2 Duo P8400,
 GMA 4500MHD, 1280x800) running Omarchy 4.
 
-## Unreleased
+## 0.2.0 - 2026-10-21
 
 ### Faster
 
