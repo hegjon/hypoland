@@ -1,3 +1,4 @@
+
 #include "aquamarine/output/Output.hpp"
 #include <algorithm>
 #include <aquamarine/backend/DRM.hpp>
@@ -401,7 +402,8 @@ Aquamarine::CDRMBackend::~CDRMBackend() {
 }
 
 void Aquamarine::CDRMBackend::log(eBackendLogLevel l, const std::string& s) {
-    backend->log(l, s);
+    if (backend)
+        backend->log(l, s);
 }
 
 bool Aquamarine::CDRMBackend::sessionActive() {
@@ -1882,6 +1884,9 @@ void Aquamarine::SDRMConnector::connect(drmModeConnector* connector) {
 
     recheckCRTCProps();
 
+    // invalidate any stale state
+    invalidateFrame();
+
     if (!backend->backend->ready)
         return;
 
@@ -2490,7 +2495,7 @@ void Aquamarine::CDRMOutput::scheduleFrame(const scheduleFrameReason reason) {
 
     if (!frameIdle) {
         frameIdle = makeShared<std::function<void(void)>>([this, self_ = self, backend_ = backend]() {
-            if (!self)
+            if (!self_)
                 return;
 
             connector->sched.setFrameScheduled(false);
