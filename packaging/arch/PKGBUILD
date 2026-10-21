@@ -87,6 +87,11 @@ options=(!lto)
 
 pkgver() {
   cd "$_root"
+  # a release tag gives the plain version, every other commit sorts after the release before it
+  if [ "$(git describe --tags --exact-match HEAD 2>/dev/null)" = "v$(cat VERSION)" ]; then
+    cat VERSION
+    return
+  fi
   printf '%s.r%s.g%s' "$(cat VERSION)" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 

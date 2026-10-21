@@ -121,17 +121,16 @@ git tag -a "$TAG" -m "Hypoland $NEW"
 git show --stat --format='%h %s' HEAD | cat
 
 # --- 3. package
-PKG=
+# the PKGBUILD names a build at the release tag with the plain version
+PKG=hypoland-$NEW-1-x86_64.pkg.tar.zst
 if [ "$SKIP_BUILD" = 1 ]; then
     step "Skipping the package build"
-    PKG=hypoland-$NEW.r$(git rev-list --count HEAD).g$(git rev-parse --short HEAD)-1-x86_64.pkg.tar.zst
 else
     step "Building the Arch package (a clean build, about 15 minutes)"
     LOG=$ROOT/packaging/arch/makepkg-$TAG.log
     (cd packaging/arch && makepkg -fC >"$LOG" 2>&1) || die "makepkg failed, see $LOG"
     git checkout -q -- packaging/arch/PKGBUILD
-    PKG=$(cd packaging/arch && ls -t "hypoland-$NEW".r*-x86_64.pkg.tar.zst | head -1)
-    [ -f "packaging/arch/$PKG" ] || die "no package found in packaging/arch"
+    [ -f "packaging/arch/$PKG" ] || die "makepkg did not write packaging/arch/$PKG"
     echo "packaging/arch/$PKG ($(du -h "packaging/arch/$PKG" | cut -f1))"
     # what the packaged binary says about itself: the version, the tag and no uncommitted changes
     tmp=$(mktemp -d)
