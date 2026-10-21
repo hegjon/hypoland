@@ -57,6 +57,18 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   keyboard focus stayed with a pointer constraint under an exclusive layer, multi-key binds shadowed each other,
   the cursor lost focus in a few cases, the "move" rule ignored the "size" rule, master layout window drags and the
   scrolling layout's fullscreen position after the work area changed.
+- Windows, layers and popups that close while the screen is off (DPMS, e.g. a locked laptop) no longer keep a
+  snapshot of the size of the monitor in GPU memory until the screen comes back: 60 windows closed with the screen
+  off cost 474 MB on a 1920x1080 ThinkPad T550, now nothing.
+- A package built after a build with another prefix (e.g. `/usr/local`) installed a session file that pointed at
+  that prefix and did not start: the session file is generated in the build directory now.
+- No more "pixman_region32_init_rect: Invalid rectangle passed" in the log when many windows share a workspace:
+  a window squeezed below its border and gaps has a negative size, it is skipped before it reaches pixman.
+- Screen recording with `wf-recorder` on a monitor with a scale other than 1 made a new capture session for every
+  frame and none of them were freed. Sessions of programs that had quit were never freed either. A 7 hour test on
+  the ThinkPad T550 (scale 1.5) collected 13,500 sessions; the compositor grew by 21 MiB and its CPU time with a
+  60 fps client went from 8% to 27%, as every frame and every timer went through all sessions and their timers.
+  Now a recording uses one session and it is freed when the program quits.
 
 ### Other
 
