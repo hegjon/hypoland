@@ -69,7 +69,8 @@ namespace Screenshare {
         eScreenshareType         m_type = SHARE_NONE;
         PHLMONITORREF            m_monitor;
         PHLWINDOWREF             m_window;
-        CBox                     m_captureBox = {}; // given capture area in logical coordinates (see xdg_output)
+        CBox                     m_captureBox   = {}; // given capture area in logical coordinates (see xdg_output), in pixels after init()
+        CBox                     m_requestedBox = {}; // the capture area as the client gave it, to find the session again
 
         wl_client*               m_client = nullptr;
         std::string              m_name   = "";
@@ -235,11 +236,19 @@ namespace Screenshare {
         std::vector<WP<CCursorshareSession>> m_cursorSessions;
         std::vector<WP<CScreenshareFrame>>   m_pendingFrames;
 
+        struct SManagedSession;
+        struct SClientDestroyWrapper {
+            wl_listener      listener = {};
+            SManagedSession* parent   = nullptr;
+        };
+
         struct SManagedSession {
             SManagedSession(UP<CScreenshareSession>&& session);
+            ~SManagedSession();
 
             UP<CScreenshareSession> m_session;
             CHyprSignalListener     stoppedListener;
+            SClientDestroyWrapper   clientDestroyListener;
         };
 
         std::vector<UP<SManagedSession>> m_managedSessions;

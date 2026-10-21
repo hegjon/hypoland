@@ -118,7 +118,8 @@ WP<CScreenshareSession> CScreenshareManager::getManagedSession(eScreenshareType 
         switch (type) {
             case SHARE_MONITOR: return session->m_session->m_monitor == monitor;
             case SHARE_WINDOW: return session->m_session->m_window == window;
-            case SHARE_REGION: return session->m_session->m_monitor == monitor && session->m_session->m_captureBox == captureBox;
+            // m_captureBox is scaled to pixels, with a monitor scale other than 1 it never matched and every frame made a new session
+            case SHARE_REGION: return session->m_session->m_monitor == monitor && session->m_session->m_requestedBox == captureBox;
             case SHARE_NONE:
             default: return false;
         }
@@ -211,5 +212,18 @@ CScreenshareManager::SOutputCopyFBState CScreenshareManager::outputCopyFBState(P
 }
 
 CScreenshareManager::SManagedSession::SManagedSession(UP<CScreenshareSession>&& session) : m_session(std::move(session)) {
-    ;
+    // nothing else stops a managed session when its client goes away, it would be kept until the monitor is removed
+    wl_list_init(&clientDestroyListener.listener.link);
+    clientDestroyListener.parent          = this;
+    clientDestroyListener.listener.notify = [](wl_listener* l, void* data) {
+        SClientDestroyWrapper* wrap = wl_container_of(l, wrap, listener);
+        std::erase_if(Screenshare::mgr()->m_managedSessions, [managed = wrap->parent](const auto& s) { return s.get() == managed; });
+    };
+
+    if (m_session && m_session->m_client)
+        wl_client_add_destroy_late_listener(m_session->m_client, &clientDestroyListener.listener);
+}
+
+CScreenshareManager::SManagedSession::~SManagedSession() {
+    wl_list_remove(&clientDestroyListener.listener.link);
 }

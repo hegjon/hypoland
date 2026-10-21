@@ -45,7 +45,7 @@ CScreenshareSession::CScreenshareSession(PHLWINDOW window, wl_client* client) : 
 }
 
 CScreenshareSession::CScreenshareSession(PHLMONITOR monitor, CBox captureRegion, wl_client* client) :
-    m_type(SHARE_REGION), m_monitor(monitor), m_captureBox(captureRegion), m_client(client) {
+    m_type(SHARE_REGION), m_monitor(monitor), m_captureBox(captureRegion), m_requestedBox(captureRegion), m_client(client) {
     if UNLIKELY (!m_monitor)
         return;
 
