@@ -63,7 +63,13 @@ void CRenderPass::simplify(bool willBlur, const CRegion& liveBlurRegion) {
 
         auto bb = bb1->scale(pMonitor->m_scale);
 
-        // drop if empty
+        // drop if empty. A window squeezed below its border and gaps has a negative size, pixman would log
+        // "Invalid rectangle passed" for it and treat it as empty.
+        if (bb.w <= 0 || bb.h <= 0) {
+            el.discard = true;
+            continue;
+        }
+
         if (CRegion copy = newDamage.copy(); copy.intersect(bb).empty()) {
             el.discard = true;
             continue;
