@@ -54,3 +54,5 @@ meta/hl.meta.lua
 
 hyprtester/pointer-scroll.txt
 /keyboard-modifiers.txt
+packaging/arch/release-notes-*.md
+packaging/arch/makepkg-*.log

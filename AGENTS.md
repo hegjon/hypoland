@@ -21,6 +21,11 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
 - X200 access: `ssh x200` (ssh config alias -> 192.168.1.73, user `a`, uid 1000, key auth works).
   6 GB RAM, 2 cores, Arch kernel 7.1.x, Mesa 26.2, the `hypoland` package installed (`hyprland` 0.56.2-3 is in
   `/var/cache/pacman/pkg`), 100 GB free in `/home`.
+- Second test machine (since 2026-10-20): ThinkPad T550, `ssh t550` (192.168.1.112, user `a`, `ssh root@t550` works),
+  Core i5-5300U (4 threads), Intel HD 5500 (Broadwell, Mesa `iris`), 1920x1080, 16 GB RAM, Omarchy. It has GLES 3
+  and ran stock Hyprland 0.56.2-4; the Hypoland package replaced it (`hyprland` and `omarchy-hyprland-titlebars`
+  are in `/var/cache/pacman/pkg` for going back). Same update steps as the X200. `weston`, `mesa-utils` and
+  `wf-recorder` are installed for `scripts/x200/soak.sh`.
 - Root on the X200: `ssh root@x200` (key auth). Test tools are installed: `waybar`, `weston-simple-egl`,
   `glmark2-es2-wayland`, `pidstat`, `eglinfo`, `grim`, `foot`.
 
@@ -46,6 +51,10 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   the link preview image `web/og.png` (1200x630) from `scripts/web/og.html` with `scripts/web/og.sh`.
 - `CHANGELOG.md` lists Hypoland's changes per release. Add user-visible changes and measured speedups to
   "Unreleased" with the commit that makes them, and move them under the version when releasing.
+- Release with `scripts/release.sh <version>` (`--dry-run` first): it checks master and CI, updates `VERSION`,
+  `CHANGELOG.md` and this file, commits and tags, builds the Arch package, writes the release notes from the
+  changelog and, after asking, pushes and publishes the GitHub release with the package. The release workflow
+  attaches the source tarball.
 - aquamarine is embedded: `subprojects/aquamarine` is a squashed `git subtree` of
   `hegjon/aquamarine` branch `gles2-support` (remote `aquamarine`). It is built as a static library by
   `cmake/aquamarine.cmake`, not by its own CMakeLists.txt. Its generated `wl_*_interface` symbols are
@@ -214,7 +223,10 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
   without input and locks the session after 300 s (`~/.config/omarchy/shell.json`, `idle`). Nothing types on
   the X200 during tests, so any run longer than 2.5 minutes after a compositor start can end up measuring the
   screensaver or a lock screen. Keep profiling runs short after a restart, check `hyprctl clients` for the
-  screensaver class and `solitaryBlockedBy` for `lock`, and look at `journalctl --user | grep "omarchy idle"`.
+  screensaver class and `solitaryBlockedBy` for `LOCK` (upper case), and look at
+  `journalctl --user | grep "omarchy idle"`. `~/.local/state/omarchy/toggles/screensaver-off` only stops the
+  screensaver; the lock needs `~/.local/state/omarchy/indicators/stay-awake` (`omarchy-toggle-idle stay-awake`).
+  The lock screen can only be left with the password; `systemctl restart sddm` as root gives a fresh session.
 
 ## Status
 
