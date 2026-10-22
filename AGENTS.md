@@ -105,6 +105,11 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   `eglCreateContext failed with both GLES 3.2 and GLES 3.0` (EGL_BAD_MATCH), then an assert in
   `CHyprOpenGLImpl::CHyprOpenGLImpl()`. Aquamarine's own `CDRMRenderer` also wants GLES 3, but that is
   only needed for multi-GPU and its failure is non-fatal.
+- Comparisons with stock Hyprland 0.56.2 (2026-10-22, Omarchy config, medians of 3 alternating rounds, raw data and
+  scripts included): `docs/baseline/x200-vs-stock-hyprland-0.56.2-pr14764/` (started on the X200 with Omarchy's
+  GLES 3 override, omacom/omarchy#14764) and `docs/baseline/t550-vs-stock-hyprland-0.56.2/`. Hypoland uses
+  25-64% less compositor CPU under load on the X200, 10-55% on the T550, and about 60% less Pss on both, with
+  the same frames.
 
 ## Hard constraints
 

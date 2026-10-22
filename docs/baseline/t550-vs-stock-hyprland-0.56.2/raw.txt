@@ -1,0 +1,667 @@
+hypoland 1 idle machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 1 idle compositor: /usr/bin/hypoland, pid 23467, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792681611_149821609
+hypoland 1 idle clocksource: tsc
+hypoland 1 idle governor: schedutil -> performance
+hypoland 1 idle @ 1 compositor.age_s 60
+hypoland 1 idle ====== round 1 of 1
+hypoland 1 idle === 1 idle
+hypoland 1 idle --- idle; clients: 
+hypoland 1 idle @ 1 cpu.idle.percent 0.02
+hypoland 1 idle @ 1 mem.end.Rss_kB 78172
+hypoland 1 idle @ 1 mem.end.Pss_kB 44805
+hypoland 1 idle @ 1 mem.end.Pss_Anon_kB 17664
+hypoland 1 idle @ 1 mem.end.Pss_File_kB 27141
+hypoland 1 idle @ 1 mem.end.Private_Clean_kB 17308
+hypoland 1 idle @ 1 mem.end.Private_Dirty_kB 17664
+hypoland 1 idle @ 1 mem.end.Anonymous_kB 17664
+hypoland 1 idle @ 1 mem.end.AnonHugePages_kB 0
+hypoland 1 idle @ 1 mem.end.heap_kB 9592
+hypoland 1 idle @ 1 mem.end.gpu_kB 107064
+hypoland 1 idle @ 1 mem.end.gpu_private_kB 31544
+hypoland 1 idle @ 1 mem.end.threads 10
+hypoland 1 idle @ 1 flips.idle 13
+hypoland 1 gpu-client machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 1 gpu-client compositor: /usr/bin/hypoland, pid 23467, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792681611_149821609
+hypoland 1 gpu-client clocksource: tsc
+hypoland 1 gpu-client governor: schedutil -> performance
+hypoland 1 gpu-client @ 1 compositor.age_s 93
+hypoland 1 gpu-client ====== round 1 of 1
+hypoland 1 gpu-client === 1 gpu-client
+hypoland 1 gpu-client --- gpu-client; clients: 1x org.freedesktop.weston.simple-egl, 
+hypoland 1 gpu-client @ 1 cpu.gpu-client.percent 3.19
+hypoland 1 gpu-client @ 1 fps.gpu-client 60.3
+hypoland 1 gpu-client @ 1 mem.end.Rss_kB 79992
+hypoland 1 gpu-client @ 1 mem.end.Pss_kB 46059
+hypoland 1 gpu-client @ 1 mem.end.Pss_Anon_kB 18300
+hypoland 1 gpu-client @ 1 mem.end.Pss_File_kB 27759
+hypoland 1 gpu-client @ 1 mem.end.Private_Clean_kB 17552
+hypoland 1 gpu-client @ 1 mem.end.Private_Dirty_kB 18300
+hypoland 1 gpu-client @ 1 mem.end.Anonymous_kB 18300
+hypoland 1 gpu-client @ 1 mem.end.AnonHugePages_kB 0
+hypoland 1 gpu-client @ 1 mem.end.heap_kB 10228
+hypoland 1 gpu-client @ 1 mem.end.gpu_kB 98920
+hypoland 1 gpu-client @ 1 mem.end.gpu_private_kB 23400
+hypoland 1 gpu-client @ 1 mem.end.threads 10
+hypoland 1 gpu-client @ 1 flips.gpu-client 1478
+hypoland 1 terminal-scroll machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 1 terminal-scroll compositor: /usr/bin/hypoland, pid 23467, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792681611_149821609
+hypoland 1 terminal-scroll clocksource: tsc
+hypoland 1 terminal-scroll governor: schedutil -> performance
+hypoland 1 terminal-scroll @ 1 compositor.age_s 129
+hypoland 1 terminal-scroll ====== round 1 of 1
+hypoland 1 terminal-scroll === 1 terminal-scroll
+hypoland 1 terminal-scroll --- terminal-scroll; clients: 1x foot, 
+hypoland 1 terminal-scroll @ 1 cpu.terminal-scroll.percent 12.05
+hypoland 1 terminal-scroll @ 1 mem.end.Rss_kB 80532
+hypoland 1 terminal-scroll @ 1 mem.end.Pss_kB 46597
+hypoland 1 terminal-scroll @ 1 mem.end.Pss_Anon_kB 18808
+hypoland 1 terminal-scroll @ 1 mem.end.Pss_File_kB 27789
+hypoland 1 terminal-scroll @ 1 mem.end.Private_Clean_kB 17584
+hypoland 1 terminal-scroll @ 1 mem.end.Private_Dirty_kB 18808
+hypoland 1 terminal-scroll @ 1 mem.end.Anonymous_kB 18808
+hypoland 1 terminal-scroll @ 1 mem.end.AnonHugePages_kB 0
+hypoland 1 terminal-scroll @ 1 mem.end.heap_kB 10736
+hypoland 1 terminal-scroll @ 1 mem.end.gpu_kB 125788
+hypoland 1 terminal-scroll @ 1 mem.end.gpu_private_kB 50268
+hypoland 1 terminal-scroll @ 1 mem.end.threads 10
+hypoland 1 terminal-scroll @ 1 flips.terminal-scroll 1287
+hypoland 1 shm-fullwindow machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 1 shm-fullwindow compositor: /usr/bin/hypoland, pid 23467, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792681611_149821609
+hypoland 1 shm-fullwindow clocksource: tsc
+hypoland 1 shm-fullwindow governor: schedutil -> performance
+hypoland 1 shm-fullwindow @ 1 compositor.age_s 165
+hypoland 1 shm-fullwindow ====== round 1 of 1
+hypoland 1 shm-fullwindow === 1 shm-fullwindow
+hypoland 1 shm-fullwindow --- shm-fullwindow; clients: 1x chromium, 
+hypoland 1 shm-fullwindow @ 1 cpu.shm-fullwindow.percent 3.68
+hypoland 1 shm-fullwindow @ 1 mem.end.Rss_kB 80532
+hypoland 1 shm-fullwindow @ 1 mem.end.Pss_kB 46597
+hypoland 1 shm-fullwindow @ 1 mem.end.Pss_Anon_kB 18808
+hypoland 1 shm-fullwindow @ 1 mem.end.Pss_File_kB 27789
+hypoland 1 shm-fullwindow @ 1 mem.end.Private_Clean_kB 17584
+hypoland 1 shm-fullwindow @ 1 mem.end.Private_Dirty_kB 18808
+hypoland 1 shm-fullwindow @ 1 mem.end.Anonymous_kB 18808
+hypoland 1 shm-fullwindow @ 1 mem.end.AnonHugePages_kB 0
+hypoland 1 shm-fullwindow @ 1 mem.end.heap_kB 10736
+hypoland 1 shm-fullwindow @ 1 mem.end.gpu_kB 117644
+hypoland 1 shm-fullwindow @ 1 mem.end.gpu_private_kB 33932
+hypoland 1 shm-fullwindow @ 1 mem.end.threads 10
+hypoland 1 shm-fullwindow @ 1 flips.shm-fullwindow 2631
+hypoland 1 workspace-switch machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 1 workspace-switch compositor: /usr/bin/hypoland, pid 23467, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792681611_149821609
+hypoland 1 workspace-switch clocksource: tsc
+hypoland 1 workspace-switch governor: schedutil -> performance
+hypoland 1 workspace-switch @ 1 compositor.age_s 221
+hypoland 1 workspace-switch ====== round 1 of 1
+hypoland 1 workspace-switch === 1 workspace-switch
+hypoland 1 workspace-switch --- workspace-switch; clients: 3x foot, 
+hypoland 1 workspace-switch @ 1 cpu.workspace-switch.percent 3.04
+hypoland 1 workspace-switch @ 1 mem.end.Rss_kB 80788
+hypoland 1 workspace-switch @ 1 mem.end.Pss_kB 46854
+hypoland 1 workspace-switch @ 1 mem.end.Pss_Anon_kB 19064
+hypoland 1 workspace-switch @ 1 mem.end.Pss_File_kB 27790
+hypoland 1 workspace-switch @ 1 mem.end.Private_Clean_kB 17584
+hypoland 1 workspace-switch @ 1 mem.end.Private_Dirty_kB 19064
+hypoland 1 workspace-switch @ 1 mem.end.Anonymous_kB 19064
+hypoland 1 workspace-switch @ 1 mem.end.AnonHugePages_kB 0
+hypoland 1 workspace-switch @ 1 mem.end.heap_kB 10992
+hypoland 1 workspace-switch @ 1 mem.end.gpu_kB 132580
+hypoland 1 workspace-switch @ 1 mem.end.gpu_private_kB 64740
+hypoland 1 workspace-switch @ 1 mem.end.threads 10
+hypoland 1 workspace-switch @ 1 flips.workspace-switch 1436
+hyprland 1 idle machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 1 idle compositor: /usr/bin/Hyprland, pid 26808, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792681874_1329532929
+hyprland 1 idle clocksource: tsc
+hyprland 1 idle governor: schedutil -> performance
+hyprland 1 idle @ 1 compositor.age_s 60
+hyprland 1 idle ====== round 1 of 1
+hyprland 1 idle === 1 idle
+hyprland 1 idle --- idle; clients: 
+hyprland 1 idle @ 1 cpu.idle.percent 0.01
+hyprland 1 idle @ 1 mem.end.Rss_kB 153836
+hyprland 1 idle @ 1 mem.end.Pss_kB 117446
+hyprland 1 idle @ 1 mem.end.Pss_Anon_kB 85324
+hyprland 1 idle @ 1 mem.end.Pss_File_kB 32122
+hyprland 1 idle @ 1 mem.end.Private_Clean_kB 20748
+hyprland 1 idle @ 1 mem.end.Private_Dirty_kB 85324
+hyprland 1 idle @ 1 mem.end.Anonymous_kB 85324
+hyprland 1 idle @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 1 idle @ 1 mem.end.heap_kB 67436
+hyprland 1 idle @ 1 mem.end.gpu_kB 174824
+hyprland 1 idle @ 1 mem.end.gpu_private_kB 78824
+hyprland 1 idle @ 1 mem.end.threads 12
+hyprland 1 idle @ 1 flips.idle 13
+hyprland 1 gpu-client machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 1 gpu-client compositor: /usr/bin/Hyprland, pid 26808, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792681874_1329532929
+hyprland 1 gpu-client clocksource: tsc
+hyprland 1 gpu-client governor: schedutil -> performance
+hyprland 1 gpu-client @ 1 compositor.age_s 93
+hyprland 1 gpu-client ====== round 1 of 1
+hyprland 1 gpu-client === 1 gpu-client
+hyprland 1 gpu-client --- gpu-client; clients: 1x org.freedesktop.weston.simple-egl, 
+hyprland 1 gpu-client @ 1 cpu.gpu-client.percent 4.25
+hyprland 1 gpu-client @ 1 fps.gpu-client 60.3
+hyprland 1 gpu-client @ 1 mem.end.Rss_kB 154880
+hyprland 1 gpu-client @ 1 mem.end.Pss_kB 117945
+hyprland 1 gpu-client @ 1 mem.end.Pss_Anon_kB 85324
+hyprland 1 gpu-client @ 1 mem.end.Pss_File_kB 32621
+hyprland 1 gpu-client @ 1 mem.end.Private_Clean_kB 20896
+hyprland 1 gpu-client @ 1 mem.end.Private_Dirty_kB 85324
+hyprland 1 gpu-client @ 1 mem.end.Anonymous_kB 85324
+hyprland 1 gpu-client @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 1 gpu-client @ 1 mem.end.heap_kB 67436
+hyprland 1 gpu-client @ 1 mem.end.gpu_kB 174952
+hyprland 1 gpu-client @ 1 mem.end.gpu_private_kB 78952
+hyprland 1 gpu-client @ 1 mem.end.threads 12
+hyprland 1 gpu-client @ 1 flips.gpu-client 1477
+hyprland 1 terminal-scroll machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 1 terminal-scroll compositor: /usr/bin/Hyprland, pid 26808, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792681874_1329532929
+hyprland 1 terminal-scroll clocksource: tsc
+hyprland 1 terminal-scroll governor: schedutil -> performance
+hyprland 1 terminal-scroll @ 1 compositor.age_s 129
+hyprland 1 terminal-scroll ====== round 1 of 1
+hyprland 1 terminal-scroll === 1 terminal-scroll
+hyprland 1 terminal-scroll --- terminal-scroll; clients: 1x foot, 
+hyprland 1 terminal-scroll @ 1 cpu.terminal-scroll.percent 13.30
+hyprland 1 terminal-scroll @ 1 mem.end.Rss_kB 155144
+hyprland 1 terminal-scroll @ 1 mem.end.Pss_kB 118078
+hyprland 1 terminal-scroll @ 1 mem.end.Pss_Anon_kB 85324
+hyprland 1 terminal-scroll @ 1 mem.end.Pss_File_kB 32754
+hyprland 1 terminal-scroll @ 1 mem.end.Private_Clean_kB 20960
+hyprland 1 terminal-scroll @ 1 mem.end.Private_Dirty_kB 85324
+hyprland 1 terminal-scroll @ 1 mem.end.Anonymous_kB 85324
+hyprland 1 terminal-scroll @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 1 terminal-scroll @ 1 mem.end.heap_kB 67436
+hyprland 1 terminal-scroll @ 1 mem.end.gpu_kB 185276
+hyprland 1 terminal-scroll @ 1 mem.end.gpu_private_kB 89276
+hyprland 1 terminal-scroll @ 1 mem.end.threads 12
+hyprland 1 terminal-scroll @ 1 flips.terminal-scroll 1308
+hyprland 1 shm-fullwindow machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 1 shm-fullwindow compositor: /usr/bin/Hyprland, pid 26808, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792681874_1329532929
+hyprland 1 shm-fullwindow clocksource: tsc
+hyprland 1 shm-fullwindow governor: schedutil -> performance
+hyprland 1 shm-fullwindow @ 1 compositor.age_s 165
+hyprland 1 shm-fullwindow ====== round 1 of 1
+hyprland 1 shm-fullwindow === 1 shm-fullwindow
+hyprland 1 shm-fullwindow --- shm-fullwindow; clients: 1x chromium, 
+hyprland 1 shm-fullwindow @ 1 cpu.shm-fullwindow.percent 4.62
+hyprland 1 shm-fullwindow @ 1 mem.end.Rss_kB 155144
+hyprland 1 shm-fullwindow @ 1 mem.end.Pss_kB 118073
+hyprland 1 shm-fullwindow @ 1 mem.end.Pss_Anon_kB 85324
+hyprland 1 shm-fullwindow @ 1 mem.end.Pss_File_kB 32749
+hyprland 1 shm-fullwindow @ 1 mem.end.Private_Clean_kB 20960
+hyprland 1 shm-fullwindow @ 1 mem.end.Private_Dirty_kB 85324
+hyprland 1 shm-fullwindow @ 1 mem.end.Anonymous_kB 85324
+hyprland 1 shm-fullwindow @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 1 shm-fullwindow @ 1 mem.end.heap_kB 67436
+hyprland 1 shm-fullwindow @ 1 mem.end.gpu_kB 185340
+hyprland 1 shm-fullwindow @ 1 mem.end.gpu_private_kB 81148
+hyprland 1 shm-fullwindow @ 1 mem.end.threads 12
+hyprland 1 shm-fullwindow @ 1 flips.shm-fullwindow 2629
+hyprland 1 workspace-switch machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 1 workspace-switch compositor: /usr/bin/Hyprland, pid 26808, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792681874_1329532929
+hyprland 1 workspace-switch clocksource: tsc
+hyprland 1 workspace-switch governor: schedutil -> performance
+hyprland 1 workspace-switch @ 1 compositor.age_s 222
+hyprland 1 workspace-switch ====== round 1 of 1
+hyprland 1 workspace-switch === 1 workspace-switch
+hyprland 1 workspace-switch --- workspace-switch; clients: 3x foot, 
+hyprland 1 workspace-switch @ 1 cpu.workspace-switch.percent 6.74
+hyprland 1 workspace-switch @ 1 mem.end.Rss_kB 155144
+hyprland 1 workspace-switch @ 1 mem.end.Pss_kB 118075
+hyprland 1 workspace-switch @ 1 mem.end.Pss_Anon_kB 85324
+hyprland 1 workspace-switch @ 1 mem.end.Pss_File_kB 32751
+hyprland 1 workspace-switch @ 1 mem.end.Private_Clean_kB 20960
+hyprland 1 workspace-switch @ 1 mem.end.Private_Dirty_kB 85324
+hyprland 1 workspace-switch @ 1 mem.end.Anonymous_kB 85324
+hyprland 1 workspace-switch @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 1 workspace-switch @ 1 mem.end.heap_kB 67436
+hyprland 1 workspace-switch @ 1 mem.end.gpu_kB 193744
+hyprland 1 workspace-switch @ 1 mem.end.gpu_private_kB 110032
+hyprland 1 workspace-switch @ 1 mem.end.threads 12
+hyprland 1 workspace-switch @ 1 flips.workspace-switch 1436
+hypoland 2 idle machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 2 idle compositor: /usr/bin/hypoland, pid 30140, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682137_819492612
+hypoland 2 idle clocksource: tsc
+hypoland 2 idle governor: schedutil -> performance
+hypoland 2 idle @ 1 compositor.age_s 60
+hypoland 2 idle ====== round 1 of 1
+hypoland 2 idle === 1 idle
+hypoland 2 idle --- idle; clients: 
+hypoland 2 idle @ 1 cpu.idle.percent 0.02
+hypoland 2 idle @ 1 mem.end.Rss_kB 77724
+hypoland 2 idle @ 1 mem.end.Pss_kB 44426
+hypoland 2 idle @ 1 mem.end.Pss_Anon_kB 17712
+hypoland 2 idle @ 1 mem.end.Pss_File_kB 26714
+hypoland 2 idle @ 1 mem.end.Private_Clean_kB 16936
+hypoland 2 idle @ 1 mem.end.Private_Dirty_kB 17712
+hypoland 2 idle @ 1 mem.end.Anonymous_kB 17712
+hypoland 2 idle @ 1 mem.end.AnonHugePages_kB 0
+hypoland 2 idle @ 1 mem.end.heap_kB 9636
+hypoland 2 idle @ 1 mem.end.gpu_kB 98856
+hypoland 2 idle @ 1 mem.end.gpu_private_kB 23336
+hypoland 2 idle @ 1 mem.end.threads 10
+hypoland 2 idle @ 1 flips.idle 13
+hypoland 2 gpu-client machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 2 gpu-client compositor: /usr/bin/hypoland, pid 30140, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682137_819492612
+hypoland 2 gpu-client clocksource: tsc
+hypoland 2 gpu-client governor: schedutil -> performance
+hypoland 2 gpu-client @ 1 compositor.age_s 93
+hypoland 2 gpu-client ====== round 1 of 1
+hypoland 2 gpu-client === 1 gpu-client
+hypoland 2 gpu-client --- gpu-client; clients: 1x org.freedesktop.weston.simple-egl, 
+hypoland 2 gpu-client @ 1 cpu.gpu-client.percent 3.22
+hypoland 2 gpu-client @ 1 fps.gpu-client 60.3
+hypoland 2 gpu-client @ 1 mem.end.Rss_kB 79512
+hypoland 2 gpu-client @ 1 mem.end.Pss_kB 45648
+hypoland 2 gpu-client @ 1 mem.end.Pss_Anon_kB 18316
+hypoland 2 gpu-client @ 1 mem.end.Pss_File_kB 27332
+hypoland 2 gpu-client @ 1 mem.end.Private_Clean_kB 17180
+hypoland 2 gpu-client @ 1 mem.end.Private_Dirty_kB 18316
+hypoland 2 gpu-client @ 1 mem.end.Anonymous_kB 18316
+hypoland 2 gpu-client @ 1 mem.end.AnonHugePages_kB 0
+hypoland 2 gpu-client @ 1 mem.end.heap_kB 10240
+hypoland 2 gpu-client @ 1 mem.end.gpu_kB 115400
+hypoland 2 gpu-client @ 1 mem.end.gpu_private_kB 31688
+hypoland 2 gpu-client @ 1 mem.end.threads 10
+hypoland 2 gpu-client @ 1 flips.gpu-client 1478
+hypoland 2 terminal-scroll machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 2 terminal-scroll compositor: /usr/bin/hypoland, pid 30140, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682137_819492612
+hypoland 2 terminal-scroll clocksource: tsc
+hypoland 2 terminal-scroll governor: schedutil -> performance
+hypoland 2 terminal-scroll @ 1 compositor.age_s 129
+hypoland 2 terminal-scroll ====== round 1 of 1
+hypoland 2 terminal-scroll === 1 terminal-scroll
+hypoland 2 terminal-scroll --- terminal-scroll; clients: 1x foot, 
+hypoland 2 terminal-scroll @ 1 cpu.terminal-scroll.percent 11.83
+hypoland 2 terminal-scroll @ 1 mem.end.Rss_kB 80048
+hypoland 2 terminal-scroll @ 1 mem.end.Pss_kB 46123
+hypoland 2 terminal-scroll @ 1 mem.end.Pss_Anon_kB 18804
+hypoland 2 terminal-scroll @ 1 mem.end.Pss_File_kB 27319
+hypoland 2 terminal-scroll @ 1 mem.end.Private_Clean_kB 17164
+hypoland 2 terminal-scroll @ 1 mem.end.Private_Dirty_kB 18804
+hypoland 2 terminal-scroll @ 1 mem.end.Anonymous_kB 18804
+hypoland 2 terminal-scroll @ 1 mem.end.AnonHugePages_kB 0
+hypoland 2 terminal-scroll @ 1 mem.end.heap_kB 10728
+hypoland 2 terminal-scroll @ 1 mem.end.gpu_kB 125788
+hypoland 2 terminal-scroll @ 1 mem.end.gpu_private_kB 50268
+hypoland 2 terminal-scroll @ 1 mem.end.threads 10
+hypoland 2 terminal-scroll @ 1 flips.terminal-scroll 1281
+hypoland 2 shm-fullwindow machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 2 shm-fullwindow compositor: /usr/bin/hypoland, pid 30140, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682137_819492612
+hypoland 2 shm-fullwindow clocksource: tsc
+hypoland 2 shm-fullwindow governor: schedutil -> performance
+hypoland 2 shm-fullwindow @ 1 compositor.age_s 165
+hypoland 2 shm-fullwindow ====== round 1 of 1
+hypoland 2 shm-fullwindow === 1 shm-fullwindow
+hypoland 2 shm-fullwindow --- shm-fullwindow; clients: 1x chromium, 
+hypoland 2 shm-fullwindow @ 1 cpu.shm-fullwindow.percent 3.69
+hypoland 2 shm-fullwindow @ 1 mem.end.Rss_kB 80048
+hypoland 2 shm-fullwindow @ 1 mem.end.Pss_kB 46178
+hypoland 2 shm-fullwindow @ 1 mem.end.Pss_Anon_kB 18804
+hypoland 2 shm-fullwindow @ 1 mem.end.Pss_File_kB 27374
+hypoland 2 shm-fullwindow @ 1 mem.end.Private_Clean_kB 17228
+hypoland 2 shm-fullwindow @ 1 mem.end.Private_Dirty_kB 18804
+hypoland 2 shm-fullwindow @ 1 mem.end.Anonymous_kB 18804
+hypoland 2 shm-fullwindow @ 1 mem.end.AnonHugePages_kB 0
+hypoland 2 shm-fullwindow @ 1 mem.end.heap_kB 10728
+hypoland 2 shm-fullwindow @ 1 mem.end.gpu_kB 109372
+hypoland 2 shm-fullwindow @ 1 mem.end.gpu_private_kB 33852
+hypoland 2 shm-fullwindow @ 1 mem.end.threads 10
+hypoland 2 shm-fullwindow @ 1 flips.shm-fullwindow 2627
+hypoland 2 workspace-switch machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 2 workspace-switch compositor: /usr/bin/hypoland, pid 30140, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682137_819492612
+hypoland 2 workspace-switch clocksource: tsc
+hypoland 2 workspace-switch governor: schedutil -> performance
+hypoland 2 workspace-switch @ 1 compositor.age_s 221
+hypoland 2 workspace-switch ====== round 1 of 1
+hypoland 2 workspace-switch === 1 workspace-switch
+hypoland 2 workspace-switch --- workspace-switch; clients: 3x foot, 
+hypoland 2 workspace-switch @ 1 cpu.workspace-switch.percent 3.04
+hypoland 2 workspace-switch @ 1 mem.end.Rss_kB 80328
+hypoland 2 workspace-switch @ 1 mem.end.Pss_kB 46462
+hypoland 2 workspace-switch @ 1 mem.end.Pss_Anon_kB 19084
+hypoland 2 workspace-switch @ 1 mem.end.Pss_File_kB 27378
+hypoland 2 workspace-switch @ 1 mem.end.Private_Clean_kB 17228
+hypoland 2 workspace-switch @ 1 mem.end.Private_Dirty_kB 19084
+hypoland 2 workspace-switch @ 1 mem.end.Anonymous_kB 19084
+hypoland 2 workspace-switch @ 1 mem.end.AnonHugePages_kB 0
+hypoland 2 workspace-switch @ 1 mem.end.heap_kB 11008
+hypoland 2 workspace-switch @ 1 mem.end.gpu_kB 132012
+hypoland 2 workspace-switch @ 1 mem.end.gpu_private_kB 64684
+hypoland 2 workspace-switch @ 1 mem.end.threads 10
+hypoland 2 workspace-switch @ 1 flips.workspace-switch 1435
+hyprland 2 idle machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 2 idle compositor: /usr/bin/Hyprland, pid 33535, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682400_508323721
+hyprland 2 idle clocksource: tsc
+hyprland 2 idle governor: schedutil -> performance
+hyprland 2 idle @ 1 compositor.age_s 60
+hyprland 2 idle ====== round 1 of 1
+hyprland 2 idle === 1 idle
+hyprland 2 idle --- idle; clients: 
+hyprland 2 idle @ 1 cpu.idle.percent 0.01
+hyprland 2 idle @ 1 mem.end.Rss_kB 154080
+hyprland 2 idle @ 1 mem.end.Pss_kB 117598
+hyprland 2 idle @ 1 mem.end.Pss_Anon_kB 85320
+hyprland 2 idle @ 1 mem.end.Pss_File_kB 32278
+hyprland 2 idle @ 1 mem.end.Private_Clean_kB 20940
+hyprland 2 idle @ 1 mem.end.Private_Dirty_kB 85320
+hyprland 2 idle @ 1 mem.end.Anonymous_kB 85320
+hyprland 2 idle @ 1 mem.end.AnonHugePages_kB 65536
+hyprland 2 idle @ 1 mem.end.heap_kB 67428
+hyprland 2 idle @ 1 mem.end.gpu_kB 174824
+hyprland 2 idle @ 1 mem.end.gpu_private_kB 78824
+hyprland 2 idle @ 1 mem.end.threads 12
+hyprland 2 idle @ 1 flips.idle 13
+hyprland 2 gpu-client machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 2 gpu-client compositor: /usr/bin/Hyprland, pid 33535, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682400_508323721
+hyprland 2 gpu-client clocksource: tsc
+hyprland 2 gpu-client governor: schedutil -> performance
+hyprland 2 gpu-client @ 1 compositor.age_s 93
+hyprland 2 gpu-client ====== round 1 of 1
+hyprland 2 gpu-client === 1 gpu-client
+hyprland 2 gpu-client --- gpu-client; clients: 1x org.freedesktop.weston.simple-egl, 
+hyprland 2 gpu-client @ 1 cpu.gpu-client.percent 4.33
+hyprland 2 gpu-client @ 1 fps.gpu-client 60.3
+hyprland 2 gpu-client @ 1 mem.end.Rss_kB 155108
+hyprland 2 gpu-client @ 1 mem.end.Pss_kB 118080
+hyprland 2 gpu-client @ 1 mem.end.Pss_Anon_kB 85320
+hyprland 2 gpu-client @ 1 mem.end.Pss_File_kB 32760
+hyprland 2 gpu-client @ 1 mem.end.Private_Clean_kB 21072
+hyprland 2 gpu-client @ 1 mem.end.Private_Dirty_kB 85320
+hyprland 2 gpu-client @ 1 mem.end.Anonymous_kB 85320
+hyprland 2 gpu-client @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 2 gpu-client @ 1 mem.end.heap_kB 67428
+hyprland 2 gpu-client @ 1 mem.end.gpu_kB 174952
+hyprland 2 gpu-client @ 1 mem.end.gpu_private_kB 78952
+hyprland 2 gpu-client @ 1 mem.end.threads 12
+hyprland 2 gpu-client @ 1 flips.gpu-client 1479
+hyprland 2 terminal-scroll machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 2 terminal-scroll compositor: /usr/bin/Hyprland, pid 33535, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682400_508323721
+hyprland 2 terminal-scroll clocksource: tsc
+hyprland 2 terminal-scroll governor: schedutil -> performance
+hyprland 2 terminal-scroll @ 1 compositor.age_s 129
+hyprland 2 terminal-scroll ====== round 1 of 1
+hyprland 2 terminal-scroll === 1 terminal-scroll
+hyprland 2 terminal-scroll --- terminal-scroll; clients: 1x foot, 
+hyprland 2 terminal-scroll @ 1 cpu.terminal-scroll.percent 13.37
+hyprland 2 terminal-scroll @ 1 mem.end.Rss_kB 155308
+hyprland 2 terminal-scroll @ 1 mem.end.Pss_kB 118144
+hyprland 2 terminal-scroll @ 1 mem.end.Pss_Anon_kB 85320
+hyprland 2 terminal-scroll @ 1 mem.end.Pss_File_kB 32824
+hyprland 2 terminal-scroll @ 1 mem.end.Private_Clean_kB 21068
+hyprland 2 terminal-scroll @ 1 mem.end.Private_Dirty_kB 85320
+hyprland 2 terminal-scroll @ 1 mem.end.Anonymous_kB 85320
+hyprland 2 terminal-scroll @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 2 terminal-scroll @ 1 mem.end.heap_kB 67428
+hyprland 2 terminal-scroll @ 1 mem.end.gpu_kB 193484
+hyprland 2 terminal-scroll @ 1 mem.end.gpu_private_kB 97484
+hyprland 2 terminal-scroll @ 1 mem.end.threads 12
+hyprland 2 terminal-scroll @ 1 flips.terminal-scroll 1303
+hyprland 2 shm-fullwindow machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 2 shm-fullwindow compositor: /usr/bin/Hyprland, pid 33535, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682400_508323721
+hyprland 2 shm-fullwindow clocksource: tsc
+hyprland 2 shm-fullwindow governor: schedutil -> performance
+hyprland 2 shm-fullwindow @ 1 compositor.age_s 165
+hyprland 2 shm-fullwindow ====== round 1 of 1
+hyprland 2 shm-fullwindow === 1 shm-fullwindow
+hyprland 2 shm-fullwindow --- shm-fullwindow; clients: 1x chromium, 
+hyprland 2 shm-fullwindow @ 1 cpu.shm-fullwindow.percent 4.65
+hyprland 2 shm-fullwindow @ 1 mem.end.Rss_kB 155308
+hyprland 2 shm-fullwindow @ 1 mem.end.Pss_kB 118147
+hyprland 2 shm-fullwindow @ 1 mem.end.Pss_Anon_kB 85320
+hyprland 2 shm-fullwindow @ 1 mem.end.Pss_File_kB 32827
+hyprland 2 shm-fullwindow @ 1 mem.end.Private_Clean_kB 21072
+hyprland 2 shm-fullwindow @ 1 mem.end.Private_Dirty_kB 85320
+hyprland 2 shm-fullwindow @ 1 mem.end.Anonymous_kB 85320
+hyprland 2 shm-fullwindow @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 2 shm-fullwindow @ 1 mem.end.heap_kB 67428
+hyprland 2 shm-fullwindow @ 1 mem.end.gpu_kB 185340
+hyprland 2 shm-fullwindow @ 1 mem.end.gpu_private_kB 81148
+hyprland 2 shm-fullwindow @ 1 mem.end.threads 12
+hyprland 2 shm-fullwindow @ 1 flips.shm-fullwindow 2632
+hyprland 2 workspace-switch machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 2 workspace-switch compositor: /usr/bin/Hyprland, pid 33535, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682400_508323721
+hyprland 2 workspace-switch clocksource: tsc
+hyprland 2 workspace-switch governor: schedutil -> performance
+hyprland 2 workspace-switch @ 1 compositor.age_s 222
+hyprland 2 workspace-switch ====== round 1 of 1
+hyprland 2 workspace-switch === 1 workspace-switch
+hyprland 2 workspace-switch --- workspace-switch; clients: 3x foot, 
+hyprland 2 workspace-switch @ 1 cpu.workspace-switch.percent 6.80
+hyprland 2 workspace-switch @ 1 mem.end.Rss_kB 155308
+hyprland 2 workspace-switch @ 1 mem.end.Pss_kB 118150
+hyprland 2 workspace-switch @ 1 mem.end.Pss_Anon_kB 85320
+hyprland 2 workspace-switch @ 1 mem.end.Pss_File_kB 32830
+hyprland 2 workspace-switch @ 1 mem.end.Private_Clean_kB 21072
+hyprland 2 workspace-switch @ 1 mem.end.Private_Dirty_kB 85320
+hyprland 2 workspace-switch @ 1 mem.end.Anonymous_kB 85320
+hyprland 2 workspace-switch @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 2 workspace-switch @ 1 mem.end.heap_kB 67428
+hyprland 2 workspace-switch @ 1 mem.end.gpu_kB 194192
+hyprland 2 workspace-switch @ 1 mem.end.gpu_private_kB 109968
+hyprland 2 workspace-switch @ 1 mem.end.threads 12
+hyprland 2 workspace-switch @ 1 flips.workspace-switch 1435
+hypoland 3 idle machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 3 idle compositor: /usr/bin/hypoland, pid 36862, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682664_718566821
+hypoland 3 idle clocksource: tsc
+hypoland 3 idle governor: schedutil -> performance
+hypoland 3 idle @ 1 compositor.age_s 60
+hypoland 3 idle ====== round 1 of 1
+hypoland 3 idle === 1 idle
+hypoland 3 idle --- idle; clients: 
+hypoland 3 idle @ 1 cpu.idle.percent 0.01
+hypoland 3 idle @ 1 mem.end.Rss_kB 78028
+hypoland 3 idle @ 1 mem.end.Pss_kB 44632
+hypoland 3 idle @ 1 mem.end.Pss_Anon_kB 17704
+hypoland 3 idle @ 1 mem.end.Pss_File_kB 26928
+hypoland 3 idle @ 1 mem.end.Private_Clean_kB 17116
+hypoland 3 idle @ 1 mem.end.Private_Dirty_kB 17704
+hypoland 3 idle @ 1 mem.end.Anonymous_kB 17704
+hypoland 3 idle @ 1 mem.end.AnonHugePages_kB 0
+hypoland 3 idle @ 1 mem.end.heap_kB 9628
+hypoland 3 idle @ 1 mem.end.gpu_kB 98856
+hypoland 3 idle @ 1 mem.end.gpu_private_kB 23336
+hypoland 3 idle @ 1 mem.end.threads 10
+hypoland 3 idle @ 1 flips.idle 13
+hypoland 3 gpu-client machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 3 gpu-client compositor: /usr/bin/hypoland, pid 36862, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682664_718566821
+hypoland 3 gpu-client clocksource: tsc
+hypoland 3 gpu-client governor: schedutil -> performance
+hypoland 3 gpu-client @ 1 compositor.age_s 93
+hypoland 3 gpu-client ====== round 1 of 1
+hypoland 3 gpu-client === 1 gpu-client
+hypoland 3 gpu-client --- gpu-client; clients: 1x org.freedesktop.weston.simple-egl, 
+hypoland 3 gpu-client @ 1 cpu.gpu-client.percent 3.24
+hypoland 3 gpu-client @ 1 fps.gpu-client 60.3
+hypoland 3 gpu-client @ 1 mem.end.Rss_kB 79808
+hypoland 3 gpu-client @ 1 mem.end.Pss_kB 45846
+hypoland 3 gpu-client @ 1 mem.end.Pss_Anon_kB 18300
+hypoland 3 gpu-client @ 1 mem.end.Pss_File_kB 27546
+hypoland 3 gpu-client @ 1 mem.end.Private_Clean_kB 17360
+hypoland 3 gpu-client @ 1 mem.end.Private_Dirty_kB 18300
+hypoland 3 gpu-client @ 1 mem.end.Anonymous_kB 18300
+hypoland 3 gpu-client @ 1 mem.end.AnonHugePages_kB 0
+hypoland 3 gpu-client @ 1 mem.end.heap_kB 10224
+hypoland 3 gpu-client @ 1 mem.end.gpu_kB 115400
+hypoland 3 gpu-client @ 1 mem.end.gpu_private_kB 31688
+hypoland 3 gpu-client @ 1 mem.end.threads 10
+hypoland 3 gpu-client @ 1 flips.gpu-client 1478
+hypoland 3 terminal-scroll machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 3 terminal-scroll compositor: /usr/bin/hypoland, pid 36862, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682664_718566821
+hypoland 3 terminal-scroll clocksource: tsc
+hypoland 3 terminal-scroll governor: schedutil -> performance
+hypoland 3 terminal-scroll @ 1 compositor.age_s 129
+hypoland 3 terminal-scroll ====== round 1 of 1
+hypoland 3 terminal-scroll === 1 terminal-scroll
+hypoland 3 terminal-scroll --- terminal-scroll; clients: 1x foot, 
+hypoland 3 terminal-scroll @ 1 cpu.terminal-scroll.percent 12.38
+hypoland 3 terminal-scroll @ 1 mem.end.Rss_kB 80328
+hypoland 3 terminal-scroll @ 1 mem.end.Pss_kB 46364
+hypoland 3 terminal-scroll @ 1 mem.end.Pss_Anon_kB 18788
+hypoland 3 terminal-scroll @ 1 mem.end.Pss_File_kB 27576
+hypoland 3 terminal-scroll @ 1 mem.end.Private_Clean_kB 17392
+hypoland 3 terminal-scroll @ 1 mem.end.Private_Dirty_kB 18788
+hypoland 3 terminal-scroll @ 1 mem.end.Anonymous_kB 18788
+hypoland 3 terminal-scroll @ 1 mem.end.AnonHugePages_kB 0
+hypoland 3 terminal-scroll @ 1 mem.end.heap_kB 10712
+hypoland 3 terminal-scroll @ 1 mem.end.gpu_kB 100972
+hypoland 3 terminal-scroll @ 1 mem.end.gpu_private_kB 25452
+hypoland 3 terminal-scroll @ 1 mem.end.threads 10
+hypoland 3 terminal-scroll @ 1 flips.terminal-scroll 1311
+hypoland 3 shm-fullwindow machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 3 shm-fullwindow compositor: /usr/bin/hypoland, pid 36862, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682664_718566821
+hypoland 3 shm-fullwindow clocksource: tsc
+hypoland 3 shm-fullwindow governor: schedutil -> performance
+hypoland 3 shm-fullwindow @ 1 compositor.age_s 165
+hypoland 3 shm-fullwindow ====== round 1 of 1
+hypoland 3 shm-fullwindow === 1 shm-fullwindow
+hypoland 3 shm-fullwindow --- shm-fullwindow; clients: 1x chromium, 
+hypoland 3 shm-fullwindow @ 1 cpu.shm-fullwindow.percent 3.66
+hypoland 3 shm-fullwindow @ 1 mem.end.Rss_kB 80328
+hypoland 3 shm-fullwindow @ 1 mem.end.Pss_kB 46363
+hypoland 3 shm-fullwindow @ 1 mem.end.Pss_Anon_kB 18788
+hypoland 3 shm-fullwindow @ 1 mem.end.Pss_File_kB 27575
+hypoland 3 shm-fullwindow @ 1 mem.end.Private_Clean_kB 17392
+hypoland 3 shm-fullwindow @ 1 mem.end.Private_Dirty_kB 18788
+hypoland 3 shm-fullwindow @ 1 mem.end.Anonymous_kB 18788
+hypoland 3 shm-fullwindow @ 1 mem.end.AnonHugePages_kB 0
+hypoland 3 shm-fullwindow @ 1 mem.end.heap_kB 10712
+hypoland 3 shm-fullwindow @ 1 mem.end.gpu_kB 100972
+hypoland 3 shm-fullwindow @ 1 mem.end.gpu_private_kB 25452
+hypoland 3 shm-fullwindow @ 1 mem.end.threads 10
+hypoland 3 shm-fullwindow @ 1 flips.shm-fullwindow 2630
+hypoland 3 workspace-switch machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hypoland 3 workspace-switch compositor: /usr/bin/hypoland, pid 36862, user a, instance ab7d84a4cb5b58c86dac9b91b997bddd3515776b_1792682664_718566821
+hypoland 3 workspace-switch clocksource: tsc
+hypoland 3 workspace-switch governor: schedutil -> performance
+hypoland 3 workspace-switch @ 1 compositor.age_s 221
+hypoland 3 workspace-switch ====== round 1 of 1
+hypoland 3 workspace-switch === 1 workspace-switch
+hypoland 3 workspace-switch --- workspace-switch; clients: 3x foot, 
+hypoland 3 workspace-switch @ 1 cpu.workspace-switch.percent 3.04
+hypoland 3 workspace-switch @ 1 mem.end.Rss_kB 80604
+hypoland 3 workspace-switch @ 1 mem.end.Pss_kB 46640
+hypoland 3 workspace-switch @ 1 mem.end.Pss_Anon_kB 19064
+hypoland 3 workspace-switch @ 1 mem.end.Pss_File_kB 27576
+hypoland 3 workspace-switch @ 1 mem.end.Private_Clean_kB 17392
+hypoland 3 workspace-switch @ 1 mem.end.Private_Dirty_kB 19064
+hypoland 3 workspace-switch @ 1 mem.end.Anonymous_kB 19064
+hypoland 3 workspace-switch @ 1 mem.end.AnonHugePages_kB 0
+hypoland 3 workspace-switch @ 1 mem.end.heap_kB 10988
+hypoland 3 workspace-switch @ 1 mem.end.gpu_kB 140908
+hypoland 3 workspace-switch @ 1 mem.end.gpu_private_kB 73068
+hypoland 3 workspace-switch @ 1 mem.end.threads 10
+hypoland 3 workspace-switch @ 1 flips.workspace-switch 1437
+hyprland 3 idle machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 3 idle compositor: /usr/bin/Hyprland, pid 40188, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682927_375133835
+hyprland 3 idle clocksource: tsc
+hyprland 3 idle governor: schedutil -> performance
+hyprland 3 idle @ 1 compositor.age_s 60
+hyprland 3 idle ====== round 1 of 1
+hyprland 3 idle === 1 idle
+hyprland 3 idle --- idle; clients: 
+hyprland 3 idle @ 1 cpu.idle.percent 0.03
+hyprland 3 idle @ 1 mem.end.Rss_kB 153704
+hyprland 3 idle @ 1 mem.end.Pss_kB 117328
+hyprland 3 idle @ 1 mem.end.Pss_Anon_kB 85316
+hyprland 3 idle @ 1 mem.end.Pss_File_kB 32012
+hyprland 3 idle @ 1 mem.end.Private_Clean_kB 20676
+hyprland 3 idle @ 1 mem.end.Private_Dirty_kB 85316
+hyprland 3 idle @ 1 mem.end.Anonymous_kB 85316
+hyprland 3 idle @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 3 idle @ 1 mem.end.heap_kB 67424
+hyprland 3 idle @ 1 mem.end.gpu_kB 174824
+hyprland 3 idle @ 1 mem.end.gpu_private_kB 78824
+hyprland 3 idle @ 1 mem.end.threads 12
+hyprland 3 idle @ 1 flips.idle 13
+hyprland 3 gpu-client machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 3 gpu-client compositor: /usr/bin/Hyprland, pid 40188, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682927_375133835
+hyprland 3 gpu-client clocksource: tsc
+hyprland 3 gpu-client governor: schedutil -> performance
+hyprland 3 gpu-client @ 1 compositor.age_s 93
+hyprland 3 gpu-client ====== round 1 of 1
+hyprland 3 gpu-client === 1 gpu-client
+hyprland 3 gpu-client --- gpu-client; clients: 1x org.freedesktop.weston.simple-egl, 
+hyprland 3 gpu-client @ 1 cpu.gpu-client.percent 4.27
+hyprland 3 gpu-client @ 1 fps.gpu-client 60.3
+hyprland 3 gpu-client @ 1 mem.end.Rss_kB 154756
+hyprland 3 gpu-client @ 1 mem.end.Pss_kB 117835
+hyprland 3 gpu-client @ 1 mem.end.Pss_Anon_kB 85316
+hyprland 3 gpu-client @ 1 mem.end.Pss_File_kB 32519
+hyprland 3 gpu-client @ 1 mem.end.Private_Clean_kB 20832
+hyprland 3 gpu-client @ 1 mem.end.Private_Dirty_kB 85316
+hyprland 3 gpu-client @ 1 mem.end.Anonymous_kB 85316
+hyprland 3 gpu-client @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 3 gpu-client @ 1 mem.end.heap_kB 67424
+hyprland 3 gpu-client @ 1 mem.end.gpu_kB 183160
+hyprland 3 gpu-client @ 1 mem.end.gpu_private_kB 78968
+hyprland 3 gpu-client @ 1 mem.end.threads 12
+hyprland 3 gpu-client @ 1 flips.gpu-client 1478
+hyprland 3 terminal-scroll machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 3 terminal-scroll compositor: /usr/bin/Hyprland, pid 40188, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682927_375133835
+hyprland 3 terminal-scroll clocksource: tsc
+hyprland 3 terminal-scroll governor: schedutil -> performance
+hyprland 3 terminal-scroll @ 1 compositor.age_s 129
+hyprland 3 terminal-scroll ====== round 1 of 1
+hyprland 3 terminal-scroll === 1 terminal-scroll
+hyprland 3 terminal-scroll --- terminal-scroll; clients: 1x foot, 
+hyprland 3 terminal-scroll @ 1 cpu.terminal-scroll.percent 13.39
+hyprland 3 terminal-scroll @ 1 mem.end.Rss_kB 154956
+hyprland 3 terminal-scroll @ 1 mem.end.Pss_kB 117901
+hyprland 3 terminal-scroll @ 1 mem.end.Pss_Anon_kB 85316
+hyprland 3 terminal-scroll @ 1 mem.end.Pss_File_kB 32585
+hyprland 3 terminal-scroll @ 1 mem.end.Private_Clean_kB 20832
+hyprland 3 terminal-scroll @ 1 mem.end.Private_Dirty_kB 85316
+hyprland 3 terminal-scroll @ 1 mem.end.Anonymous_kB 85316
+hyprland 3 terminal-scroll @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 3 terminal-scroll @ 1 mem.end.heap_kB 67424
+hyprland 3 terminal-scroll @ 1 mem.end.gpu_kB 193484
+hyprland 3 terminal-scroll @ 1 mem.end.gpu_private_kB 97484
+hyprland 3 terminal-scroll @ 1 mem.end.threads 12
+hyprland 3 terminal-scroll @ 1 flips.terminal-scroll 1303
+hyprland 3 shm-fullwindow machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 3 shm-fullwindow compositor: /usr/bin/Hyprland, pid 40188, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682927_375133835
+hyprland 3 shm-fullwindow clocksource: tsc
+hyprland 3 shm-fullwindow governor: schedutil -> performance
+hyprland 3 shm-fullwindow @ 1 compositor.age_s 165
+hyprland 3 shm-fullwindow ====== round 1 of 1
+hyprland 3 shm-fullwindow === 1 shm-fullwindow
+hyprland 3 shm-fullwindow --- shm-fullwindow; clients: 1x chromium, 
+hyprland 3 shm-fullwindow @ 1 cpu.shm-fullwindow.percent 4.61
+hyprland 3 shm-fullwindow @ 1 mem.end.Rss_kB 154956
+hyprland 3 shm-fullwindow @ 1 mem.end.Pss_kB 117900
+hyprland 3 shm-fullwindow @ 1 mem.end.Pss_Anon_kB 85316
+hyprland 3 shm-fullwindow @ 1 mem.end.Pss_File_kB 32584
+hyprland 3 shm-fullwindow @ 1 mem.end.Private_Clean_kB 20832
+hyprland 3 shm-fullwindow @ 1 mem.end.Private_Dirty_kB 85316
+hyprland 3 shm-fullwindow @ 1 mem.end.Anonymous_kB 85316
+hyprland 3 shm-fullwindow @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 3 shm-fullwindow @ 1 mem.end.heap_kB 67424
+hyprland 3 shm-fullwindow @ 1 mem.end.gpu_kB 185340
+hyprland 3 shm-fullwindow @ 1 mem.end.gpu_private_kB 81148
+hyprland 3 shm-fullwindow @ 1 mem.end.threads 12
+hyprland 3 shm-fullwindow @ 1 flips.shm-fullwindow 2628
+hyprland 3 workspace-switch machine: aa, 7.2.8-10-omarchy, 4 cores, 15676 MiB
+hyprland 3 workspace-switch compositor: /usr/bin/Hyprland, pid 40188, user a, instance efb50993780079460b0cbed1363e2166a2de1d9f_1792682927_375133835
+hyprland 3 workspace-switch clocksource: tsc
+hyprland 3 workspace-switch governor: schedutil -> performance
+hyprland 3 workspace-switch @ 1 compositor.age_s 222
+hyprland 3 workspace-switch ====== round 1 of 1
+hyprland 3 workspace-switch === 1 workspace-switch
+hyprland 3 workspace-switch --- workspace-switch; clients: 3x foot, 
+hyprland 3 workspace-switch @ 1 cpu.workspace-switch.percent 6.88
+hyprland 3 workspace-switch @ 1 mem.end.Rss_kB 154956
+hyprland 3 workspace-switch @ 1 mem.end.Pss_kB 117902
+hyprland 3 workspace-switch @ 1 mem.end.Pss_Anon_kB 85316
+hyprland 3 workspace-switch @ 1 mem.end.Pss_File_kB 32586
+hyprland 3 workspace-switch @ 1 mem.end.Private_Clean_kB 20832
+hyprland 3 workspace-switch @ 1 mem.end.Private_Dirty_kB 85316
+hyprland 3 workspace-switch @ 1 mem.end.Anonymous_kB 85316
+hyprland 3 workspace-switch @ 1 mem.end.AnonHugePages_kB 71680
+hyprland 3 workspace-switch @ 1 mem.end.heap_kB 67424
+hyprland 3 workspace-switch @ 1 mem.end.gpu_kB 165268
+hyprland 3 workspace-switch @ 1 mem.end.gpu_private_kB 81044
+hyprland 3 workspace-switch @ 1 mem.end.threads 12
+hyprland 3 workspace-switch @ 1 flips.workspace-switch 1438
+DONE
