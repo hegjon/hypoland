@@ -5,8 +5,9 @@
 #
 # SOAK_SHORT=1 runs one cycle with workloads of seconds instead of minutes, to check the script itself.
 # Runs as the session user on the machine under test. It repeats a cycle of workloads (GPU client, terminal
-# scrolling, Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm,
-# screenshots and recording, config reload, DPMS off/on, idle, glmark2) and samples the compositor every minute:
+# scrolling in foot (shm) and alacritty (GL), a fullscreen video in mpv, nautilus (GTK 4) with fullscreen toggles,
+# flea (Quickshell) paged, searched and switched between views with keys, Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm, screenshots and
+# recording, config reload, DPMS off/on, idle, glmark2; the ones whose program is not installed are skipped) and samples the compositor every minute:
 # memory (Pss, anonymous, GPU buffers), CPU time, fds, threads, IPC latency. It records compositor restarts,
 # core dumps, GPU hangs and journal errors, keeps an hourly screenshot and writes report.txt at the end.
 # Every workload is also a benchmark: the compositor's CPU time and, with perf, its user space instructions and
@@ -156,7 +157,7 @@ check_events() {
     # one line per distinct message, with its count
     journalctl --user --since "$since" --no-pager -q -o cat -u wayland-wm@hyprland.desktop.service 2>/dev/null |
         grep -iE "crash|assert|segfault|abort|Failed to link|GL_OUT_OF|error|invalid|\*\*\* BUG" |
-        grep -vE "xkbcomp|keycode|Set a breakpoint on|^\*\*\* BUG \*\*\*$" | sort | uniq -c | sort -rn | head -20 |
+        grep -vE "xkbcomp|keycode|Set a breakpoint on|^\*\*\* BUG \*\*\*$|quickshell\.dbus\.properties" | sort | uniq -c | sort -rn | head -20 |
         sed 's/^ *\([0-9]*\) /EVENT journal (\1x): /' | while read -r l; do log "$l"; done
 }
 
@@ -164,6 +165,46 @@ check_events() {
 
 w_gpu() { client "exec weston-simple-egl" gpu; sleep $T_LONG; stop_clients; }
 w_scroll() { client "exec foot -e sh -c 'while true; do ls -la /usr/lib; done'" scroll; sleep $T_LONG; stop_clients; }
+w_scroll_alacritty() {
+    command -v alacritty >/dev/null || return 0
+    client "exec alacritty -e sh -c 'while true; do ls -la /usr/lib; done'" scroll-alacritty; sleep $T_LONG; stop_clients
+}
+VIDEO=$HOME/.cache/hypoland-bench/video.mp4
+w_video() {
+    command -v mpv >/dev/null && command -v ffmpeg >/dev/null || return 0
+    [ -s "$VIDEO" ] || { mkdir -p "${VIDEO%/*}" && ffmpeg -loglevel error -y -f lavfi -i testsrc2=size=1280x720:rate=30 \
+        -t 20 -c:v libx264 -preset veryfast -pix_fmt yuv420p "$VIDEO"; }
+    client "exec mpv --fs --loop-file=inf --no-audio --really-quiet '$VIDEO'" video; sleep $T_LONG; stop_clients
+}
+w_nautilus() {
+    command -v nautilus >/dev/null || return 0
+    client "exec nautilus --new-window /usr/share/icons/Adwaita/symbolic/actions" nautilus
+    sleep 5
+    local i
+    for i in $(seq 1 20); do dispatch 'hl.dsp.window.fullscreen({action="toggle"})'; sleep 1; done
+    # new windows and folders, then quit: a nautilus that was already running owns the windows
+    for i in 1 2 3; do nautilus --new-window /usr/share/icons/Adwaita >/dev/null 2>&1; sleep 2; done
+    stop_clients
+    nautilus -q >/dev/null 2>&1
+}
+FILES=$HOME/.cache/hypoland-bench/files
+key() { dispatch "hl.dsp.send_shortcut({mods=\"$1\", key=\"$2\"})"; sleep "${3:-0.25}"; }
+w_flea() {
+    command -v flea >/dev/null || return 0
+    [ -e "$FILES/file-5000.txt" ] || { mkdir -p "$FILES" && (cd "$FILES" && for i in $(seq -w 1 5000); do : >"file-$i.txt"; done); }
+    client "exec flea '$FILES'" flea
+    sleep 8
+    local i j v
+    for i in $(seq 1 $((T_LONG >= 40 ? T_LONG / 20 : 1))); do
+        for j in $(seq 1 20); do key "" Page_Down; done
+        for j in $(seq 1 20); do key "" Page_Up; done
+        for v in 2 3 1; do key CTRL $v 2; done # columns, grid, back to the list
+        key "" slash 1; for j in 1 2 3 4; do key "" $j; done; sleep 2; key "" Escape 1 # filter the listing
+    done
+    stop_clients
+    # flea execs qs and leaves a backend; the bracket keeps pkill from matching its own command line
+    pkill -f "[q]s -p /usr/share/flea"; pkill -x flea; sleep 1
+}
 w_xwayland_fullscreen() {
     client "exec glxgears" glxgears
     sleep 5
@@ -245,7 +286,7 @@ stop_perf() { # SIGINT makes perf stat write its counts
 ENERGY_FILE=/run/soak-energy
 energy() {
     local t e
-    read -r t e <"$ENERGY_FILE" 2>/dev/null || return 0
+    read -r t e 2>/dev/null <"$ENERGY_FILE" || return 0
     awk -v t="$t" -v now="$EPOCHREALTIME" 'BEGIN {exit !(now - t < 5)}' && echo "$t $e"
 }
 HAVE_PERF=0
@@ -343,7 +384,7 @@ LAST_SHOT=0
 while [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ]; do
     CYCLE=$((CYCLE + 1))
     log "cycle $CYCLE"
-    for w in w_gpu w_scroll w_xwayland_fullscreen w_workspaces w_churn w_capture w_reload w_dpms w_idle w_glmark2; do
+    for w in w_gpu w_scroll w_scroll_alacritty w_video w_nautilus w_flea w_xwayland_fullscreen w_workspaces w_churn w_capture w_reload w_dpms w_idle w_glmark2; do
         [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ] || break
         log "  $w"
         measured $w

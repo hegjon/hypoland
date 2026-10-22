@@ -10,7 +10,7 @@
 #                       workload and the instructions the compositor executes
 #   --seconds N         length of a workload (default 12)
 #   --rounds N          how often the workloads are repeated, bench only (default 1)
-#   --workloads LIST    comma separated, default: idle,gpu-client,terminal-scroll,shm-fullwindow,workspace-switch
+#   --workloads LIST    comma separated, default: idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch
 #   --client NAME=CMD   one more workload: CMD is started as a client and measured as NAME, can be repeated
 #   --process NAME      name of the compositor process (default: hypoland, then Hypoland, then Hyprland)
 #   --settle N          age of the compositor in seconds before memory is measured (default 60)
@@ -38,7 +38,7 @@
 
 MODE=bench SECONDS_PER_RUN=12 ROUNDS=1 SETTLE=60 PROCESS="" KEEP_GOVERNOR=0 OUT=""
 METER=auto IDLE=10 MIN_BATTERY=30 POWERCAP=/sys/class/powercap POWER_SUPPLY=/sys/class/power_supply
-WORKLOADS=idle,gpu-client,terminal-scroll,shm-fullwindow,workspace-switch
+WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch
 STAGES='Render::IHyprRenderer::renderMonitor|Render::GL::CHyprGLRenderer::endRender|Render::GL::CHyprGLRenderer::beginRenderInternal|Render::GL::CEGLSync::create|Render::CRenderPass::render|Render::GL::CHyprOpenGLImpl::end\(\)|Render::GL::CGLFramebuffer::internalAlloc|Render::GL::CGLTexture::update|Aquamarine::CDRMOutput::commitState|drmModeAtomicCommit|Aquamarine::getDRMProp|Aquamarine::getDRMPropBlob|__x64_sys_ioctl|clock_gettime|read_hpet|_CWlSurfaceCommit|shmem_alloc_and_add_folio|drm_clflush_sg|Render::IHyprRenderer::renderLayer|Render::IHyprRenderer::renderAllClientsForWorkspace|Monitor::CMonitor::scheduleFrame|Animation::CHyprAnimationManager::tick|CInputManager::[A-Za-z]+|CPointerManager::[A-Za-z]+'
 CLIENT_NAMES=() CLIENT_CMDS=()
 
@@ -493,6 +493,69 @@ workload_terminal_scroll() {
     sleep 4
     rec terminal-scroll
     stop_clients
+}
+
+needs_alacritty_scroll="alacritty"
+workload_alacritty_scroll() { # the same scrolling in a terminal that draws with GL instead of shm
+    client $((SECONDS_PER_RUN + 10)) "exec alacritty -e sh -c 'while true; do ls -la /usr/lib; done'"
+    sleep 4
+    rec alacritty-scroll
+    stop_clients
+}
+
+# A 20 s 720p H.264 clip, encoded once into the user's cache. Decoded in software unless the user's mpv config
+# says otherwise, as Omarchy's does not.
+VIDEO=$USERHOME/.cache/hypoland-bench/video.mp4
+needs_video="mpv ffmpeg"
+workload_video() { # fullscreen, looping: a 30 fps client buffer that can be scanned out directly
+    [ -s "$VIDEO" ] || asuser sh -c 'mkdir -p "${0%/*}" && ffmpeg -loglevel error -y -f lavfi -i testsrc2=size=1280x720:rate=30 \
+        -t 20 -c:v libx264 -preset veryfast -pix_fmt yuv420p "$0"' "$VIDEO"
+    client $((SECONDS_PER_RUN + 10)) "exec mpv --fs --loop-file=inf --no-audio --really-quiet '$VIDEO'"
+    sleep 4
+    rec video
+    stop_clients
+}
+
+needs_nautilus="nautilus"
+workload_nautilus() { # GTK 4 redrawing a full window of icons, fullscreen toggled twice a second
+    local i
+    client $((SECONDS_PER_RUN + 15)) "exec nautilus --new-window /usr/share/icons/Adwaita/symbolic/actions"
+    sleep 5
+    (for i in $(seq 1 "$SECONDS_PER_RUN"); do
+        dispatch 'hl.dsp.window.fullscreen({action="toggle"})' "fullscreen"; sleep 0.5
+    done) &
+    local toggler=$!
+    rec nautilus
+    wait $toggler
+    stop_clients
+    # a nautilus that was already running opens the window itself, quitting closes it too
+    asuser nautilus -q >/dev/null 2>&1
+}
+
+# 5000 empty files, made once in the user's cache, so the listing is the same on every machine and run
+FILES=$USERHOME/.cache/hypoland-bench/files
+needs_flea="flea"
+workload_flea() { # Omarchy's file manager, a Quickshell window, paged through with keys
+    local i key
+    [ -e "$FILES/file-5000.txt" ] || asuser sh -c 'mkdir -p "$0" && cd "$0" && for i in $(seq -w 1 5000); do : >"file-$i.txt"; done' "$FILES"
+    client $((SECONDS_PER_RUN + 20)) "exec flea '$FILES'"
+    sleep 8
+    (for i in $(seq 1 "$SECONDS_PER_RUN"); do # 4 pages a second, 20 down and 20 back up
+        key=Page_Down
+        [ $(((i - 1) / 5 % 2)) = 1 ] && key=Page_Up
+        for _ in 1 2 3 4; do
+            dispatch "hl.dsp.send_shortcut({mods=\"\", key=\"$key\"})" "sendshortcut ,$key,"
+            sleep 0.25
+        done
+    done) &
+    local pager=$!
+    rec flea
+    wait $pager
+    stop_clients
+    # flea execs qs and leaves a backend; the bracket keeps pkill from matching its own command line
+    asuser pkill -f "[q]s -p /usr/share/flea" >/dev/null 2>&1
+    asuser pkill -x flea >/dev/null 2>&1
+    sleep 1
 }
 
 needs_shm_fullwindow="chromium"
