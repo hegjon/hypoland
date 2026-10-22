@@ -11,23 +11,12 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
 ## Hardware
 
 - **Dev machine:** this desktop. All editing and compiling happens here.
-- **Test machine:** ThinkPad X200 on the same LAN (GM45 / GMA 4500MHD, Core 2 Duo, Mesa `crocus` driver,
-  i915 kernel driver). It runs Omarchy 4 on Hypoland. Stock Hyprland fails to start on it (no GLES 3).
-  Since 2026-09-28 the Hypoland Arch package is installed there (it replaced `hyprland` 0.56.2-3, which is still in
-  `/var/cache/pacman/pkg`) and the X200 boots like a normal Omarchy install: disk password, SDDM autologin,
-  `omarchy.desktop` -> `uwsm start ... hyprland.desktop` -> `/usr/bin/start-hypoland` -> `/usr/bin/hypoland`.
-  Update it with `makepkg -f` in `packaging/arch`, `pacman -U` as root on the X200 and `systemctl restart sddm`
-  (SDDM logs in again). See the testing pitfalls for the test loop setup.
-- X200 access: `ssh x200` (ssh config alias -> 192.168.1.73, user `a`, uid 1000, key auth works).
-  6 GB RAM, 2 cores, Arch kernel 7.1.x, Mesa 26.2, the `hypoland` package installed (`hyprland` 0.56.2-3 is in
-  `/var/cache/pacman/pkg`), 100 GB free in `/home`.
-- Second test machine (since 2026-10-20): ThinkPad T550, `ssh t550` (192.168.1.112, user `a`, `ssh root@t550` works),
-  Core i5-5300U (4 threads), Intel HD 5500 (Broadwell, Mesa `iris`), 1920x1080, 16 GB RAM, Omarchy. It has GLES 3
-  and ran stock Hyprland 0.56.2-4; the Hypoland package replaced it (`hyprland` and `omarchy-hyprland-titlebars`
-  are in `/var/cache/pacman/pkg` for going back). Same update steps as the X200. `weston`, `mesa-utils` and
-  `wf-recorder` are installed for `scripts/x200/soak.sh`.
-- Root on the X200: `ssh root@x200` (key auth). Test tools are installed: `waybar`, `weston-simple-egl`,
-  `glmark2-es2-wayland`, `pidstat`, `eglinfo`, `grim`, `foot`.
+- **Test machines:** a ThinkPad X200 (GM45 / GMA 4500MHD, Mesa `crocus`, GLES 2 only: stock Hyprland fails to
+  start on it), the main target, and since October 2026 a ThinkPad T550 (Intel HD 5500, `iris`) and an HP EliteBook
+  8560p (Radeon HD 6470M, `r600`), both with GLES 3. All three run Omarchy on the Hypoland package through SDDM and
+  are reached over ssh by an alias (`x200`, `t550`, `elitebook`, also as `root@`).
+  Their hardware, addresses, logins and update steps are in `MACHINES.md`, a private file that is not in git
+  (it is in `.git/info/exclude`). Read it before working on a machine, and keep machine details there, not here.
 
 ## Repository
 
