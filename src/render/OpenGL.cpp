@@ -188,11 +188,9 @@ void CHyprOpenGLImpl::initEGL(bool gbm) {
         attrs.push_back(EGL_CONTEXT_PRIORITY_HIGH_IMG);
     }
 
-    if (m_exts.EXT_create_context_robustness) {
-        Log::logger->log(Log::DEBUG, "EGL: EXT_create_context_robustness supported, requesting lose on reset");
-        attrs.push_back(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT);
-        attrs.push_back(EGL_LOSE_CONTEXT_ON_RESET_EXT);
-    }
+    // No EGL_LOSE_CONTEXT_ON_RESET_EXT: a lost context turns every GL call into a no-op and there is no recovery, so
+    // the next framebuffer check aborts. Without it Mesa's Intel drivers replace the hardware context after a GPU hang
+    // and the compositor goes on (seen on the X200, where crocus hangs now and then while an X11 client draws).
 
     if (m_exts.KHR_context_flush_control) {
         Log::logger->log(Log::DEBUG, "EGL: Using KHR_context_flush_control");

@@ -4,6 +4,15 @@ Changes of Hypoland. Hyprland's own changes are in its [releases](https://github
 Hypoland 0.2.0 is based on Hyprland 0.56.0. Numbers are measured on a ThinkPad X200 (Core 2 Duo P8400,
 GMA 4500MHD, 1280x800) running Omarchy 4.
 
+## Unreleased
+
+### Fixed
+
+- The compositor no longer aborts after a GPU hang in its own drawing. It asked for a GL context that is lost for good
+  after a GPU reset, so every later draw failed and the next framebuffer check aborted. Mesa now replaces the hung
+  context and the compositor goes on. The X200 hangs now and then while an X11 program draws fullscreen; a 10 hour
+  test ended in a crash after 7.7 hours, and 15 forced GPU resets with the fix left the session running.
+
 ## 0.2.0 - 2026-10-21
 
 ### Faster
