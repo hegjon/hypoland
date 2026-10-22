@@ -453,6 +453,17 @@ Fixed upstream bugs that showed on this hardware:
   `debug:overlay`). Text is now rendered synchronously.
 
 Known issues:
+- foot 1.28.0 segfaults on exit when many foot windows close at once (the soak's window churn on the EliteBook,
+  2026-10-22, four of 15 windows): `wayl_win_destroy()` destroys the surface and does a roundtrip, during which the
+  compositor's `zwp_text_input_v3.enter` for that surface (keyboard focus moved to it as the other windows closed)
+  arrives, libwayland turns the destroyed surface into NULL and `ime.c` `enter()` dereferences it. A protocol race
+  on any compositor, not a Hypoland bug. Fixed in foot master (`f3226bc`, issue #2467, after 1.28.0), not in Arch
+  yet. The core dumps are readable on the desktop with `gdb` and `DEBUGINFOD_URLS=https://debuginfod.archlinux.org`
+  (same package versions).
+- Not a bug, Chromium's: on the EliteBook (r600, no native fence sync) Chromium with GPU compositing shows stale or
+  garbage regions after a resize because it commits its dmabuf before its rendering is submitted; diagnosed on
+  2026-10-22 with any Hyprland. Script, captures and the Chromium bug report draft: `docs/baseline/elitebook-chromium/`,
+  details in `MACHINES.md`.
 - Not a bug: foot 1.28 is never blurred by default. It binds `ext-background-effect-v1` and only sets a blur
   region with `blur=yes` in its `[colors-dark]` section, and `CWindow::shouldBlur()` honours that. Live and
   precomputed blur both work on the X200 for other clients. Do not use foot to judge blur.
