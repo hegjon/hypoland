@@ -12,6 +12,10 @@
 # Every workload is also a benchmark: the compositor's CPU time and, with perf, its user space instructions and
 # cycles per second go to cpu.txt, glmark2's score to glmark2.txt. The report compares the first and the last
 # cycles (a cost that grows) and gives the medians over the run (to compare builds and machines).
+# Energy: with RAPL the power of the CPU package (cores and GPU) during every workload goes to cpu.txt too, and the
+# report gives it net of the idle workload. The counters are root only, so a root helper has to run next to the
+# soak: copy energy-meter.sh to /root and start it as root (see there). Without it, or without RAPL (the X200),
+# the energy columns are nan.
 # After a compositor restart the run attaches to the new instance and goes on.
 # Omarchy's screensaver and idle lock are switched off for the run and put back afterwards. Stop early with
 # `touch <outdir>/stop`.
@@ -237,19 +241,26 @@ stop_perf() { # SIGINT makes perf stat write its counts
     wait "$PERF" 2>/dev/null
     PERF=""
 }
+# the package energy in µJ from energy-meter.sh, empty without a fresh reading
+ENERGY_FILE=/run/soak-energy
+energy() {
+    local t e
+    read -r t e <"$ENERGY_FILE" 2>/dev/null || return 0
+    awk -v t="$t" -v now="$EPOCHREALTIME" 'BEGIN {exit !(now - t < 5)}' && echo "$t $e"
+}
 HAVE_PERF=0
 command -v perf >/dev/null && perf stat -e instructions:u -p "$COMP" -- true >/dev/null 2>&1 && HAVE_PERF=1
 measured() { # workload
-    local t0 c0 t1 c1 ins=nan cyc=nan
+    local t0 c0 t1 c1 e0 e1 ins=nan cyc=nan
     attach
-    t0=$EPOCHREALTIME c0=$(cputicks)
+    t0=$EPOCHREALTIME c0=$(cputicks) e0=$(energy)
     if [ $HAVE_PERF = 1 ]; then
         perf stat -x, -e instructions:u,cycles:u -p "$COMP" -o "$OUT/perf.tmp" >/dev/null 2>&1 &
         PERF=$!
         sleep 0.5 # bash starts it with SIGINT ignored, until perf sets its own handler a SIGINT is lost
     fi
     "$1"
-    t1=$EPOCHREALTIME c1=$(cputicks)
+    t1=$EPOCHREALTIME c1=$(cputicks) e1=$(energy)
     if [ -n "$PERF" ]; then
         stop_perf
         ins=$(awk -F, '$3 == "instructions:u" && $1 ~ /^[0-9]+$/ {print $1}' "$OUT/perf.tmp")
@@ -257,9 +268,12 @@ measured() { # workload
     fi
     [ -n "$c0" ] && [ -n "$c1" ] && [ "$c1" -ge "$c0" ] &&
         awk -v w="$1" -v c="$CYCLE" -v d=$((c1 - c0)) -v t0="$t0" -v t1="$t1" -v hz="$(getconf CLK_TCK)" \
-            -v ins="${ins:-nan}" -v cyc="${cyc:-nan}" '
+            -v ins="${ins:-nan}" -v cyc="${cyc:-nan}" -v e0="${e0:-nan nan}" -v e1="${e1:-nan nan}" '
             function rate(x) {return x == "nan" ? "nan" : sprintf("%.1f", x / 1e6 / (t1 - t0))}
-            BEGIN {printf "%s %s %.2f %s %s\n", c, w, 100 * d / hz / (t1 - t0), rate(ins), rate(cyc)}' >>"$OUT/cpu.txt"
+            BEGIN {split(e0, a, " "); split(e1, b, " ")
+                # watts between the two readings of the meter, they are at most half a second old
+                pw = (a[1] == "nan" || b[1] == "nan" || b[1] <= a[1]) ? "nan" : sprintf("%.2f", (b[2] - a[2]) / 1e6 / (b[1] - a[1]))
+                printf "%s %s %.2f %s %s %s\n", c, w, 100 * d / hz / (t1 - t0), rate(ins), rate(cyc), pw}' >>"$OUT/cpu.txt"
 }
 
 report() {
@@ -288,18 +302,24 @@ report() {
                 printf "  %-14s %10s %10s\n", "IPC ms", med(lat, 1, h), med(lat, n - h + 1, n)
             }' "$OUT/samples.txt"
         echo
-        echo "compositor per workload: CPU %, user space Minstructions/s and Mcycles/s (perf), median of the"
-        echo "first and the last cycles (up to 5 each) and of the whole run:"
-        printf "  %-22s %6s | %-20s | %-23s | %7s\n" "" "" "CPU %" "Minstructions/s" "Mcyc/s"
-        printf "  %-22s %6s | %6s %6s %6s | %7s %7s %7s | %7s\n" workload cycles first last all first last all all
+        echo "per workload: compositor CPU %, compositor user space Minstructions/s and Mcycles/s (perf) and the power"
+        echo "of the CPU package with the GPU (RAPL, net = over the idle workload), median of the first and the last"
+        echo "cycles (up to 5 each) and of the whole run:"
+        printf "  %-22s %6s | %-20s | %-23s | %7s | %-23s\n" "" "" "CPU %" "Minstructions/s" "Mcyc/s" "package W"
+        printf "  %-22s %6s | %6s %6s %6s | %7s %7s %7s | %7s | %5s %5s %5s %5s\n" workload cycles first last all first last all all first last all net
+        # shellcheck disable=SC2016
+        local stats='$2 == w {n++; cpu[n] = $3; ins[n] = $4; cyc[n] = $5; pw[n] = $6}
+            function med(a, from, to,   i, k, v, t, x) {k = 0; for (i = from; i <= to; i++) if (a[i] != "nan" && a[i] != "") v[++k] = a[i] + 0
+                for (i = 1; i <= k; i++) for (t = i + 1; t <= k; t++) if (v[t] < v[i]) {x = v[i]; v[i] = v[t]; v[t] = x}
+                return k ? v[int((k + 1) / 2)] : "nan"}'
+        local idle_w
+        idle_w=$(awk -v w=w_idle "$stats END {print med(pw, 1, n)}" "$OUT/cpu.txt" 2>/dev/null)
         for w in $(awk '{print $2}' "$OUT/cpu.txt" 2>/dev/null | sort -u); do
-            awk -v w="$w" '$2 == w {n++; cpu[n] = $3; ins[n] = $4; cyc[n] = $5}
-                function med(a, from, to,   i, k, v, t, x) {k = 0; for (i = from; i <= to; i++) if (a[i] != "nan" && a[i] != "") v[++k] = a[i] + 0
-                    for (i = 1; i <= k; i++) for (t = i + 1; t <= k; t++) if (v[t] < v[i]) {x = v[i]; v[i] = v[t]; v[t] = x}
-                    return k ? v[int((k + 1) / 2)] : "nan"}
-                END {h = (n >= 10) ? 5 : int((n + 1) / 2)
-                    printf "  %-22s %6d | %6s %6s %6s | %7s %7s %7s | %7s\n", w, n, med(cpu, 1, h), med(cpu, n - h + 1, n), med(cpu, 1, n),
-                        med(ins, 1, h), med(ins, n - h + 1, n), med(ins, 1, n), med(cyc, 1, n)}' "$OUT/cpu.txt"
+            awk -v w="$w" -v idle="${idle_w:-nan}" "$stats"'
+                END {h = (n >= 10) ? 5 : int((n + 1) / 2); all = med(pw, 1, n)
+                    net = (all == "nan" || idle == "nan") ? "nan" : sprintf("%.2f", all - idle)
+                    printf "  %-22s %6d | %6s %6s %6s | %7s %7s %7s | %7s | %5s %5s %5s %5s\n", w, n, med(cpu, 1, h), med(cpu, n - h + 1, n), med(cpu, 1, n),
+                        med(ins, 1, h), med(ins, n - h + 1, n), med(ins, 1, n), med(cyc, 1, n), med(pw, 1, h), med(pw, n - h + 1, n), all, net}' "$OUT/cpu.txt"
         done
         echo
         if [ -s "$OUT/glmark2.txt" ]; then
@@ -317,7 +337,7 @@ report() {
 
 # ---- main loop
 
-log "soak test for $HOURS h, compositor pid $COMP, $(pacman -Q hypoland 2>/dev/null), perf $HAVE_PERF"
+log "soak test for $HOURS h, compositor pid $COMP, $(pacman -Q hypoland 2>/dev/null), perf $HAVE_PERF, energy $([ -n "$(energy)" ] && echo RAPL || echo none)"
 LAST_EVENTS=$START
 LAST_SHOT=0
 while [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ]; do
