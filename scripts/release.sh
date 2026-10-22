@@ -109,7 +109,8 @@ cleanup() {
     git reset -q --keep "$START"
 }
 trap cleanup EXIT
-trap 'exit 130' INT TERM
+# a closed pipe (| head) or a lost terminal would otherwise kill the script before cleanup undoes the release commit
+trap 'exit 130' INT TERM HUP PIPE
 
 echo "$NEW" >VERSION
 sed -i "s/^## Unreleased$/## $NEW - $TODAY/" CHANGELOG.md
