@@ -11,7 +11,7 @@ const std::vector<SP<IFadeout>>& CFadingOutState::fadeouts() const {
 }
 
 void CFadingOutState::add(SP<IFadeout> fadeout) {
-    if (!fadeout)
+    if (!fadeout || fadeout->monitor().expired() || fadeout->done())
         return;
 
     // Finished fadeouts are only removed while their monitor renders, so with the screen off (DPMS) every closed
