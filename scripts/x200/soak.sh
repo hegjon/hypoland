@@ -6,7 +6,8 @@
 # SOAK_SHORT=1 runs one cycle with workloads of seconds instead of minutes, to check the script itself.
 # Runs as the session user on the machine under test. It repeats a cycle of workloads (GPU client, terminal
 # scrolling in foot (shm) and alacritty (GL), a fullscreen video in mpv, nautilus (GTK 4) with fullscreen toggles,
-# flea (Quickshell) paged, searched and switched between views with keys, Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm, screenshots and
+# flea (Quickshell) paged, searched and switched between views with keys, both file managers scrolling the same
+# 5000 files with the same keys and searching them by name (w_files_*, w_search_*, to compare them), Omarchy's screensaver (ttfx in foot and in alacritty, tiled and fullscreen), Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm, screenshots and
 # recording, config reload, DPMS off/on, idle, glmark2; the ones whose program is not installed are skipped) and samples the compositor every minute:
 # memory (Pss, anonymous, GPU buffers), CPU time, fds, threads, IPC latency. It records compositor restarts,
 # core dumps, GPU hangs and journal errors, keeps an hourly screenshot and writes report.txt at the end.
@@ -14,7 +15,7 @@
 # cycles per second go to cpu.txt, glmark2's score to glmark2.txt. The report compares the first and the last
 # cycles (a cost that grows) and gives the medians over the run (to compare builds and machines).
 # Energy: with RAPL the power of the CPU package (cores and GPU) during every workload goes to cpu.txt too, and the
-# report gives it net of the idle workload. The counters are root only, so a root helper has to run next to the
+# report gives the energy of every workload in J, also net of the idle workload's power over the same time. The counters are root only, so a root helper has to run next to the
 # soak: copy energy-meter.sh to /root and start it as root (see there). Without it, or without RAPL (the X200),
 # the energy columns are nan.
 # After a compositor restart the run attaches to the new instance and goes on.
@@ -180,24 +181,25 @@ w_nautilus() {
     command -v nautilus >/dev/null || return 0
     client "exec nautilus --new-window /usr/share/icons/Adwaita/symbolic/actions" nautilus
     sleep 5
-    local i
-    for i in $(seq 1 20); do dispatch 'hl.dsp.window.fullscreen({action="toggle"})'; sleep 1; done
+    local _
+    for _ in $(seq 1 20); do dispatch 'hl.dsp.window.fullscreen({action="toggle"})'; sleep 1; done
     # new windows and folders, then quit: a nautilus that was already running owns the windows
-    for i in 1 2 3; do nautilus --new-window /usr/share/icons/Adwaita >/dev/null 2>&1; sleep 2; done
+    for _ in 1 2 3; do nautilus --new-window /usr/share/icons/Adwaita >/dev/null 2>&1; sleep 2; done
     stop_clients
     nautilus -q >/dev/null 2>&1
 }
 FILES=$HOME/.cache/hypoland-bench/files
+make_files() { [ -e "$FILES/file-5000.txt" ] || { mkdir -p "$FILES" && touch "$FILES"/file-{0001..5000}.txt; }; }
 key() { dispatch "hl.dsp.send_shortcut({mods=\"$1\", key=\"$2\"})"; sleep "${3:-0.25}"; }
 w_flea() {
     command -v flea >/dev/null || return 0
-    [ -e "$FILES/file-5000.txt" ] || { mkdir -p "$FILES" && (cd "$FILES" && for i in $(seq -w 1 5000); do : >"file-$i.txt"; done); }
+    make_files
     client "exec flea '$FILES'" flea
     sleep 8
-    local i j v
-    for i in $(seq 1 $((T_LONG >= 40 ? T_LONG / 20 : 1))); do
-        for j in $(seq 1 20); do key "" Page_Down; done
-        for j in $(seq 1 20); do key "" Page_Up; done
+    local _ j v
+    for _ in $(seq 1 $((T_LONG >= 40 ? T_LONG / 20 : 1))); do
+        for _ in $(seq 1 20); do key "" Page_Down; done
+        for _ in $(seq 1 20); do key "" Page_Up; done
         for v in 2 3 1; do key CTRL $v 2; done # columns, grid, back to the list
         key "" slash 1; for j in 1 2 3 4; do key "" $j; done; sleep 2; key "" Escape 1 # filter the listing
     done
@@ -205,26 +207,117 @@ w_flea() {
     # flea execs qs and leaves a backend; the bracket keeps pkill from matching its own command line
     pkill -f "[q]s -p /usr/share/flea"; pkill -x flea; sleep 1
 }
+# Nautilus and flea on the same 5000 files in list view (CTRL 1 in both), every 10 s: 64 rows down one at a time
+# with Down, 8 a second (once the selection reaches the bottom every key scrolls by one row, so both go through the
+# same files on every screen; Page_Down moves by as many rows as the window shows), then End to the last file and
+# Home back to the first. The window opens before and closes after the measurement (measured() runs
+# <workload>_start and <workload>_stop around it), so the two costs compare by the scrolling alone.
+scroll_files() {
+    local _
+    key CTRL 1 1
+    for _ in $(seq 1 $((T_LONG >= 20 ? T_LONG / 10 : 1))); do
+        for _ in $(seq 1 64); do key "" Down 0.1; done
+        key "" End 1
+        key "" Home 1
+    done
+}
+w_files_nautilus_start() {
+    command -v nautilus >/dev/null || return 0
+    make_files
+    client "exec nautilus --new-window '$FILES'" files-nautilus
+    sleep 8
+}
+w_files_nautilus() { command -v nautilus >/dev/null || return 0; scroll_files; }
+w_files_nautilus_stop() { stop_clients; nautilus -q >/dev/null 2>&1; }
+w_files_flea_start() {
+    command -v flea >/dev/null || return 0
+    make_files
+    client "exec flea '$FILES'" files-flea
+    sleep 8
+}
+w_files_flea() { command -v flea >/dev/null || return 0; scroll_files; }
+w_files_flea_stop() { stop_clients; pkill -f "[q]s -p /usr/share/flea"; pkill -x flea; sleep 1; }
+# The same files searched by name: open the search (CTRL F in Nautilus, / in flea, whose CTRL F searches the whole
+# home directory), type four digits, look at the one match, clear with Escape, about one name every 5 s. flea 0.3.12
+# filters only the first 321 files it loaded, so the names are among those.
+search_files() { # modifiers and key that open the search
+    local _ q c
+    key CTRL 1 1
+    for _ in $(seq 1 $((T_LONG >= 20 ? T_LONG / 20 : 1))); do
+        for q in 0012 0123 0234 0301; do
+            key "$1" "$2" 1
+            for c in $(echo $q | fold -w1); do key "" "$c" 0.3; done
+            sleep 1.5
+            key "" Escape 1
+        done
+    done
+}
+w_search_nautilus_start() { w_files_nautilus_start; }
+w_search_nautilus() { command -v nautilus >/dev/null || return 0; search_files CTRL f; }
+w_search_nautilus_stop() { w_files_nautilus_stop; }
+w_search_flea_start() { w_files_flea_start; }
+w_search_flea() { command -v flea >/dev/null || return 0; search_files "" slash; }
+w_search_flea_stop() { w_files_flea_stop; }
+# Omarchy's screensaver: ttfx in foot or alacritty with the screensaver's config, frame rate and text, but a fixed
+# list of effects and seed instead of random ones, and a class of its own (the sampler takes
+# org.omarchy.screensaver for the real screensaver). Tiled like the other clients, and fullscreen (_fs) as the
+# screensaver is.
+ttfx_start() { # terminal command up to -e, client name, 1 for fullscreen
+    local text=$HOME/.config/omarchy/branding/screensaver.txt
+    [ -s "$text" ] || text=/etc/os-release
+    client "exec $1 -e sh -c 'printf \"\\033]11;rgb:00/00/00\\007\"; sleep 2
+        while :; do for e in beams decrypt matrix rain fireworks waves; do
+            ttfx -i \"$text\" --seed 1 --frame-rate 120 --canvas-width 0 --canvas-height 0 --reuse-canvas \\
+                --anchor-canvas c --anchor-text c --no-eol --no-restore-cursor \$e; done; done'" "$2"
+    sleep 1
+    [ "$3" = 1 ] && dispatch 'hl.dsp.window.fullscreen({action="toggle"})'
+    sleep 3
+}
+have_ttfx() { command -v ttfx >/dev/null && command -v "$1" >/dev/null; }
+ttfx_foot() { # 1 for fullscreen
+    have_ttfx foot || return 0
+    local conf=/usr/share/omarchy/default/foot/screensaver.ini opt=""
+    [ -e "$conf" ] && opt="--config='$conf'"
+    ttfx_start "foot --app-id=hypoland.ttfx $opt" ttfx-foot "$1"
+}
+ttfx_alacritty() {
+    have_ttfx alacritty || return 0
+    local conf=/usr/share/omarchy/default/alacritty/screensaver.toml opt=""
+    [ -e "$conf" ] && opt="--config-file '$conf'"
+    ttfx_start "alacritty --class=hypoland.ttfx $opt" ttfx-alacritty "$1"
+}
+w_ttfx_foot_start() { ttfx_foot 0; }
+w_ttfx_foot() { have_ttfx foot || return 0; sleep $T_LONG; }
+w_ttfx_foot_stop() { stop_clients; }
+w_ttfx_foot_fs_start() { ttfx_foot 1; }
+w_ttfx_foot_fs() { w_ttfx_foot; }
+w_ttfx_foot_fs_stop() { stop_clients; }
+w_ttfx_alacritty_start() { ttfx_alacritty 0; }
+w_ttfx_alacritty() { have_ttfx alacritty || return 0; sleep $T_LONG; }
+w_ttfx_alacritty_stop() { stop_clients; }
+w_ttfx_alacritty_fs_start() { ttfx_alacritty 1; }
+w_ttfx_alacritty_fs() { w_ttfx_alacritty; }
+w_ttfx_alacritty_fs_stop() { stop_clients; }
 w_xwayland_fullscreen() {
     client "exec glxgears" glxgears
     sleep 5
-    local i
-    for i in $(seq 1 20); do dispatch 'hl.dsp.window.fullscreen({action="toggle"})'; sleep 3; done
+    local _
+    for _ in $(seq 1 20); do dispatch 'hl.dsp.window.fullscreen({action="toggle"})'; sleep 3; done
     stop_clients
 }
 w_workspaces() {
-    local i
-    for i in 1 2 3; do client "exec foot -e sleep 600" ws; sleep 1; done
-    for i in $(seq 1 60); do
+    local _
+    for _ in 1 2 3; do client "exec foot -e sleep 600" ws; sleep 1; done
+    for _ in $(seq 1 60); do
         dispatch "hl.dsp.focus({workspace=2})"; sleep 0.5
         dispatch "hl.dsp.focus({workspace=1})"; sleep 0.5
     done
     stop_clients
 }
 w_churn() { # open and close many windows, tiled and floating
-    local i
-    for i in $(seq 1 15); do client "exec foot -e sleep 30" churn; sleep 0.7; done
-    for i in 1 2 3; do dispatch 'hl.dsp.window.float({action="toggle"})'; sleep 1; done
+    local _
+    for _ in $(seq 1 15); do client "exec foot -e sleep 30" churn; sleep 0.7; done
+    for _ in 1 2 3; do dispatch 'hl.dsp.window.float({action="toggle"})'; sleep 1; done
     sleep 3
     stop_clients
 }
@@ -237,8 +330,8 @@ w_chromium() {
 w_capture() { # screencopy, recording, the screen share path
     client "exec weston-simple-egl" capture-gpu
     sleep 3
-    local i
-    for i in 1 2 3 4 5; do timeout 15 grim "$OUT/clients/grim.png" || log "EVENT grim failed"; sleep 2; done
+    local _
+    for _ in 1 2 3 4 5; do timeout 15 grim "$OUT/clients/grim.png" || log "EVENT grim failed"; sleep 2; done
     timeout -s INT 12 wf-recorder -f "$OUT/clients/rec.mp4" >/dev/null 2>&1
     [ -s "$OUT/clients/rec.mp4" ] || log "EVENT wf-recorder wrote nothing"
     rm -f "$OUT/clients/rec.mp4" "$OUT/clients/grim.png"
@@ -271,8 +364,8 @@ w_glmark2() { # a fixed set of scenes, the score shows whether the frames the cl
 # user count its own processes in user space only), steadier than the CPU time to compare builds by.
 cputicks() { awk '{print $14 + $15}' "/proc/$COMP/stat" 2>/dev/null; }
 stop_perf() { # SIGINT makes perf stat write its counts
-    local i
-    for i in $(seq 1 25); do
+    local _
+    for _ in $(seq 1 25); do
         kill -INT "$PERF" 2>/dev/null
         sleep 0.2
         # gone, or a zombie that only waits for wait
@@ -294,6 +387,7 @@ command -v perf >/dev/null && perf stat -e instructions:u -p "$COMP" -- true >/d
 measured() { # workload
     local t0 c0 t1 c1 e0 e1 ins=nan cyc=nan
     attach
+    declare -F "$1_start" >/dev/null && "$1_start"
     t0=$EPOCHREALTIME c0=$(cputicks) e0=$(energy)
     if [ $HAVE_PERF = 1 ]; then
         perf stat -x, -e instructions:u,cycles:u -p "$COMP" -o "$OUT/perf.tmp" >/dev/null 2>&1 &
@@ -307,6 +401,7 @@ measured() { # workload
         ins=$(awk -F, '$3 == "instructions:u" && $1 ~ /^[0-9]+$/ {print $1}' "$OUT/perf.tmp")
         cyc=$(awk -F, '$3 == "cycles:u" && $1 ~ /^[0-9]+$/ {print $1}' "$OUT/perf.tmp")
     fi
+    declare -F "$1_stop" >/dev/null && "$1_stop"
     [ -n "$c0" ] && [ -n "$c1" ] && [ "$c1" -ge "$c0" ] &&
         awk -v w="$1" -v c="$CYCLE" -v d=$((c1 - c0)) -v t0="$t0" -v t1="$t1" -v hz="$(getconf CLK_TCK)" \
             -v ins="${ins:-nan}" -v cyc="${cyc:-nan}" -v e0="${e0:-nan nan}" -v e1="${e1:-nan nan}" '
@@ -314,7 +409,7 @@ measured() { # workload
             BEGIN {split(e0, a, " "); split(e1, b, " ")
                 # watts between the two readings of the meter, they are at most half a second old
                 pw = (a[1] == "nan" || b[1] == "nan" || b[1] <= a[1]) ? "nan" : sprintf("%.2f", (b[2] - a[2]) / 1e6 / (b[1] - a[1]))
-                printf "%s %s %.2f %s %s %s\n", c, w, 100 * d / hz / (t1 - t0), rate(ins), rate(cyc), pw}' >>"$OUT/cpu.txt"
+                printf "%s %s %.2f %s %s %s %.1f\n", c, w, 100 * d / hz / (t1 - t0), rate(ins), rate(cyc), pw, t1 - t0}' >>"$OUT/cpu.txt"
 }
 
 report() {
@@ -343,13 +438,17 @@ report() {
                 printf "  %-14s %10s %10s\n", "IPC ms", med(lat, 1, h), med(lat, n - h + 1, n)
             }' "$OUT/samples.txt"
         echo
-        echo "per workload: compositor CPU %, compositor user space Minstructions/s and Mcycles/s (perf) and the power"
-        echo "of the CPU package with the GPU (RAPL, net = over the idle workload), median of the first and the last"
-        echo "cycles (up to 5 each) and of the whole run:"
-        printf "  %-22s %6s | %-20s | %-23s | %7s | %-23s\n" "" "" "CPU %" "Minstructions/s" "Mcyc/s" "package W"
-        printf "  %-22s %6s | %6s %6s %6s | %7s %7s %7s | %7s | %5s %5s %5s %5s\n" workload cycles first last all first last all all first last all net
+        echo "per workload: compositor CPU %, compositor user space Minstructions/s and Mcycles/s (perf) and the energy"
+        echo "of the CPU package with the GPU in J per run (RAPL, net = over the idle workload's power for the same time),"
+        echo "median of the first and the last cycles (up to 5 each) and of the whole run:"
+        printf "  %-22s %6s | %-20s | %-23s | %7s | %-27s\n" "" "" "CPU %" "Minstructions/s" "Mcyc/s" "package J"
+        printf "  %-22s %6s | %6s %6s %6s | %7s %7s %7s | %7s | %6s %6s %6s %6s\n" workload cycles first last all first last all all first last all net
         # shellcheck disable=SC2016
-        local stats='$2 == w {n++; cpu[n] = $3; ins[n] = $4; cyc[n] = $5; pw[n] = $6}
+        # energy per run from the power and the length of the workload, lines of older runs have no length
+        local stats='$2 == w {n++; cpu[n] = $3; ins[n] = $4; cyc[n] = $5; pw[n] = $6
+                j[n] = ($6 == "nan" || $7 == "") ? "nan" : $6 * $7
+                nj[n] = (j[n] == "nan" || idle == "" || idle == "nan") ? "nan" : ($6 - idle) * $7}
+            function f(x) {return x == "nan" ? x : sprintf("%.0f", x)}
             function med(a, from, to,   i, k, v, t, x) {k = 0; for (i = from; i <= to; i++) if (a[i] != "nan" && a[i] != "") v[++k] = a[i] + 0
                 for (i = 1; i <= k; i++) for (t = i + 1; t <= k; t++) if (v[t] < v[i]) {x = v[i]; v[i] = v[t]; v[t] = x}
                 return k ? v[int((k + 1) / 2)] : "nan"}'
@@ -357,10 +456,10 @@ report() {
         idle_w=$(awk -v w=w_idle "$stats END {print med(pw, 1, n)}" "$OUT/cpu.txt" 2>/dev/null)
         for w in $(awk '{print $2}' "$OUT/cpu.txt" 2>/dev/null | sort -u); do
             awk -v w="$w" -v idle="${idle_w:-nan}" "$stats"'
-                END {h = (n >= 10) ? 5 : int((n + 1) / 2); all = med(pw, 1, n)
-                    net = (all == "nan" || idle == "nan") ? "nan" : sprintf("%.2f", all - idle)
-                    printf "  %-22s %6d | %6s %6s %6s | %7s %7s %7s | %7s | %5s %5s %5s %5s\n", w, n, med(cpu, 1, h), med(cpu, n - h + 1, n), med(cpu, 1, n),
-                        med(ins, 1, h), med(ins, n - h + 1, n), med(ins, 1, n), med(cyc, 1, n), med(pw, 1, h), med(pw, n - h + 1, n), all, net}' "$OUT/cpu.txt"
+                END {h = (n >= 10) ? 5 : int((n + 1) / 2)
+                    printf "  %-22s %6d | %6s %6s %6s | %7s %7s %7s | %7s | %6s %6s %6s %6s\n", w, n, med(cpu, 1, h), med(cpu, n - h + 1, n), med(cpu, 1, n),
+                        med(ins, 1, h), med(ins, n - h + 1, n), med(ins, 1, n), med(cyc, 1, n),
+                        f(med(j, 1, h)), f(med(j, n - h + 1, n)), f(med(j, 1, n)), f(med(nj, 1, n))}' "$OUT/cpu.txt"
         done
         echo
         if [ -s "$OUT/glmark2.txt" ]; then
@@ -384,7 +483,7 @@ LAST_SHOT=0
 while [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ]; do
     CYCLE=$((CYCLE + 1))
     log "cycle $CYCLE"
-    for w in w_gpu w_scroll w_scroll_alacritty w_video w_nautilus w_flea w_xwayland_fullscreen w_workspaces w_churn w_capture w_reload w_dpms w_idle w_glmark2; do
+    for w in w_gpu w_scroll w_scroll_alacritty w_video w_nautilus w_flea w_files_nautilus w_files_flea w_search_nautilus w_search_flea w_ttfx_foot w_ttfx_foot_fs w_ttfx_alacritty w_ttfx_alacritty_fs w_xwayland_fullscreen w_workspaces w_churn w_capture w_reload w_dpms w_idle w_glmark2; do
         [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ] || break
         log "  $w"
         measured $w

@@ -537,7 +537,7 @@ FILES=$USERHOME/.cache/hypoland-bench/files
 needs_flea="flea"
 workload_flea() { # Omarchy's file manager, a Quickshell window, paged through with keys
     local i key
-    [ -e "$FILES/file-5000.txt" ] || asuser sh -c 'mkdir -p "$0" && cd "$0" && for i in $(seq -w 1 5000); do : >"file-$i.txt"; done' "$FILES"
+    [ -e "$FILES/file-5000.txt" ] || asuser bash -c 'mkdir -p "$0" && touch "$0"/file-{0001..5000}.txt' "$FILES"
     client $((SECONDS_PER_RUN + 20)) "exec flea '$FILES'"
     sleep 8
     (for i in $(seq 1 "$SECONDS_PER_RUN"); do # 4 pages a second, 20 down and 20 back up
