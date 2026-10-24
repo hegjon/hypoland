@@ -14,7 +14,11 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
 - **Test machines:** a ThinkPad X200 (GM45 / GMA 4500MHD, Mesa `crocus`, GLES 2 only: stock Hyprland fails to
   start on it), the main target, and since October 2026 a ThinkPad T550 (Intel HD 5500, `iris`) and an HP EliteBook
   8560p (Radeon HD 6470M, `r600`), both with GLES 3. All three run Omarchy on the Hypoland package through SDDM and
-  are reached over ssh by an alias (`x200`, `t550`, `elitebook`, also as `root@`).
+  are reached over ssh by an alias (`x200`, `t550`, `elitebook`, also as `root@`). A Dell XPS 13 9343 (Intel HD
+  5500, `iris`, 3200x1800 at scale 2) joined on 2026-10-23 as `xps` (also as `root@xps`)
+  and runs the Hypoland package since that evening.
+  A Samsung Galaxy Book4 Edge (Snapdragon X Elite, aarch64, Adreno X1-85 with `freedreno`, 2880x1800 at scale 2)
+  joined the same day as `galaxybook` (also as `root@galaxybook`) and runs Hypoland since 2026-10-24, built on the machine (the PKGBUILD builds for aarch64 too).
   A desktop with an AMD A8-6600K APU (Radeon HD 8570D, `r600`, legacy modesetting like the EliteBook) joined on
   2026-10-24 as `lianli` (also as `root@lianli`) and runs the Hypoland package since then, on HDMI
   to the desktop's monitor (1920x1200).
