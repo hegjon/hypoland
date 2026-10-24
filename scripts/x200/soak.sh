@@ -7,9 +7,11 @@
 # Runs as the session user on the machine under test. It repeats a cycle of workloads (GPU client, terminal
 # scrolling in foot (shm) and alacritty (GL), a fullscreen video in mpv, nautilus (GTK 4) with fullscreen toggles,
 # flea (Quickshell) paged, searched and switched between views with keys, both file managers scrolling the same
-# 5000 files with the same keys and searching them by name (w_files_*, w_search_*, to compare them), Omarchy's screensaver (ttfx in foot and in alacritty, tiled and fullscreen), Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm, screenshots and
+# 25000 files with the same keys and searching them by name (w_files_*, w_search_*, to compare them), Omarchy's screensaver (ttfx in foot and in alacritty, tiled and fullscreen), Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm, screenshots and
 # recording, config reload, DPMS off/on, idle, glmark2; the ones whose program is not installed are skipped) and samples the compositor every minute:
-# memory (Pss, anonymous, GPU buffers), CPU time, fds, threads, IPC latency. It records compositor restarts,
+# memory (Pss, anonymous, GPU buffers), CPU time, fds, threads, IPC latency, the hottest CPU temperature sensor and the
+# fastest fan (also logged to the journal with the tag soak, so the last minute before a power cut is on the desktop).
+# It records compositor restarts,
 # core dumps, GPU hangs and journal errors, keeps an hourly screenshot and writes report.txt at the end.
 # Every workload is also a benchmark: the compositor's CPU time and, with perf, its user space instructions and
 # cycles per second go to cpu.txt, glmark2's score to glmark2.txt. The report compares the first and the last
@@ -40,9 +42,13 @@ log() { echo "$(date '+%F %T') $*"; }
 export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
 export XDG_CURRENT_DESKTOP=Hyprland DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}
 COMP=""
+# Hypoland, or a stock Hyprland on a machine that has not switched yet (its process is called Hyprland)
+comp_pid() { pgrep -u "$(id -u)" -x hypoland | head -1 | grep . || pgrep -u "$(id -u)" -x Hyprland | head -1; }
+# the package the compositor came from, for the log and the report
+comp_pkg() { pacman -Q "$(pacman -Qqo "$(readlink "/proc/$COMP/exe")" 2>/dev/null)" 2>/dev/null; }
 attach() { # to the running compositor, again after it restarted (a run of 0.2.0 kept talking to the dead one)
     local pid lock
-    pid=$(pgrep -u "$(id -u)" -x hypoland | head -1)
+    pid=$(comp_pid)
     [ -n "$pid" ] || return 1
     [ "$pid" = "$COMP" ] && return 0
     [ -n "$COMP" ] && log "attaching to the new compositor, pid $pid"
@@ -113,12 +119,29 @@ gpu_kb() { # GPU buffers of a process, counted once per DRM client
         $1 == "drm-total-system0:" && !(id in seen) {seen[id] = 1; v = $2; if ($3 == "MiB") v *= 1024; s += v}
         END {print s + 0}'
 }
+# the CPU's temperature sensors: coretemp on x86, the cpu thermal zones on ARM, all thermal zones otherwise
+TEMPS=()
+for d in /sys/class/hwmon/hwmon*; do [ "$(cat "$d/name" 2>/dev/null)" = coretemp ] && TEMPS+=("$d"/temp*_input); done
+[ ${#TEMPS[@]} = 0 ] && for z in /sys/class/thermal/thermal_zone*; do
+    case $(cat "$z/type" 2>/dev/null) in cpu* | x86_pkg_temp) TEMPS+=("$z/temp") ;; esac
+done
+[ ${#TEMPS[@]} = 0 ] && for z in /sys/class/thermal/thermal_zone*; do [ -e "$z/temp" ] && TEMPS+=("$z/temp"); done
+cpu_temp() { # the hottest of them in °C
+    [ ${#TEMPS[@]} = 0 ] && { echo nan; return; }
+    cat "${TEMPS[@]}" 2>/dev/null | awk '$1 > m {m = $1} END {print m ? int(m / 1000 + 0.5) : "nan"}'
+}
+FANS=(/sys/class/hwmon/hwmon*/fan*_input)
+[ -e "${FANS[0]}" ] || FANS=()
+fan_rpm() { # the fastest fan, nan without a fan sensor (the EliteBook and the Galaxy Book have none)
+    [ ${#FANS[@]} = 0 ] && { echo nan; return; }
+    cat "${FANS[@]}" 2>/dev/null | awk 'NR == 1 || $1 > m {m = $1} END {print NR ? m : "nan"}'
+}
 sampler() {
-    local pid last_pid="" ticks last_ticks="" t0 t1 lat clients state cpu hz
+    local pid last_pid="" ticks last_ticks="" t0 t1 lat clients state cpu hz temp fan
     hz=$(getconf CLK_TCK)
-    echo "time elapsed_min pid pss_kB anon_kB rss_kB gpu_kB fds threads cpu_pct ipc_ms clients xwayland_pss_kB quickshell_pss_kB state" >"$OUT/samples.txt"
+    echo "time elapsed_min pid pss_kB anon_kB rss_kB gpu_kB fds threads cpu_pct ipc_ms clients xwayland_pss_kB quickshell_pss_kB state cpu_C fan_rpm" >"$OUT/samples.txt"
     while :; do
-        pid=$(pgrep -u "$(id -u)" -x hypoland | head -1)
+        pid=$(comp_pid)
         if [ -n "$last_pid" ] && [ "$pid" != "$last_pid" ]; then
             log "EVENT compositor restarted: pid $last_pid -> ${pid:-none}"
             last_ticks=""
@@ -142,7 +165,11 @@ sampler() {
         state=ok
         H clients 2>/dev/null | grep -q "org.omarchy.screensaver" && state=screensaver
         H monitors -j 2>/dev/null | jq -e '.[0].solitaryBlockedBy // [] | map(ascii_downcase) | index("lock")' >/dev/null 2>&1 && state=locked
-        echo "$(date +%T) $((($(date +%s) - START) / 60)) $pid $(kb /proc/"$pid"/smaps_rollup Pss) $(kb /proc/"$pid"/status RssAnon) $(kb /proc/"$pid"/status VmRSS) $(gpu_kb "$pid") $(ls /proc/"$pid"/fd 2>/dev/null | wc -l) $(kb /proc/"$pid"/status Threads) $cpu $lat $clients $(pss_of Xwayland) $(pss_of quickshell) $state" >>"$OUT/samples.txt"
+        temp=$(cpu_temp)
+        fan=$(fan_rpm)
+        # also into the journal, which the machines forward to the desktop: the last line survives a power cut
+        logger -t soak "cpu ${temp} C, fan ${fan} rpm, compositor ${cpu}% CPU, state $state"
+        echo "$(date +%T) $((($(date +%s) - START) / 60)) $pid $(kb /proc/"$pid"/smaps_rollup Pss) $(kb /proc/"$pid"/status RssAnon) $(kb /proc/"$pid"/status VmRSS) $(gpu_kb "$pid") $(ls /proc/"$pid"/fd 2>/dev/null | wc -l) $(kb /proc/"$pid"/status Threads) $cpu $lat $clients $(pss_of Xwayland) $(pss_of quickshell) $state $temp $fan" >>"$OUT/samples.txt"
         sleep 60
     done
 }
@@ -188,8 +215,9 @@ w_nautilus() {
     stop_clients
     nautilus -q >/dev/null 2>&1
 }
-FILES=$HOME/.cache/hypoland-bench/files
-make_files() { [ -e "$FILES/file-5000.txt" ] || { mkdir -p "$FILES" && touch "$FILES"/file-{0001..5000}.txt; }; }
+# 25000 empty files, made once in the user's cache (relative names, the full paths would come close to ARG_MAX)
+FILES=$HOME/.cache/hypoland-bench/files-25000
+make_files() { [ -e "$FILES/file-25000.txt" ] || { mkdir -p "$FILES" && (cd "$FILES" && touch file-{00001..25000}.txt); }; }
 key() { dispatch "hl.dsp.send_shortcut({mods=\"$1\", key=\"$2\"})"; sleep "${3:-0.25}"; }
 w_flea() {
     command -v flea >/dev/null || return 0
@@ -207,7 +235,7 @@ w_flea() {
     # flea execs qs and leaves a backend; the bracket keeps pkill from matching its own command line
     pkill -f "[q]s -p /usr/share/flea"; pkill -x flea; sleep 1
 }
-# Nautilus and flea on the same 5000 files in list view (CTRL 1 in both), every 10 s: 64 rows down one at a time
+# Nautilus and flea on the same 25000 files in list view (CTRL 1 in both), every 10 s: 64 rows down one at a time
 # with Down, 8 a second (once the selection reaches the bottom every key scrolls by one row, so both go through the
 # same files on every screen; Page_Down moves by as many rows as the window shows), then End to the last file and
 # Home back to the first. The window opens before and closes after the measurement (measured() runs
@@ -238,13 +266,14 @@ w_files_flea_start() {
 w_files_flea() { command -v flea >/dev/null || return 0; scroll_files; }
 w_files_flea_stop() { stop_clients; pkill -f "[q]s -p /usr/share/flea"; pkill -x flea; sleep 1; }
 # The same files searched by name: open the search (CTRL F in Nautilus, / in flea, whose CTRL F searches the whole
-# home directory), type four digits, look at the one match, clear with Escape, about one name every 5 s. flea 0.3.12
-# filters only the first 321 files it loaded, so the names are among those.
+# home directory), type five digits, look at the one match, clear with Escape, about one name every 5 s. The names
+# are spread over the folder: flea 0.3.12-1 filtered only the rows it had loaded (the first 321, flea issue 315),
+# the patched build 0.3.12-1.316 on the test machines has its backend test the rest of the folder.
 search_files() { # modifiers and key that open the search
     local _ q c
     key CTRL 1 1
     for _ in $(seq 1 $((T_LONG >= 20 ? T_LONG / 20 : 1))); do
-        for q in 0012 0123 0234 0301; do
+        for q in 00012 06123 13234 24301; do
             key "$1" "$2" 1
             for c in $(echo $q | fold -w1); do key "" "$c" 0.3; done
             sleep 1.5
@@ -414,7 +443,7 @@ measured() { # workload
 
 report() {
     {
-        echo "Soak test $(basename "$OUT"): $(pacman -Q hypoland 2>/dev/null)"
+        echo "Soak test $(basename "$OUT"): $(comp_pkg)"
         echo "ran $((($(date +%s) - START) / 60)) min, $CYCLE cycles"
         echo
         echo "events:"
@@ -422,7 +451,9 @@ report() {
         grep -q "EVENT" "$OUT/soak.log" || echo "  none"
         echo
         echo "compositor, first hour against last hour (median of the samples):"
-        awk 'NR > 1 && $4 != "" {n++; e[n] = $2; pss[n] = $4; anon[n] = $5; gpu[n] = $7; fds[n] = $8; thr[n] = $9; lat[n] = $11}
+        awk 'NR > 1 && $4 != "" {n++; e[n] = $2; pss[n] = $4; anon[n] = $5; gpu[n] = $7; fds[n] = $8; thr[n] = $9; lat[n] = $11
+                if ($16 != "" && $16 != "nan") {nt++; tmp[nt] = $16; if ($16 > tmax) tmax = $16}
+                if ($17 != "" && $17 != "nan") {nf++; fan[nf] = $17; if ($17 > fmax) fmax = $17}}
             function med(a, from, to,   i, k, v, t) {k = 0; for (i = from; i <= to; i++) v[++k] = a[i]
                 for (i = 1; i <= k; i++) for (t = i + 1; t <= k; t++) if (v[t] < v[i]) {x = v[i]; v[i] = v[t]; v[t] = x}
                 return k ? v[int((k + 1) / 2)] : "nan"}
@@ -436,6 +467,14 @@ report() {
                 printf "  %-14s %10s %10s\n", "fds", med(fds, 1, h), med(fds, n - h + 1, n)
                 printf "  %-14s %10s %10s\n", "threads", med(thr, 1, h), med(thr, n - h + 1, n)
                 printf "  %-14s %10s %10s\n", "IPC ms", med(lat, 1, h), med(lat, n - h + 1, n)
+                if (nt >= 2) {
+                    ht = (nt >= 120) ? 60 : int(nt / 2)
+                    printf "  %-14s %10s %10s   (hottest %s)\n", "CPU C", med(tmp, 1, ht), med(tmp, nt - ht + 1, nt), tmax
+                }
+                if (nf >= 2) {
+                    hf = (nf >= 120) ? 60 : int(nf / 2)
+                    printf "  %-14s %10s %10s   (fastest %s)\n", "fan rpm", med(fan, 1, hf), med(fan, nf - hf + 1, nf), fmax + 0
+                }
             }' "$OUT/samples.txt"
         echo
         echo "per workload: compositor CPU %, compositor user space Minstructions/s and Mcycles/s (perf) and the energy"
@@ -477,7 +516,7 @@ report() {
 
 # ---- main loop
 
-log "soak test for $HOURS h, compositor pid $COMP, $(pacman -Q hypoland 2>/dev/null), perf $HAVE_PERF, energy $([ -n "$(energy)" ] && echo RAPL || echo none)"
+log "soak test for $HOURS h, compositor pid $COMP, $(comp_pkg), perf $HAVE_PERF, energy $([ -n "$(energy)" ] && echo RAPL || echo none), ${#TEMPS[@]} CPU temperature sensors, ${#FANS[@]} fan sensors"
 LAST_EVENTS=$START
 LAST_SHOT=0
 while [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ]; do
@@ -489,7 +528,7 @@ while [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ]; do
         measured $w
     done
     # Chromium is heavy on this machine, every third cycle (and in the short run)
-    { [ $((CYCLE % 3)) = 0 ] || [ $MAX_CYCLES = 1 ]; } && [ "$(date +%s)" -lt "$END" ] && log "  w_chromium" && measured w_chromium
+    { [ $((CYCLE % 3)) = 0 ] || [ $MAX_CYCLES = 1 ]; } && [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ] && log "  w_chromium" && measured w_chromium
     now=$(date +%s)
     check_events "$LAST_EVENTS"
     LAST_EVENTS=$now

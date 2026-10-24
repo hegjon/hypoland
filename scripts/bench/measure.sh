@@ -536,12 +536,13 @@ workload_nautilus() { # GTK 4 redrawing a full window of icons, fullscreen toggl
     asuser nautilus -q >/dev/null 2>&1
 }
 
-# 5000 empty files, made once in the user's cache, so the listing is the same on every machine and run
-FILES=$USERHOME/.cache/hypoland-bench/files
+# 25000 empty files, made once in the user's cache, so the listing is the same on every machine and run (the same
+# directory as scripts/x200/soak.sh)
+FILES=$USERHOME/.cache/hypoland-bench/files-25000
 needs_flea="flea"
 workload_flea() { # Omarchy's file manager, a Quickshell window, paged through with keys
     local i key
-    [ -e "$FILES/file-5000.txt" ] || asuser bash -c 'mkdir -p "$0" && touch "$0"/file-{0001..5000}.txt' "$FILES"
+    [ -e "$FILES/file-25000.txt" ] || asuser bash -c 'mkdir -p "$0" && cd "$0" && touch file-{00001..25000}.txt' "$FILES"
     client $((SECONDS_PER_RUN + 20)) "exec flea '$FILES'"
     sleep 8
     (for i in $(seq 1 "$SECONDS_PER_RUN"); do # 4 pages a second, 20 down and 20 back up
