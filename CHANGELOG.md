@@ -12,6 +12,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   after a GPU reset, so every later draw failed and the next framebuffer check aborted. Mesa now replaces the hung
   context and the compositor goes on. The X200 hangs now and then while an X11 program draws fullscreen; a 10 hour
   test ended in a crash after 7.7 hours, and 15 forced GPU resets with the fix left the session running.
+- Half drawn frames on Intel GPUs from Broadwell on (Mesa `iris`), seen as flicker on a 3200x1800 Dell XPS 13. To
+  save a fence per frame, frames on Intel were handed to the display after a `glFlush()`, but iris submits that flush
+  on its own thread, so the display could show a frame before the GPU had drawn it. Only crocus (Gen4 to Haswell,
+  the X200) still skips the fence.
 
 ## 0.2.0 - 2026-10-21
 

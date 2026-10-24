@@ -281,7 +281,11 @@ namespace Render::GL {
             PFNEGLDESTROYSYNCKHRPROC                      eglDestroySyncKHR                      = nullptr;
             PFNEGLDUPNATIVEFENCEFDANDROIDPROC             eglDupNativeFenceFDANDROID             = nullptr;
             PFNEGLWAITSYNCKHRPROC                         eglWaitSyncKHR                         = nullptr;
+            PFNEGLGETDISPLAYDRIVERNAMEPROC                eglGetDisplayDriverName                = nullptr;
         } m_proc;
+
+        // the Mesa driver behind the EGL display (EGL_MESA_query_driver), e.g. "crocus" or "iris", empty if unknown
+        std::string m_eglDriverName;
 
         struct {
             bool EXT_read_format_bgra               = false;

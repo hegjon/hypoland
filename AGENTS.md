@@ -389,8 +389,11 @@ Overnight run 2026-09-28 (journal in `test-results/overnight/journal.md`), measu
 - Mesa keeps 5.7 MiB of GLSL built-in function tables after the first shader compile.
   `CHyprOpenGLImpl::scheduleShaderCompilerRelease()` calls `glReleaseShaderCompiler()` and `malloc_trim()` 10 s
   after the last compile. Without the trim the memory stays in the heap.
-- Frames get no EGL fence on i915 (`CHyprGLRenderer::needsRenderFence()`), the driver has implicit sync. The fence
-  is still made for explicit sync clients, screen sharing, multi GPU and other drivers.
+- Frames get no EGL fence on crocus (`CHyprGLRenderer::needsRenderFence()`), i915 has implicit sync. The fence
+  is still made for explicit sync clients, screen sharing, multi GPU and other drivers. It was skipped on all of
+  i915 until 2026-10-23: iris (Broadwell and later) submits `glFlush()` on Mesa's driver thread, so the commit could
+  overtake the batch and the XPS (3200x1800) showed half drawn frames; `GALLIUM_THREAD=0` hid it. The driver name
+  comes from `EGL_MESA_query_driver` (`CHyprOpenGLImpl::m_eglDriverName`).
 - aquamarine keeps the mode of the CRTC (`SDRMConnector::atomic.currentMode`) instead of reading it on every commit.
   A frame with one 60 fps client is 13 ioctls now, 9 of them are Mesa's buffer cache (`GEM_MADVISE`, `GEM_BUSY`).
 - Not merged, by decision of the user (2026-09-28): the build changes. They are the commits `13ee9d36` and

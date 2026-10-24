@@ -97,8 +97,11 @@ bool CHyprGLRenderer::beginRenderInternal(PHLMONITOR pMonitor, CRegion& damage, 
 // i915 attaches the fences of a batch to the buffers it uses, and the kernel waits for them in the atomic commit
 // and in the clients. A fence of our own costs a syncobj, its export and a poll on every frame, and is only
 // needed when somebody waits for it: an explicit sync client or a caller that wants to know when rendering is done.
+// Only on crocus: its glFlush() submits the batch before it returns. iris flushes on Mesa's driver thread, so the
+// commit can reach the kernel before the batch and the screen shows half drawn frames (XPS 13, 3200x1800).
+// Making the fence submits the batch.
 bool CHyprGLRenderer::needsRenderFence(PHLMONITOR monitor, const std::function<void()>& renderingDoneCallback) {
-    if (!isIntel() || isMgpu() || m_renderMode != RENDER_MODE_NORMAL || renderingDoneCallback)
+    if (!isIntel() || g_pHyprOpenGL->m_eglDriverName != "crocus" || isMgpu() || m_renderMode != RENDER_MODE_NORMAL || renderingDoneCallback)
         return true;
 
     return std::ranges::any_of(monitor->m_usedAsyncBuffers, [](const auto& buf) { return !buf.first.expired() && !buf.second->m_syncReleasers.empty(); });

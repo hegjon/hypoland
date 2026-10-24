@@ -182,6 +182,13 @@ void CHyprOpenGLImpl::initEGL(bool gbm) {
     m_exts.EXT_image_dma_buf_import_modifiers = EGLEXTENSIONS.contains("EXT_image_dma_buf_import_modifiers");
     m_exts.KHR_context_flush_control          = EGLEXTENSIONS.contains("EGL_KHR_context_flush_control");
 
+    if (EGLEXTENSIONS.contains("EGL_MESA_query_driver")) {
+        loadGLProc(&m_proc.eglGetDisplayDriverName, "eglGetDisplayDriverName");
+        const char* name = m_proc.eglGetDisplayDriverName ? m_proc.eglGetDisplayDriverName(m_eglDisplay) : nullptr;
+        m_eglDriverName  = name ? name : "";
+        Log::logger->log(Log::DEBUG, "EGL: driver {}", m_eglDriverName);
+    }
+
     if (m_exts.IMG_context_priority) {
         Log::logger->log(Log::DEBUG, "EGL: IMG_context_priority supported, requesting high");
         attrs.push_back(EGL_CONTEXT_PRIORITY_LEVEL_IMG);
