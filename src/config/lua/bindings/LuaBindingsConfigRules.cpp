@@ -6,6 +6,7 @@
 #include "../objects/LuaWorkspaceRule.hpp"
 
 #include "../types/LuaConfigBool.hpp"
+#include "../types/LuaConfigColor.hpp"
 #include "../types/LuaConfigCssGap.hpp"
 #include "../types/LuaConfigFloat.hpp"
 #include "../types/LuaConfigGradient.hpp"
@@ -30,6 +31,7 @@
 #include "../../../layout/supplementary/WorkspaceAlgoMatcher.hpp"
 #include "../../../animation/AnimationManager.hpp"
 #include "../../../managers/input/InputManager.hpp"
+#include "../../../render/decorations/TitleBars.hpp"
 #include "../../../managers/input/trackpad/TrackpadGestures.hpp"
 #include "../../../managers/input/trackpad/gestures/CloseGesture.hpp"
 #include "../../../managers/input/trackpad/gestures/CursorZoomGesture.hpp"
@@ -543,12 +545,75 @@ static int hlEnv(lua_State* L) {
 
 // Hypoland has no plugin system. Keep the function so configs that load plugins still work.
 static int hlPluginLoad(lua_State* L) {
+    // Omarchy loads its titlebar plugin from here, and Hypoland draws titlebars itself (hl.plugin.hyprbars)
+    if (lua_isstring(L, 1) && std::string_view{lua_tostring(L, 1)}.ends_with("/omarchy-hyprland-titlebars/titlebars.so"))
+        return 0;
+
     static bool warned = false;
     if (!warned) {
         warned = true;
         Log::logger->log(Log::WARN, "hl.plugin.load: plugins are not supported by Hypoland, ignoring");
     }
 
+    return 0;
+}
+
+// hl.plugin.hyprbars.add_button({ bg_color, fg_color, size, icon, action }), as the titlebar plugin had it.
+// The config adds its buttons again on every load.
+static int hlTitleBarAddButton(lua_State* L) {
+    if (!lua_istable(L, 1))
+        return Internal::configError(L, "add_button: expected a table { bg_color, fg_color, size, icon, action }");
+
+    TitleBars::SButton button;
+
+    const auto         color = [L](const char* field) -> std::optional<CHyprColor> {
+        lua_getfield(L, 1, field);
+        Config::Lua::CLuaConfigColor parser(0);
+        const auto                   ERR = parser.parse(L);
+        lua_pop(L, 1);
+        if (ERR.errorCode != Config::Lua::PARSE_ERROR_OK)
+            return std::nullopt;
+        return CHyprColor(sc<uint64_t>(parser.parsed()));
+    };
+
+    const auto BG = color("bg_color");
+    if (!BG)
+        return Internal::configError(L, "add_button: failed to parse bg_color");
+    button.background = *BG;
+
+    lua_getfield(L, 1, "fg_color");
+    const bool HASFG = !lua_isnil(L, -1);
+    lua_pop(L, 1);
+    if (HASFG) {
+        button.foreground = color("fg_color");
+        if (!button.foreground)
+            return Internal::configError(L, "add_button: failed to parse fg_color");
+    }
+
+    lua_getfield(L, 1, "size");
+    const bool SIZEOK = lua_isnumber(L, -1);
+    button.size       = SIZEOK ? lua_tonumber(L, -1) : 0;
+    lua_pop(L, 1);
+    if (!SIZEOK)
+        return Internal::configError(L, "add_button: size must be a number");
+
+    lua_getfield(L, 1, "icon");
+    const bool ICONOK = lua_isstring(L, -1);
+    if (ICONOK)
+        button.icon = lua_tostring(L, -1);
+    lua_pop(L, 1);
+    if (!ICONOK)
+        return Internal::configError(L, "add_button: icon must be a string");
+
+    lua_getfield(L, 1, "action");
+    const bool ACTIONOK = lua_isstring(L, -1);
+    if (ACTIONOK)
+        button.command = lua_tostring(L, -1);
+    lua_pop(L, 1);
+    if (!ACTIONOK)
+        return Internal::configError(L, "add_button: action must be a string");
+
+    TitleBars::state()->m_buttons.emplace_back(std::move(button));
     return 0;
 }
 
@@ -1401,6 +1466,9 @@ void Internal::registerConfigRuleBindings(lua_State* L, CConfigManager* mgr) {
 
     lua_newtable(L);
     Internal::setFn(L, "load", hlPluginLoad);
+    lua_newtable(L);
+    Internal::setFn(L, "add_button", hlTitleBarAddButton);
+    lua_setfield(L, -2, "hyprbars");
     lua_setfield(L, -2, "plugin");
 
     Internal::setFn(L, "gesture", hlGesture);

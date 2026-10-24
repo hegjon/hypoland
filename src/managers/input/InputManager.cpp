@@ -55,6 +55,7 @@
 #include "../../event/EventBus.hpp"
 
 #include "../../render/Renderer.hpp"
+#include "../../render/decorations/TitleBars.hpp"
 #include "trackpad/TrackpadGestures.hpp"
 #include "../../pointer/cursor/CursorShapeOverrideController.hpp"
 
@@ -878,7 +879,11 @@ void CInputManager::processMouseDownNormal(const IPointer::SButtonEvent& e, SP<I
     if (*PRESIZEONBORDER && !g_pSessionLockManager->isSessionLocked() && !m_lastFocusOnLS && e.state == WL_POINTER_BUTTON_STATE_PRESSED &&
         (!w || !w->backend().traits().overrideRedirect)) {
         if (w && !Fullscreen::controller()->isFullscreen(w)) {
-            const CBox real = w->geometricBox(Desktop::View::IGeometric::GEOMETRIC_CURRENT);
+            // a titlebar belongs to the window's frame, the band above it resizes
+            CBox       real     = w->geometricBox(Desktop::View::IGeometric::GEOMETRIC_CURRENT);
+            const auto TITLEBAR = TitleBars::visibleHeight(w);
+            real.y -= TITLEBAR;
+            real.height += TITLEBAR;
             const CBox grab = {real.x - BORDER_GRAB_AREA, real.y - BORDER_GRAB_AREA, real.width + 2 * BORDER_GRAB_AREA, real.height + 2 * BORDER_GRAB_AREA};
 
             if ((grab.containsPoint(mouseCoords) && (!real.containsPoint(mouseCoords) || w->presentation().isInCurvedCorner(mouseCoords.x, mouseCoords.y))) &&
@@ -2243,6 +2248,14 @@ void CInputManager::setCursorIconOnBorder(PHLWINDOW w) {
     eBorderIconDirection direction        = BORDERICON_NONE;
     CBox                 boxFullGrabInput = {box.x - *PEXTENDBORDERGRAB - BORDERSIZE, box.y - *PEXTENDBORDERGRAB - BORDERSIZE, box.width + 2 * (*PEXTENDBORDERGRAB + BORDERSIZE),
                                              box.height + 2 * (*PEXTENDBORDERGRAB + BORDERSIZE)};
+
+    // the band above a titlebar resizes, as clicking there does
+    if (const auto TITLEBAR = TitleBars::visibleHeight(w); TITLEBAR > 0) {
+        box.y -= TITLEBAR;
+        box.height += TITLEBAR;
+        boxFullGrabInput.y -= TITLEBAR;
+        boxFullGrabInput.height += TITLEBAR;
+    }
 
     if (w->hasPopupAt(mouseCoords))
         direction = BORDERICON_NONE;

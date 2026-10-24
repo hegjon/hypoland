@@ -135,6 +135,12 @@ Rename only the binary and branding. When renaming, do NOT touch:
 - The `HYPRLAND_INSTANCE_SIGNATURE` env var, IPC command names, JSON output format, and event names.
 - `XDG_CURRENT_DESKTOP=Hyprland` (needed by xdg-desktop-portal-hyprland and app detection).
 - Hyprland Wayland protocols used by Quickshell (Omarchy's shell): focus grab, global shortcuts, toplevel export.
+- Omarchy's titlebar plugin interface, which Hypoland implements itself (`src/render/decorations/TitleBars.*`,
+  `CHyprTitleBarDecoration.*`): the `plugin:hyprbars:*` options with the plugin's names and defaults (`enabled` is
+  false), `hl.plugin.hyprbars.add_button({ bg_color, fg_color, size, icon, action })`, the `hyprbars:no_bar`,
+  `hyprbars:bar_color` and `hyprbars:title_color` window rule effects, `%WINDOW%` in commands, and
+  `hl.plugin.load("/usr/lib/omarchy-hyprland-titlebars/titlebars.so")` without a warning. The package installs a text
+  file at that path: Omarchy turns titlebars on only when it exists.
 
 Removed features must stay **registered as no-op config options** (warn once, never error), so existing
 configs such as Omarchy's load without the red error bar. Setting a removed option at runtime must return `ok`
@@ -261,6 +267,27 @@ Findings worth keeping:
   example config say Hypoland. Kept for compatibility: the seat name `Hyprland`, the X11 WM name `Hyprland :D`,
   the first line of `hyprctl version`, event names like `hyprland.start` and debug log lines.
 - Packaging: `packaging/arch/PKGBUILD` builds from the working tree (`makepkg -f`).
+
+Titlebars (2026-10-24): Omarchy's floating workspaces get their titlebars from its omarchy-hyprland-titlebars plugin
+(a hyprbars fork, source and licenses in `LICENSE.titlebars`), which Hypoland cannot load. They are built in with the
+plugin's interface (see the compatibility requirements):
+- `TitleBars::CState` attaches a `CHyprTitleBarDecoration` to windows only while `plugin:hyprbars:enabled` is set,
+  so without titlebars no window carries one. Visibility (enabled, `workspace_tag`, floating, rules) is checked on
+  rule updates, config reloads and every drawn frame of the window, and a hidden bar takes no space.
+- Drawn with the rect and texture pass elements, no stencil: a rounded window gets rounded top corners on the bar and
+  the corners under the bar filled. The title is the desktop entry's Name for the window class (`src/helpers/AppNames.*`),
+  looked up when the class or title changes, and redrawn while resizing only when it no longer fits or was cut short.
+- Input goes through `onInputOnDeco`, so the press never reaches the client. A drag starts with the first motion and
+  first catches up with it; a maximized window comes back to its size held at the pressed spot of the bar. The release
+  ends it in `CKeybindManager::onMouseEvent`. The border resize band and its cursor run above a titlebar
+  (`TitleBars::visibleHeight()` in `InputManager`); the plugin only handled the click there.
+- Unlike the plugin: a window with `decorate` off gets no titlebar (the plugin reserved the space and drew nothing),
+  and there is no touch dragging (hyprbars' touch drag floated, pinned and then tiled the window).
+- Omarchy's layout toggle reloads the config every time a workspace starts floating, because `hyprctl plugin list`
+  never lists hyprbars here. That reload is what sets the titlebars up.
+- Tested on lianli (r600) and the X200 (crocus) with Omarchy's toggle and a virtual pointer: title, hover, exact drag,
+  double click maximizes, dragging a maximized window out, resizing above the bar, minimize and close buttons,
+  back to tiled gives the space back. Idle compositor CPU with a titled window on the X200: 0.1%.
 
 Tools:
 - `HYPOLAND_PROFILE_PASS=1` times every render pass element on the GPU (glFinish) and prints per-type totals to

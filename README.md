@@ -39,6 +39,9 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
   load into, and Hypoland's renderer is GLES2 only. `hl.plugin.load()` is ignored with a warning,
   `hyprctl plugin list` reports no plugins and `hyprctl plugin load` fails. No headers or `hyprland.pc`
   are installed.
+- Omarchy's titlebars are built in. Omarchy's config loads its titlebar plugin and sets the plugin's options
+  (`plugin:hyprbars:*`, `hl.plugin.hyprbars.add_button()`); Hypoland takes them as they are and draws the
+  titlebars itself. Without a config that enables them there are none.
 - Windows with an opacity of 0.98 or more (`decoration:active_opacity`, `inactive_opacity`,
   `fullscreen_opacity` and window rules) are drawn fully opaque. The difference cannot be seen, and an opaque window
   is not blended and hides what is behind it, which old GPUs pay for in fill rate.

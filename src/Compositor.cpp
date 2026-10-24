@@ -1,6 +1,7 @@
 
 #include "Compositor.hpp"
 #include "render/decorations/DecorationPositioner.hpp"
+#include "render/decorations/TitleBars.hpp"
 #include "config/supplementary/executor/Executor.hpp"
 #include "debug/log/Logger.hpp"
 #include "version.h"
@@ -674,6 +675,10 @@ void CCompositor::initManagers(eManagersInitStage stage) {
 
             // create executor
             Config::Supplementary::executor();
+
+            // before the config, which adds titlebar buttons and uses the titlebar window rule effects
+            Log::logger->log(Log::DEBUG, "Creating the TitleBars!");
+            TitleBars::state();
 
             Config::mgr()->init();
 

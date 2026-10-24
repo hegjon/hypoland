@@ -554,6 +554,36 @@ std::vector<SP<IValue>> Values::getConfigValues() {
         MS<Bool>("group:groupbar:blur", "enable background blur for groupbars", false),
 
         /*
+         * plugin:hyprbars: titlebars, built in. The names and defaults are those of the omarchy-hyprland-titlebars
+         * plugin (a fork of hyprbars) that Omarchy's config is written against.
+         */
+
+        MS<Bool>("plugin:hyprbars:enabled", "draw titlebars", false, {.refresh = Supplementary::REFRESH_WINDOW_STATES}),
+        MS<String>("plugin:hyprbars:workspace_tag", "only give titlebars to floating windows with this tag", "", {.refresh = Supplementary::REFRESH_WINDOW_STATES}),
+        MS<Color>("plugin:hyprbars:bar_color", "titlebar color", 0x88333333),
+        MS<Color>("plugin:hyprbars:bar_color_inactive", "titlebar color of unfocused windows, 0 for bar_color", 0),
+        MS<Color>("plugin:hyprbars:col.text", "title color", 0xffffffff),
+        MS<Int>("plugin:hyprbars:bar_height", "titlebar height", 15, {.refresh = Supplementary::REFRESH_WINDOW_STATES}),
+        MS<Int>("plugin:hyprbars:bar_text_size", "title font size", 10),
+        MS<FontWeight>("plugin:hyprbars:bar_text_weight", "title font weight"),
+        MS<String>("plugin:hyprbars:bar_text_font", "title font", "Sans"),
+        MS<String>("plugin:hyprbars:bar_text_align", "title alignment, left or center", "center"),
+        MS<Bool>("plugin:hyprbars:bar_title_enabled", "draw the title", true),
+        MS<Bool>("plugin:hyprbars:bar_blur", "blur behind a translucent titlebar", false),
+        MS<Bool>("plugin:hyprbars:bar_part_of_window", "the titlebar counts as part of the window, shadows include it", true),
+        MS<Bool>("plugin:hyprbars:bar_precedence_over_border", "the titlebar sits inside the border instead of outside it", false,
+                 {.refresh = Supplementary::REFRESH_WINDOW_STATES}),
+        MS<String>("plugin:hyprbars:bar_buttons_alignment", "button alignment, left or right", "right"),
+        MS<Int>("plugin:hyprbars:bar_padding", "space at the ends of the titlebar", 7),
+        MS<Int>("plugin:hyprbars:bar_button_padding", "space between buttons", 5),
+        MS<Int>("plugin:hyprbars:button_rounding", "button corner radius, -1 for round buttons", -1),
+        MS<Int>("plugin:hyprbars:button_border_size", "button border width", 0),
+        MS<Color>("plugin:hyprbars:button_border_color", "button border color", 0),
+        MS<Color>("plugin:hyprbars:inactive_button_color", "button color of unfocused windows, 0 for the button's own", 0),
+        MS<Bool>("plugin:hyprbars:icon_on_hover", "show the button icons only while the pointer is over a button", false),
+        MS<String>("plugin:hyprbars:on_double_click", "command run on a double click on a titlebar, %WINDOW% is the window's address", ""),
+
+        /*
          * misc:
          */
 

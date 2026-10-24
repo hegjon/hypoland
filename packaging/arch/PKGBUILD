@@ -12,7 +12,7 @@ pkgrel=1
 pkgdesc='A fork of the Hyprland Wayland compositor for OpenGL ES 2.0 hardware'
 arch=(x86_64 aarch64)
 url='https://github.com/hegjon/hypoland'
-license=(BSD-3-Clause)
+license=(BSD-3-Clause MIT)
 depends=(
   cairo
   glib2
@@ -78,8 +78,8 @@ _root="$(realpath "$startdir/../..")"
 
 # the Hyprland version it is based on, VERSION is the version of Hypoland
 provides=("hyprland=$(cat "$_root/VERSION_HYPRLAND")" wayland-compositor
-  # a Hyprland plugin that Omarchy installs (it needs hyprland=0.56.2), Hypoland has no plugins.
-  # Providing it lets Omarchy's install and migration find it, its Lua skips titlebars without the .so
+  # Omarchy's titlebar plugin (it needs hyprland=0.56.2). Hypoland has no plugins and draws the
+  # titlebars itself; providing the package lets Omarchy's install and migration find it
   omarchy-hyprland-titlebars)
 conflicts=(hyprland omarchy-hyprland-titlebars)
 # the embedded aquamarine is linked statically and relies on weakened symbols
@@ -111,6 +111,14 @@ build() {
 package() {
   DESTDIR="$pkgdir" cmake --install "$srcdir/build"
 
+  # Omarchy's config turns titlebars on only when the plugin's file is there. It is never loaded,
+  # hl.plugin.load() of this path does nothing and the titlebars are built in.
+  install -Dm644 /dev/stdin "$pkgdir/usr/lib/omarchy-hyprland-titlebars/titlebars.so" <<'EOF2'
+Hypoland draws Omarchy's titlebars itself. This file only tells Omarchy's config that titlebars
+are available: hl.plugin.load() of this path does nothing in Hypoland, nothing loads this file.
+EOF2
+
   install -Dm644 "$_root/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
   install -Dm644 "$_root/subprojects/aquamarine/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.aquamarine"
+  install -Dm644 "$_root/LICENSE.titlebars" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.titlebars"
 }

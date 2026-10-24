@@ -6,6 +6,14 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ## Unreleased
 
+### Added
+
+- Titlebars for Omarchy's floating workspaces. Omarchy draws them with a plugin of its own, which Hypoland cannot
+  load, so they are built in with the plugin's interface: the `plugin:hyprbars:*` options, `hl.plugin.hyprbars.add_button()`
+  and the `hyprbars:*` window rule effects. Omarchy's config turns them on as it does with the plugin: the app's name or
+  the title, buttons to close, maximize and minimize, dragging by the bar, double click to maximize, and dragging a
+  maximized window back to its size. Off unless a config enables them (`plugin:hyprbars:enabled`).
+
 ### Fixed
 
 - The compositor no longer aborts after a GPU hang in its own drawing. It asked for a GL context that is lost for good

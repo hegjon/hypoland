@@ -45,7 +45,8 @@ class CDecorationSnapshot {
     }
 
   private:
-    std::array<SP<IHyprWindowDecoration>, 4>   m_inline;
+    // shadow, border, glow, group bar and titlebar
+    std::array<SP<IHyprWindowDecoration>, 5>   m_inline;
     std::vector<SP<IHyprWindowDecoration>>     m_fallback;
     std::span<const SP<IHyprWindowDecoration>> m_decorations;
 };
