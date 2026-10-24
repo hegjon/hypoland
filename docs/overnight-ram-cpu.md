@@ -18,33 +18,29 @@ Not allowed, write them down as proposals in the journal instead:
 - Removing features, also the ones `AGENTS.md` lists for removal (screen shaders and so on).
 - Changing defaults of config options.
 - Anything that touches the compatibility requirements in `AGENTS.md`.
-- Changes to the X200 outside `~/hypoland` and `/tmp`, apart from switching between the SDDM session and the test
-  loop as described below (no packages, no other system config). The benchmark sets the CPU governor and the
-  Omarchy idle flags for its run and puts them back.
+- Changes to the X200 other than installing Hypoland packages built from the branch (`scripts/deploy.sh`, which
+  `bench.sh` and `profile.sh` call) and files in `/tmp` (no other packages, no system config). The benchmark
+  sets the CPU governor and the Omarchy idle flags for its run and puts them back.
 
 ## Setup
 
-The X200 normally runs the installed Hypoland package through SDDM. `test-x200.sh`, `bench.sh` and `profile.sh`
-need the tty1 test loop that runs the build in `~/hypoland` (see the testing pitfalls in `AGENTS.md`):
+The X200 runs the installed Hypoland package through SDDM. Every build is tested there as a package:
+`scripts/deploy.sh x200` builds it from the working tree, installs it, restarts SDDM and checks the new session
+(see the testing workflow in `AGENTS.md`); `bench.sh` and `profile.sh` call it.
 
-1. `ssh root@x200 bash /home/a/hypoland/setup-root.sh a` (tty1 autologin for `a`, SDDM disabled) and
-   `ssh x200 chmod +x ~/hypoland/run-loop.sh`.
-2. Stop the SDDM session so the loop gets tty1: `ssh root@x200 systemctl stop sddm`, then
-   `ssh root@x200 systemctl --user -M a@ stop graphical-session.target graphical-session-pre.target` and
-   `ssh root@x200 systemctl restart getty@tty1`.
-3. Check that `./test-x200.sh` passes before the first experiment.
+1. Note the installed version (`ssh x200 pacman -Q hypoland`), it is the one to go back to.
+2. Check that `scripts/deploy.sh --no-install x200` passes before the first experiment.
 
-At the end put the session back: `ssh x200 'chmod -x ~/hypoland/run-loop.sh; touch ~/hypoland/stop'` (the loop
-leaves when the compositor exits), `ssh root@x200 bash /home/a/hypoland/setup-root.sh --undo`,
-`ssh root@x200 pkill -x hypoland`, `ssh x200 rm ~/hypoland/stop`, stop `graphical-session.target` as above and
-`ssh root@x200 systemctl restart sddm`. Check that `/usr/bin/hypoland` is
-running again under `start-hypoland`.
+At the end put the version from step 1 back: `ssh root@x200 pacman -U --noconfirm
+/var/cache/pacman/pkg/hypoland-<version>-x86_64.pkg.tar.zst` and `ssh root@x200 systemctl restart sddm`, then check
+it with `scripts/deploy.sh --no-install x200`. Builds of uncommitted changes get the version of the commit they
+are on, so a kept change has to be committed before its package can be told apart.
 
 ## Rules
 
-- Never reboot the X200. With the loop, restart the compositor with `pkill -x hypoland` and a dead loop with
-  `ssh root@x200 systemctl restart getty@tty1`. If the X200 stays unreachable or the GPU hangs for good, stop
-  the job and write down what happened.
+- Never reboot the X200. Restart the session with `ssh root@x200 systemctl restart sddm`. If the X200 stays
+  unreachable or the GPU hangs for good, stop the job and write down what happened; its last kernel messages are
+  in `/var/log/netconsole/x200.log` on the desktop.
 - Work on a new local branch `overnight/<topic>` from `master` (not an existing one: `overnight/ram-cpu` holds the
   unmerged build flag commits). One commit per kept change, with the measured numbers in the commit message.
   Never push. Leave `master` and uncommitted files in the working tree as they are.
@@ -52,13 +48,13 @@ running again under `start-hypoland`.
 - Revert an experiment that does not pass or does not gain (`git checkout -- <files>`), keep a line about it in
   the journal so it is not tried twice.
 - Build for `x86-64`, never `-march=native`.
-- Leave the X200 as it was found: back on the SDDM session with the installed package (see Setup), no
-  `~/hypoland/env`, no `~/hypoland/test.lua`.
+- Leave the X200 as it was found: the package version from the start installed again (see Setup), nothing
+  added to `~/.config/uwsm/env`.
 
 ## How to measure
 
-`./bench.sh <label>` builds, deploys, restarts, runs `./test-x200.sh` (has to pass) and measures on the
-normal build: memory 60 s after the start and again after the workloads, CPU time of five workloads
+`./bench.sh <label>` builds the package, installs it, restarts the session, runs the checks of
+`scripts/deploy.sh` (they have to pass) and measures: memory 60 s after the start and again after the workloads, CPU time of five workloads
 (idle, GPU client at 60 fps, terminal scrolling, Chromium over shm, workspace switching), three rounds of 20 s
 each. It takes about 10 minutes. Results go to `test-results/bench-<time>-<label>/values.txt`.
 
@@ -75,10 +71,11 @@ spread of the rounds.
   (measured with `schedutil`). Compare benchmark numbers only with benchmark numbers.
 - `fps.gpu-client` has to stay at about 60. Less CPU time with fewer frames is not a gain.
 - A run with an `invalid.*` line (screensaver, lock, compositor restart or crash) does not count.
-- For finding where the time or the memory goes: `./profile.sh` (perf, separate build with frame pointers),
+- For finding where the time or the memory goes: `./profile.sh` (perf, with the debug package for symbols),
   `heaptrack` and `/proc/<pid>/smaps` on the X200. Wrap remote commands in `timeout`.
-- A change to rendering is only verified on the X200: no `Failed to link shader` in `~/hypoland/loop.log`, the
-  screenshot of `test-x200.sh` shows the window. Look at the screenshot.
+- A change to rendering is only verified on the X200: `scripts/deploy.sh x200` passes (no `Failed to link shader`
+  in the compositor's log, the test window in the screenshots). Look at the screenshots in
+  `test-results/deploy-*/x200/`.
 
 ## Journal
 

@@ -1,14 +1,12 @@
 # Sourced by bench.sh and profile.sh: where the machine under test is and how a script gets there.
 #
-#   BENCH_HOST    ssh host of the machine under test, or "local" for this machine (default: $X200_HOST, x200)
+#   BENCH_HOST    ssh host of the machine under test, or "local" for this machine (default: x200)
 #   BENCH_LOGIN   ssh login used for measuring (default: root). Any other login is tried with sudo and
-#                 measures without root when that needs a password: no governor change, no suspend inhibitor
-#   BENCH_DEPLOY  script that builds, deploys, restarts and checks (default: ./test-x200.sh). It gets the
-#                 host as X200_HOST and the build directory as BUILD_DIR
+#                 measures without root when that needs a password: no governor change, no suspend inhibitor.
+#                 Deploying always logs in as root
 
-BENCH_HOST=${BENCH_HOST:-${X200_HOST:-x200}}
+BENCH_HOST=${BENCH_HOST:-x200}
 BENCH_LOGIN=${BENCH_LOGIN:-root}
-BENCH_DEPLOY=${BENCH_DEPLOY:-./test-x200.sh}
 
 target_is_local() {
     [ "$BENCH_HOST" = local ] || [ "$BENCH_HOST" = localhost ]
@@ -38,15 +36,16 @@ target_run() { # script, arguments
     return "${PIPESTATUS[0]}"
 }
 
-# builds, deploys and restarts through BENCH_DEPLOY. Nothing is deployed to this machine
-target_deploy() { # log file, arguments of the deploy script
+# builds the package, installs it, restarts the session and checks it (scripts/deploy.sh). Nothing is deployed
+# to this machine
+target_deploy() { # log file, options of scripts/deploy.sh
     local log=$1
     shift
     if target_is_local; then
         echo "local run, measuring the compositor that is running" >"$log"
         return 0
     fi
-    X200_HOST=$BENCH_HOST "$BENCH_DEPLOY" "$@" >"$log" 2>&1
+    scripts/deploy.sh "$@" "$BENCH_HOST" >"$log" 2>&1
 }
 
 # options bench.sh and profile.sh have in common. Sets MEASURE_ARGS, DEPLOY and DEPLOY_ARGS, returns 1 for
@@ -70,7 +69,7 @@ target_option() { # the remaining command line
 
 TARGET_HELP='  --host HOST        ssh host of the machine under test, or "local" (default: $BENCH_HOST, x200)
   --login USER       ssh login for measuring (default: root)
-  --no-build         deploy the build that is there
+  --no-build         deploy the package that was built last
   --no-deploy        measure the compositor that is running, deploy and restart nothing
   --seconds N        length of a workload
   --workloads LIST   idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch

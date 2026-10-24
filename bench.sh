@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Measures CPU time and memory of the compositor on the machine under test, to compare a change against a
-# baseline. Builds, deploys and restarts through test-x200.sh, which has to pass, then runs the workloads
-# of scripts/bench/measure.sh. With --no-deploy or --host local it measures the compositor that is running.
+# baseline. Builds the package, installs it and restarts the session through scripts/deploy.sh, whose checks
+# have to pass, then runs the workloads of scripts/bench/measure.sh. With --no-deploy or --host local it
+# measures the compositor that is running.
 #
 # Usage: ./bench.sh [options] [label]
 #        ./bench.sh --compare <baseline dir> <candidate dir>
@@ -25,7 +26,7 @@ cd "$(dirname "$(readlink -f "$0")")" || exit 1
 . scripts/bench/target.sh
 
 usage() {
-    sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//' | while IFS= read -r line; do
+    sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//' | while IFS= read -r line; do
         if [ "$line" = TARGET_HELP ]; then echo "$TARGET_HELP"; else echo "$line"; fi
     done
 }
@@ -98,8 +99,8 @@ mkdir -p "$OUT"
 git diff HEAD >"$OUT/source.diff" 2>&1
 
 if [ $DEPLOY = 1 ] && ! target_deploy "$OUT/test.log" "${DEPLOY_ARGS[@]}"; then
-    echo "$BENCH_DEPLOY failed, nothing was measured:"
-    grep -E "^(PASS|FAIL)" "$OUT/test.log"
+    echo "the deploy failed, nothing was measured:"
+    grep -E "^(FAIL|build failed)" "$OUT/test.log"
     exit 1
 fi
 

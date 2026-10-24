@@ -15,6 +15,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   start on it), the main target, and since October 2026 a ThinkPad T550 (Intel HD 5500, `iris`) and an HP EliteBook
   8560p (Radeon HD 6470M, `r600`), both with GLES 3. All three run Omarchy on the Hypoland package through SDDM and
   are reached over ssh by an alias (`x200`, `t550`, `elitebook`, also as `root@`).
+  A desktop with an AMD A8-6600K APU (Radeon HD 8570D, `r600`, legacy modesetting like the EliteBook) joined on
+  2026-10-24 as `lianli` (also as `root@lianli`) and runs the Hypoland package since then, on HDMI
+  to the desktop's monitor (1920x1200).
   Their hardware, addresses, logins and update steps are in `MACHINES.md`, a private file that is not in git
   (it is in `.git/info/exclude`). Read it before working on a machine, and keep machine details there, not here.
 
@@ -169,47 +172,47 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
 
 ## Testing workflow
 
-1. Build on the desktop. Test builds go into a prefix on the X200 (`~/hypoland/`, with `rsync`); install the Arch
-   package there (Hardware above) only when the user asks.
-2. A compositor started over SSH can't take the display. The X200 runs the installed package through SDDM
-   (restart with `ssh root@x200 systemctl restart sddm`). For test builds in `~/hypoland` the tty1 loop has to be
-   set up again (see the pitfalls): it runs `~/hypoland/bin/hypoland` and restarts it on exit
-   (`pkill -x hypoland`). Do not reboot for recovery, see the pitfalls below.
+1. Build and test with `scripts/deploy.sh <host>...` (e.g. `scripts/deploy.sh x200`). It builds the Arch package
+   from the working tree (`makepkg`, which keeps its build directory, so only changes are compiled), installs it
+   on the machines as root (the versions before stay in `/var/cache/pacman/pkg`, go back with `pacman -U`),
+   restarts SDDM, which logs in again, and checks the new session with `scripts/bench/measure.sh --mode check`:
+   config errors, removed options answering `ok`, a test window drawn in a screenshot and in the buffer the screen
+   scans out (`hypoland-kmsgrab`, root and one monitor), a GPU client, an X11 client through Xwayland, Chromium,
+   GL and shader errors in the compositor's log, crash reports and core dumps. A machine without a monitor gets a
+   headless output for the checks. It prints PASS / FAIL per machine; logs and screenshots are in
+   `test-results/deploy-*`. `--no-install` only checks the running session (the aarch64 Galaxy Book builds its own
+   package, see `MACHINES.md`). Prefer it over improvising SSH commands. A deploy replaces the Hypoland the
+   machine runs, so say which build went where (`pacman -Q hypoland`).
+2. A compositor started over SSH can't take the display. The machines run the installed package through SDDM;
+   `ssh root@<host> systemctl restart sddm` gives a new session. Do not reboot for recovery, see the pitfalls below.
 3. Over SSH, with `XDG_RUNTIME_DIR=/run/user/<uid>` set:
    - control: `hyprctl`
    - screenshots: `grim`, then `scp` back and inspect the image
    - clients: `foot`, `weston-simple-egl`, `glmark2-es2-wayland`
    - resources: `pidstat`, `ps -o rss` (`intel_gpu_top` is unreliable on Gen4)
-   - logs: `$XDG_RUNTIME_DIR/hypr/*/hyprland.log` (mostly empty, Omarchy disables logs), the compositor's
-     stderr in `~/hypoland/loop.log`, crash reports in `~/.cache/hyprland/`
-4. Wrap steps 1-3 in one script, `./test-x200.sh`, that prints a short pass/fail summary and the log tail.
-   Prefer running this script over improvising SSH commands.
-5. Fast local checks: run nested on the desktop with `LIBGL_ALWAYS_SOFTWARE=1 MESA_GLES_VERSION_OVERRIDE=2.0`.
+   - logs: the compositor's stderr in the user journal (`journalctl --user -u wayland-wm@hyprland.desktop.service`),
+     `$XDG_RUNTIME_DIR/hypr/*/hyprland.log` (mostly empty, Omarchy disables logs), crash reports in
+     `~/.cache/hyprland/`
+4. Fast local checks: run nested on the desktop with `LIBGL_ALWAYS_SOFTWARE=1 MESA_GLES_VERSION_OVERRIDE=2.0`.
    This is NOT a faithful GM45 test (llvmpipe allows extra features); the X200 is the final judge.
-6. Quickshell (Omarchy's shell) works on the X200 with GPU rendering. Waybar is installed as a simpler
+5. Quickshell (Omarchy's shell) works on the X200 with GPU rendering. Waybar is installed as a simpler
    layer-shell client for isolating problems.
 
 ## Testing pitfalls (learned the hard way)
 
-- **Never reboot the X200** (no `sudo reboot`, no `systemctl reboot`, no `test-x200.sh --reboot`) unless the user
-  is present and says so: the disk is encrypted and the password must be typed at boot. For a GPU hang, restart
-  the compositor or `getty@tty1` instead and report it.
-- The test loop is switched off since 2026-09-28 (the X200 boots the package through SDDM, see Hardware), so
-  `test-x200.sh`, `bench.sh` and `profile.sh` do not work as they are. `setup-root.sh --undo` was run (SDDM on,
-  tty1 autologin drop-in and passwordless `sudo reboot` removed) and `~/hypoland/run-loop.sh` is not executable.
-  The hook in `~/.bash_profile` is still there: SDDM's session script starts a login shell on tty1, so an
-  executable `run-loop.sh` takes over the SDDM session with the compositor in `~/hypoland/bin`. `setup-root.sh --undo`
-  does not handle that yet. To get the loop back: `sudo ./setup-root.sh` and `chmod +x ~/hypoland/run-loop.sh`.
-  With the loop, restart the compositor with `pkill -x hypoland`; if the loop dies,
-  `ssh root@x200 systemctl restart getty@tty1`. `ssh root@x200` works in both setups.
-- Killing the loop's compositor leaves `graphical-session.target` active, and uwsm then refuses to start
-  ("A compositor or graphical-session* target is already active"). Stop it with
-  `systemctl --user -M a@ stop graphical-session.target graphical-session-pre.target` before restarting SDDM.
+- **Never reboot the X200** (no `sudo reboot`, no `systemctl reboot`) unless the user is present and says so: the
+  disk is encrypted and the password must be typed at boot. The same holds for every test machine. For a GPU hang,
+  restart SDDM instead and report it.
+- The tty1 test loop (`scripts/x200/run-loop.sh` and `setup-root.sh`, a build in `~/hypoland` restarted on exit)
+  and `test-x200.sh` were removed on 2026-10-24 by decision of the user: every machine runs the package through
+  SDDM, and `scripts/deploy.sh` installs and checks it. The loop's hook is gone from the X200's `~/.bash_profile`
+  too (the file before is `~/.bash_profile.before-loop-removal`); `~/hypoland` on the X200 still holds the last
+  test build and `loop.log`, nothing uses them.
 - llvmpipe accepts GLSL that real GLES2 rejects (e.g. a leftover `in` declaration). A shader change is only
-  verified once the X200 log has no `Failed to link shader` line and the screenshot shows windows.
+  verified once `scripts/deploy.sh x200` passes: it finds `Failed to link shader` in the compositor's log and
+  checks that the screenshots show the window.
 - Embedded shader sources (`src/render/shaders/*.inc`) are generated at configure time, so re-run cmake
-  configure after editing a shader. `test-x200.sh` does this.
-- `~/hypoland/test.lua` on the X200, if present, is used as the config by the loop instead of the Omarchy config.
+  configure after editing a shader. `makepkg`, and with it `scripts/deploy.sh`, configures on every build.
 - Screenshots need frames. With the panel off (DPMS, idle) nothing renders: `grim` blocks or shows stale content.
   The same applies to nested runs on the desktop when its monitor is off or the nested window is not visible.
 - Wrap every remote `hyprctl` / `grim` in `timeout`.
@@ -217,7 +220,7 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
   without input and locks the session after 300 s (`~/.config/omarchy/shell.json`, `idle`). Nothing types on
   the X200 during tests, so any run longer than 2.5 minutes after a compositor start can end up measuring the
   screensaver or a lock screen. Keep profiling runs short after a restart, check `hyprctl clients` for the
-  screensaver class and `solitaryBlockedBy` for `LOCK` (upper case), and look at
+  screensaver class and `solitaryBlockedBy` for `LOCK` (`-j`, `session lock` in the text output), and look at
   `journalctl --user | grep "omarchy idle"`. `~/.local/state/omarchy/toggles/screensaver-off` only stops the
   screensaver; the lock needs `~/.local/state/omarchy/indicators/stay-awake` (`omarchy-toggle-idle stay-awake`).
   The lock screen can only be left with the password; `systemctl restart sddm` as root gives a fresh session.
@@ -225,9 +228,9 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
 ## Status
 
 The first milestone is reached: the GLES2-only build runs the full Omarchy session on the X200 (Quickshell bar,
-wallpaper, notifications, windows, Xwayland, Chromium). `./test-x200.sh` passed (2026-09-27, with the test loop),
-including a check that the window is really drawn (the test terminal fills itself with magenta and the screenshot
-is checked for it).
+wallpaper, notifications, windows, Xwayland, Chromium). `./test-x200.sh` (now `scripts/deploy.sh`) passed
+(2026-09-27, with the test loop), including a check that the window is really drawn (the test terminal fills
+itself with magenta and the screenshot is checked for it).
 
 Measured on the X200 on 2026-09-27 (1280x800, Omarchy config; later numbers further down supersede these):
 - idle compositor CPU 0%, RSS about 100 MiB (about 73 MiB of it are file mappings, mostly Mesa and LLVM)
@@ -254,10 +257,9 @@ Findings worth keeping:
 
 Tools:
 - `HYPOLAND_PROFILE_PASS=1` times every render pass element on the GPU (glFinish) and prints per-type totals to
-  stderr every 120 frames. With the test loop put it in `~/hypoland/env` (sourced by the loop) and read
-  `~/hypoland/loop.log`. In the SDDM session the loop's files are not used: the compositor's stderr goes to the
-  journal (`journalctl --user -u wayland-wm@hyprland.desktop.service`) and the variable has to reach the session
-  environment (e.g. `~/.config/uwsm/env`). It slows rendering down, remove it afterwards.
+  stderr every 120 frames, which goes to the journal (`journalctl --user -u wayland-wm@hyprland.desktop.service`).
+  The variable has to reach the session environment (e.g. `~/.config/uwsm/env`, then restart SDDM). It slows
+  rendering down, remove it afterwards.
 - `debug:overlay` works and shows frame and render times.
 - `scripts/x200/kmsgrab.c` (installed on the X200 as root: `/usr/local/bin/hypoland-kmsgrab out.ppm`) saves the buffer
   the display scans out. Use it to check what really reaches the screen: a `grim` screenshot counts as screen
@@ -277,8 +279,8 @@ Tools:
   compositor (`hypoland`, then `Hypoland` of older builds, then `Hyprland`), its user, prefix, instance and Wayland socket from the running process
   and its `hyprland.lock`, starts clients with the environment of the compositor, skips workloads whose client
   is not installed and only touches the Omarchy idle flags where Omarchy is installed.
-  `scripts/bench/target.sh` holds the ssh part. Build, deploy and restart still go through `test-x200.sh`
-  (`BENCH_DEPLOY` names another script).
+  `scripts/bench/target.sh` holds the ssh part. Build, install and restart go through `scripts/deploy.sh`, whose
+  checks have to pass (`--no-build` installs the package that was built last).
 - `./bench.sh --energy <label>` measures energy instead of speed (added 2026-09-28, after omacom/ttfx#46): the
   power the machine draws under each workload, net of an idle baseline taken before and after it (`power.*.net_W`,
   `energy.*.net_J`, with the drift of the baseline as `pm_W`), the idle session itself (`power.baseline.W`) and
@@ -320,10 +322,13 @@ Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a
   `misc:background_color`. A full tile with a window at opacity 0.9: 6.89 -> 5.78 ms GPU time per frame; opaque
   windows (2.95 ms) hide the wallpaper anyway. Measured with i915 request tracing, not `HYPOLAND_PROFILE_PASS`.
 
-CPU profile: run `./profile.sh`. It builds with frame pointers in `build-prof`, deploys, switches the
-Omarchy screensaver and idle lock off, records five workloads with `perf` as root, prints the report to
-`test-results/profile-*/profile.txt` and puts the normal build back. Use `--keep` to leave the profiling build
-on the X200; `perf report` on the saved data only resolves symbols while that build is installed.
+CPU profile: run `./profile.sh`. It installs the package with `hypoland-debug` (makepkg builds with frame
+pointers, Arch's default flags, so the package needs no profiling build; the debug package has the symbols),
+switches the Omarchy screensaver and idle lock off, records five workloads with `perf` as root, prints the report
+to `test-results/profile-*/profile.txt` and removes the debug package. Use `--keep` to leave it installed;
+`perf report` on the saved data only resolves symbols while it is. Until 2026-10-24 it used a separate build
+without the package's hardening flags (`-D_GLIBCXX_ASSERTIONS`, `_FORTIFY_SOURCE=3`, stack clash and CET
+protection), so older profiles are not exactly comparable.
 Findings:
 - Idle desktop: 0.1% CPU.
 - GPU client at 60 fps, 10% CPU: `renderMonitor` 76% of it. `endRender` 52% (of which `CEGLSync::create` 25%,
@@ -399,7 +404,8 @@ Overnight run 2026-09-28 (journal in `test-results/overnight/journal.md`), measu
   (`drm-total-system0`), the benchmark reports them as `mem.*.gpu_kB`. The compositor held 100.4 MiB 60 s after the
   start of the benchmark (73.5 MiB after a plain restart), more than its Pss. Now 65 to 74 MiB in the benchmark and
   52.0 MiB after a plain restart (Pss 53.1 MiB, anonymous 20.8 MiB there). The totals vary by up to 8 MiB between runs because
-  `test-x200.sh` switches blur on and takes a screenshot (blur and mirror framebuffers).
+  `test-x200.sh` switched blur on and took a screenshot (blur and mirror framebuffers); `scripts/deploy.sh`, which
+  replaced it on 2026-10-24, leaves blur as it was but still takes screenshots.
   - The group bar kept four gradient textures of the size of the monitor (15.6 MiB), also without any window
     group. They are one pixel wide now, the picture is identical.
   - Unused work buffers were only dropped when the next one was requested, which never happens while the monitor
@@ -467,16 +473,16 @@ Known issues:
 - Not a bug: foot 1.28 is never blurred by default. It binds `ext-background-effect-v1` and only sets a blur
   region with `blur=yes` in its `[colors-dark]` section, and `CWindow::shouldBlur()` honours that. Live and
   precomputed blur both work on the X200 for other clients. Do not use foot to judge blur.
+- Open, not yet compared with stock Hyprland: on lianli (r600) Chromium's first frame in a new window with a fresh
+  profile came after 1 s in some runs and only after 15 to 30 s in others (2026-10-24, the Chromium check of
+  `scripts/deploy.sh`). Until then its window shows a buffer it has not drawn into: transparent, or old video
+  memory such as the last frame of a glxgears that had just closed, also in `grim` screenshots. The EliteBook
+  (r600) and the T550 drew within about a second in the same runs. The check waits up to 60 s for the page.
 
 ## Next steps
 
-Open decisions for the user:
-- Keep the X200 on the package and SDDM, or bring the test loop back for `test-x200.sh` and the benchmarks.
-
 Work that is left from the plan above:
 - Remove screen shaders.
-- `scripts/x200/run-loop.sh` starts `hypoland` directly, so the "started without start-hypoland" notification shows
-  when the test loop is used (not in the SDDM session).
 
 # Code guidelines
 
