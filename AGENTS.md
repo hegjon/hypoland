@@ -24,6 +24,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   to the desktop's monitor (1920x1200).
   Their hardware, addresses, logins and update steps are in `MACHINES.md`, a private file that is not in git
   (it is in `.git/info/exclude`). Read it before working on a machine, and keep machine details there, not here.
+  Every test machine sends its journal and its kernel log (netconsole) to the desktop, so a machine that dies
+  leaves its last words there: when adding a machine, run `scripts/x200/forward-logs.sh machine <desktop address>
+  <ssh host>` (it says where the logs end up).
 
 ## Repository
 
@@ -196,7 +199,7 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    - resources: `pidstat`, `ps -o rss` (`intel_gpu_top` is unreliable on Gen4)
    - logs: the compositor's stderr in the user journal (`journalctl --user -u wayland-wm@hyprland.desktop.service`),
      `$XDG_RUNTIME_DIR/hypr/*/hyprland.log` (mostly empty, Omarchy disables logs), crash reports in
-     `~/.cache/hyprland/`
+     `~/.cache/hyprland/`, and every machine's journal and kernel log on the desktop (Hardware above)
 4. Fast local checks: run nested on the desktop with `LIBGL_ALWAYS_SOFTWARE=1 MESA_GLES_VERSION_OVERRIDE=2.0`.
    This is NOT a faithful GM45 test (llvmpipe allows extra features); the X200 is the final judge.
 5. Quickshell (Omarchy's shell) works on the X200 with GPU rendering. Waybar is installed as a simpler
