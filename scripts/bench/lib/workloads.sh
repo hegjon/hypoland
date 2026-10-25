@@ -77,7 +77,7 @@ workload_nautilus() { # GTK 4 redrawing a full window of icons, fullscreen toggl
 }
 
 # 25000 empty files, made once in the user's cache, so the listing is the same on every machine and run (the same
-# directory as scripts/x200/soak.sh)
+# directory as scripts/machines/soak.sh)
 FILES=$USERHOME/.cache/hypoland-bench/files-25000
 needs_flea="flea"
 workload_flea() { # Omarchy's file manager, a Quickshell window, paged through with keys

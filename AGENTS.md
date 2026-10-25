@@ -25,8 +25,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   Their hardware, addresses, logins and update steps are in `MACHINES.md`, a private file that is not in git
   (it is in `.git/info/exclude`). Read it before working on a machine, and keep machine details there, not here.
   Every test machine sends its journal and its kernel log (netconsole) to the desktop, so a machine that dies
-  leaves its last words there: when adding a machine, run `scripts/x200/forward-logs.sh machine <desktop address>
-  <ssh host>` (it says where the logs end up).
+  leaves its last words there: when adding a machine, run `scripts/machines/forward-logs.sh machine <desktop address>
+  <ssh host>` (it says where the logs end up). The scripts for the test machines (the soak, the energy meter, the log
+  forwarding, kmsgrab) are in `scripts/machines/`, which was `scripts/x200/` until 2026-10-25.
 
 ## Repository
 
@@ -298,7 +299,7 @@ Tools:
   The variable has to reach the session environment (e.g. `~/.config/uwsm/env`, then restart SDDM). It slows
   rendering down, remove it afterwards.
 - `debug:overlay` works and shows frame and render times.
-- `scripts/x200/kmsgrab.c` (installed on the X200 as root: `/usr/local/bin/hypoland-kmsgrab out.ppm`) saves the buffer
+- `scripts/machines/kmsgrab.c` (installed on the X200 as root: `/usr/local/bin/hypoland-kmsgrab out.ppm`) saves the buffer
   the display scans out. Use it to check what really reaches the screen: a `grim` screenshot counts as screen
   sharing, which makes the compositor use the work buffer copy path instead of direct rendering. The read takes
   about 80 ms and the compositor draws into that buffer again a few frames later, so an animating client can
