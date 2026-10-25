@@ -14,17 +14,11 @@ set -u
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
 . scripts/bench/target.sh
 
-usage() {
-    sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//' | while IFS= read -r line; do
-        if [ "$line" = TARGET_HELP ]; then echo "$TARGET_HELP"; else echo "$line"; fi
-    done
-}
-
 KEEP=0
 while [ $# -gt 0 ]; do
     case $1 in
         --keep) KEEP=1 ;;
-        -h | --help) usage; exit 0 ;;
+        -h | --help) target_usage "$0"; exit 0 ;;
         -*)
             target_option "$@" || { echo "unknown argument: $1" >&2; exit 2; }
             shift $((TARGET_SHIFT - 1))

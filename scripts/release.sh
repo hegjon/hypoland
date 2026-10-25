@@ -26,7 +26,7 @@ for arg in "$@"; do
     --skip-build) SKIP_BUILD=1 ;;
     --yes) YES=1 ;;
     -h | --help)
-        sed -n '2,/^set -eu/p' "$0" | sed '$d; s/^# \{0,1\}//'
+        sed -n '2,/^[^#]/s/^# \{0,1\}//p' "$0"
         exit 0
         ;;
     -*)

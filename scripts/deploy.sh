@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Builds the Arch package from the working tree and installs it on test machines (see MACHINES.md): copies it
 # into the pacman cache there, so the versions before it stay for going back, installs it with pacman, restarts
-# SDDM (which logs in again) and checks the new session with `scripts/bench/measure.sh --mode check`, sent there as
-# scripts/bench/target.sh sends it. Logs in as
-# root@<host>. The hosts are deployed in parallel, each into its own log.
+# SDDM (which logs in again) and checks the new session with `scripts/bench/measure.sh --mode check`, sent there by
+# scripts/bench/target.sh. Logs in as root@<host>. The hosts are deployed in parallel, each into its own log.
 #
 # Usage: scripts/deploy.sh [options] host...
 #
@@ -19,6 +18,7 @@
 
 set -u
 cd "$(dirname "$(readlink -f "$0")")/.." || exit 1
+. scripts/bench/target.sh
 
 BUILD=1 INSTALL=1 CHECK=1 DEBUG=0 RESTART="" HOSTS=()
 while [ $# -gt 0 ]; do
@@ -28,7 +28,7 @@ while [ $# -gt 0 ]; do
         --no-check) CHECK=0 ;;
         --debug) DEBUG=1 ;;
         --restart) RESTART=1 ;;
-        -h | --help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h | --help) target_usage "$0"; exit 0 ;;
         -*) echo "unknown argument: $1" >&2; exit 2 ;;
         *) HOSTS+=("$1") ;;
     esac
@@ -39,7 +39,6 @@ RESTART=${RESTART:-$INSTALL}
 
 OUT=test-results/deploy-$(date +%Y%m%d-%H%M%S)
 mkdir -p "$OUT"
-. scripts/bench/target.sh
 SSH=(ssh "${SSH_OPTS[@]}")
 
 # ---- build

@@ -79,14 +79,25 @@ target_option() { # the remaining command line
     esac
 }
 
-TARGET_HELP='  --host HOST        ssh host of the machine under test, or "local" (default: $BENCH_HOST, x200)
+# the help for these options, in place of the line TARGET_HELP in the header comment of bench.sh and profile.sh. The
+# workloads are read from measure.sh, so the list is in one place
+TARGET_WORKLOADS=$(sed -n 's/^WORKLOADS=//p' scripts/bench/measure.sh | tr ',' '\n' | awk '
+    {if (length(line) + length($0) > 100) {print line; line = ""} line = line $0 ","}
+    END {sub(/,$/, "", line); print line}' | sed '2,$s/^/                     /')
+TARGET_HELP="  --host HOST        ssh host of the machine under test, or \"local\" (default: \$BENCH_HOST, x200)
   --login USER       ssh login for measuring (default: root)
   --no-build         deploy the package that was built last
   --no-deploy        measure the compositor that is running, deploy and restart nothing
   --seconds N        length of a workload
-  --workloads LIST   idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,
-                     gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,
-                     qt-software-sprites,video-window,idle-windows,dev
+  --workloads LIST   $TARGET_WORKLOADS
   --client NAME=CMD  one more workload: CMD is started as a client and measured as NAME
   --process NAME     name of the compositor process (default: hypoland, then Hypoland, then Hyprland)
-  --keep-governor    leave the CPU frequency governor alone'
+  --keep-governor    leave the CPU frequency governor alone"
+
+# prints the comment block at the top of a script as its help: from the second line to the first line that is not a
+# comment, with the line TARGET_HELP replaced by the help above
+target_usage() { # script
+    sed -n '2,/^[^#]/s/^# \{0,1\}//p' "$1" | while IFS= read -r line; do
+        if [ "$line" = TARGET_HELP ]; then echo "$TARGET_HELP"; else echo "$line"; fi
+    done
+}

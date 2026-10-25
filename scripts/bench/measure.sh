@@ -14,7 +14,7 @@
 #                       in the log) and RESULT: PASS or FAIL
 #   --seconds N         length of a workload (default 12)
 #   --rounds N          how often the workloads are repeated, bench only (default 1)
-#   --workloads LIST    comma separated, default: idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window,idle-windows,dev
+#   --workloads LIST    comma separated, default: all of them (WORKLOADS below)
 #   --client NAME=CMD   one more workload: CMD is started as a client and measured as NAME, can be repeated
 #   --env NAME=VALUE    a variable for the clients, as a session's hl.env gives it to the programs it starts (the
 #                       Mesa overrides of Omarchy's GLES 3 override for stock Hyprland on the X200), can be repeated

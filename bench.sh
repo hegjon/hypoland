@@ -25,12 +25,6 @@ set -u
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
 . scripts/bench/target.sh
 
-usage() {
-    sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//' | while IFS= read -r line; do
-        if [ "$line" = TARGET_HELP ]; then echo "$TARGET_HELP"; else echo "$line"; fi
-    done
-}
-
 compare() {
     [ -f "$1/values.txt" ] && [ -f "$2/values.txt" ] || { echo "no values.txt in $1 or $2" >&2; exit 2; }
     awk '
@@ -73,12 +67,12 @@ compare() {
 ROUNDS=3 LABEL="" SECONDS_SET=0 MODE=bench
 while [ $# -gt 0 ]; do
     case $1 in
-        --compare) [ $# -eq 3 ] || { usage; exit 2; }; compare "$2" "$3"; exit 0 ;;
+        --compare) [ $# -eq 3 ] || { target_usage "$0"; exit 2; }; compare "$2" "$3"; exit 0 ;;
         --rounds) ROUNDS=$2; shift ;;
         --settle) MEASURE_ARGS+=(--settle "$2"); shift ;;
         --energy) MODE=energy ;;
         --meter | --idle | --min-battery | --powercap | --power-supply) MEASURE_ARGS+=("$1" "$2"); shift ;;
-        -h | --help) usage; exit 0 ;;
+        -h | --help) target_usage "$0"; exit 0 ;;
         -*)
             [ "$1" = --seconds ] && SECONDS_SET=1
             target_option "$@" || { echo "unknown argument: $1" >&2; exit 2; }
