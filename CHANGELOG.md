@@ -40,6 +40,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   on its own thread, so the display could show a frame before the GPU had drawn it. Only crocus (Gen4 to Haswell,
   the X200) still skips the fence.
 
+### Other
+
+- The web page shows the comparison with stock Hyprland 0.56.2, lists the GPUs Hypoland is tested on besides the
+  X200, says that older GLES 3 hardware or little memory can be a reason for Hypoland too, and links the releases.
+
 ## 0.2.0 - 2026-10-21
 
 ### Faster

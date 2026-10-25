@@ -367,6 +367,12 @@ Tools:
     same region. `qt-software-sprites`: X200 31.6% -> 19.4% (59.9 fps), XPS 29.6% -> 24.2%, T550 and Galaxy Book
     unchanged within noise; X200 `gtk3-scroll` and `gtk4-scroll` 0.5 to 1 point lower. `gpu-client` on the Galaxy
     Book varies by 1.5 points between runs (rounds 3.5 to 5.8%), do not read a change there.
+  - GTK 3 costs the X200 about twice what GTK 4 does (19.2% / 11.0%, both cairo into shm) because GTK 3 damages the
+    whole window on every frame, GTK 4 only the text column that changes (`WAYLAND_DEBUG`: 1576x850 against
+    about 470x850). The client's doing, not the compositor's. GTK 3 also sends `set_window_geometry` with every
+    commit, the window ignores an unchanged one.
+  - The border damage while windows animate (`CHyprBorderDecoration::damageEntire()`, region math per tick) is
+    still 4.2% of the compositor's time in workspace switching on the EliteBook, about 0.35 points of CPU.
 - `./bench.sh --energy <label>` measures energy instead of speed (added 2026-09-28, after omacom/ttfx#46): the
   power the machine draws under each workload, net of an idle baseline taken before and after it (`power.*.net_W`,
   `energy.*.net_J`, with the drift of the baseline as `pm_W`), the idle session itself (`power.baseline.W`) and
@@ -497,6 +503,10 @@ Overnight run 2026-09-28 (journal in `test-results/overnight/journal.md`), measu
   iris (T550 `qt-software-scroll` 13.8% -> 16.3%), the same on the XPS, a little faster on freedreno (Galaxy Book
   `gtk3-scroll` 15.4% -> 14.5%, sprites 26.3% -> 22.7%, within that machine's spread of about 1.5 points). Double
   buffering stays on all drivers.
+- The GPU memory that grows over a benchmark run is Mesa's buffer cache (purgeable) on Intel: what is held changes by
+  -8 to +6 MiB. The Galaxy Book holds 23 to 39 MiB more after a run (2880x1800): it comes once, with the first
+  `qt-software-sprites` (+45 MiB, no other workload adds any), and further sprites windows add nothing, so a high-water
+  mark (a driver cache or a buffer kept once allocated), not a leak. Not narrowed down further.
 - Not worth it: the GSettings cursor sync leaves 4 glib threads in the compositor, moving it into a child saves
   0.2 MiB. `malloc_trim` alone finds nothing, the heap is not fragmented. Idle is 3 wakeups per second.
 - GPU buffers are system memory on Gen4 and in no process statistic; read them from `/proc/<pid>/fdinfo`
@@ -571,6 +581,16 @@ Known issues:
   first frame in the deploy check on lianli by up to 30 s. Patched packages, the patches, the analysis and the
   scripts are in `~/Work/chromium/` on the desktop (its `README.md`); which machine runs which Chromium is in
   `MACHINES.md`.
+- Open, in the radeon driver or the hardware (2026-10-25): on the EliteBook (r600, HD 6470M) the screen can stand
+  still for 17 to 36 s when a Qt Quick software window opens (the deploy check's "Qt Quick (software) window" fails:
+  no screenshot, 0 to 7 fps). The compositor is idle in `epoll_wait` and answers IPC; its frame waits on the GPU. The
+  radeon tracepoints (`perf record -a -e radeon:radeon_cs -e 'radeon:radeon_fence_*' -e 'radeon:radeon_semaphore_*'`)
+  show the graphics ring waiting on a semaphore of a small DMA ring job (24 dwords, Mesa's copies, about 5 a second
+  while windows change) that is submitted but only runs at the next DMA submission of any process, often Quickshell's
+  clock at the next minute. Stock Hyprland 0.56.2 stalls too, less often: 1 of 18 fresh sessions, Hypoland about 1 in
+  4 (r720, r722 and r725 alike), though both submit the same work in the same check (DMA jobs 323 / 332, graphics
+  1726 / 1729). Not changed by `R600_DEBUG=nodma`, `HYPOLAND_NO_DIRECT_RENDER`, single buffered shm textures or
+  `power_dpm_force_performance_level=high`. Traces and scripts: `test-results/r600-stall-20261025/`.
 - Not a bug: foot 1.28 is never blurred by default. It binds `ext-background-effect-v1` and only sets a blur
   region with `blur=yes` in its `[colors-dark]` section, and `CWindow::shouldBlur()` honours that. Live and
   precomputed blur both work on the X200 for other clients. Do not use foot to judge blur.
