@@ -1931,6 +1931,11 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit) {
         ZOOM_DAMAGE_ENTIRE)
         damage = {0, 0, sc<int>(pMonitor->m_transformedSize.x) * 10, sc<int>(pMonitor->m_transformedSize.y) * 10};
 
+    // every element is drawn once per damage rectangle, see CHyprOpenGLImpl::coalesceDamage()
+    static constexpr size_t MAX_DAMAGE_RECTS = 8;
+    if (Render::GL::g_pHyprOpenGL->coalesceDamage())
+        damage = Math::coalesceRegion(damage, MAX_DAMAGE_RECTS);
+
     finalDamage = damage;
 
     // update damage in renderdata as we modified it

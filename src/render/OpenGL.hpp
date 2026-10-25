@@ -250,6 +250,7 @@ namespace Render::GL {
         WP<CShader>                               useShader(WP<CShader> prog);
 
         bool                                      explicitSyncSupported();
+        bool                                      coalesceDamage() const; // whether damage is merged into few rectangles
         void                                      scheduleShaderCompilerRelease();
         WP<CShader>                               getShaderVariant(Render::ePreparedFragmentShader frag, Render::ShaderFeatureFlags features = 0);
         WP<CShader>                               getShaderVariant(Render::ePreparedFragmentShader frag, const Render::SShaderVariant& variant);

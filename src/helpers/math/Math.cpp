@@ -4,6 +4,8 @@
 
 #include <unordered_map>
 #include <array>
+#include <algorithm>
+#include <vector>
 
 using namespace Math;
 
@@ -90,4 +92,33 @@ eTransform Math::composeTransform(eTransform a, eTransform b) {
     RASSERT(b >= HYPRUTILS_TRANSFORM_NORMAL && b <= HYPRUTILS_TRANSFORM_FLIPPED_270, "Invalid transform b in composeTransform");
 
     return lookup[a][b];
+}
+
+CRegion Math::coalesceRegion(const CRegion& region, size_t maxRects) {
+    if (sc<size_t>(pixman_region32_n_rects(region.pixman())) <= maxRects)
+        return region.copy();
+
+    // pixman sorts the rectangles by their top edge, so one that starts below the strip so far starts the next one
+    std::vector<pixman_box32_t> strips;
+    region.forEachRect([&strips](const auto& RECT) {
+        if (strips.empty() || RECT.y1 > strips.back().y2) {
+            strips.emplace_back(RECT);
+            return;
+        }
+
+        auto& strip = strips.back();
+        strip.x1    = std::min(strip.x1, RECT.x1);
+        strip.x2    = std::max(strip.x2, RECT.x2);
+        strip.y2    = std::max(strip.y2, RECT.y2);
+    });
+
+    if (strips.size() > maxRects)
+        return CRegion{region.copy().getExtents()};
+
+    CRegion result;
+    for (const auto& strip : strips) {
+        result.add(CBox{strip.x1, strip.y1, strip.x2 - strip.x1, strip.y2 - strip.y1});
+    }
+
+    return result;
 }

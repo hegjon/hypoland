@@ -2275,6 +2275,14 @@ void CHyprOpenGLImpl::scheduleShaderCompilerRelease() {
     m_shaderCompilerReleaseTimer->updateTimeout(DELAY);
 }
 
+// Draws and texture uploads cost a call per damage rectangle. On crocus (Intel Gen4 to Haswell) a call costs far more
+// than the pixels in it: 60 small squares moving in a shm window took 59% of the X200's CPU, merged into strips 32%.
+// A faster GPU pays more for the extra pixels instead, the same window on a 3200x1800 iris took 36% instead of 30%,
+// so the rectangles stay as they are there.
+bool CHyprOpenGLImpl::coalesceDamage() const {
+    return m_eglDriverName == "crocus";
+}
+
 bool CHyprOpenGLImpl::explicitSyncSupported() {
     return m_exts.EGL_ANDROID_native_fence_sync_ext;
 }

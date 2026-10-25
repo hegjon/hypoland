@@ -3,6 +3,7 @@
 #include "../Renderer.hpp"
 #include "../../Compositor.hpp"
 #include "../../helpers/Format.hpp"
+#include "../../helpers/math/Math.hpp"
 #include "../Texture.hpp"
 #include <cstring>
 #include <hyprgraphics/egl/Egl.hpp>
@@ -138,8 +139,12 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
         m_backCachedStates[TEXTURE_PAR_WRAP_T] = GL_CLAMP_TO_EDGE;
         GLCALL(glTexImage2D(m_target, 0, GLFMT.internalFormat, m_size.x, m_size.y, 0, GLFMT.format, GLFMT.type, pixels));
     } else {
+        // a call per rectangle, see CHyprOpenGLImpl::coalesceDamage()
+        static constexpr size_t MAX_UPLOAD_RECTS = 8;
+        const CRegion           REGION           = DAMAGE.copy().add(m_backStaleDamage);
+
         GLCALL(glBindTexture(m_target, m_backTexID));
-        uploadRegion(GLFMT.format, GLFMT.type, pixels, DAMAGE.copy().add(m_backStaleDamage));
+        uploadRegion(GLFMT.format, GLFMT.type, pixels, g_pHyprOpenGL->coalesceDamage() ? Math::coalesceRegion(REGION, MAX_UPLOAD_RECTS) : REGION);
     }
 
     // the texture that was shown until now misses this update

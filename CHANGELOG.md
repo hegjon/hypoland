@@ -6,6 +6,14 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ## Unreleased
 
+### Faster
+
+- Windows that change in many small places at once cost much less CPU on Intel GPUs up to Haswell (Mesa `crocus`):
+  every draw and every upload of a shm window was repeated per damage rectangle, and there a call costs far more than
+  the pixels in it. The damage is merged into a few strips now. 60 small squares moving in a Qt window took 59% of
+  the X200's CPU, now 32%, and the window got 55 instead of 37 fps. Other GPUs keep the exact rectangles: on a
+  3200x1800 screen merging would copy the whole window instead of the squares.
+
 ### Added
 
 - Titlebars for Omarchy's floating workspaces. Omarchy draws them with a plugin of its own, which Hypoland cannot

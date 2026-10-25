@@ -351,10 +351,16 @@ Tools:
 
   - GTK 4 finds neither GLES 3 nor Vulkan on the X200 and draws with cairo into shm buffers. Qt Quick draws with
     GLES 2 there, but scrolls at 47 fps where its software backend makes 60.
-  - Open: `qt-software-sprites` costs the X200 six times the full-window scroll. Mesa is 38% of the compositor's
-    samples, pixman 17% and libc 26%: `CGLTexture::uploadRegion()` calls `glTexSubImage2D` once per damage
-    rectangle, and the double buffered update adds the damage of the update before, which pixman splits into
-    bands of many small rectangles.
+  - `qt-software-sprites` cost the X200 six times the full-window scroll: Mesa 38% of the compositor's samples,
+    pixman 17%, libc 26%. Every draw is repeated per damage rectangle and `CGLTexture::uploadRegion()` made one
+    `glTexSubImage2D` per rectangle, and the double buffered update adds the damage of the update before, which
+    pixman splits into bands of many small rectangles. Fixed on 2026-10-25 for crocus
+    (`CHyprOpenGLImpl::coalesceDamage()`, `Math::coalesceRegion()`): above 8 rectangles the frame damage and the
+    upload are merged into horizontal strips, or their bounding box. X200: 59.1% -> 31.7% CPU, the client 36.5 ->
+    55.1 fps, every other workload unchanged. Not on other drivers: on the XPS (iris, 3200x1800) merging cost
+    30.2% -> 36.3%, the bounding box of the squares is the whole window, 21 MB per frame; without it the XPS is
+    unchanged. `dev-log` / `dev-diff` on the XPS: 2.5% / 1.2%, the same before and after. A/B on all six machines
+    (2026-10-25, 15 workloads, 3 rounds each): only the X200 changes.
 - `./bench.sh --energy <label>` measures energy instead of speed (added 2026-09-28, after omacom/ttfx#46): the
   power the machine draws under each workload, net of an idle baseline taken before and after it (`power.*.net_W`,
   `energy.*.net_J`, with the drift of the baseline as `pm_W`), the idle session itself (`power.baseline.W`) and
