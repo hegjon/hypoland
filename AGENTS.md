@@ -361,6 +361,12 @@ Tools:
     30.2% -> 36.3%, the bounding box of the squares is the whole window, 21 MB per frame; without it the XPS is
     unchanged. `dev-log` / `dev-diff` on the XPS: 2.5% / 1.2%, the same before and after. A/B on all six machines
     (2026-10-25, 15 workloads, 3 rounds each): only the X200 changes.
+  - The rest of it was pixman: 97% of its samples came from the `wl_surface.damage` / `damage_buffer` requests, each
+    unioned into the pending region on arrival (`addSafeDamage()`), the square of the number of rectangles. They are
+    collected and made into the region once at commit now (`flushDamage()`, `pixman_region32_init_rects()`), the
+    same region. `qt-software-sprites`: X200 31.6% -> 19.4% (59.9 fps), XPS 29.6% -> 24.2%, T550 and Galaxy Book
+    unchanged within noise; X200 `gtk3-scroll` and `gtk4-scroll` 0.5 to 1 point lower. `gpu-client` on the Galaxy
+    Book varies by 1.5 points between runs (rounds 3.5 to 5.8%), do not read a change there.
 - `./bench.sh --energy <label>` measures energy instead of speed (added 2026-09-28, after omacom/ttfx#46): the
   power the machine draws under each workload, net of an idle baseline taken before and after it (`power.*.net_W`,
   `energy.*.net_J`, with the drift of the baseline as `pm_W`), the idle session itself (`power.baseline.W`) and

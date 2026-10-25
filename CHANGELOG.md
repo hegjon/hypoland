@@ -13,6 +13,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   the pixels in it. The damage is merged into a few strips now. 60 small squares moving in a Qt window took 59% of
   the X200's CPU, now 32%, and the window got 55 instead of 37 fps. Other GPUs keep the exact rectangles: on a
   3200x1800 screen merging would copy the whole window instead of the squares.
+- A surface's damage rectangles are made into a region once per commit instead of one at a time as they arrive,
+  which cost the square of their number: Qt Quick's software backend sends one per changed item. The same 60
+  squares: 32% -> 19% on the X200 (59% before both changes, and 60 instead of 37 fps), 30% -> 24% on a Dell XPS 13.
 
 ### Added
 

@@ -135,6 +135,8 @@ class CWLSurfaceResource {
     wl_client*                         m_client        = nullptr;
     std::optional<wl_output_transform> m_lastTransform = std::nullopt;
     std::optional<int>                 m_lastScale     = std::nullopt;
+    std::vector<pixman_box32_t>        m_pendingDamageBoxes; // damage requests of the pending state, made into its regions on commit
+    std::vector<pixman_box32_t>        m_pendingBufferDamageBoxes;
 
     void                               destroy();
     void                               releaseBuffers(bool onlyCurrent = true);
