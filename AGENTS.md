@@ -22,6 +22,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   A desktop with an AMD A8-6600K APU (Radeon HD 8570D, `r600`, legacy modesetting like the EliteBook) joined on
   2026-10-24 as `lianli` (also as `root@lianli`) and runs the Hypoland package since then, on HDMI
   to the desktop's monitor (1920x1200).
+  A Dell Chromebook 11 3120 (Celeron N2840, Bay Trail graphics with Mesa `crocus` like the X200 but GLES 3.0, 4 GB
+  RAM, a 16 GB eMMC, 1366x768, wifi only, MrChromebox UEFI firmware) joined on 2026-10-25 as `chromebook` (also as
+  `root@chromebook`) and runs the Hypoland package since then: the low end of the machines with GLES 3.
   Their hardware, addresses, logins and update steps are in `MACHINES.md`, a private file that is not in git
   (it is in `.git/info/exclude`). Read it before working on a machine, and keep machine details there, not here.
   Every test machine sends its journal and its kernel log (netconsole) to the desktop, so a machine that dies
