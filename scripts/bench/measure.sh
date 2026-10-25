@@ -14,7 +14,7 @@
 #                       in the log) and RESULT: PASS or FAIL
 #   --seconds N         length of a workload (default 12)
 #   --rounds N          how often the workloads are repeated, bench only (default 1)
-#   --workloads LIST    comma separated, default: idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window
+#   --workloads LIST    comma separated, default: idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window,idle-windows,dev-log,dev-diff
 #   --client NAME=CMD   one more workload: CMD is started as a client and measured as NAME, can be repeated
 #   --process NAME      name of the compositor process (default: hypoland, then Hypoland, then Hyprland)
 #   --settle N          age of the compositor in seconds before memory is measured (default 60)
@@ -42,7 +42,7 @@
 
 MODE=bench SECONDS_PER_RUN=12 ROUNDS=1 SETTLE=60 PROCESS="" KEEP_GOVERNOR=0 OUT=""
 METER=auto IDLE=10 MIN_BATTERY=30 POWERCAP=/sys/class/powercap POWER_SUPPLY=/sys/class/power_supply
-WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window
+WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window,idle-windows,dev-log,dev-diff
 STAGES='Render::IHyprRenderer::renderMonitor|Render::GL::CHyprGLRenderer::endRender|Render::GL::CHyprGLRenderer::beginRenderInternal|Render::GL::CEGLSync::create|Render::CRenderPass::render|Render::GL::CHyprOpenGLImpl::end\(\)|Render::GL::CGLFramebuffer::internalAlloc|Render::GL::CGLTexture::update|Aquamarine::CDRMOutput::commitState|drmModeAtomicCommit|Aquamarine::getDRMProp|Aquamarine::getDRMPropBlob|__x64_sys_ioctl|clock_gettime|read_hpet|_CWlSurfaceCommit|shmem_alloc_and_add_folio|drm_clflush_sg|Render::IHyprRenderer::renderLayer|Render::IHyprRenderer::renderAllClientsForWorkspace|Monitor::CMonitor::scheduleFrame|Animation::CHyprAnimationManager::tick|CInputManager::[A-Za-z]+|CPointerManager::[A-Za-z]+'
 CLIENT_NAMES=() CLIENT_CMDS=()
 
@@ -382,27 +382,39 @@ clients() { H clients | awk '/class:/ {print $2}' | sort | uniq -c | awk '{print
 # on-CPU time of all threads of the compositor in ns, the 1% steps of pidstat are too coarse for small changes
 cputime() { cat /proc/$P/task/*/schedstat 2>/dev/null | awk '{s += $1} END {printf "%.0f\n", s}'; }
 
-memory() { # name
-    awk -v r=$ROUND -v n="$1" '
-        /^(Rss|Pss|Pss_Anon|Pss_File|Anonymous|AnonHugePages|Private_Clean|Private_Dirty):/ {sub(":", "", $1); printf "@ %s mem.%s.%s_kB %s\n", r, n, $1, $2}
-    ' /proc/$P/smaps_rollup
-    value "mem.$1.heap_kB" "$(awk '/\[heap\]/ {h = 1; next} h && /^Rss:/ {print $2; exit}' /proc/$P/smaps)"
-    # GPU buffers are system memory on integrated graphics and in no process statistic
-    # an open DRM file shows up once per file descriptor, a client id is counted once
-    cat /proc/$P/fdinfo/* 2>/dev/null | awk -v r=$ROUND -v n="$1" '
+# GPU buffers are system memory on integrated graphics and in no process statistic. Prints the total, the shared and the
+# purgeable part in KiB: an open DRM file shows up once per file descriptor, a client id is counted once. Purgeable
+# buffers are those Mesa keeps in its cache for reuse, counted in the total, but the kernel takes them back when it
+# needs memory
+gpu_memory() {
+    cat /proc/$P/fdinfo/* 2>/dev/null | awk '
         function kib(v, unit) {return unit == "MiB" ? v * 1024 : unit == "KiB" ? v : v / 1024}
         function commit() {
             if (id != "" && !(id in seen)) {
                 total += t
                 shared += s
+                purgeable += u
                 seen[id] = 1
             }
-            t = s = 0
+            t = s = u = 0
         }
         /^drm-client-id:/ {commit(); id = $2}
         /^drm-total-/ {t += kib($2, $3)}
         /^drm-shared-/ {s += kib($2, $3)}
-        END {commit(); printf "@ %s mem.%s.gpu_kB %d\n@ %s mem.%s.gpu_private_kB %d\n", r, n, total, r, n, total - shared}'
+        /^drm-purgeable-/ {u += kib($2, $3)}
+        END {commit(); printf "%d %d %d\n", total, shared, purgeable}'
+}
+
+memory() { # name
+    local gpu shared purgeable
+    awk -v r=$ROUND -v n="$1" '
+        /^(Rss|Pss|Pss_Anon|Pss_File|Anonymous|AnonHugePages|Private_Clean|Private_Dirty):/ {sub(":", "", $1); printf "@ %s mem.%s.%s_kB %s\n", r, n, $1, $2}
+    ' /proc/$P/smaps_rollup
+    value "mem.$1.heap_kB" "$(awk '/\[heap\]/ {h = 1; next} h && /^Rss:/ {print $2; exit}' /proc/$P/smaps)"
+    read -r gpu shared purgeable < <(gpu_memory)
+    value "mem.$1.gpu_kB" "$gpu"
+    value "mem.$1.gpu_private_kB" "$((gpu - shared))"
+    value "mem.$1.gpu_purgeable_kB" "$purgeable"
     value "mem.$1.threads" "$(awk '/^Threads:/ {print $2}' /proc/$P/status)"
 }
 
@@ -845,6 +857,168 @@ workload_gtk4_spinner() { toolkit_workload gtk4-spinner gtk4 spinner; }
 
 needs_qt_software_sprites="qml6"
 workload_qt_software_sprites() { toolkit_workload qt-software-sprites qt-software sprites; }
+
+# Three terminals that print for 4 s and then wait: the memory idle shm windows keep in the compositor, measured while
+# they are open (mem.idle-windows.*). A window that never drew again after its last resize has no second texture to
+# give back, see CGLTexture::update(); real windows mostly have (typing, a page that loads)
+needs_idle_windows="foot"
+workload_idle_windows() {
+    local i total purgeable before after
+    # what the kernel cannot take back: Mesa keeps freed buffers in its cache, purgeable
+    read -r total _ purgeable < <(gpu_memory)
+    before=$((total - purgeable))
+    for i in 1 2 3; do
+        client $((SECONDS_PER_RUN + 25)) "exec foot -e sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do ls -la /usr/lib | head -n 8; sleep 0.4; done; exec sleep 600'"
+        sleep 1
+    done
+    sleep 4
+    rec idle-windows
+    memory idle-windows
+    # what the windows hold. Only meaningful as the first workload of a fresh session: buffers an earlier workload
+    # left behind are freed meanwhile. radeon reports no memory in fdinfo, it reads 0 there
+    read -r total _ purgeable < <(gpu_memory)
+    after=$((total - purgeable))
+    value "mem.idle-windows.gpu_added_kB" "$((after - before))"
+    stop_clients
+}
+
+# A developer's screen as dwindle tiles it: an editor on the left half, on the right a console above a terminal
+# that keeps changing, a log growing by 20 lines a second (dev-log) or a large diff paged through twice a second
+# (dev-diff). The developer switches between the editor, moving around in its file for 6 s, and the console, typing
+# a command (ls, git) for 4 s. The editor is nvim without the user's config (Omarchy's LazyVim would set itself up
+# on a first start). The files and the git repository are generated, the same on every machine. All three are
+# Alacritty, which draws with GL (terminal-scroll and idle-windows have foot's shm).
+DEV=$USERHOME/.cache/hypoland-bench/dev
+dev_workload() { # workload, script of the lower right terminal and its arguments
+    local xy before editor console switcher
+    cat >"$CLIENTDIR/dev-gen.sh" <<'EOF'
+set -e
+mkdir -p "$1"
+cd "$1"
+awk 'BEGIN {for (i = 1; i <= 20000; i++) printf "static int f%05d(int v) { return v * %d; }\n", i, i % 97}' >a.c
+awk '{if (NR % 5 == 0) sub(/; }/, " + 1; }"); print}' a.c >b.c
+diff -u --color=always a.c b.c >dev.diff || true
+# the user's git config stays out of it, a signing key or a hook would change what happens
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
+export GIT_AUTHOR_NAME=Dev GIT_AUTHOR_EMAIL=dev@example.org GIT_COMMITTER_NAME=Dev GIT_COMMITTER_EMAIL=dev@example.org
+rm -rf repo
+mkdir -p repo/src
+cd repo
+git init -q -b main
+for i in $(seq 1 30); do
+    head -n $((200 + i * 10)) ../a.c >src/items.c
+    echo "items $i" >VERSION
+    git add -A
+    GIT_AUTHOR_DATE="@$((1767268800 + i * 3600)) +0000" GIT_COMMITTER_DATE="@$((1767268800 + i * 3600)) +0000" \
+        git commit -q -m "items: add f$((191 + i * 10)) to f$((200 + i * 10))"
+done
+# a change that is not committed, for git status
+sed -i 's/return v \* 1;/return v * 1 + 2;/' src/items.c
+EOF
+    cat >"$CLIENTDIR/dev-move.lua" <<'EOF'
+-- moves around in the file the way someone reads code while the editor has the focus: half a page down four times
+-- a second, and every 5 seconds a jump to another part of the file
+local step, focused = 0, true
+vim.api.nvim_create_autocmd("FocusGained", { callback = function() focused = true end })
+vim.api.nvim_create_autocmd("FocusLost", { callback = function() focused = false end })
+vim.uv.new_timer():start(1000, 250, vim.schedule_wrap(function()
+    if not focused then
+        return
+    end
+    step = step + 1
+    if step % 20 == 0 then
+        vim.cmd("normal! " .. (step * 7919 % vim.fn.line("$") + 1) .. "Gzz")
+    else
+        vim.cmd("normal! \4")
+    end
+end))
+EOF
+    cat >"$CLIENTDIR/dev-console.sh" <<'EOF'
+# a shell prompt in the repository (first argument) that types out the commands it reads from a fifo (second
+# argument) the way a person does, and runs them
+cd "$1"
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_PAGER=cat PAGER=cat
+prompt() { printf '\033[1;32ma@dev\033[0m:\033[1;34m~/repo\033[0m$ '; }
+prompt
+exec 3<>"$2"
+while read -r cmd <&3; do
+    for ((i = 0; i < ${#cmd}; i++)); do
+        printf '%s' "${cmd:i:1}"
+        sleep 0.08
+    done
+    echo
+    eval "$cmd"
+    prompt
+done
+EOF
+    cat >"$CLIENTDIR/dev-log.sh" <<'EOF'
+i=0
+while :; do
+    i=$((i + 1))
+    printf '%(%T)T.%03d INFO  worker-%d: GET /api/items/%d 200 in %d ms\n' -1 $((i * 50 % 1000)) $((i % 8)) $((i * 7919 % 100000)) $((i % 97 + 3))
+    sleep 0.05
+done
+EOF
+    cat >"$CLIENTDIR/dev-diff.sh" <<'EOF'
+# pages through a diff the way less does, a page every half second
+read -r rows _ < <(stty size)
+page=$((rows - 1))
+pages=$(($(wc -l <"$1") / page))
+n=0
+while :; do
+    printf '\033[H\033[2J'
+    tail -n +$((n * page + 1)) "$1" | head -n "$page"
+    n=$(((n + 1) % pages))
+    sleep 0.5
+done
+EOF
+    [ -d "$DEV/repo/.git" ] || asuser bash "$CLIENTDIR/dev-gen.sh" "$DEV" >/dev/null 2>&1
+    rm -f "$CLIENTDIR/dev-console.fifo"
+    asuser mkfifo "$CLIENTDIR/dev-console.fifo"
+
+    # each window has to be there before the next one splits it
+    before=$(nclients)
+    client $((SECONDS_PER_RUN + 30)) "exec alacritty --class hypoland-dev-editor -e nvim --clean -R -n -i NONE -S $CLIENTDIR/dev-move.lua +200 '$DEV/a.c'"
+    mapped "$before" 10
+    before=$(nclients)
+    client $((SECONDS_PER_RUN + 30)) "exec alacritty --class hypoland-dev-console -e bash $CLIENTDIR/dev-console.sh '$DEV/repo' $CLIENTDIR/dev-console.fifo"
+    mapped "$before" 10
+    # dwindle splits the window under the pointer, which has to be the console on the right
+    xy=$(H monitors | awk '/^Monitor/ {m = 1} m && / at / {split($1, r, "[x@]"); split($3, p, "x")} m && /scale:/ {s = $2}
+        m && /focused: yes/ {printf "%d %d", p[1] + r[1] / s * 3 / 4, p[2] + r[2] / s / 2; exit}')
+    dispatch "hl.dsp.cursor.move({x=${xy% *}, y=${xy#* }})" "movecursor $xy"
+    before=$(nclients)
+    client $((SECONDS_PER_RUN + 30)) "exec alacritty -e bash $CLIENTDIR/$2"
+    mapped "$before" 10
+    sleep 4
+
+    editor=$(window_address hypoland-dev-editor)
+    console=$(window_address hypoland-dev-console)
+    (
+        commands=("ls -la" "git status" "git log --oneline -n 20" "git show --stat HEAD~2")
+        for i in $(seq 0 $((SECONDS_PER_RUN / 10 + 1))); do
+            dispatch "hl.dsp.focus({window=\"address:$editor\"})" "focuswindow address:$editor"
+            sleep 6
+            dispatch "hl.dsp.focus({window=\"address:$console\"})" "focuswindow address:$console"
+            echo "${commands[i % 4]}" >"$CLIENTDIR/dev-console.fifo"
+            sleep 4
+        done
+    ) &
+    switcher=$!
+    rec "$1"
+    kill "$switcher" 2>/dev/null
+    wait "$switcher" 2>/dev/null
+    stop_clients
+}
+
+# the address of the window of a class, for the window selectors of the dispatchers
+window_address() { H clients | awk -v c="$1" '/^Window / {a = $2} $1 == "class:" && $2 == c {print "0x" a; exit}'; }
+
+needs_dev_log="alacritty nvim git"
+workload_dev_log() { dev_workload dev-log dev-log.sh; }
+
+needs_dev_diff="alacritty nvim git diff"
+workload_dev_diff() { dev_workload dev-diff "dev-diff.sh '$DEV/dev.diff'"; }
 
 # a client given with --client
 workload_custom() { # name, command

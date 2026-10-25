@@ -327,7 +327,15 @@ Tools:
   `gtk4-spinner` has only a spinner moving, `qt-software-sprites` 60 small squares (many small damage regions);
   `video-window` is the `video` clip in a tiled window instead of fullscreen. They port the useful ideas of
   Phoronix's gtkperf, x11perf, qmlbench and video-cpu-usage (the user decided against running Phoronix tests).
-  GTK 2 is not in Arch any more. Measured 2026-10-25 (compositor CPU, `performance` governor):
+  GTK 2 is not in Arch any more. `idle-windows` opens three foot windows that print for 4 s and then sit idle, and
+  reports the GPU memory they add without the purgeable part (`mem.idle-windows.gpu_added_kB`). Only meaningful as
+  the only workload of a fresh session (`--workloads idle-windows`): buffers an earlier workload left are freed in
+  the meantime. radeon reports no memory in fdinfo, 0 there. `dev-log` and `dev-diff` (suggested by the user) are a
+  developer's screen in Alacritty: nvim (`--clean`, LazyVim would set itself up first) on the left half, a console on
+  the right that gets `ls` and `git` commands typed into it, below it a log growing by 20 lines a second or a large
+  diff paged through. The focus moves between the editor, which pages through its file while it has the focus, and
+  the console. The files and a git repository are generated, the same everywhere. Zed (GPU, Vulkan) is a candidate
+  for a later editor, it cannot run on the X200. Measured 2026-10-25 (compositor CPU, `performance` governor):
 
   | | X200 | T550 | XPS (scale 2) |
   |---|---|---|---|
