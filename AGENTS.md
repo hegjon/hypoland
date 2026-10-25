@@ -330,12 +330,32 @@ Tools:
   GTK 2 is not in Arch any more. `idle-windows` opens three foot windows that print for 4 s and then sit idle, and
   reports the GPU memory they add without the purgeable part (`mem.idle-windows.gpu_added_kB`). Only meaningful as
   the only workload of a fresh session (`--workloads idle-windows`): buffers an earlier workload left are freed in
-  the meantime. radeon reports no memory in fdinfo, 0 there. `dev-log` and `dev-diff` (suggested by the user) are a
-  developer's screen in Alacritty: nvim (`--clean`, LazyVim would set itself up first) on the left half, a console on
-  the right that gets `ls` and `git` commands typed into it, below it a log growing by 20 lines a second or a large
-  diff paged through. The focus moves between the editor, which pages through its file while it has the focus, and
-  the console. The files and a git repository are generated, the same everywhere. Zed (GPU, Vulkan) is a candidate
-  for a later editor, it cannot run on the X200. Measured 2026-10-25 (compositor CPU, `performance` governor):
+  the meantime. radeon reports no memory in fdinfo, 0 there. `dev` (suggested by the user) is a developer's screen
+  in Alacritty: nvim (`--clean`, LazyVim would set itself up first) on a C file of 210000 lines on the left half, a
+  console on the right, below it a log of 200 lines a second with a burst of 400 lines every 10 s, which never has
+  the focus. The files and a git repository are generated, the same everywhere. A uinput keyboard (root only) drives
+  it, the same input path as a real one, in two phases on the same windows. Load, `cpu.dev.*`: every 3 s the focus
+  moves (SUPER+Left, SUPER+Right, Omarchy's binds) between the editor, which scrolls a line 40 times a second and
+  jumps every 2 s while it has the focus, and the console, which gets a command typed into it, every other time a
+  `git diff` of 9000 lines paged through ten times a second, in between `ls`, `git status` or a `git show` of 3000
+  lines. Latency, `latency.dev.<kind>_ms` (median) and `_p90_ms`: the editor stops scrolling by itself, and every
+  key is followed until the first frame that shows it, `focus` (SUPER+Left into the editor and SUPER+Right back),
+  `scroll` (Ctrl-D, Ctrl-U), `jump` (`<line>G`) and `type` (a command typed into the cleared console). The frames
+  come from wlr-screencopy of a small region (the border above the window, or its text) until it changes. Keys go
+  down at a random point of the frame, as a person's do: pressed right after a commit, as at first, every key had
+  the same phase and the 90th percentile hardly differed from the median. `scripts/bench/measure.sh` writes the
+  driver, a Python script without libraries (`dev.py`), so it runs on every machine. The time ends at the commit of
+  that frame (the compositor stamps a copied frame when it commits it), the display shows it at its next refresh.
+  Screencopy takes the compositor off direct rendering while it captures, which is why the CPU time is measured in
+  the load phase only. It refuses to run on a locked session, whose password field would get the keys: on
+  2026-10-25 a run typed six commands into the X200's lock screen (six failed logins for `faillock`, which locks
+  the account at 10; reset with `faillock --user a --reset`). Before 2026-10-25 evening the developer's screen was
+  lighter (`dev-log` / `dev-diff`, a 20000 line file paged through four times a second, a log of 20 lines a
+  second, driven with `hyprctl`), its numbers below are not comparable. `measure.sh` dismisses Omarchy's
+  notifications when it starts: one left on the screen is drawn over the windows in every frame. `--env NAME=VALUE`
+  gives the clients a variable, as a session's `hl.env` gives the programs it starts (the Mesa overrides of the
+  GLES 3 override for stock Hyprland on the X200). Zed (GPU, Vulkan) is a candidate for a later editor, it cannot
+  run on the X200. Measured 2026-10-25 (compositor CPU, `performance` governor):
 
   | | X200 | T550 | XPS (scale 2) |
   |---|---|---|---|
@@ -359,8 +379,8 @@ Tools:
     upload are merged into horizontal strips, or their bounding box. X200: 59.1% -> 31.7% CPU, the client 36.5 ->
     55.1 fps, every other workload unchanged. Not on other drivers: on the XPS (iris, 3200x1800) merging cost
     30.2% -> 36.3%, the bounding box of the squares is the whole window, 21 MB per frame; without it the XPS is
-    unchanged. `dev-log` / `dev-diff` on the XPS: 2.5% / 1.2%, the same before and after. A/B on all six machines
-    (2026-10-25, 15 workloads, 3 rounds each): only the X200 changes.
+    unchanged. The lighter `dev-log` / `dev-diff` on the XPS: 2.5% / 1.2%, the same before and after. A/B on all
+    six machines (2026-10-25, 15 workloads, 3 rounds each): only the X200 changes.
   - The rest of it was pixman: 97% of its samples came from the `wl_surface.damage` / `damage_buffer` requests, each
     unioned into the pending region on arrival (`addSafeDamage()`), the square of the number of rectangles. They are
     collected and made into the region once at commit now (`flushDamage()`, `pixman_region32_init_rects()`), the
@@ -373,6 +393,22 @@ Tools:
     commit, the window ignores an unchanged one.
   - The border damage while windows animate (`CHyprBorderDecoration::damageEntire()`, region math per tick) is
     still 4.2% of the compositor's time in workspace switching on the EliteBook, about 0.35 points of CPU.
+  - `dev` on r725 (2026-10-25, 3 rounds; latency median / 90th percentile in ms, 12 focus changes, 18 scrolls,
+    12 jumps and 39 typed keys per round, no timeouts):
+
+    | | CPU | focus | scroll | jump | type |
+    |---|---|---|---|---|---|
+    | X200 | 5.2% | 6.3 / 15.9 | 63.8 / 73.6 | 42.1 / 50.6 | 7.4 / 16.2 |
+    | T550 | 4.1% | 11.0 / 21.8 | 26.5 / 37.3 | 15.7 / 29.7 | 8.2 / 18.0 |
+    | XPS (3200x1800) | 4.9% | 9.6 / 20.0 | 34.4 / 56.4 | 21.3 / 36.8 | 12.0 / 18.2 |
+    | EliteBook | 4.1% | 12.2 / 18.3 | 25.4 / 36.3 | 16.4 / 35.6 | 9.3 / 17.7 |
+    | lianli | 4.3% | 8.1 / 20.5 | 26.7 / 36.3 | 17.2 / 29.5 | 9.1 / 18.2 |
+    | Galaxy Book (120 Hz) | 5.5% | 8.9 / 13.0 | 16.4 / 19.0 | 13.0 / 17.9 | 7.3 / 10.2 |
+
+    What the compositor alone does (`focus`) and a key echoed by the shell (`type`) take under a frame at the median
+    everywhere. Scrolling is nvim and Alacritty redrawing the editor: about one and a half frames at 60 Hz, two on
+    the XPS and the Galaxy Book, almost four on the X200 (64 ms). The compositor's CPU time is about the same on
+    every machine, the clients make the difference.
 - `./bench.sh --energy <label>` measures energy instead of speed (added 2026-09-28, after omacom/ttfx#46): the
   power the machine draws under each workload, net of an idle baseline taken before and after it (`power.*.net_W`,
   `energy.*.net_J`, with the drift of the baseline as `pm_W`), the idle session itself (`power.baseline.W`) and

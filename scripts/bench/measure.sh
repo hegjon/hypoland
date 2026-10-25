@@ -14,8 +14,10 @@
 #                       in the log) and RESULT: PASS or FAIL
 #   --seconds N         length of a workload (default 12)
 #   --rounds N          how often the workloads are repeated, bench only (default 1)
-#   --workloads LIST    comma separated, default: idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window,idle-windows,dev-log,dev-diff
+#   --workloads LIST    comma separated, default: idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window,idle-windows,dev
 #   --client NAME=CMD   one more workload: CMD is started as a client and measured as NAME, can be repeated
+#   --env NAME=VALUE    a variable for the clients, as a session's hl.env gives it to the programs it starts (the
+#                       Mesa overrides of Omarchy's GLES 3 override for stock Hyprland on the X200), can be repeated
 #   --process NAME      name of the compositor process (default: hypoland, then Hypoland, then Hyprland)
 #   --settle N          age of the compositor in seconds before memory is measured (default 60)
 #   --keep-governor     leave the CPU frequency governor alone
@@ -42,9 +44,9 @@
 
 MODE=bench SECONDS_PER_RUN=12 ROUNDS=1 SETTLE=60 PROCESS="" KEEP_GOVERNOR=0 OUT=""
 METER=auto IDLE=10 MIN_BATTERY=30 POWERCAP=/sys/class/powercap POWER_SUPPLY=/sys/class/power_supply
-WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window,idle-windows,dev-log,dev-diff
+WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window,idle-windows,dev
 STAGES='Render::IHyprRenderer::renderMonitor|Render::GL::CHyprGLRenderer::endRender|Render::GL::CHyprGLRenderer::beginRenderInternal|Render::GL::CEGLSync::create|Render::CRenderPass::render|Render::GL::CHyprOpenGLImpl::end\(\)|Render::GL::CGLFramebuffer::internalAlloc|Render::GL::CGLTexture::update|Aquamarine::CDRMOutput::commitState|drmModeAtomicCommit|Aquamarine::getDRMProp|Aquamarine::getDRMPropBlob|__x64_sys_ioctl|clock_gettime|read_hpet|_CWlSurfaceCommit|shmem_alloc_and_add_folio|drm_clflush_sg|Render::IHyprRenderer::renderLayer|Render::IHyprRenderer::renderAllClientsForWorkspace|Monitor::CMonitor::scheduleFrame|Animation::CHyprAnimationManager::tick|CInputManager::[A-Za-z]+|CPointerManager::[A-Za-z]+'
-CLIENT_NAMES=() CLIENT_CMDS=()
+CLIENT_NAMES=() CLIENT_CMDS=() CLIENT_ENV=()
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -53,6 +55,7 @@ while [ $# -gt 0 ]; do
         --rounds) ROUNDS=$2; shift ;;
         --workloads) WORKLOADS=$2; shift ;;
         --client) CLIENT_NAMES+=("${2%%=*}"); CLIENT_CMDS+=("${2#*=}"); shift ;;
+        --env) CLIENT_ENV+=("$2"); shift ;;
         --process) PROCESS=$2; shift ;;
         --settle) SETTLE=$2; shift ;;
         --keep-governor) KEEP_GOVERNOR=1 ;;
@@ -101,6 +104,7 @@ SOCKET=$(sed -n 2p "$LOCK")
 mapfile -d '' SESSIONENV </proc/$P/environ
 SESSIONENV+=(HOME="$USERHOME" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" HYPRLAND_INSTANCE_SIGNATURE="$SIG")
 [ -d /usr/share/omarchy ] && SESSIONENV+=(OMARCHY_PATH=/usr/share/omarchy)
+SESSIONENV+=("${CLIENT_ENV[@]}")
 
 # runs a command in the session of the compositor. The script itself may arrive on stdin, nothing may read from it
 asuser() {
@@ -348,6 +352,8 @@ if [ -n "$OMARCHY" ]; then
     asuser mkdir -p "$OMARCHY/indicators" "$OMARCHY/toggles"
     asuser touch "$OMARCHY/indicators/stay-awake" "$OMARCHY/toggles/screensaver-off"
     asuser pkill -f "[o]rg.omarchy.screensaver"
+    # a notification left on the screen is drawn over the windows in every frame
+    asuser /usr/share/omarchy/bin/omarchy-shell -q notifications dismissAll >/dev/null 2>&1
 fi
 dispatch 'hl.dsp.dpms({action=[[on]]})' "dpms on"
 
@@ -883,20 +889,29 @@ workload_idle_windows() {
 }
 
 # A developer's screen as dwindle tiles it: an editor on the left half, on the right a console above a terminal
-# that keeps changing, a log growing by 20 lines a second (dev-log) or a large diff paged through twice a second
-# (dev-diff). The developer switches between the editor, moving around in its file for 6 s, and the console, typing
-# a command (ls, git) for 4 s. The editor is nvim without the user's config (Omarchy's LazyVim would set itself up
-# on a first start). The files and the git repository are generated, the same on every machine. All three are
-# Alacritty, which draws with GL (terminal-scroll and idle-windows have foot's shm).
+# that keeps changing. All three are Alacritty, which draws with GL (terminal-scroll and idle-windows have foot's
+# shm). The editor is nvim without the user's config (Omarchy's LazyVim would set itself up on a first start) on a
+# generated C file of 210000 lines, the console a shell in a generated git repository whose commits add 3000 lines
+# each, with 9000 lines changed and not committed. They are the same on every machine and generated again when the
+# generator changes.
 DEV=$USERHOME/.cache/hypoland-bench/dev
-dev_workload() { # workload, script of the lower right terminal and its arguments
-    local xy before editor console switcher
+dev_sources() {
     cat >"$CLIENTDIR/dev-gen.sh" <<'EOF'
 set -e
 mkdir -p "$1"
 cd "$1"
-awk 'BEGIN {for (i = 1; i <= 20000; i++) printf "static int f%05d(int v) { return v * %d; }\n", i, i % 97}' >a.c
-awk '{if (NR % 5 == 0) sub(/; }/, " + 1; }"); print}' a.c >b.c
+awk 'BEGIN {
+    print "/* items.c, generated for the Hypoland benchmark */"
+    print "#include <stdio.h>\n#include <stdlib.h>\n\nstruct item {\n    int count;\n    int *values;\n    const char *name;\n};\n"
+    for (i = 1; i <= 14000; i++) {
+        printf "/*\n * f%05d: adds up the values of an item that are %d modulo %d, takes v off the others\n */\n", i, i % 7, 7 + i % 5
+        printf "static int f%05d(const struct item *it, int v) {\n    int sum = %d;\n\n", i, i % 101
+        printf "    for (int i = 0; i < it->count; i++) {\n        if (it->values[i] %% %d == %d)\n", 7 + i % 5, i % 7
+        printf "            sum += it->values[i] * %d;\n        else\n            sum -= v;\n    }\n", i % 13 + 2
+        printf "    printf(\"%%s: f%05d %%d\\n\", it->name, sum);\n    return sum + %d;\n}\n\n", i, i % 997
+    }
+}' >a.c
+awk '/^    return sum \+/ && ++n % 3 == 0 {sub(/;$/, " + 1;")} {print}' a.c >b.c
 diff -u --color=always a.c b.c >dev.diff || true
 # the user's git config stays out of it, a signing key or a hook would change what happens
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
@@ -906,119 +921,585 @@ mkdir -p repo/src
 cd repo
 git init -q -b main
 for i in $(seq 1 30); do
-    head -n $((200 + i * 10)) ../a.c >src/items.c
+    head -n $((i * 3000)) ../a.c >src/items.c
     echo "items $i" >VERSION
     git add -A
     GIT_AUTHOR_DATE="@$((1767268800 + i * 3600)) +0000" GIT_COMMITTER_DATE="@$((1767268800 + i * 3600)) +0000" \
-        git commit -q -m "items: add f$((191 + i * 10)) to f$((200 + i * 10))"
+        git commit -q -m "items: add f$(((i - 1) * 200 + 1)) to f$((i * 200))"
 done
-# a change that is not committed, for git status
-sed -i 's/return v \* 1;/return v * 1 + 2;/' src/items.c
+# a change that is not committed, for git status and a git diff of 9000 lines
+awk '/sum -= v;/ && ++n % 4 == 0 {sub(/v;/, "v + 1;")} {print}' ../a.c | head -n 90000 >src/items.c
 EOF
     cat >"$CLIENTDIR/dev-move.lua" <<'EOF'
--- moves around in the file the way someone reads code while the editor has the focus: half a page down four times
--- a second, and every 5 seconds a jump to another part of the file
-local step, focused = 0, true
+-- moves through the file while the editor has the focus, the way holding a key does: a line forty times a second,
+-- and every 2 seconds a jump to another part of the file. Stops once the file DEV_QUIET names is there
+local step, focused, quiet = 0, true, os.getenv("DEV_QUIET")
 vim.api.nvim_create_autocmd("FocusGained", { callback = function() focused = true end })
 vim.api.nvim_create_autocmd("FocusLost", { callback = function() focused = false end })
-vim.uv.new_timer():start(1000, 250, vim.schedule_wrap(function()
-    if not focused then
+vim.uv.new_timer():start(1000, 25, vim.schedule_wrap(function()
+    if not focused or (quiet and vim.uv.fs_stat(quiet)) then
         return
     end
     step = step + 1
-    if step % 20 == 0 then
+    if step % 80 == 0 then
         vim.cmd("normal! " .. (step * 7919 % vim.fn.line("$") + 1) .. "Gzz")
     else
-        vim.cmd("normal! \4")
+        vim.cmd("normal! \5")
     end
 end))
 EOF
-    cat >"$CLIENTDIR/dev-console.sh" <<'EOF'
-# a shell prompt in the repository (first argument) that types out the commands it reads from a fifo (second
-# argument) the way a person does, and runs them
-cd "$1"
+    # the shell of the console, git diff runs through a pager that pages through it for 2 s
+    cat >"$CLIENTDIR/dev-shellrc" <<'EOF'
+cd "$DEV_REPO"
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_PAGER=cat PAGER=cat
-prompt() { printf '\033[1;32ma@dev\033[0m:\033[1;34m~/repo\033[0m$ '; }
-prompt
-exec 3<>"$2"
-while read -r cmd <&3; do
-    for ((i = 0; i < ${#cmd}; i++)); do
-        printf '%s' "${cmd:i:1}"
-        sleep 0.08
-    done
-    echo
-    eval "$cmd"
-    prompt
-done
+git() {
+    if [ "$1" = diff ]; then
+        command git -c color.ui=always "$@" | python3 -I "$DEV_PAGER" 2
+    else
+        command git "$@"
+    fi
+}
+PS1='\[\033[1;32m\]a@dev\[\033[0m\]:\[\033[1;34m\]~/repo\[\033[0m\]\$ '
 EOF
-    cat >"$CLIENTDIR/dev-log.sh" <<'EOF'
-i=0
-while :; do
-    i=$((i + 1))
-    printf '%(%T)T.%03d INFO  worker-%d: GET /api/items/%d 200 in %d ms\n' -1 $((i * 50 % 1000)) $((i % 8)) $((i * 7919 % 100000)) $((i % 97 + 3))
-    sleep 0.05
-done
-EOF
-    cat >"$CLIENTDIR/dev-diff.sh" <<'EOF'
-# pages through a diff the way less does, a page every half second
-read -r rows _ < <(stty size)
-page=$((rows - 1))
-pages=$(($(wc -l <"$1") / page))
-n=0
-while :; do
-    printf '\033[H\033[2J'
-    tail -n +$((n * page + 1)) "$1" | head -n "$page"
-    n=$(((n + 1) % pages))
-    sleep 0.5
-done
-EOF
-    [ -d "$DEV/repo/.git" ] || asuser bash "$CLIENTDIR/dev-gen.sh" "$DEV" >/dev/null 2>&1
-    rm -f "$CLIENTDIR/dev-console.fifo"
-    asuser mkfifo "$CLIENTDIR/dev-console.fifo"
+    cat >"$CLIENTDIR/dev-log.py" <<'EOF'
+# a busy server's log: 200 lines a second, and every 10 s the trace of a failing request, 400 lines at once
+import sys
+import time
 
+i = 0
+while True:
+    stamp = time.strftime("%H:%M:%S")
+    for _ in range(10):
+        i += 1
+        level = "\033[33mWARN\033[0m " if i % 37 == 0 else "INFO "
+        sys.stdout.write(f"{stamp}.{i * 7 % 1000:03d} {level} worker-{i % 8}: GET /api/items/{i * 7919 % 100000} 200 in {i % 97 + 3} ms\n")
+    if i % 2000 == 0:
+        sys.stdout.write(f"{stamp} \033[31mERROR\033[0m worker-{i % 8}: request {i} failed\n")
+        sys.stdout.writelines(f"    at f{(i + k) % 14000 + 1:05d} (items.c:{(i * k) % 210000 + 1})\n" for k in range(400))
+    sys.stdout.flush()
+    time.sleep(0.05)
+EOF
+    cat >"$CLIENTDIR/dev-pager.py" <<'EOF'
+# pages through what comes on stdin the way holding space in less does, ten pages a second for as many seconds as
+# the first argument says
+import os
+import sys
+import time
+
+lines = sys.stdin.read().splitlines()
+rows = os.get_terminal_size(1).lines - 1
+end = time.monotonic() + float(sys.argv[1])
+for n in range(0, len(lines), rows):
+    sys.stdout.write("\033[H\033[2J" + "\n".join(lines[n : n + rows]))
+    sys.stdout.flush()
+    time.sleep(0.1)
+    if time.monotonic() > end:
+        break
+print()
+EOF
+    dev_driver_source
+    if [ "$(cat "$DEV/generator" 2>/dev/null)" != "$(md5sum <"$CLIENTDIR/dev-gen.sh")" ]; then
+        asuser bash "$CLIENTDIR/dev-gen.sh" "$DEV" >/dev/null 2>&1 &&
+            asuser sh -c 'md5sum <"$0" >"$1"' "$CLIENTDIR/dev-gen.sh" "$DEV/generator"
+    fi
+}
+
+dev_windows() { # editor, console, lower right terminal: the commands they run
+    local xy before
     # each window has to be there before the next one splits it
     before=$(nclients)
-    client $((SECONDS_PER_RUN + 30)) "exec alacritty --class hypoland-dev-editor -e nvim --clean -R -n -i NONE -S $CLIENTDIR/dev-move.lua +200 '$DEV/a.c'"
+    client $((SECONDS_PER_RUN + 150)) "exec alacritty --class hypoland-dev-editor -e $1"
     mapped "$before" 10
     before=$(nclients)
-    client $((SECONDS_PER_RUN + 30)) "exec alacritty --class hypoland-dev-console -e bash $CLIENTDIR/dev-console.sh '$DEV/repo' $CLIENTDIR/dev-console.fifo"
+    client $((SECONDS_PER_RUN + 150)) "exec env DEV_REPO='$DEV/repo' DEV_SHELLRC=$CLIENTDIR/dev-shellrc DEV_PAGER=$CLIENTDIR/dev-pager.py alacritty --class hypoland-dev-console -e $2"
     mapped "$before" 10
     # dwindle splits the window under the pointer, which has to be the console on the right
     xy=$(H monitors | awk '/^Monitor/ {m = 1} m && / at / {split($1, r, "[x@]"); split($3, p, "x")} m && /scale:/ {s = $2}
         m && /focused: yes/ {printf "%d %d", p[1] + r[1] / s * 3 / 4, p[2] + r[2] / s / 2; exit}')
     dispatch "hl.dsp.cursor.move({x=${xy% *}, y=${xy#* }})" "movecursor $xy"
     before=$(nclients)
-    client $((SECONDS_PER_RUN + 30)) "exec alacritty -e bash $CLIENTDIR/$2"
+    client $((SECONDS_PER_RUN + 150)) "exec alacritty --class hypoland-dev-lower -e $3"
     mapped "$before" 10
     sleep 4
+}
 
-    editor=$(window_address hypoland-dev-editor)
-    console=$(window_address hypoland-dev-console)
-    (
-        commands=("ls -la" "git status" "git log --oneline -n 20" "git show --stat HEAD~2")
-        for i in $(seq 0 $((SECONDS_PER_RUN / 10 + 1))); do
-            dispatch "hl.dsp.focus({window=\"address:$editor\"})" "focuswindow address:$editor"
-            sleep 6
-            dispatch "hl.dsp.focus({window=\"address:$console\"})" "focuswindow address:$console"
-            echo "${commands[i % 4]}" >"$CLIENTDIR/dev-console.fifo"
-            sleep 4
-        done
-    ) &
-    switcher=$!
-    rec "$1"
-    kill "$switcher" 2>/dev/null
-    wait "$switcher" 2>/dev/null
+focus() { # class
+    local address
+    address=$(window_address "$1")
+    dispatch "hl.dsp.focus({window=\"address:$address\"})" "focuswindow address:$address"
+}
+
+# The developer's screen driven by a uinput keyboard (root only) through dev.py, first under load and then key by
+# key. Load: every 3 s the focus moves (SUPER+Left, SUPER+Right, the binds of Omarchy) between the editor, which
+# scrolls a line 40 times a second and jumps every 2 s while it has the focus, and the console, which gets a command
+# typed into it: every other time a diff of 9000 lines paged through, in between ls, git status or a commit of 3000
+# lines. Below the console a busy log that never has the focus. The CPU time of the compositor is measured over it
+# (cpu.dev.*). Then the editor stops scrolling by itself, and dev.py waits for every key until the frame that shows
+# it: moving to the editor and back, scrolling (Ctrl-D, Ctrl-U), jumping to a line (<line>G), typing a command.
+# Medians and 90th percentiles in ms (latency.dev.*). Screencopy takes the compositor off direct rendering while it
+# captures, which is why the CPU time is measured before.
+needs_dev="alacritty nvim git python3 root"
+workload_dev() {
+    local driver border kind line median p90 n timeouts i
+    # the keys would go into the password field of a lock screen
+    if [ -n "$(in_the_way)" ]; then
+        echo "--- dev: not measured,$(in_the_way)"
+        value "invalid.dev" 1
+        return
+    fi
+    dev_sources
+    rm -f "$CLIENTDIR/dev-quiet" "$OUT/dev.txt"
+    dev_windows "env DEV_QUIET=$CLIENTDIR/dev-quiet nvim --clean -R -n -i NONE -S $CLIENTDIR/dev-move.lua +200 '$DEV/a.c'" \
+        "bash --rcfile $CLIENTDIR/dev-shellrc -i" "python3 -I -u $CLIENTDIR/dev-log.py"
+    focus hypoland-dev-console
+    sleep 1
+    H clients -j >"$OUT/dev.clients.json"
+    H monitors -j >"$OUT/dev.monitors.json"
+    border=$(H getoption general:border_size | awk '/^int:/ {print $2}')
+    env -i PATH="$PATH" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" python3 -I "$CLIENTDIR/dev.py" \
+        --clients "$OUT/dev.clients.json" --monitors "$OUT/dev.monitors.json" --editor hypoland-dev-editor \
+        --console hypoland-dev-console --border "${border:-2}" --load "$SECONDS_PER_RUN" --quiet "$CLIENTDIR/dev-quiet" \
+        >"$OUT/dev.txt" 2>&1 &
+    driver=$!
+    # the keyboard is there after 2 s
+    for i in $(seq 1 50); do
+        grep -q "^load" "$OUT/dev.txt" && break
+        sleep 0.2
+    done
+    rec dev
+    wait "$driver"
+    [ -n "$(in_the_way)" ] && value "invalid.dev" 1
     stop_clients
+    grep -v -E "^(load|latency)" "$OUT/dev.txt" | sed 's/^/    /'
+    for kind in focus scroll jump type; do
+        timeouts=$(grep -c "^latency $kind timeout" "$OUT/dev.txt")
+        [ "$timeouts" -gt 0 ] && value "latency.dev.${kind}_timeouts" "$timeouts"
+        line=$(awk -v k=$kind '$1 == "latency" && $2 == k && $3 != "timeout" {print $3}' "$OUT/dev.txt" | sort -g | awk '
+            {v[NR] = $1} END {if (NR) printf "%s %s %d", v[int((NR + 1) / 2)], v[int(NR * 0.9 + 0.99)], NR}')
+        if [ -z "$line" ]; then
+            echo "    $kind: nothing changed on the screen ($timeouts keys)"
+            continue
+        fi
+        read -r median p90 n <<<"$line"
+        value "latency.dev.${kind}_ms" "$median"
+        value "latency.dev.${kind}_p90_ms" "$p90"
+        echo "    $kind: $median ms, 90% within $p90 ms ($n keys, $timeouts timeouts)"
+    done
 }
 
 # the address of the window of a class, for the window selectors of the dispatchers
 window_address() { H clients | awk -v c="$1" '/^Window / {a = $2} $1 == "class:" && $2 == c {print "0x" a; exit}'; }
 
-needs_dev_log="alacritty nvim git"
-workload_dev_log() { dev_workload dev-log dev-log.sh; }
+dev_driver_source() {
+    cat >"$CLIENTDIR/dev.py" <<'EOF'
+# Drives the developer's screen with a uinput keyboard, which takes the kernel's input path like a real one, and
+# measures how long a key takes to show on the screen. A Wayland client without libraries, so it runs wherever Python
+# does. Needs root for /dev/uinput.
+#
+# dev.py --clients FILE --monitors FILE --editor CLASS --console CLASS --border N --load SECONDS --cycles N --quiet FILE
+# FILEs are the JSON of hyprctl clients -j and monitors -j. The console has the focus at the start and the editor is
+# left of it.
+# The load phase (prints "load" when it starts) moves between the editor, which scrolls by itself while it has the
+# focus, and the console, which gets a command typed, every 3 s. The latency phase creates the quiet file, which stops
+# the editor's scrolling, and then waits for every key until a small region of the output changes, captured with
+# wlr-screencopy: moving to the editor (SUPER+Left), scrolling (Ctrl-D, Ctrl-U), jumping to a line (<line>G), back to
+# the console (SUPER+Right) and typing a command. The time is from the key press to the commit of the first frame
+# that shows the change (the compositor stamps a copied frame when it commits it), the display shows it at its next
+# refresh. Keys go down at a random point of the frame, as a person's do. Prints "latency <kind> <ms>" or
+# "latency <kind> timeout" for every key it waits for.
+import argparse
+import array
+import fcntl
+import json
+import mmap
+import os
+import random
+import select
+import socket
+import struct
+import time
 
-needs_dev_diff="alacritty nvim git diff"
-workload_dev_diff() { dev_workload dev-diff "dev-diff.sh '$DEV/dev.diff'"; }
+TIMEOUT = 2.0  # seconds a key may take to show
+
+
+def now():
+    return time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+
+
+def u32(*v):
+    return struct.pack(f"={len(v)}I", *v)
+
+
+def i32(*v):
+    return struct.pack(f"={len(v)}i", *v)
+
+
+def string(s):
+    b = s.encode() + b"\0"
+    return u32(len(b)) + b + b"\0" * (-len(b) % 4)
+
+
+def unstring(p, off):
+    (n,) = struct.unpack_from("=I", p, off)
+    return p[off + 4 : off + 3 + n].decode(), off + 4 + n + (-n % 4)
+
+
+class Wayland:
+    def __init__(self):
+        path = os.path.join(os.environ["XDG_RUNTIME_DIR"], os.environ.get("WAYLAND_DISPLAY", "wayland-0"))
+        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.sock.connect(path)
+        self.last = 1
+        self.handlers = {1: self.on_display}
+        self.data = b""
+
+    def new(self, handler=None):
+        self.last += 1
+        self.handlers[self.last] = handler
+        return self.last
+
+    def send(self, obj, op, args=b"", fds=None):
+        msg = u32(obj, ((8 + len(args)) << 16) | op) + args
+        if fds:
+            self.sock.sendmsg([msg], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array("i", fds))])
+        else:
+            self.sock.sendall(msg)
+
+    def on_display(self, op, p):
+        if op == 0:
+            obj, code = struct.unpack_from("=2I", p)
+            raise SystemExit(f"dev.py: protocol error on object {obj}, code {code}: {unstring(p, 8)[0]}")
+        if op == 1:
+            self.handlers.pop(struct.unpack_from("=I", p)[0], None)
+
+    def dispatch(self, timeout):
+        """Handles the events that arrive within timeout seconds, returns whether any did"""
+        if not select.select([self.sock], [], [], max(timeout, 0))[0]:
+            return False
+        chunk = self.sock.recv(1 << 16)
+        if not chunk:
+            raise SystemExit("dev.py: the compositor closed the connection")
+        self.data += chunk
+        while len(self.data) >= 8:
+            obj, word = struct.unpack_from("=2I", self.data)
+            size = word >> 16
+            if len(self.data) < size:
+                break
+            payload, self.data = self.data[8:size], self.data[size:]
+            handler = self.handlers.get(obj)
+            if handler:
+                handler(word & 0xFFFF, payload)
+        return True
+
+    def wait(self, cond, timeout):
+        """Handles events until cond() holds, returns whether it does"""
+        deadline = time.monotonic() + timeout
+        while not cond():
+            left = deadline - time.monotonic()
+            if left <= 0:
+                return False
+            self.dispatch(left)
+        return True
+
+    def roundtrip(self):
+        done = []
+        self.send(1, 0, u32(self.new(lambda op, p: done.append(op))))
+        if not self.wait(lambda: done, 5):
+            raise SystemExit("dev.py: the compositor does not answer")
+
+
+class Screencopy:
+    """Captures a region of the output, in the output's logical coordinates"""
+
+    def __init__(self, wl, output_name):
+        self.wl = wl
+        globs = {}
+
+        def on_global(op, p):
+            if op == 0:
+                (name,) = struct.unpack_from("=I", p)
+                iface, off = unstring(p, 4)
+                globs.setdefault(iface, []).append((name, struct.unpack_from("=I", p, off)[0]))
+
+        self.registry = wl.new(on_global)
+        wl.send(1, 1, u32(self.registry))
+        wl.roundtrip()
+        if "zwlr_screencopy_manager_v1" not in globs:
+            raise SystemExit("dev.py: the compositor has no wlr-screencopy")
+        self.shm = self.bind(globs["wl_shm"][0][0], "wl_shm", 1)
+        name, version = globs["zwlr_screencopy_manager_v1"][0]
+        self.version = min(version, 3)
+        self.manager = self.bind(name, "zwlr_screencopy_manager_v1", self.version)
+        names = {}
+        for name, version in globs["wl_output"]:
+            oid = self.bind(name, "wl_output", min(version, 4))
+            # the name event, wl_output version 4
+            wl.handlers[oid] = lambda op, p, oid=oid: names.update({oid: unstring(p, 0)[0]}) if op == 4 else None
+        wl.roundtrip()
+        outputs = [o for o, n in names.items() if n == output_name] or (list(names) if len(globs["wl_output"]) == 1 else [])
+        if not outputs:
+            raise SystemExit(f"dev.py: no output {output_name}")
+        self.output = outputs[0]
+
+    def bind(self, name, iface, version, handler=None):
+        oid = self.wl.new(handler)
+        self.wl.send(self.registry, 0, u32(name) + string(iface) + u32(version, oid))
+        return oid
+
+
+class Frame:
+    def __init__(self, sc, region):
+        self.sc = sc
+        self.info = None
+        self.described = False
+        self.stamp = None
+        self.failed = False
+        self.id = sc.wl.new(self.on_event)
+        sc.wl.send(sc.manager, 1, u32(self.id) + i32(0) + u32(sc.output) + i32(*region))
+
+    def on_event(self, op, p):
+        if op == 0 and self.info is None:  # buffer: format, width, height, stride
+            self.info = struct.unpack_from("=4I", p)
+            self.described = self.sc.version < 3
+        elif op == 6:  # buffer_done
+            self.described = True
+        elif op == 2:  # ready
+            hi, lo, nsec = struct.unpack_from("=3I", p)
+            self.stamp = ((hi << 32) | lo) * 1_000_000_000 + nsec
+        elif op == 3:
+            self.failed = True
+
+    def done(self):
+        return self.stamp is not None or self.failed
+
+    def copy(self, buffer, damage):
+        self.sc.wl.send(self.id, 2 if damage else 0, u32(buffer))
+
+    def destroy(self):
+        self.sc.wl.send(self.id, 1)
+
+
+class Region:
+    """A region and three shm buffers for it: two for frames in turn, one for the frame the others are compared with"""
+
+    def __init__(self, sc, box):
+        self.sc = sc
+        self.box = box
+        self.buffers = None
+        self.turn = 0
+
+    def frame(self):
+        f = Frame(self.sc, self.box)
+        if not self.sc.wl.wait(lambda: f.described or f.failed, 5) or f.failed or f.info is None:
+            raise SystemExit(f"dev.py: no frame for the region {self.box}")
+        if self.buffers is None:
+            self.allocate(f.info)
+        return f
+
+    def allocate(self, info):
+        fmt, width, height, stride = info
+        self.size = stride * height
+        fd = os.memfd_create("hypoland-latency", os.MFD_CLOEXEC)
+        os.ftruncate(fd, 3 * self.size)
+        self.map = mmap.mmap(fd, 3 * self.size)
+        pool = self.sc.wl.new()
+        self.sc.wl.send(self.sc.shm, 0, u32(pool) + i32(3 * self.size), fds=[fd])
+        os.close(fd)
+        self.buffers = []
+        for i in range(3):
+            self.buffers.append(self.sc.wl.new())
+            self.sc.wl.send(pool, 0, u32(self.buffers[-1]) + i32(i * self.size, width, height, stride) + u32(fmt))
+        self.sc.wl.send(pool, 1)
+
+    def pixels(self, i):
+        return self.map[i * self.size : (i + 1) * self.size]
+
+    def share(self, f):
+        """Shares a frame for the next commit, into the buffer that is not being compared"""
+        self.turn ^= 1
+        f.copy(self.buffers[self.turn], True)
+        return self.turn
+
+    def current(self):
+        """The region as the next frame shows it, or as it is when nothing draws (a copy without damage draws the
+        whole output once)"""
+        f = self.frame()
+        f.copy(self.buffers[2], True)
+        if not self.sc.wl.wait(f.done, 0.1):
+            f.destroy()
+            f = self.frame()
+            f.copy(self.buffers[2], False)
+            self.sc.wl.wait(f.done, 2)
+        f.destroy()
+        return self.pixels(2)
+
+    def settled(self):
+        """The region once two frames in a row show the same, an animation may still run after a key"""
+        last = self.current()
+        deadline = time.monotonic() + 1.5
+        while time.monotonic() < deadline:
+            pixels = self.current()
+            if pixels == last:
+                return pixels
+            last = pixels
+        return last
+
+    def until_changed(self, press, delay):
+        """Presses the keys after delay seconds and returns the nanoseconds until a frame shows the region changed,
+        None on a timeout"""
+        before = self.settled()
+        # settled() returns right after a commit
+        time.sleep(delay)
+        f = self.frame()
+        slot = self.share(f)
+        following = self.frame()
+        start = press()
+        deadline = time.monotonic() + TIMEOUT
+        while self.sc.wl.wait(f.done, deadline - time.monotonic()):
+            # the next frame waits for the next commit before this one is looked at
+            g, f = f, following
+            gslot, slot = slot, self.share(f)
+            g.destroy()
+            if not g.failed and self.pixels(gslot) != before:
+                f.destroy()
+                return g.stamp - start
+            following = self.frame()
+        f.destroy()
+        following.destroy()
+        return None
+
+
+# ---- keyboard
+
+UI_SET_EVBIT, UI_SET_KEYBIT, UI_DEV_SETUP, UI_DEV_CREATE, UI_DEV_DESTROY = 0x40045564, 0x40045565, 0x405C5503, 0x5501, 0x5502
+EV_SYN, EV_KEY = 0, 1
+KEYS = {"esc": 1, "enter": 28, "ctrl": 29, "shift": 42, "space": 57, "super": 125, "left": 105, "right": 106}
+KEYS.update({str(d): 2 + (d - 1) % 10 for d in range(10)})
+for row, first in (("qwertyuiop", 16), ("asdfghjkl", 30), ("zxcvbnm", 44)):
+    KEYS.update({c: first + i for i, c in enumerate(row)})
+
+
+class Keyboard:
+    def __init__(self):
+        self.fd = os.open("/dev/uinput", os.O_WRONLY | os.O_NONBLOCK)
+        fcntl.ioctl(self.fd, UI_SET_EVBIT, EV_KEY)
+        for code in set(KEYS.values()):
+            fcntl.ioctl(self.fd, UI_SET_KEYBIT, code)
+        fcntl.ioctl(self.fd, UI_DEV_SETUP, struct.pack("=4H80sI", 0x06, 0x4859, 0x504F, 1, b"hypoland-bench keyboard", 0))
+        fcntl.ioctl(self.fd, UI_DEV_CREATE)
+        # libinput and the compositor pick the device up, and the first key makes it the seat's keyboard
+        time.sleep(1.5)
+        self.key(KEYS["shift"], 1)
+        self.key(KEYS["shift"], 0)
+        time.sleep(0.5)
+
+    def key(self, code, value):
+        os.write(self.fd, struct.pack("=qqHHi", 0, 0, EV_KEY, code, value) + struct.pack("=qqHHi", 0, 0, EV_SYN, 0, 0))
+
+    def chord(self, chord):
+        """Presses a chord like super+left and returns when the last key went down"""
+        codes = [KEYS[k] for k in chord.split("+")]
+        for code in codes[:-1]:
+            self.key(code, 1)
+            time.sleep(0.005)
+        start = now()
+        self.key(codes[-1], 1)
+        for code in reversed(codes):
+            self.key(code, 0)
+        return start
+
+    def close(self):
+        fcntl.ioctl(self.fd, UI_DEV_DESTROY)
+        os.close(self.fd)
+
+
+def chord_of(c):
+    return {" ": "space", "\n": "enter"}.get(c, f"shift+{c.lower()}" if c.isupper() else c)
+
+
+# letters and spaces only, other characters sit on different keys in different layouts. git diff pages for 2 s
+LOAD_COMMANDS = ("ls", "git diff", "git status", "git diff", "git show", "git diff")
+COMMANDS = ("git status", "ls", "git log", "git diff")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    for a in ("clients", "monitors", "editor", "console", "quiet"):
+        ap.add_argument("--" + a, required=True)
+    ap.add_argument("--border", type=int, default=2)
+    ap.add_argument("--load", type=float, default=12)
+    ap.add_argument("--cycles", type=int, default=6)
+    args = ap.parse_args()
+
+    monitor = next(m for m in json.load(open(args.monitors)) if m["focused"])
+    frame = 1 / (monitor.get("refreshRate") or 60)
+    boxes = {}
+    for c in json.load(open(args.clients)):
+        if c["class"] in (args.editor, args.console):
+            boxes[c["class"]] = (c["at"][0] - monitor["x"], c["at"][1] - monitor["y"], c["size"][0], c["size"][1])
+    ex, ey, ew, eh = boxes[args.editor]
+    cx, cy, cw, ch = boxes[args.console]
+    b = max(args.border, 1)
+
+    wl = Wayland()
+    sc = Screencopy(wl, monitor["name"])
+    # the border above a window changes color with the focus, the text inside with a key. The console is cleared
+    # before a command is typed, which keeps the prompt at the top
+    editor_border = Region(sc, (ex + 8, ey - b, ew - 16, b))
+    console_border = Region(sc, (cx + 8, cy - b, cw - 16, b))
+    editor_text = Region(sc, (ex + ew // 4, ey + eh // 8, ew // 2, eh // 6))
+    console_text = Region(sc, (cx + 4, cy + 4, cw - 8, max(ch // 8, 32)))
+
+    kb = Keyboard()
+    rng = random.Random(1)
+
+    def typed(text, pause=0.06):
+        for c in text:
+            kb.chord(chord_of(c))
+            time.sleep(pause)
+
+    def probe(kind, region, chord):
+        ns = region.until_changed(lambda: kb.chord(chord), rng.uniform(0, frame))
+        print(f"latency {kind} {'timeout' if ns is None else f'{ns / 1e6:.1f}'}", flush=True)
+
+    try:
+        print("load", flush=True)
+        end = time.monotonic() + args.load + 1
+        turn = 0
+        while time.monotonic() < end:
+            kb.chord("super+left")
+            time.sleep(3)
+            kb.chord("super+right")
+            console = time.monotonic()
+            time.sleep(0.3)
+            typed(LOAD_COMMANDS[turn % len(LOAD_COMMANDS)] + "\n")
+            turn += 1
+            time.sleep(max(console + 3 - time.monotonic(), 0))
+
+        open(args.quiet, "w").close()
+        print("latency phase", flush=True)
+        time.sleep(2.5)
+        for cycle in range(args.cycles):
+            probe("focus", editor_border, "super+left")
+            probe("scroll", editor_text, "ctrl+d")
+            probe("scroll", editor_text, "ctrl+d")
+            probe("scroll", editor_text, "ctrl+u")
+            for jump in range(2):
+                typed(str(1000 + (2 * cycle + jump) * 7919 * 13 % 150000))
+                probe("jump", editor_text, "shift+g")
+            probe("focus", console_border, "super+right")
+            kb.chord("ctrl+l")
+            for c in COMMANDS[cycle % len(COMMANDS)]:
+                probe("type", console_text, chord_of(c))
+            kb.chord("enter")
+            time.sleep(1)
+    finally:
+        kb.close()
+
+
+main()
+EOF
+}
 
 # a client given with --client
 workload_custom() { # name, command
@@ -1028,11 +1509,15 @@ workload_custom() { # name, command
     stop_clients
 }
 
-missing() { # programs, gi:<namespace>-<version> for a library Python reaches through GObject introspection, x11 for Xwayland
+missing() { # programs, gi:<namespace>-<version> for a library Python reaches through GObject introspection, x11 for Xwayland, root
     local prog lib
     for prog in $1; do
         if [ "$prog" = x11 ]; then
             [ -n "$(xdisplay)" ] || { echo "Xwayland"; return; }
+            continue
+        fi
+        if [ "$prog" = root ]; then
+            [ $ROOT = 1 ] || { echo "root (for a uinput keyboard)"; return; }
             continue
         fi
         if [[ $prog == gi:* ]]; then

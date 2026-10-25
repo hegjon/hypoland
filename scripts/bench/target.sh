@@ -74,7 +74,7 @@ TARGET_HELP='  --host HOST        ssh host of the machine under test, or "local"
   --seconds N        length of a workload
   --workloads LIST   idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,
                      gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,
-                     qt-software-sprites,video-window,idle-windows,dev-log,dev-diff
+                     qt-software-sprites,video-window,idle-windows,dev
   --client NAME=CMD  one more workload: CMD is started as a client and measured as NAME
   --process NAME     name of the compositor process (default: hypoland, then Hypoland, then Hyprland)
   --keep-governor    leave the CPU frequency governor alone'
