@@ -10,10 +10,11 @@
 #                       where the CPU time goes, energy measures the power the machine draws under each
 #                       workload and the instructions the compositor executes, check prints PASS / FAIL
 #                       lines for the session (config, a window drawn on the screen, a GPU client, an X11
-#                       client, Chromium, errors in the log) and RESULT: PASS or FAIL
+#                       client, Chromium, GTK 3 (also through Xwayland), GTK 4 and Qt Quick windows, errors
+#                       in the log) and RESULT: PASS or FAIL
 #   --seconds N         length of a workload (default 12)
 #   --rounds N          how often the workloads are repeated, bench only (default 1)
-#   --workloads LIST    comma separated, default: idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch
+#   --workloads LIST    comma separated, default: idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window
 #   --client NAME=CMD   one more workload: CMD is started as a client and measured as NAME, can be repeated
 #   --process NAME      name of the compositor process (default: hypoland, then Hypoland, then Hyprland)
 #   --settle N          age of the compositor in seconds before memory is measured (default 60)
@@ -41,7 +42,7 @@
 
 MODE=bench SECONDS_PER_RUN=12 ROUNDS=1 SETTLE=60 PROCESS="" KEEP_GOVERNOR=0 OUT=""
 METER=auto IDLE=10 MIN_BATTERY=30 POWERCAP=/sys/class/powercap POWER_SUPPLY=/sys/class/power_supply
-WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch
+WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window
 STAGES='Render::IHyprRenderer::renderMonitor|Render::GL::CHyprGLRenderer::endRender|Render::GL::CHyprGLRenderer::beginRenderInternal|Render::GL::CEGLSync::create|Render::CRenderPass::render|Render::GL::CHyprOpenGLImpl::end\(\)|Render::GL::CGLFramebuffer::internalAlloc|Render::GL::CGLTexture::update|Aquamarine::CDRMOutput::commitState|drmModeAtomicCommit|Aquamarine::getDRMProp|Aquamarine::getDRMPropBlob|__x64_sys_ioctl|clock_gettime|read_hpet|_CWlSurfaceCommit|shmem_alloc_and_add_folio|drm_clflush_sg|Render::IHyprRenderer::renderLayer|Render::IHyprRenderer::renderAllClientsForWorkspace|Monitor::CMonitor::scheduleFrame|Animation::CHyprAnimationManager::tick|CInputManager::[A-Za-z]+|CPointerManager::[A-Za-z]+'
 CLIENT_NAMES=() CLIENT_CMDS=()
 
@@ -488,7 +489,13 @@ workload_gpu_client() {
     rec gpu-client
     stop_clients
     # a lower CPU time only counts when the client still gets its frames
-    [ "$MODE" != perf ] && value "fps.gpu-client" "$(awk '/frames in/ {s += $(NF - 1); c++} END {if (c) printf "%.1f", s / c; else print "nan"}' "$log" 2>/dev/null)"
+    [ "$MODE" != perf ] && value "fps.gpu-client" "$(fps_mean "$log")"
+}
+
+# the mean of the frame rates a client printed like weston-simple-egl ("... frames in 5 seconds: 60.0 fps"), after
+# its first N reports
+fps_mean() { # log, N
+    awk -v skip="${2:-0}" '/frames in/ && ++n > skip {s += $(NF - 1); c++} END {if (c) printf "%.1f", s / c; else print "nan"}' "$1" 2>/dev/null
 }
 
 needs_terminal_scroll="foot"
@@ -510,15 +517,20 @@ workload_alacritty_scroll() { # the same scrolling in a terminal that draws with
 # A 20 s 720p H.264 clip, encoded once into the user's cache. Decoded in software unless the user's mpv config
 # says otherwise, as Omarchy's does not.
 VIDEO=$USERHOME/.cache/hypoland-bench/video.mp4
-needs_video="mpv ffmpeg"
-workload_video() { # fullscreen, looping: a 30 fps client buffer that can be scanned out directly
+video_workload() { # workload, mpv options. The clip loops: a 30 fps client buffer
     [ -s "$VIDEO" ] || asuser sh -c 'mkdir -p "${0%/*}" && ffmpeg -loglevel error -y -f lavfi -i testsrc2=size=1280x720:rate=30 \
         -t 20 -c:v libx264 -preset veryfast -pix_fmt yuv420p "$0"' "$VIDEO"
-    client $((SECONDS_PER_RUN + 10)) "exec mpv --fs --loop-file=inf --no-audio --really-quiet '$VIDEO'"
+    client $((SECONDS_PER_RUN + 10)) "exec mpv $2 --loop-file=inf --no-audio --really-quiet '$VIDEO'"
     sleep 4
-    rec video
+    rec "$1"
     stop_clients
 }
+
+needs_video="mpv ffmpeg"
+workload_video() { video_workload video --fs; } # fullscreen, where the buffer can be scanned out directly
+
+needs_video_window="mpv ffmpeg"
+workload_video_window() { video_workload video-window; } # in a tiled window, every frame is composited
 
 needs_nautilus="nautilus"
 workload_nautilus() { # GTK 4 redrawing a full window of icons, fullscreen toggled twice a second
@@ -590,6 +602,250 @@ workload_workspace_switch() {
     stop_clients
 }
 
+# ---- toolkits: test windows in GTK 3, GTK 4 and Qt Quick, for the workloads and the checks
+
+# A toolkit window shows a long text. By default it scrolls the text at 400 pixels per second, a full window of
+# damage on every frame. "spinner" (GTK) keeps the text still under a spinning spinner, a small damage region;
+# "sprites" (Qt) moves 60 small squares over it, many small regions. "check" scrolls on the test color. The window
+# prints the renderer the toolkit picked and its frame rate like weston-simple-egl.
+# GTK 3 draws with cairo into shm buffers, through Xwayland as well. GTK 4 picks its renderer itself: cairo, also
+# into shm buffers, where it finds neither GLES 3 nor Vulkan (the X200). Qt Quick draws with GL, its software
+# backend into shm buffers like Qt Widgets, and only redraws what changed. Qt logs to the journal when the session
+# has one, QT_FORCE_STDERR_LOGGING brings the frame rate to the log.
+toolkit() { # gtk3|gtk4|gtk3-x11|qt-quick|qt-software, [check|spinner|sprites]
+    [ -s "$CLIENTDIR/toolkit.qml" ] || toolkit_sources
+    case $1 in
+        gtk3 | gtk4) echo "exec env GDK_BACKEND=wayland python3 -I $CLIENTDIR/toolkit.py ${1#gtk}.0 $2" ;;
+        gtk3-x11) echo "exec env GDK_BACKEND=x11 DISPLAY=$(xdisplay) python3 -I $CLIENTDIR/toolkit.py 3.0 $2" ;;
+        qt-quick) echo "exec env QT_QPA_PLATFORM=wayland QT_FORCE_STDERR_LOGGING=1 qml6 $CLIENTDIR/toolkit.qml -- $2" ;;
+        qt-software) echo "exec env QT_QPA_PLATFORM=wayland QT_FORCE_STDERR_LOGGING=1 QT_QUICK_BACKEND=software qml6 $CLIENTDIR/toolkit.qml -- $2" ;;
+    esac
+}
+
+toolkit_name() { # gtk3|gtk4|gtk3-x11|qt-quick|qt-software
+    case $1 in
+        gtk3) echo "GTK 3" ;;
+        gtk4) echo "GTK 4" ;;
+        gtk3-x11) echo "GTK 3 (Xwayland)" ;;
+        qt-quick) echo "Qt Quick" ;;
+        qt-software) echo "Qt Quick (software)" ;;
+    esac
+}
+
+renderer_of() { sed -n 's/.*renderer: //p' "$1" 2>/dev/null | head -n 1; } # log
+
+# Xwayland starts with the first X11 client; its display is in the environment of the session
+xdisplay() { asuser systemctl --user show-environment 2>/dev/null | sed -n 's/^DISPLAY=//p'; }
+
+toolkit_sources() {
+    cat >"$CLIENTDIR/toolkit.py" <<'EOF'
+# A GTK 3 or GTK 4 window with a long text: scrolls it at a constant speed, or with "spinner" keeps it still under
+# a spinner. Prints the renderer GTK picked and every 5 s its frame rate, the way weston-simple-egl does. With
+# "check" it draws on the test color.
+import sys
+
+import gi
+from gi.repository import GLib
+
+version, mode = sys.argv[1], "".join(sys.argv[2:3])
+GTK3 = version == "3.0"
+# the app id of the window, set before GTK starts
+GLib.set_prgname(f"hypoland-gtk{version[0]}-test")
+gi.require_version("Gdk", version)
+gi.require_version("Gtk", version)
+from gi.repository import Gdk, Gtk
+
+TEXT = "\n".join(f"{i:5}  the quick brown fox jumps over the lazy dog {i * 7919 % 100000:05}" for i in range(1, 2001))
+SPEED = 0 if mode == "spinner" else 400  # pixels per second
+
+if mode == "check":
+    css = Gtk.CssProvider()
+    style = "window, textview, textview text { background: #ff00ff; color: #202020; }"
+    if GTK3:
+        css.load_from_data(style.encode())
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+    else:
+        css.load_from_string(style)
+        Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
+view = Gtk.TextView(editable=False, cursor_visible=False, monospace=True)
+view.get_buffer().set_text(TEXT)
+scrolled = Gtk.ScrolledWindow(vexpand=True)
+box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+window = Gtk.Window(title="Hypoland GTK test")
+window.set_default_size(1200, 800)
+start = last = count = 0
+
+
+# runs once per frame, frames come with the compositor's frame callbacks
+def tick(widget, clock):
+    global start, last, count
+    now = clock.get_frame_time()
+    if not last:
+        start = now
+        print("renderer:", "cairo" if GTK3 else type(window.get_renderer()).__name__.removesuffix("Renderer").lower(), flush=True)
+    else:
+        adj = scrolled.get_vadjustment()
+        y = adj.get_value() + SPEED * (now - last) / 1e6
+        adj.set_value(0 if y >= adj.get_upper() - adj.get_page_size() else y)
+        count += 1
+        if now - start >= 5e6:
+            print(f"{count} frames in 5 seconds: {count * 1e6 / (now - start):.1f} fps", flush=True)
+            start, count = now, 0
+    last = now
+    return True
+
+
+scrolled.add_tick_callback(tick)
+widgets = [scrolled]
+if mode == "spinner":
+    spinner = Gtk.Spinner()
+    spinner.set_size_request(48, 48)
+    spinner.start()
+    widgets.insert(0, spinner)
+if GTK3:
+    scrolled.add(view)
+    for w in widgets:
+        box.pack_start(w, w is scrolled, True, 0)
+    window.add(box)
+    window.connect("destroy", Gtk.main_quit)
+    window.show_all()
+    Gtk.main()
+else:
+    loop = GLib.MainLoop()
+    scrolled.set_child(view)
+    for w in widgets:
+        box.append(w)
+    window.set_child(box)
+    window.connect("close-request", lambda _: loop.quit())
+    window.present()
+    loop.run()
+EOF
+    cat >"$CLIENTDIR/toolkit.qml" <<'EOF'
+// The Qt Quick counterpart of toolkit.py: a window with a long text that scrolls at a constant speed, or with
+// "sprites" stays still under 60 small moving squares. Prints the graphics API Qt Quick picked and every 5 s its
+// frame rate, the way weston-simple-egl does. With "check" it draws on the test color.
+import QtQuick
+
+Window {
+    id: window
+
+    readonly property bool check: Qt.application.arguments.indexOf("check") >= 0
+    readonly property bool sprites: Qt.application.arguments.indexOf("sprites") >= 0
+    // seconds the sprites have moved
+    property real time: 0
+    // the frames Qt Quick swapped: it waits for the compositor's frame callbacks first, its animations do not
+    property real start: 0
+    property int count: 0
+
+    // a position going back and forth between 0 and range
+    function bounce(p, range) {
+        const m = p % (2 * range);
+        return m < range ? m : 2 * range - m;
+    }
+
+    width: 1200
+    height: 800
+    visible: true
+    title: "Hypoland Qt test"
+    color: check ? "#ff00ff" : "#1e1e1e"
+
+    onFrameSwapped: {
+        const now = Date.now();
+        if (!start) {
+            start = now;
+            const api = list.GraphicsInfo.api;
+            console.log("renderer: " + (api === GraphicsInfo.OpenGL ? "opengl" : api === GraphicsInfo.Software ? "software" : api === GraphicsInfo.Vulkan ? "vulkan" : "graphics API " + api));
+        } else {
+            count++;
+            if (now - start >= 5000) {
+                console.log(count + " frames in 5 seconds: " + (count * 1000 / (now - start)).toFixed(1) + " fps");
+                start = now;
+                count = 0;
+            }
+        }
+    }
+
+    ListView {
+        id: list
+
+        anchors.fill: parent
+        interactive: false
+        model: 2000
+        delegate: Text {
+            required property int index
+
+            text: ("    " + (index + 1)).slice(-5) + "  the quick brown fox jumps over the lazy dog " + ("0000" + (index + 1) * 7919 % 100000).slice(-5)
+            font.family: "monospace"
+            color: window.check ? "#202020" : "#d0d0d0"
+        }
+    }
+
+    Repeater {
+        model: window.sprites ? 60 : 0
+
+        Rectangle {
+            required property int index
+
+            width: 24
+            height: 24
+            color: Qt.hsla(index / 60, 0.8, 0.5, 1)
+            x: window.bounce(index * 97 + (80 + index * 37 % 200) * window.time, window.width - width)
+            y: window.bounce(index * 61 + (60 + index * 53 % 200) * window.time, window.height - height)
+        }
+    }
+
+    FrameAnimation {
+        running: true
+        onTriggered: {
+            if (window.sprites) {
+                window.time += frameTime;
+                return;
+            }
+            const y = list.contentY + 400 * frameTime;
+            list.contentY = y >= list.contentHeight - list.height ? 0 : y;
+        }
+    }
+}
+EOF
+}
+
+toolkit_workload() { # workload, client, mode
+    local log=$CLIENTDIR/$1.log warmup
+    rm -f "$log"
+    client $((SECONDS_PER_RUN + 10)) "$(toolkit "$2" "$3") >$log 2>&1"
+    sleep 5
+    # what the client reported while it started is not measured
+    warmup=$(grep -c "frames in" "$log" 2>/dev/null)
+    rec "$1"
+    stop_clients
+    echo "    $(toolkit_name "$2"), renderer $(renderer_of "$log")"
+    [ "$MODE" != perf ] && value "fps.$1" "$(fps_mean "$log" "$warmup")"
+}
+
+needs_gtk3_scroll="python3 gi:Gtk-3.0"
+workload_gtk3_scroll() { toolkit_workload gtk3-scroll gtk3; }
+
+needs_gtk4_scroll="python3 gi:Gtk-4.0"
+workload_gtk4_scroll() { toolkit_workload gtk4-scroll gtk4; }
+
+needs_qt_quick_scroll="qml6"
+workload_qt_quick_scroll() { toolkit_workload qt-quick-scroll qt-quick; }
+
+needs_qt_software_scroll="qml6"
+workload_qt_software_scroll() { toolkit_workload qt-software-scroll qt-software; }
+
+# The same GTK 3 window as an X11 client, drawn through Xwayland. It gets no frame callbacks, so its frame rate is
+# its own pace, not what the compositor presents
+needs_gtk3_x11_scroll="python3 gi:Gtk-3.0 x11"
+workload_gtk3_x11_scroll() { toolkit_workload gtk3-x11-scroll gtk3-x11; }
+
+needs_gtk4_spinner="python3 gi:Gtk-4.0"
+workload_gtk4_spinner() { toolkit_workload gtk4-spinner gtk4 spinner; }
+
+needs_qt_software_sprites="qml6"
+workload_qt_software_sprites() { toolkit_workload qt-software-sprites qt-software sprites; }
+
 # a client given with --client
 workload_custom() { # name, command
     client $((SECONDS_PER_RUN + 10)) "$2"
@@ -598,9 +854,19 @@ workload_custom() { # name, command
     stop_clients
 }
 
-missing() { # programs
-    local prog
+missing() { # programs, gi:<namespace>-<version> for a library Python reaches through GObject introspection, x11 for Xwayland
+    local prog lib
     for prog in $1; do
+        if [ "$prog" = x11 ]; then
+            [ -n "$(xdisplay)" ] || { echo "Xwayland"; return; }
+            continue
+        fi
+        if [[ $prog == gi:* ]]; then
+            lib=${prog#gi:}
+            asuser python3 -I -c "import gi; gi.require_version('${lib%-*}', '${lib##*-}')" >/dev/null 2>&1 ||
+                { echo "${lib%-*} ${lib##*-} for Python (python-gobject)"; return; }
+            continue
+        fi
         asuser sh -c "command -v $prog" >/dev/null 2>&1 || { echo "$prog"; return; }
     done
 }
@@ -811,6 +1077,41 @@ check_chromium() {
     sleep 1
 }
 
+# a window of each toolkit, drawn on the screen and getting its frames
+check_toolkits() {
+    local tk what needs lacking before log fps
+    for tk in gtk3 gtk4 gtk3-x11 qt-quick qt-software; do
+        what="$(toolkit_name $tk) window"
+        needs=needs_${tk//-/_}_scroll
+        lacking=$(missing "${!needs}")
+        if [ -n "$lacking" ]; then
+            skip "$what: $lacking is not installed"
+            continue
+        fi
+        log=$CLIENTDIR/check-$tk.log
+        before=$(nclients)
+        client 40 "$(toolkit $tk check) >$log 2>&1"
+        if ! mapped "$before" 15; then
+            fail "$what did not map: $(tail -n 1 "$log" 2>/dev/null)"
+            stop_clients
+            continue
+        fi
+        # a window can open with an animation (Omarchy fades it in), and a screenshot during it sees a window that
+        # is not opaque yet. The Qt software window maps within 0.1 s, before the first look for it
+        sleep 1
+        check_drawn "$what drawn" "$tk.png" 10
+        # the client reports its frame rate 5 s after its first frame
+        for _ in $(seq 1 10); do
+            grep -q "frames in" "$log" && break
+            sleep 1
+        done
+        fps=$(fps_of "$log")
+        if [ "$fps" -ge 20 ]; then pass "$what at $fps fps (renderer $(renderer_of "$log"))"; else fail "$what at $fps fps (renderer $(renderer_of "$log"))"; fi
+        stop_clients
+        sleep 1
+    done
+}
+
 check_clients() {
     local fps display
     if [ -n "$(missing weston-simple-egl)" ]; then
@@ -823,8 +1124,7 @@ check_clients() {
         if [ "$fps" -ge 20 ]; then pass "GPU client (weston-simple-egl) at $fps fps"; else fail "GPU client (weston-simple-egl) at $fps fps"; fi
     fi
 
-    # Xwayland starts with the first X11 client; its display is in the environment of the session
-    display=$(asuser systemctl --user show-environment 2>/dev/null | sed -n 's/^DISPLAY=//p')
+    display=$(xdisplay)
     if [ -n "$(missing glxgears)" ]; then
         skip "X11 client: glxgears is not installed"
     elif [ -z "$display" ]; then
@@ -868,6 +1168,7 @@ checks() {
     check_output || return
     check_window
     check_chromium
+    check_toolkits
     check_clients
     info "compositor memory: $(awk '/^(Rss|Pss|Anonymous):/ {printf "%s %d MiB, ", $1, $2 / 1024}' /proc/$P/smaps_rollup | sed 's/, $//')"
     check_logs "$since"

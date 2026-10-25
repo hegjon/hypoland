@@ -191,8 +191,10 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    restarts SDDM, which logs in again, and checks the new session with `scripts/bench/measure.sh --mode check`:
    config errors, removed options answering `ok`, a test window drawn in a screenshot and in the buffer the screen
    scans out (`hypoland-kmsgrab`, root and one monitor), a GPU client, an X11 client through Xwayland, Chromium,
-   GL and shader errors in the compositor's log, crash reports and core dumps. A machine without a monitor gets a
-   headless output for the checks. It prints PASS / FAIL per machine; logs and screenshots are in
+   GTK 3 (also through Xwayland), GTK 4, Qt Quick and Qt Quick software windows (drawn, and getting at least
+   20 fps, see the toolkit workloads below), GL and shader errors in the compositor's log, crash reports and core
+   dumps. A machine without a monitor gets a headless output for the checks. It prints PASS / FAIL per machine;
+   logs and screenshots are in
    `test-results/deploy-*`. `--no-install` only checks the running session (the aarch64 Galaxy Book builds its own
    package, see `MACHINES.md`). Prefer it over improvising SSH commands. A deploy replaces the Hypoland the
    machine runs, so say which build went where (`pacman -Q hypoland`).
@@ -301,7 +303,8 @@ Tools:
   about 80 ms and the compositor draws into that buffer again a few frames later, so an animating client can
   show up half drawn in the capture; freeze it (`pkill -STOP`) for exact results.
 - `./bench.sh <label>` measures a change on the normal build: memory 60 s after the start and after the
-  workloads, CPU time of five workloads, three rounds, into `test-results/bench-<time>-<label>/values.txt`.
+  workloads, CPU time of its workloads (`--help` lists them), three rounds, into
+  `test-results/bench-<time>-<label>/values.txt`.
   `./bench.sh --compare <dir> <dir>` prints the difference. It runs with the `performance` governor, so its CPU
   numbers are lower than the ones below (GPU client 3.7% instead of 7-10%). The brief for unattended optimization
   runs is `docs/overnight-ram-cpu.md`.
@@ -315,6 +318,34 @@ Tools:
   is not installed and only touches the Omarchy idle flags where Omarchy is installed.
   `scripts/bench/target.sh` holds the ssh part. Build, install and restart go through `scripts/deploy.sh`, whose
   checks have to pass (`--no-build` installs the package that was built last).
+- Toolkit workloads (added 2026-10-25): `measure.sh` writes its own GTK client (Python, `python-gobject`) and Qt
+  Quick client (`qml6`) and starts them, so the machines need nothing beyond Omarchy. Both show the same long text
+  and print their renderer and frame rate (`fps.*`, the frames the compositor let them draw): `gtk3-scroll`,
+  `gtk4-scroll`, `qt-quick-scroll` and `qt-software-scroll` (Qt Quick's software backend, shm like Qt Widgets)
+  scroll it, a full window of damage per frame; `gtk3-x11-scroll` is the GTK 3 one through Xwayland;
+  `gtk4-spinner` has only a spinner moving, `qt-software-sprites` 60 small squares (many small damage regions);
+  `video-window` is the `video` clip in a tiled window instead of fullscreen. They port the useful ideas of
+  Phoronix's gtkperf, x11perf, qmlbench and video-cpu-usage (the user decided against running Phoronix tests).
+  GTK 2 is not in Arch any more. Measured 2026-10-25 (compositor CPU, `performance` governor):
+
+  | | X200 | T550 | XPS (scale 2) |
+  |---|---|---|---|
+  | terminal-scroll (foot) | 9.9% | 11.4% | 23.4% |
+  | gtk3-scroll | 19.3% | 19.8% | 23.3% (42 fps) |
+  | gtk4-scroll | 11.0% (cairo) | 4.4% (Vulkan) | 5.6% (Vulkan) |
+  | qt-quick-scroll | 3.8% (47 fps) | 4.1% | 5.3% |
+  | qt-software-scroll | 9.4% | 13.8% | 12.5% |
+  | gtk3-x11-scroll | 3.6% | 5.4% | 6.8% |
+  | gtk4-spinner | 4.0% | 4.2% | 5.0% |
+  | qt-software-sprites | 58.8% (37 fps) | 13.4% | 29.7% |
+  | video-window | 3.1% | 2.6% | 2.8% |
+
+  - GTK 4 finds neither GLES 3 nor Vulkan on the X200 and draws with cairo into shm buffers. Qt Quick draws with
+    GLES 2 there, but scrolls at 47 fps where its software backend makes 60.
+  - Open: `qt-software-sprites` costs the X200 six times the full-window scroll. Mesa is 38% of the compositor's
+    samples, pixman 17% and libc 26%: `CGLTexture::uploadRegion()` calls `glTexSubImage2D` once per damage
+    rectangle, and the double buffered update adds the damage of the update before, which pixman splits into
+    bands of many small rectangles.
 - `./bench.sh --energy <label>` measures energy instead of speed (added 2026-09-28, after omacom/ttfx#46): the
   power the machine draws under each workload, net of an idle baseline taken before and after it (`power.*.net_W`,
   `energy.*.net_J`, with the drift of the baseline as `pm_W`), the idle session itself (`power.baseline.W`) and
