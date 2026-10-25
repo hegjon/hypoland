@@ -252,7 +252,8 @@ Measured on the X200 on 2026-09-27 (1280x800, Omarchy config; later numbers furt
 - `weston-simple-egl` 60 fps, compositor 8-9% CPU; blur on costs about 1% more
 - 4 windows with rounding, shadows, blur, opacity, dim and animations: 58-60 fps, compositor 12% CPU
 - `glmark2-es2-wayland` score 127; glxgears through Xwayland 30 fps
-- Chromium falls back to software rendering (it wants GLES3 itself); compositor 25% CPU uploading its shm frames
+- Chromium falls back to software rendering (it refuses GPUs without ES 3, see `~/Work/chromium/`); compositor 25%
+  CPU uploading its shm frames
 
 Findings worth keeping:
 - `quirks:skip_non_kms_dmabuf_formats` must default to false. Gen4 primary planes have no alpha formats, so with
@@ -534,18 +535,15 @@ Known issues:
   on any compositor, not a Hypoland bug. Fixed in foot master (`f3226bc`, issue #2467, after 1.28.0), not in Arch
   yet. The core dumps are readable on the desktop with `gdb` and `DEBUGINFOD_URLS=https://debuginfod.archlinux.org`
   (same package versions).
-- Not a bug, Chromium's: on the EliteBook (r600, no native fence sync) Chromium with GPU compositing shows stale or
-  garbage regions after a resize because it commits its dmabuf before its rendering is submitted; diagnosed on
-  2026-10-22 with any Hyprland. Script, captures and the Chromium bug report draft: `docs/baseline/elitebook-chromium/`,
-  details in `MACHINES.md`.
+- Not Hypoland's: Arch's Chromium shows stale frames and stalls for seconds on r600 (EliteBook, lianli; crbug
+  576728226, the same with stock Hyprland), and renders in software on the X200 (it refuses GPUs without ES 3).
+  Chromium numbers of soaks and benchmarks on r600 with Arch's Chromium measure that bug, and it delayed Chromium's
+  first frame in the deploy check on lianli by up to 30 s. Patched packages, the patches, the analysis and the
+  scripts are in `~/Work/chromium/` on the desktop (its `README.md`); which machine runs which Chromium is in
+  `MACHINES.md`.
 - Not a bug: foot 1.28 is never blurred by default. It binds `ext-background-effect-v1` and only sets a blur
   region with `blur=yes` in its `[colors-dark]` section, and `CWindow::shouldBlur()` honours that. Live and
   precomputed blur both work on the X200 for other clients. Do not use foot to judge blur.
-- Open, not yet compared with stock Hyprland: on lianli (r600) Chromium's first frame in a new window with a fresh
-  profile came after 1 s in some runs and only after 15 to 30 s in others (2026-10-24, the Chromium check of
-  `scripts/deploy.sh`). Until then its window shows a buffer it has not drawn into: transparent, or old video
-  memory such as the last frame of a glxgears that had just closed, also in `grim` screenshots. The EliteBook
-  (r600) and the T550 drew within about a second in the same runs. The check waits up to 60 s for the page.
 
 ## Next steps
 
