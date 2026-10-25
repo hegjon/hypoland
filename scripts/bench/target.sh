@@ -1,4 +1,6 @@
-# Sourced by bench.sh and profile.sh: where the machine under test is and how a script gets there.
+# shellcheck shell=bash
+# Sourced by bench.sh, profile.sh and scripts/deploy.sh: where the machine under test is and how measure.sh gets
+# there.
 #
 #   BENCH_HOST    ssh host of the machine under test, or "local" for this machine (default: x200)
 #   BENCH_LOGIN   ssh login used for measuring (default: root). Any other login is tried with sudo and
@@ -8,32 +10,42 @@
 BENCH_HOST=${BENCH_HOST:-x200}
 BENCH_LOGIN=${BENCH_LOGIN:-root}
 
+# the ssh options of every script that reaches a machine
+SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+
 target_is_local() {
     [ "$BENCH_HOST" = local ] || [ "$BENCH_HOST" = localhost ]
 }
 
-# runs a script on the machine under test, as root when that is possible without a password
-target_run() { # script, arguments
-    local script=$1 args="" arg
+# runs scripts/bench/measure.sh on a machine, as root when that is possible without a password. The whole
+# directory travels as a tar stream on stdin, so the machine needs no copy of the repository; it is unpacked into a
+# temporary directory there and removed afterwards
+measure_on() { # login@host, arguments of measure.sh
+    local target=$1 args="" arg run
     shift
     for arg in "$@"; do
         args+=" $(printf '%q' "$arg")"
     done
+    run="bash \"\$d/bench/measure.sh\"$args"
+    tar -C scripts -cz bench | ssh "${SSH_OPTS[@]}" "$target" \
+        "d=\$(mktemp -d) && tar -xz -C \"\$d\" || exit 1
+        if [ \"\$(id -u)\" != 0 ] && sudo -n true 2>/dev/null; then sudo -n $run; else $run; fi
+        s=\$?; rm -rf \"\$d\"; exit \$s" 2>&1 |
+        grep --line-buffered -v "^Pseudo-terminal"
+    return "${PIPESTATUS[1]}"
+}
 
+# runs measure.sh on the machine under test
+target_run() { # arguments of measure.sh
     if target_is_local; then
         if [ "$(id -u)" != 0 ] && sudo -n true 2>/dev/null; then
-            sudo -n bash "$script" "$@"
+            sudo -n bash scripts/bench/measure.sh "$@"
         else
-            bash "$script" "$@"
+            bash scripts/bench/measure.sh "$@"
         fi
         return
     fi
-
-    # the script travels on stdin, so the machine under test needs no copy of the repository
-    ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 "$BENCH_LOGIN@$BENCH_HOST" \
-        "if [ \"\$(id -u)\" != 0 ] && sudo -n true 2>/dev/null; then exec sudo -n bash -s --$args; else exec bash -s --$args; fi" <"$script" 2>&1 |
-        grep --line-buffered -v "^Pseudo-terminal"
-    return "${PIPESTATUS[0]}"
+    measure_on "$BENCH_LOGIN@$BENCH_HOST" "$@"
 }
 
 # builds the package, installs it, restarts the session and checks it (scripts/deploy.sh). Nothing is deployed

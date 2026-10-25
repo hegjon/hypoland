@@ -1,0 +1,11 @@
+# the shell of the console of the dev workload: git diff runs through a pager that pages through it for 2 s
+cd "$DEV_REPO"
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_PAGER=cat PAGER=cat
+git() {
+    if [ "$1" = diff ]; then
+        command git -c color.ui=always "$@" | python3 -I "$DEV_PAGER" 2
+    else
+        command git "$@"
+    fi
+}
+PS1='\[\033[1;32m\]a@dev\[\033[0m\]:\[\033[1;34m\]~/repo\[\033[0m\]\$ '

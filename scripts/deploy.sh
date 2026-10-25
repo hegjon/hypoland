@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Builds the Arch package from the working tree and installs it on test machines (see MACHINES.md): copies it
 # into the pacman cache there, so the versions before it stay for going back, installs it with pacman, restarts
-# SDDM (which logs in again) and checks the new session with `scripts/bench/measure.sh --mode check`. Logs in as
+# SDDM (which logs in again) and checks the new session with `scripts/bench/measure.sh --mode check`, sent there as
+# scripts/bench/target.sh sends it. Logs in as
 # root@<host>. The hosts are deployed in parallel, each into its own log.
 #
 # Usage: scripts/deploy.sh [options] host...
@@ -38,7 +39,8 @@ RESTART=${RESTART:-$INSTALL}
 
 OUT=test-results/deploy-$(date +%Y%m%d-%H%M%S)
 mkdir -p "$OUT"
-SSH=(ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+. scripts/bench/target.sh
+SSH=(ssh "${SSH_OPTS[@]}")
 
 # ---- build
 
@@ -108,7 +110,7 @@ deploy() { # host
     fi
 
     [ $CHECK = 1 ] || return 0
-    out=$("${SSH[@]}" "root@$h" "bash -s -- --mode check" <scripts/bench/measure.sh 2>&1)
+    out=$(measure_on "root@$h" --mode check)
     echo "$out"
     dir=$(sed -n 's/^screenshots: \(\/tmp\/hypoland-measure\.[A-Za-z0-9]*\) on .*/\1/p' <<<"$out")
     if [ -n "$dir" ]; then

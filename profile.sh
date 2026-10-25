@@ -44,11 +44,11 @@ if [ $DEPLOY = 1 ]; then
     target_deploy "$OUT/deploy.log" --debug "${DEPLOY_ARGS[@]}" || { echo "the deploy failed:"; grep -E "^(FAIL|build failed)" "$OUT/deploy.log"; exit 1; }
 fi
 
-target_run scripts/bench/measure.sh --mode perf "${MEASURE_ARGS[@]}" | tee "$OUT/profile.txt"
+target_run --mode perf "${MEASURE_ARGS[@]}" | tee "$OUT/profile.txt"
 
 if [ $DEPLOY = 1 ] && [ $KEEP -eq 0 ]; then
     echo
     echo "removing the debug package..."
-    ssh -o BatchMode=yes "root@$BENCH_HOST" "pacman -R --noconfirm hypoland-debug" >"$OUT/restore.log" 2>&1
+    ssh "${SSH_OPTS[@]}" "root@$BENCH_HOST" "pacman -R --noconfirm hypoland-debug" >"$OUT/restore.log" 2>&1
 fi
 echo "report: $OUT/profile.txt"

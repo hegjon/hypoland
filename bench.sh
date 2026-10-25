@@ -105,7 +105,7 @@ if [ $DEPLOY = 1 ] && ! target_deploy "$OUT/test.log" "${DEPLOY_ARGS[@]}"; then
     exit 1
 fi
 
-target_run scripts/bench/measure.sh --mode $MODE --rounds "$ROUNDS" "${MEASURE_ARGS[@]}" | tee "$OUT/bench.txt" | grep --line-buffered -v "^@"
+target_run --mode $MODE --rounds "$ROUNDS" "${MEASURE_ARGS[@]}" | tee "$OUT/bench.txt" | grep --line-buffered -v "^@"
 if ! grep -q "^@ .* mem.end" "$OUT/bench.txt"; then
     echo "the measurement did not finish, see $OUT/bench.txt"
     exit 1

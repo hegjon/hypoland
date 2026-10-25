@@ -313,14 +313,21 @@ Tools:
   2026-09-28). `--host <ssh host>` or `--host local` picks the machine, `--login` the ssh login (root by default,
   without root the governor is left alone), `--no-deploy` measures the compositor that is running,
   `--workloads a,b` picks workloads and `--client name=command` measures any client as one more workload.
-  The work on the machine under test is `scripts/bench/measure.sh`, which is sent over ssh on stdin. It takes the
-  compositor (`hypoland`, then `Hypoland` of older builds, then `Hyprland`), its user, prefix, instance and Wayland socket from the running process
-  and its `hyprland.lock`, starts clients with the environment of the compositor, skips workloads whose client
-  is not installed and only touches the Omarchy idle flags where Omarchy is installed.
-  `scripts/bench/target.sh` holds the ssh part. Build, install and restart go through `scripts/deploy.sh`, whose
-  checks have to pass (`--no-build` installs the package that was built last).
-- Toolkit workloads (added 2026-10-25): `measure.sh` writes its own GTK client (Python, `python-gobject`) and Qt
-  Quick client (`qml6`) and starts them, so the machines need nothing beyond Omarchy. Both show the same long text
+  The work on the machine under test is `scripts/bench/measure.sh`. It takes the compositor (`hypoland`, then
+  `Hypoland` of older builds, then `Hyprland`), its user, prefix, instance and Wayland socket from the running
+  process and its `hyprland.lock`, starts clients with the environment of the compositor, skips workloads whose
+  client is not installed and only touches the Omarchy idle flags where Omarchy is installed. Since 2026-10-25
+  evening it is split: `measure.sh` parses the options and runs the mode, its parts are in `scripts/bench/lib/`
+  (`session.sh`, `meters.sh`, `setup.sh`, which runs when sourced, `measuring.sh`, `workloads.sh`, `check.sh`) and
+  the programs it starts as clients are files in `scripts/bench/clients/`, which editors and linters can read
+  (`python3 -m py_compile`, `luac -p`). `scripts/bench/target.sh` holds the ssh part for `bench.sh`, `profile.sh`
+  and `scripts/deploy.sh`: it sends the whole `scripts/bench` directory as a tar stream on stdin and runs it from
+  a temporary directory, which it removes afterwards, so the machine needs no copy of the repository. Build,
+  install and restart go through `scripts/deploy.sh`, whose checks have to pass (`--no-build` installs the
+  package that was built last).
+- Toolkit workloads (added 2026-10-25): `measure.sh` brings its own GTK client (`scripts/bench/clients/toolkit.py`,
+  Python with `python-gobject`) and Qt Quick client (`toolkit.qml`, `qml6`) and starts them, so the machines need
+  nothing beyond Omarchy. Both show the same long text
   and print their renderer and frame rate (`fps.*`, the frames the compositor let them draw): `gtk3-scroll`,
   `gtk4-scroll`, `qt-quick-scroll` and `qt-software-scroll` (Qt Quick's software backend, shm like Qt Widgets)
   scroll it, a full window of damage per frame; `gtk3-x11-scroll` is the GTK 3 one through Xwayland;
@@ -343,9 +350,11 @@ Tools:
   `scroll` (Ctrl-D, Ctrl-U), `jump` (`<line>G`) and `type` (a command typed into the cleared console). The frames
   come from wlr-screencopy of a small region (the border above the window, or its text) until it changes. Keys go
   down at a random point of the frame, as a person's do: pressed right after a commit, as at first, every key had
-  the same phase and the 90th percentile hardly differed from the median. `scripts/bench/measure.sh` writes the
-  driver, a Python script without libraries (`dev.py`), so it runs on every machine. The time ends at the commit of
-  that frame (the compositor stamps a copied frame when it commits it), the display shows it at its next refresh.
+  the same phase and the 90th percentile hardly differed from the median. The driver is
+  `scripts/bench/clients/dev.py`, a Python script without libraries, so it runs on every machine; the generator of
+  the files, the editor's movements, the console's shell and the log are the `dev-*` files next to it. The time
+  ends at the commit of that frame (the compositor stamps a copied frame when it commits it), the display shows it
+  at its next refresh.
   Screencopy takes the compositor off direct rendering while it captures, which is why the CPU time is measured in
   the load phase only. It refuses to run on a locked session, whose password field would get the keys: on
   2026-10-25 a run typed six commands into the X200's lock screen (six failed logins for `faillock`, which locks
