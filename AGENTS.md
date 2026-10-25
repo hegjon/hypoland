@@ -487,6 +487,16 @@ Overnight run 2026-09-28 (journal in `test-results/overnight/journal.md`), measu
   memory: `--gc-sections`, `-O2`, and `-Os` for code outside the frame and input paths take the binary from
   18.1 to 13.9 MiB and Pss down by 2.9 MiB without a change in CPU time. `-Os` for everything saves 5 MiB more
   but costs 3 to 9% CPU time, `-Os` for everything except render / helpers / output costs 4% in workspace switching.
+- Idle shm windows give their second texture back (2026-10-25, `CHyprOpenGLImpl::trackBackTexture()`): a texture
+  that was not updated between two sweeps a second apart frees the one its updates went into. Three foot windows that
+  printed and then sat idle, GPU memory without the purgeable part: X200 8 -> 6 MiB, T550 16 -> 8, XPS 48 -> 24,
+  Galaxy Book 40 -> 25, no CPU change. A window has a second texture only after two commits at its last size (a
+  resize makes a new texture). iris and crocus keep small freed buffers in Mesa's cache and give them back at a later
+  free (not counted as purgeable either), larger ones at once.
+- Tried and dropped (2026-10-25): shm textures with one texture (as upstream) on every driver but crocus. Slower on
+  iris (T550 `qt-software-scroll` 13.8% -> 16.3%), the same on the XPS, a little faster on freedreno (Galaxy Book
+  `gtk3-scroll` 15.4% -> 14.5%, sprites 26.3% -> 22.7%, within that machine's spread of about 1.5 points). Double
+  buffering stays on all drivers.
 - Not worth it: the GSettings cursor sync leaves 4 glib threads in the compositor, moving it into a child saves
   0.2 MiB. `malloc_trim` alone finds nothing, the heap is not fragmented. Idle is 3 wakeups per second.
 - GPU buffers are system memory on Gen4 and in no process statistic; read them from `/proc/<pid>/fdinfo`

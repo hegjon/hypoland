@@ -2275,6 +2275,43 @@ void CHyprOpenGLImpl::scheduleShaderCompilerRelease() {
     m_shaderCompilerReleaseTimer->updateTimeout(DELAY);
 }
 
+// The second texture of a shm surface is only needed while it updates. A texture that was not updated between two
+// sweeps, a second apart, gives it back (a full screen is 4 MiB at 1280x800, 22 MiB at 3200x1800), and its next update
+// starts a new one with the whole buffer.
+void CHyprOpenGLImpl::trackBackTexture(CGLTexture* tex) {
+    static constexpr auto SWEEP_INTERVAL = std::chrono::seconds(1);
+
+    m_backTextures.emplace_back(tex);
+
+    if (!g_pEventLoopManager)
+        return;
+
+    if (!m_backTextureSweepTimer) {
+        m_backTextureSweepTimer = makeShared<CEventLoopTimer>(
+            std::nullopt,
+            [this](SP<CEventLoopTimer> self, void* data) {
+                // textures destroyed during the shutdown do not remove themselves
+                if (!g_pCompositor || g_pCompositor->m_isShuttingDown)
+                    return;
+
+                makeEGLCurrent();
+                std::erase_if(m_backTextures, [](CGLTexture* tex) { return tex->releaseIdleBackTexture(); });
+
+                if (!m_backTextures.empty())
+                    self->updateTimeout(SWEEP_INTERVAL);
+            },
+            nullptr);
+        g_pEventLoopManager->addTimer(m_backTextureSweepTimer);
+    }
+
+    if (!m_backTextureSweepTimer->armed())
+        m_backTextureSweepTimer->updateTimeout(SWEEP_INTERVAL);
+}
+
+void CHyprOpenGLImpl::untrackBackTexture(CGLTexture* tex) {
+    std::erase(m_backTextures, tex);
+}
+
 // Draws and texture uploads cost a call per damage rectangle. On crocus (Intel Gen4 to Haswell) a call costs far more
 // than the pixels in it: 60 small squares moving in a shm window took 59% of the X200's CPU, merged into strips 32%.
 // A faster GPU pays more for the extra pixels instead, the same window on a 3200x1800 iris took 36% instead of 30%,

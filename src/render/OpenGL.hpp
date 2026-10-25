@@ -51,6 +51,7 @@ namespace Config {
 
 namespace Render::GL {
     class CDualKawaseBlurProvider;
+    class CGLTexture;
 
     CBox resolveBlurUV(const CBox& destinationBox, const Vector2D& textureSize);
 
@@ -252,6 +253,8 @@ namespace Render::GL {
         bool                                      explicitSyncSupported();
         bool                                      coalesceDamage() const; // whether damage is merged into few rectangles
         void                                      scheduleShaderCompilerRelease();
+        void                                      trackBackTexture(CGLTexture* tex); // shm textures with a second texture, see CGLTexture::update()
+        void                                      untrackBackTexture(CGLTexture* tex);
         WP<CShader>                               getShaderVariant(Render::ePreparedFragmentShader frag, Render::ShaderFeatureFlags features = 0);
         WP<CShader>                               getShaderVariant(Render::ePreparedFragmentShader frag, const Render::SShaderVariant& variant);
 
@@ -309,6 +312,10 @@ namespace Render::GL {
 
       private:
         SP<CEventLoopTimer> m_shaderCompilerReleaseTimer;
+
+        // a texture removes itself when it is destroyed, the sweep when it gives its second texture back
+        std::vector<CGLTexture*> m_backTextures;
+        SP<CEventLoopTimer>      m_backTextureSweepTimer;
 
         struct {
             GLint   x      = 0;

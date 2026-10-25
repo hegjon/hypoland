@@ -16,6 +16,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - A surface's damage rectangles are made into a region once per commit instead of one at a time as they arrive,
   which cost the square of their number: Qt Quick's software backend sends one per changed item. The same 60
   squares: 32% -> 19% on the X200 (59% before both changes, and 60 instead of 37 fps), 30% -> 24% on a Dell XPS 13.
+- A window that stopped changing gives back the second texture its updates go into (shm windows, such as foot, GTK 3
+  and Qt Widgets programs), after one or two seconds. Three terminals that printed something and then sat idle add
+  8 instead of 16 MiB of GPU memory on a ThinkPad T550, 24 instead of 48 MiB on a Dell XPS 13 at 3200x1800 and 6
+  instead of 8 MiB on the X200. On integrated graphics that is system memory.
 
 ### Added
 

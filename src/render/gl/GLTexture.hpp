@@ -28,6 +28,10 @@ namespace Render::GL {
         bool ok() override;
         bool isDMA() override;
 
+        // frees the second texture when there was no update since the last call, see
+        // CHyprOpenGLImpl::trackBackTexture(). Returns whether it did
+        bool releaseIdleBackTexture();
+
       private:
         void* m_eglImage = nullptr;
 
@@ -35,6 +39,7 @@ namespace Render::GL {
         // shown, m_backStaleDamage what it is missing compared to the shown one.
         GLuint  m_backTexID = 0;
         CRegion m_backStaleDamage;
+        bool    m_backUsed = false;
 
         enum eTextureParam : uint8_t {
             TEXTURE_PAR_WRAP_S = 0,

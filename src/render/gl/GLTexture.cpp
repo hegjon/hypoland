@@ -6,6 +6,7 @@
 #include "../../helpers/math/Math.hpp"
 #include "../Texture.hpp"
 #include <cstring>
+#include <utility>
 #include <hyprgraphics/egl/Egl.hpp>
 
 using namespace Hyprgraphics::Egl;
@@ -26,6 +27,7 @@ CGLTexture::~CGLTexture() {
     }
 
     if (m_backTexID) {
+        g_pHyprOpenGL->untrackBackTexture(this);
         GLCALL(glDeleteTextures(1, &m_backTexID));
         m_backTexID = 0;
     }
@@ -103,8 +105,10 @@ CGLTexture::CGLTexture(const Aquamarine::SDMABUFAttrs& attrs, void* image, bool 
 // Writing to a texture that the GPU still reads from makes the driver (crocus at least) allocate, clear and
 // cache-flush a staging buffer for every upload, which costs more than twice the upload itself. So the update
 // goes into a second texture that was last shown one update ago and is idle by now, and the two are swapped.
+// It pays on iris too: a Qt window scrolling in software took 13.8% of a ThinkPad T550's CPU, 16.3% with one texture.
 // The second texture also gets the damage it missed while it was not shown; the client buffer is complete, so
-// uploading more than the current damage is always correct.
+// uploading more than the current damage is always correct. A surface that stops updating gives the second texture
+// back after a second or two (CHyprOpenGLImpl::trackBackTexture()).
 void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, const CRegion& damage) {
     if (damage.empty())
         return;
@@ -138,6 +142,7 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
         m_backCachedStates[TEXTURE_PAR_WRAP_S] = GL_CLAMP_TO_EDGE;
         m_backCachedStates[TEXTURE_PAR_WRAP_T] = GL_CLAMP_TO_EDGE;
         GLCALL(glTexImage2D(m_target, 0, GLFMT.internalFormat, m_size.x, m_size.y, 0, GLFMT.format, GLFMT.type, pixels));
+        g_pHyprOpenGL->trackBackTexture(this);
     } else {
         // a call per rectangle, see CHyprOpenGLImpl::coalesceDamage()
         static constexpr size_t MAX_UPLOAD_RECTS = 8;
@@ -146,6 +151,8 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
         GLCALL(glBindTexture(m_target, m_backTexID));
         uploadRegion(GLFMT.format, GLFMT.type, pixels, g_pHyprOpenGL->coalesceDamage() ? Math::coalesceRegion(REGION, MAX_UPLOAD_RECTS) : REGION);
     }
+
+    m_backUsed = true;
 
     // the texture that was shown until now misses this update
     std::swap(m_texID, m_backTexID);
@@ -165,6 +172,17 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
         m_dataCopy.resize(stride * m_size.y);
         memcpy(m_dataCopy.data(), pixels, stride * m_size.y);
     }
+}
+
+bool CGLTexture::releaseIdleBackTexture() {
+    if (std::exchange(m_backUsed, false))
+        return false;
+
+    GLCALL(glDeleteTextures(1, &m_backTexID));
+    m_backTexID = 0;
+    m_backStaleDamage.clear();
+    m_backCachedStates.fill(std::nullopt);
+    return true;
 }
 
 void CGLTexture::uploadRegion(GLenum format, GLenum type, uint8_t* pixels, const CRegion& region) {
