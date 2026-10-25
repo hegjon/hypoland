@@ -121,12 +121,27 @@ $ <span class="w">hypoland</span>
         <div class="stat"><b>0.1%</b><span>compositor CPU on an idle desktop</span></div>
         <div class="stat"><b>60 fps</b><span>GPU client, compositor at 3&ndash;9% CPU</span></div>
         <div class="stat"><b>58&ndash;60</b><span>fps with 4 windows, blur, shadows, rounding and animations on</span></div>
-        <div class="stat"><b>55 MiB</b><span>compositor PSS on an idle Omarchy desktop</span></div>
+        <div class="stat"><b>46 MiB</b><span>compositor PSS on an idle Omarchy desktop</span></div>
         <div class="stat"><b>127</b><span><code>glmark2-es2-wayland</code> score</span></div>
       </div>
+      <div class="scroll"><table>
+        <thead><tr><th>Compositor on the X200</th><th>Hypoland</th><th>Hyprland 0.56.2</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>CPU, GPU client at 60&nbsp;fps</td><td>2.7%</td><td>3.8%</td><td class="yes">&minus;30%</td></tr>
+          <tr><td>CPU, terminal scrolling fast</td><td>10.2%</td><td>15.1%</td><td class="yes">&minus;33%</td></tr>
+          <tr><td>CPU, Chromium in a full window</td><td>9.9%</td><td>26.6%</td><td class="yes">&minus;63%</td></tr>
+          <tr><td>CPU, workspace switching with animations</td><td>3.7%</td><td>10.3%</td><td class="yes">&minus;64%</td></tr>
+          <tr><td>Memory (PSS), 60&nbsp;s after the start</td><td>46&nbsp;MiB</td><td>114&nbsp;MiB</td><td class="yes">&minus;60%</td></tr>
+        </tbody>
+      </table></div>
       <p class="note">
         Measured on the test machine running the full <a href="https://omarchy.org/">Omarchy</a> session
-        (Quickshell bar, wallpaper, notifications). Stock Hyprland 0.56.2 aborts at startup on the same machine.
+        (Quickshell bar, wallpaper, notifications). Stock Hyprland 0.56.2 aborts at startup on the same machine;
+        for the comparison above it ran with Omarchy's GLES&nbsp;3 override
+        (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), medians of 3 rounds on
+        2026-10-22, with the same frames drawn. On a ThinkPad T550, whose GPU has GLES&nbsp;3, Hypoland used
+        10&ndash;55% less CPU and 62% less memory than stock Hyprland
+        (<a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline">raw data and scripts</a>).
         Hypoland's own optimizations for this hardware include drawing straight into the scanout buffer,
         clearing only damaged areas and double-buffered shm uploads.
       </p>
@@ -140,9 +155,13 @@ $ <span class="w">hypoland</span>
         <li>Intel GMA 4500MHD / GM45 (Gen4.5), the tested target: ThinkPad X200, X200s, X301, T400 and T500</li>
         <li>Intel GMA X3100 / 965GM (Gen4): ThinkPad X61, X300 and T61 with Intel graphics</li>
         <li>Desktops with Intel G41, G43, G45 or Q45 chipset graphics (GMA 4500 / X4500), the same generation</li>
-        <li>Other GPUs with OpenGL ES 2.0 under Mesa should work, but are untested</li>
+        <li>Other GPUs that stop at OpenGL ES 2.0 under Mesa should work, but are untested</li>
       </ul>
-      <p class="note">Developed on a ThinkPad X200 with Mesa's <code>crocus</code> driver. Only the X200 is tested.</p>
+      <p class="note">
+        Developed on a ThinkPad X200 with Mesa's <code>crocus</code> driver. Also tested on GPUs with GLES&nbsp;3,
+        which run the same GLES&nbsp;2 renderer: Intel HD 5500 (<code>iris</code>), AMD Radeon HD 6470M and
+        HD 8570D (<code>r600</code>) and Qualcomm Adreno X1-85 (<code>freedreno</code>, aarch64).
+      </p>
     </div>
   </section>
 
@@ -186,7 +205,7 @@ $ <span class="w">hypoland</span>
           <tr><td>Protocols</td><td>The Hyprland Wayland protocols (Quickshell, portals, global shortcuts)</td><td class="yes">same</td></tr>
           <tr><td>Binary</td><td><code>hypoland</code> and <code>start-hypoland</code>, there is no <code>Hyprland</code> command</td><td class="no">renamed</td></tr>
           <tr><td>Screen shaders</td><td>Must be GLSL ES 1.00, Hyprland's GLSL ES 3.00 shaders do not compile</td><td class="no">differs</td></tr>
-          <tr><td>Plugins</td><td>Not supported, <code>hl.plugin.load()</code> warns and does nothing</td><td class="no">removed</td></tr>
+          <tr><td>Plugins</td><td>Not supported, <code>hl.plugin.load()</code> warns and does nothing. Omarchy's titlebars are built in after 0.2.0</td><td class="no">removed</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -217,8 +236,14 @@ $ <span class="w">hypoland</span>
         its own tree, patched for GLES&nbsp;2.0, and never uses the system one.
       </p>
       <p>
+        Rather not build? Every release has an Arch package for <code>x86-64</code> on the
+        <a href="https://github.com/hegjon/hypoland/releases">releases page</a>, and the
+        <a href="https://github.com/hegjon/hypoland/blob/master/CHANGELOG.md">changelog</a> says what changed.
+      </p>
+      <p>
         Build on a fast machine and copy the result over? Target baseline <code>x86-64</code>. Do not use
-        <code>-march=native</code>, your desktop CPU knows instructions a Core&nbsp;2 Duo doesn't.
+        <code>-march=native</code>, your desktop CPU knows instructions a Core&nbsp;2 Duo doesn't. The Arch
+        package also builds on aarch64; build it on the machine itself.
       </p>
       <p>
         The Arch package <code>provides</code> and <code>conflicts</code> with <code>hyprland</code>, and
@@ -234,24 +259,29 @@ $ <span class="w">hypoland</span>
         <summary>Will it run on my GPU?</summary>
         <p>
           If Hyprland dies with <code>eglCreateContext failed</code> and <code>eglinfo</code> shows
-          OpenGL ES 2.0 but no 3.0, Hypoland is meant for you. Gen4 Intel is tested; anything else is
-          untested, and reports are welcome.
+          OpenGL ES 2.0 but no 3.0, Hypoland is meant for you. Of those GPUs, Gen4 Intel is tested; the others
+          are untested, and reports are welcome. Newer GPUs work too: Hypoland is also tested on Intel HD 5500,
+          AMD Radeon (<code>r600</code>) and Qualcomm Adreno.
         </p>
       </details>
       <details>
-        <summary>I have a modern GPU. Should I use it?</summary>
+        <summary>My GPU has GLES&nbsp;3. Should I use it?</summary>
         <p>
-          No, use Hyprland. It has color management, HDR, plugins and more effects. Hypoland only exists
-          because those machines can't run it.
+          On a modern machine, use Hyprland: it has color management, HDR, plugins and more effects. On older
+          hardware that runs Hyprland, or with little memory, Hypoland can still be the better fit, because it
+          does less. On a 2015 ThinkPad T550 (Intel HD 5500) with the same Omarchy desktop it used 10&ndash;55%
+          less CPU than stock Hyprland, 44 instead of 115&nbsp;MiB of memory (PSS) and 97 instead of
+          171&nbsp;MiB of GPU buffers, which integrated graphics take from system memory too.
         </p>
       </details>
       <details>
         <summary>Does Omarchy work?</summary>
         <p>
-          Yes. Omarchy 4 is what the test machine runs: the Quickshell bar, notifications,
-          wallpaper, windows and Xwayland all work. Chromium runs, but falls back to software rendering because it wants
-          GLES&nbsp;3 itself. Floating workspaces have no titlebars: Omarchy draws them with a Hyprland plugin, and
-          Hypoland has no plugins.
+          Yes. Omarchy 4 is what the test machines run: the Quickshell bar, notifications,
+          wallpaper, windows and Xwayland all work. Chromium runs, but on GLES&nbsp;2 hardware it falls back to
+          software rendering because it wants GLES&nbsp;3 itself. Titlebars on floating workspaces are built in
+          after 0.2.0: Omarchy draws them with a Hyprland plugin, which Hypoland implements itself. 0.2.0 does not
+          have them yet.
         </p>
       </details>
       <details>
@@ -275,7 +305,9 @@ $ <span class="w">hypoland</span>
           No, and they will not come back. The plugin system was removed on purpose: a plugin has to be built
           against the exact Hyprland source it loads into, and most plugins draw with GLES&nbsp;3 renderer code
           that Hypoland no longer has. <code>hl.plugin.load()</code> warns and does nothing, so configs that load
-          plugins still start. Tools that inject input can use the Wayland protocols instead,
+          plugins still start. The one exception is Omarchy's titlebar plugin: after 0.2.0 Hypoland has it built
+          in, with the plugin's options, and loading it is accepted without a warning. Tools that inject input can
+          use the Wayland protocols instead,
           <code>zwlr_virtual_pointer_manager_v1</code> and <code>zwp_virtual_keyboard_manager_v1</code> are
           supported (<a href="https://github.com/hegjon/hypoland/issues/1">issue #1</a>).
         </p>
@@ -307,6 +339,7 @@ $ <span class="w">hypoland</span>
     <img src="favicon.png" width="16" height="16" alt="">
     Hypoland is BSD 3-Clause licensed, like Hyprland.
     <a href="https://github.com/hegjon/hypoland">Source</a> &middot;
+    <a href="https://github.com/hegjon/hypoland/releases">Releases</a> &middot;
     <a href="https://github.com/hegjon/hypoland/issues">Issues</a> &middot;
     <a href="https://github.com/hegjon/hypoland/blob/master/LICENSE">License</a>
   </p>
