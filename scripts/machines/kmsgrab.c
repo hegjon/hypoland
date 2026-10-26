@@ -48,23 +48,27 @@ int main(int argc, char** argv) {
                 continue;
             }
 
-            int dmabuf = -1;
-            if (drmPrimeHandleToFD(fd, fb->handles[0], DRM_CLOEXEC, &dmabuf)) {
-                perror("drmPrimeHandleToFD");
-                return 1;
-            }
-
+            // A compressed buffer has more planes than its format: Skylake's render compression
+            // (I915_FORMAT_MOD_Y_TILED_CCS) keeps its control surface as a second plane, in the same buffer at an offset.
+            // Every plane goes to the import, and mapping it hands back the resolved pixels
             struct gbm_device*                 gbm  = gbm_create_device(fd);
             struct gbm_import_fd_modifier_data data = {
                 .width    = fb->width,
                 .height   = fb->height,
                 .format   = fb->pixel_format,
-                .num_fds  = 1,
-                .fds      = {dmabuf},
-                .strides  = {(int)fb->pitches[0]},
-                .offsets  = {(int)fb->offsets[0]},
                 .modifier = fb->modifier,
             };
+            for (uint32_t p = 0; p < 4 && fb->handles[p]; p++) {
+                int dmabuf = -1;
+                if (drmPrimeHandleToFD(fd, fb->handles[p], DRM_CLOEXEC, &dmabuf)) {
+                    perror("drmPrimeHandleToFD");
+                    return 1;
+                }
+                data.fds[p]     = dmabuf;
+                data.strides[p] = (int)fb->pitches[p];
+                data.offsets[p] = (int)fb->offsets[p];
+                data.num_fds    = p + 1;
+            }
             struct gbm_bo* bo = gbm_bo_import(gbm, GBM_BO_IMPORT_FD_MODIFIER, &data, 0);
             if (!bo) {
                 fprintf(stderr, "gbm_bo_import failed\n");
@@ -104,7 +108,8 @@ int main(int argc, char** argv) {
 
             gbm_bo_destroy(bo);
             gbm_device_destroy(gbm);
-            close(dmabuf);
+            for (uint32_t p = 0; p < data.num_fds; p++)
+                close(data.fds[p]);
             return 0;
         }
         close(fd);

@@ -314,7 +314,10 @@ Tools:
   the display scans out. Use it to check what really reaches the screen: a `grim` screenshot counts as screen
   sharing, which makes the compositor use the work buffer copy path instead of direct rendering. The read takes
   about 80 ms and the compositor draws into that buffer again a few frames later, so an animating client can
-  show up half drawn in the capture; freeze it (`pkill -STOP`) for exact results.
+  show up half drawn in the capture; freeze it (`pkill -STOP`) for exact results. It imports every plane of the
+  framebuffer (since 2026-10-26): the T460s scans out Skylake's render compressed `I915_FORMAT_MOD_Y_TILED_CCS`, whose
+  control surface is a second plane, and Mesa resolves it when the buffer is mapped. With the screen off (DPMS) there
+  is nothing to read: "no scanout buffer found".
 - `./bench.sh <label>` measures a change on the normal build: memory 60 s after the start and after the
   workloads, CPU time of its workloads (`--help` lists them), three rounds, into
   `test-results/bench-<time>-<label>/values.txt`.
