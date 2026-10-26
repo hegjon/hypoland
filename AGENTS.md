@@ -313,6 +313,22 @@ Tools:
   `./bench.sh --compare <dir> <dir>` prints the difference. It runs with the `performance` governor, so its CPU
   numbers are lower than the ones below (GPU client 3.7% instead of 7-10%). The brief for unattended optimization
   runs is `docs/overnight-ram-cpu.md`.
+  CPU time (since 2026-10-26, asked for by the user: work moved from the compositor into a client must show in a
+  sum), all in percent of one CPU over the workload's window: `cpu.<workload>.percent` is the compositor alone, the
+  scheduler's time of all its threads, comparable with every earlier run. `clients_percent` is the workload's
+  clients with every process they start, also those that ended: `measure.sh` starts each client in a transient scope
+  of `hypolandbench.slice` under the user's systemd manager (`systemd-run --user --scope`) and reads the slice's
+  `cpu.stat`. `total_percent` is the user's whole session, `user@<uid>.service`: the compositor, Xwayland and the
+  shell (uwsm runs all three in `wayland-wm@hyprland.desktop.service`, so they cannot be told apart by cgroup), the
+  clients and the session's services. `machine_percent` is every CPU's busy time from `/proc/stat`, with the kernel
+  threads (the GPU driver's work no process is charged for), interrupts and the benchmark itself. For
+  `gtk3-x11-scroll` the session is about 30% on the T550 against 5.5% compositor and 4.3% client: the X11 path's work
+  is in Xwayland. Clients that run as fast as they can make their sum a measure of throughput, not of cost:
+  `terminal-scroll`'s `ls` loop (133% clients on the T550) and `alacritty-scroll` print more when the terminal takes
+  their output faster. Before 2026-10-26 the clients ran in root's ssh session (`user-0.slice`), which the CPU
+  controller weighs against the user's slice; now they share the user's slice with the compositor, as programs
+  started from the desktop do in `app.slice`. `systemd-run` expands `$` in the command it runs like `ExecStart=`
+  does, so it runs with `--expand-environment=no` (a client's `$$` came out as `$` and nothing stopped them).
 - `bench.sh` and `profile.sh` are not tied to the X200 (they were `bench-x200.sh` and `profile-x200.sh` until
   2026-09-28). `--host <ssh host>` or `--host local` picks the machine, `--login` the ssh login (root by default,
   without root the governor is left alone), `--no-deploy` measures the compositor that is running,

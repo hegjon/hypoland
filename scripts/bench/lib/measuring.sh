@@ -4,6 +4,15 @@
 # on-CPU time of all threads of the compositor in ns, the 1% steps of pidstat are too coarse for small changes
 cputime() { cat /proc/$P/task/*/schedstat 2>/dev/null | awk '{s += $1} END {printf "%.0f\n", s}'; }
 
+# The CPU time a workload costs in all: work a change moves from the compositor into the clients (or into Xwayland,
+# the shell or the driver's kernel threads) is not in the compositor's. In ns: a cgroup's, with every process that
+# ran in it, also those that ended (empty when it is not there), and the busy time of all CPUs from /proc/stat, in
+# its ticks of 1/CLK_TCK s
+cgtime() { awk '$1 == "usage_usec" {printf "%.0f\n", $2 * 1000}' "$1/cpu.stat" 2>/dev/null; } # cgroup path
+TICK_NS=$((1000000000 / $(getconf CLK_TCK)))
+busytime() { awk -v t=$TICK_NS '$1 == "cpu" {printf "%.0f\n", ($2 + $3 + $4 + $7 + $8 + $9) * t; exit}' /proc/stat; }
+cgroot() { [ -n "$USERCG" ] && echo "/sys/fs/cgroup$USERCG"; }
+
 # GPU buffers are system memory on integrated graphics and in no process statistic. Prints the total, the shared and the
 # purgeable part in KiB: an open DRM file shows up once per file descriptor, a client id is counted once. Purgeable
 # buffers are those Mesa keeps in its cache for reuse, counted in the total, but the kernel takes them back when it
@@ -49,19 +58,26 @@ window() { # name
 }
 
 bench() { # name
-    local name=$1 t0 t1 c0 c1 m0 m1 sampler=""
+    local name=$1 t0 t1 c0 c1 m0 m1 u0 u1 k0 k1 b0 b1 sampler="" user
     if command -v pidstat >/dev/null; then
         pidstat -u -p $P 1 "$SECONDS_PER_RUN" >"$OUT/$name.pidstat" &
         sampler=$!
     fi
     battery_check
-    m0=$(mark) c0=$(cputime) t0=$(date +%s%N)
+    user=$(cgroot)
+    m0=$(mark) c0=$(cputime) t0=$(date +%s%N) u0=$(cgtime "$user") k0=$(cgtime "$user/$SLICE") b0=$(busytime)
     window "$name"
-    c1=$(cputime) t1=$(date +%s%N) m1=$(mark)
+    c1=$(cputime) t1=$(date +%s%N) u1=$(cgtime "$user") k1=$(cgtime "$user/$SLICE") b1=$(busytime) m1=$(mark)
     [ -n "$sampler" ] && wait "$sampler"
     echo "--- $name; clients: $(clients)$(in_the_way)"
     [ -n "$(in_the_way)" ] && value "invalid.$name" 1
-    value "cpu.$name.percent" "$(awk -v c=$((c1 - c0)) -v t=$((t1 - t0)) 'BEGIN {printf "%.2f", 100 * c / t}')"
+    value "cpu.$name.percent" "$(percent $((c1 - c0)) $((t1 - t0)))"
+    # the clients' slice is there while they run; without clients it reads nothing at both ends
+    if [ ${#SCOPE[@]} -gt 0 ] && [ "${k1:-0}" -ge "${k0:-0}" ]; then
+        value "cpu.$name.clients_percent" "$(percent $((${k1:-0} - ${k0:-0})) $((t1 - t0)))"
+    fi
+    [ -n "$u0" ] && [ -n "$u1" ] && value "cpu.$name.total_percent" "$(percent $((u1 - u0)) $((t1 - t0)))"
+    value "cpu.$name.machine_percent" "$(percent $((b1 - b0)) $((t1 - t0)))"
     if [ "$MODE" = energy ]; then
         [ -s "$OUT/$name.perf" ] && awk -v r=$ROUND -v n="$name" -F, '
             $1 ~ /^[0-9]+$/ {k = $3; sub(/:.*/, "", k); printf "@ %s perf.%s.M%s %.2f\n", r, n, k, $1 / 1e6}
@@ -101,6 +117,8 @@ perf_rec() { # name
         grep -E "\] ($STAGES)" |
         awk '{k=$0; sub(/^ +[0-9.]+% +[0-9.]+% +\[.\] /,"",k); sub(/\(.*/,"",k); sub(/[ \t-]+$/,"",k); if(!(k in s)){s[k]=1; printf "  %7s  %s\n",$1,k}}' | head -24
 }
+
+percent() { awk -v c="$1" -v t="$2" 'BEGIN {printf "%.2f", 100 * c / t}'; } # ns of CPU time, ns of wall time
 
 rec() {
     if [ "$MODE" = perf ]; then perf_rec "$1"; else bench "$1"; fi

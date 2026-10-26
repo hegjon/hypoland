@@ -46,8 +46,21 @@ dispatch() { # lua, legacy
     [ "$(H dispatch "$1" 2>/dev/null)" = ok ] || H dispatch $2 >/dev/null 2>&1
 }
 
+# The cgroups whose CPU time is read besides the compositor's: the user's systemd manager, which holds the whole
+# session (the compositor, Xwayland, the shell, the session's services), and a slice of it for the clients, next to
+# the compositor's session.slice like the app.slice of programs started from the desktop. Without a user manager the
+# clients run where this script does and only the compositor is measured. A dash in a slice's name nests it.
+# systemd-run expands $ in a command line like ExecStart= does by default, the client's $$ came out as $
+USERCG=$(sed -n 's|^0::\(.*/user@[0-9]*\.service\)/.*|\1|p' /proc/$P/cgroup)
+SLICE=hypolandbench.slice
+SCOPE=()
+if [ -n "$USERCG" ] &&
+    asuser systemd-run --user --quiet --scope --collect --expand-environment=no --slice=$SLICE true >/dev/null 2>&1; then
+    SCOPE=(systemd-run --user --quiet --scope --collect --expand-environment=no "--slice=$SLICE" --)
+fi
+
 # Clients are started as leaders of their own process group and stopped through it, so stopping one takes
-# its children along and never hits a window of the user.
+# its children along and never hits a window of the user. Each runs in a scope of the clients' slice
 CLIENTS=0
 client() { # seconds to live, command
     local ttl=$1 pidfile
@@ -55,7 +68,7 @@ client() { # seconds to live, command
     CLIENTS=$((CLIENTS + 1))
     pidfile=$CLIENTDIR/client.$CLIENTS.pid
     rm -f "$pidfile"
-    asuser setsid sh -c 'echo $$ >"$0"; exec timeout "$1" sh -c "$2"' "$pidfile" "$ttl" "$*" >/dev/null 2>&1 &
+    asuser "${SCOPE[@]}" setsid sh -c 'echo $$ >"$0"; exec timeout "$1" sh -c "$2"' "$pidfile" "$ttl" "$*" >/dev/null 2>&1 &
     for _ in 1 2 3 4 5 6 7 8 9 10; do
         [ -s "$pidfile" ] && break
         sleep 0.1

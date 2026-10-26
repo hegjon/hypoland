@@ -14,6 +14,7 @@ set_governor() { for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor;
 restore() {
     trap - EXIT
     stop_clients
+    [ ${#SCOPE[@]} -gt 0 ] && asuser systemctl --user stop "$SLICE" >/dev/null 2>&1
     if [ -n "$OMARCHY" ]; then
         [ $HAD_AWAKE = 1 ] || rm -f "$OMARCHY/indicators/stay-awake"
         [ $HAD_SAVER_OFF = 1 ] || rm -f "$OMARCHY/toggles/screensaver-off"
