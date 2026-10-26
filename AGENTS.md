@@ -334,6 +334,11 @@ Tools:
   controller weighs against the user's slice; now they share the user's slice with the compositor, as programs
   started from the desktop do in `app.slice`. `systemd-run` expands `$` in the command it runs like `ExecStart=`
   does, so it runs with `--expand-environment=no` (a client's `$$` came out as `$` and nothing stopped them).
+  `fps.<workload>.screen` (since 2026-10-26) is the frames the compositor put on the screen per second over the same
+  window: its page flips, counted as the flip events DRM delivers to it (`perf stat -a -e
+  drm:drm_vblank_event_delivered`, root; the same tracepoint on i915, radeon and msm). Idle reads 0.0 and
+  `gpu-client` 60.1 on the X200. Read a sum of CPU time with it: a compositor that shows more frames makes its
+  clients draw more. `fps.<workload>` without `.screen` stays the client's own frame rate.
 - `bench.sh` and `profile.sh` are not tied to the X200 (they were `bench-x200.sh` and `profile-x200.sh` until
   2026-09-28). `--host <ssh host>` or `--host local` picks the machine, `--login` the ssh login (root by default,
   without root the governor is left alone), `--no-deploy` measures the compositor that is running,
@@ -405,7 +410,11 @@ Tools:
   seven machines): on the T550, the XPS and the Galaxy Book stock shows a switch or a resize about a frame later
   (focus 7.1 / 16.3 / 3.7 ms against 1.8 / 2.0 / 1.4, `redrawn` 5 to 15 ms longer), on the X200, the EliteBook, lianli
   and the Chromebook the two are the same. `cpu.resize` is the same or up to 2 points lower, except on the X200
-  (16.8% stock with the GLES 3 override, 21.5% Hypoland, not looked into yet).
+  (16.8% stock with the GLES 3 override, 21.5% Hypoland). `resize-foot`, not in the default list, is the same with
+  foot on both sides: shm buffers only, which no GL driver or Mesa variable touches. On the X200 (rounds 2 to 4 of
+  2026-10-26) it shows the same gap as `resize`, so it is not Alacritty under stock's GLES 3 override: compositor
+  23% / 31%, clients 75% / 110%, session 98% / 141% (stock / Hypoland). Whether Hypoland shows more resize steps per
+  second, which makes the clients draw more, is what `fps.resize.screen` is for.
   Omarchy's shell (added 2026-10-26, both skipped where `omarchy-shell shell ping` does not answer): `notifications`
   has notify-send deliver a notification a second from four senders, low urgency (5 s each), over an idle foot window,
   so about five cards stand in the shell's column at the right of the screen, one sliding in and one going every
