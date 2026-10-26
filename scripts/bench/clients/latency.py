@@ -52,6 +52,16 @@ def hyprctl(path, request):
     return json.loads(data)
 
 
+def layer_box(path, monitor, namespace):
+    """The box of a layer surface (by its namespace) on a monitor, in the output's logical coordinates, or None"""
+    levels = hyprctl(path, "j/layers").get(monitor["name"], {}).get("levels", {})
+    for layers in levels.values():
+        for layer in layers:
+            if layer.get("namespace") == namespace:
+                return (layer["x"] - monitor["x"], layer["y"] - monitor["y"], layer["w"], layer["h"])
+    return None
+
+
 class Wayland:
     def __init__(self):
         path = os.path.join(os.environ["XDG_RUNTIME_DIR"], os.environ.get("WAYLAND_DISPLAY", "wayland-0"))

@@ -389,7 +389,9 @@ Tools:
   (`scripts/bench/clients/windows.py`, root only): `focus` moves the focus to a neighbouring window with SUPER+arrow,
   in a direction picked at random among those that have one, until the border of the window that had it changes
   (`workspace-switch`, `idle-windows`, `resize`); `workspace-switch` also has `workspace`, SUPER+2 and SUPER+1, until
-  the middle of a window changes. The driver waits 0.7 s after every step for Omarchy's border animation (539 ms)
+  the middle of a window changes, and `bar` (added 2026-10-26), the same keys until the first quarter of Omarchy's bar
+  changes: its workspace widget, redrawn by the shell after the compositor's event (T550: 15.6 ms against 1.7 ms
+  for the window). The driver waits 0.7 s after every step for Omarchy's border animation (539 ms)
   to end. `resize` (added 2026-10-26) puts foot (shm) and Alacritty (GL) side by side, both full of one long line of
   numbers that wraps at the window's edge, and drags the split between them with SUPER and the right button
   (Omarchy's resize bind) by a uinput absolute pointer, 125 motions a second like a mouse, for the CPU time
@@ -404,6 +406,32 @@ Tools:
   (focus 7.1 / 16.3 / 3.7 ms against 1.8 / 2.0 / 1.4, `redrawn` 5 to 15 ms longer), on the X200, the EliteBook, lianli
   and the Chromebook the two are the same. `cpu.resize` is the same or up to 2 points lower, except on the X200
   (16.8% stock with the GLES 3 override, 21.5% Hypoland, not looked into yet).
+  Omarchy's shell (added 2026-10-26, both skipped where `omarchy-shell shell ping` does not answer): `notifications`
+  has notify-send deliver a notification a second from four senders, low urgency (5 s each), over an idle foot window,
+  so about five cards stand in the shell's column at the right of the screen, one sliding in and one going every
+  second; they end up in the shell's history, the cards are dismissed afterwards. Then `latency.notifications.toast_ms`:
+  one notification at a time sent over the session bus by `scripts/bench/clients/shell.py` run as the user (the
+  bus refuses root; `sessionbus.py` next to it marshals the D-Bus call by hand, so no library is needed) until the
+  top of the shell's notification column changes, each closed through the bus again. `menu` toggles Omarchy's menu
+  (SUPER+SPACE) every second over the same window, through the global shortcut the shell registers (`hyprctl
+  globalshortcuts`): a fullscreen overlay layer with a half transparent scrim and a card in the middle, which takes
+  the keyboard focus. Then `latency.menu.open_ms` from SUPER+SPACE by the uinput keyboard until the scrim shows in a
+  strip at the left of the screen, `close_ms` from Escape until it is gone, and `search_ms` from a letter typed into
+  the open menu's search line until the rows of its card change (`scripts/bench/clients/shell.py`). The shell's own
+  CPU time is in `cpu.*.total_percent` (the session), not in the compositor's. Measured 2026-10-26
+  (one round of 12 s on a fresh session, `performance` governor; compositor / whole session, latency medians):
+
+  | | X200 | T550 |
+  |---|---|---|
+  | notifications | 3.4% / 17.3% | 2.7% / 11.2% |
+  | menu | 2.0% / 88% | 1.3% / 61% |
+  | menu open / close | 427 / 36 ms | 178 / 10 ms |
+  | menu search | | 85 ms |
+  | toast | | 23 ms |
+
+  Opening the menu is the shell's work: it maps a fresh fullscreen surface and fills the card every time, which
+  costs the X200 both cores for most of a second and the T550 0.6 cores, and the scrim shows after 0.26 to 0.61 s
+  there. Closing is an unmap, a frame or two.
   Screencopy takes the compositor off direct rendering while it captures, which is why the CPU time is measured in
   the load phase only. It refuses to run on a locked session, whose password field would get the keys: on
   2026-10-25 a run typed six commands into the X200's lock screen (six failed logins for `faillock`, which locks
@@ -499,7 +527,9 @@ Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a
 - Borders cost about 0.4 ms per window on a full redraw, they are already limited to the border ring.
 - Omarchy gives every window an opacity rule (`default-opacity` tag), so no window occludes the wallpaper.
   With opaque windows the occlusion pass skips what is underneath.
-- Quickshell's notification overlay is a transparent fullscreen layer that is blended over every damaged area.
+- Quickshell's notification layer is a transparent overlay layer that is blended over every damaged area under it. It
+  was fullscreen when this was found; the Omarchy 4 of 2026-10-26 keeps it as a column at the right of the screen
+  (465x800 on the X200) and has the dock as another, a strip of 245 px at the bottom (`hyprctl layers`).
 - The wallpaper counts as opaque (`CSurfacePassElement::isBackdrop()`, 2026-09-29): the lowest surface of the
   background layer, when it covers the monitor and has no fade or blur. Omarchy's wallpaper is a Quickshell window
   with `color: "transparent"`, so its buffer has alpha and no opaque region, and the pass painted

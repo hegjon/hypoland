@@ -1,7 +1,7 @@
 # Switches between the windows of a workload and resizes them with a uinput keyboard and pointer, and measures how
 # long each step takes to show on the screen, with the parts in latency.py next to it. Needs root for /dev/uinput.
 #
-# windows.py --socket PATH --classes LIST [--drag SECONDS] [--focus N] [--workspace N] [--resize N]
+# windows.py --socket PATH --classes LIST [--drag SECONDS] [--focus N] [--workspace N] [--bar N] [--resize N]
 # PATH is the compositor's hyprctl socket, LIST the classes of the windows (comma separated), which are on the
 # workspace of the focused monitor. In this order:
 #   --drag       the load phase, which prints "load" when it starts: holds SUPER and the right button (Omarchy's
@@ -11,6 +11,8 @@
 #                picked at random among those that have one: the time until the border above the window that had
 #                the focus changes
 #   --workspace  N switches to workspace 2 and back (SUPER+2, SUPER+1): the time until the middle of a window changes
+#   --bar        N of the same switches: the time until the first quarter of Omarchy's bar changes, where its workspace
+#                widget is, redrawn by the shell after the compositor's event
 #   --resize     N steps of the same drag, one pointer motion each: the time until the region across the split
 #                changes ("resize", the compositor moved the windows) and until it shows what it then keeps showing
 #                ("redrawn", both clients drew at their new size)
@@ -24,7 +26,7 @@ import time
 
 # python3 -I leaves the script's directory out of the path
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from latency import BTN_RIGHT, KEYS, Keyboard, Pointer, Region, Screencopy, Wayland, hyprctl  # noqa: E402
+from latency import BTN_RIGHT, KEYS, Keyboard, Pointer, Region, Screencopy, Wayland, hyprctl, layer_box  # noqa: E402
 
 ANIMATION = 0.7  # seconds until Omarchy's border animation (539 ms) has ended, before the next step
 SETTLE = 0.5  # seconds a region has to stay the same to count as drawn
@@ -54,7 +56,7 @@ def main():
     ap.add_argument("--socket", required=True)
     ap.add_argument("--classes", required=True)
     ap.add_argument("--drag", type=float, default=0)
-    for a in ("focus", "workspace", "resize"):
+    for a in ("focus", "workspace", "bar", "resize"):
         ap.add_argument("--" + a, type=int, default=0)
     args = ap.parse_args()
 
@@ -156,6 +158,21 @@ def main():
             kb.chord("super+1")
             time.sleep(ANIMATION)
 
+    def bar(n):
+        box = layer_box(args.socket, monitor, "omarchy-bar")
+        if not box:
+            print("windows.py: the shell has no bar on this monitor", flush=True)
+            return
+        x, y, w, h = box
+        strip = region((x, y, w // 4, h) if w >= h else (x, y, w, h // 4))
+        for i in range(n):
+            chord = "super+2" if i % 2 == 0 else "super+1"
+            report("bar", strip.until_changed(lambda: kb.chord(chord), rng.uniform(0, frame)))
+            time.sleep(ANIMATION)
+        if n % 2:
+            kb.chord("super+1")
+            time.sleep(ANIMATION)
+
     def resize(n):
         hold, reach, box = split()
         step = max(reach // 3, 16)
@@ -181,6 +198,8 @@ def main():
             focus(args.focus)
         if args.workspace:
             switch(args.workspace)
+        if args.bar:
+            bar(args.bar)
         if args.resize:
             resize(args.resize)
     finally:

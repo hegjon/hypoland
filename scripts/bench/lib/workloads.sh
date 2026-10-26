@@ -129,7 +129,7 @@ workload_workspace_switch() {
     local switcher=$!
     rec workspace-switch
     wait $switcher
-    switching workspace-switch --classes foot --focus 12 --workspace 8
+    switching workspace-switch --classes foot --focus 12 --workspace 8 --bar 8
     stop_clients
 }
 
@@ -345,20 +345,20 @@ workload_dev() {
 # mouse: every motion has both clients draw at a new size and the compositor take their new buffers (cpu.resize.*).
 # Then how long a step of the drag takes to show, the first frame that shows it (resize, the compositor) and the first
 # that shows both windows drawn at their new size (redrawn), and moves of the focus between them (latency.resize.*)
-needs_resize="foot alacritty python3 root"
-workload_resize() {
-    local before driver i
+RESIZE_TEXT="sh -c 'seq -s, 100000 104000; exec sleep 600'"
+resize_workload() { # workload, command of the second terminal, its class
+    local name=$1 before driver i
     if [ -n "$(in_the_way)" ]; then
-        echo "--- resize: not measured,$(in_the_way)"
-        value "invalid.resize" 1
+        echo "--- $name: not measured,$(in_the_way)"
+        value "invalid.$name" 1
         return
     fi
     before=$(nclients)
     # foot reflows 100 ms after the last resize by default
-    client $((SECONDS_PER_RUN + 90)) "exec foot -o resize-delay-ms=0 -e sh -c 'seq -s, 100000 104000; exec sleep 600'"
+    client $((SECONDS_PER_RUN + 90)) "exec foot -o resize-delay-ms=0 -e $RESIZE_TEXT"
     mapped "$before" 10
     before=$(nclients)
-    client $((SECONDS_PER_RUN + 90)) "exec alacritty -e sh -c 'seq -s, 100000 104000; exec sleep 600'"
+    client $((SECONDS_PER_RUN + 90)) "$2"
     mapped "$before" 10
     sleep 1
     # dwindle keeps the direction of a split (Omarchy's preserve_split), and a window of the workload before that was
@@ -368,19 +368,102 @@ workload_resize() {
         echo "    the windows were top and bottom, turned the split"
     fi
     sleep 2
-    windows_driver --classes foot,Alacritty --drag $((SECONDS_PER_RUN + 1)) --focus 8 --resize 12 >"$OUT/resize.txt" 2>&1 &
+    windows_driver --classes "foot,$3" --drag $((SECONDS_PER_RUN + 1)) --focus 8 --resize 12 >"$OUT/$name.txt" 2>&1 &
     driver=$!
     # the devices are there after 3.5 s
     for i in $(seq 1 50); do
-        grep -q "^load" "$OUT/resize.txt" && break
+        grep -q "^load" "$OUT/$name.txt" && break
         sleep 0.2
     done
-    grep -q "^load" "$OUT/resize.txt" || value "invalid.resize" 1
-    rec resize
+    grep -q "^load" "$OUT/$name.txt" || value "invalid.$name" 1
+    rec "$name"
     wait "$driver"
-    [ -n "$(in_the_way)" ] && value "invalid.resize" 1
+    [ -n "$(in_the_way)" ] && value "invalid.$name" 1
     stop_clients
-    latencies resize "$OUT/resize.txt"
+    latencies "$name" "$OUT/$name.txt"
+}
+
+needs_resize="foot alacritty python3 root"
+workload_resize() { resize_workload resize "exec alacritty -e $RESIZE_TEXT" Alacritty; }
+
+# The same with foot on both sides, not in the default list: shm buffers only, which no GL driver or Mesa variable (the
+# GLES 3 override stock Hyprland needs on the X200) touches
+needs_resize_foot="foot python3 root"
+workload_resize_foot() { resize_workload resize-foot "exec foot -o resize-delay-ms=0 -e $RESIZE_TEXT" foot; }
+
+# ---- Omarchy's shell: Quickshell's layer surfaces over a window, as a session has them
+
+OMARCHY_SHELL=/usr/share/omarchy/bin/omarchy-shell
+
+# a foot window full of text that sits still, for the shell to draw over
+idle_window() { # seconds to live
+    local before
+    before=$(nclients)
+    client "$1" "exec foot -e sh -c 'seq -s, 100000 104000; exec sleep 600'"
+    mapped "$before" 10
+}
+
+# Notifications arriving one a second from four senders, each shown for 5 s (low urgency): about five cards stand in
+# the shell's column at the right of the screen, over the window, one sliding in and one going every second
+# (cpu.notifications.*; the shell's own time is in the session's total_percent). They go into the shell's history like
+# any other, the cards are dismissed at the end. Then one at a time over the session bus, how long a notification
+# takes until its card shows (latency.notifications.toast_ms, see clients/shell.py)
+needs_notifications="foot notify-send shell"
+workload_notifications() {
+    local sender i
+    idle_window $((SECONDS_PER_RUN + 30))
+    sleep 2
+    (for i in $(seq 1 $((SECONDS_PER_RUN + 6))); do
+        asuser notify-send -a "hypoland-bench $((i % 4))" -u low "Notification $i" \
+            "The quick brown fox jumps over the lazy dog, $i times" >/dev/null 2>&1
+        sleep 1
+    done) &
+    sender=$!
+    sleep 4
+    rec notifications
+    wait $sender
+    asuser timeout 5 $OMARCHY_SHELL -q notifications dismissAll >/dev/null 2>&1
+    sleep 2
+    latency_phase_user notifications shell.py --toast 8
+    stop_clients
+}
+
+# Omarchy's menu (SUPER+SPACE) opened and closed over the same window, each for a second: a fullscreen overlay
+# layer with a scrim and a card in the middle, mapped and unmapped, the keyboard focus going to it and back to the
+# window (cpu.menu.*). It is toggled as the bind does it, through the global shortcut the shell registers, or through
+# omarchy-shell where it has none. Then by keys, how long SUPER+SPACE takes until the scrim shows, Escape until it is
+# gone, and a letter typed into the open menu's search line until its rows change (latency.menu.open_ms, close_ms,
+# search_ms, see clients/shell.py)
+needs_menu="foot shell"
+MENU_SHORTCUT=0
+menu_toggle() {
+    if [ $MENU_SHORTCUT = 1 ]; then
+        dispatch 'hl.dsp.global("omarchy:menu.root")' "global omarchy:menu.root"
+    else
+        asuser timeout 5 $OMARCHY_SHELL -q shell toggle omarchy.menu '{"menu":"root"}' >/dev/null 2>&1
+    fi
+}
+menu_close() { H layers | grep -q "namespace: omarchy-menu" && menu_toggle; }
+workload_menu() {
+    local toggler i
+    MENU_SHORTCUT=0
+    H globalshortcuts 2>/dev/null | grep -q "^omarchy:menu.root " && MENU_SHORTCUT=1
+    menu_close
+    idle_window $((SECONDS_PER_RUN + 60))
+    sleep 2
+    (for i in $(seq 1 $((SECONDS_PER_RUN / 2 + 3))); do
+        menu_toggle; sleep 1
+        menu_toggle; sleep 1
+    done) &
+    toggler=$!
+    sleep 4
+    rec menu
+    wait $toggler
+    sleep 1
+    menu_close
+    latency_phase menu shell.py --menu 10 --search 10
+    menu_close
+    stop_clients
 }
 
 # ---- latency: drivers in clients/ press keys and move a pointer through uinput devices (root only) and print
@@ -411,11 +494,10 @@ windows_driver() { # windows.py options
         --socket "$RUNTIME/hypr/$SIG/.socket.sock" "$@"
 }
 
-# How long switching between the windows of a workload takes to show, after its CPU time is measured: the focus moved
-# to a neighbouring window by SUPER+arrow, and with --workspace to workspace 2 and back (see clients/windows.py)
-switching() { # workload, windows.py options
-    local name=$1
-    shift
+# the latency phase of a workload after its CPU time is measured, by a driver in clients/ (root only)
+latency_phase() { # workload, driver, its options
+    local name=$1 driver=$2
+    shift 2
     if [ $ROOT = 0 ]; then
         echo "    latency: not measured, its keys need root (a uinput keyboard)"
         return
@@ -424,8 +506,31 @@ switching() { # workload, windows.py options
         echo "    latency: not measured,$(in_the_way)"
         return
     fi
-    windows_driver "$@" >"$OUT/$name.txt" 2>&1
+    env -i PATH="$PATH" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" python3 -I "$CLIENTSRC/$driver" \
+        --socket "$RUNTIME/hypr/$SIG/.socket.sock" "$@" >"$OUT/$name.txt" 2>&1
     latencies "$name" "$OUT/$name.txt"
+}
+
+# the same as the user, for a driver that needs the session bus (which refuses root) and no uinput device: it goes into
+# the clients' directory, which the user can read, with the parts it imports
+latency_phase_user() { # workload, driver, its options
+    local name=$1 driver=$2
+    shift 2
+    if [ -n "$(in_the_way)" ]; then
+        echo "    latency: not measured,$(in_the_way)"
+        return
+    fi
+    cp "$CLIENTSRC/$driver" "$CLIENTSRC/latency.py" "$CLIENTSRC/sessionbus.py" "$CLIENTDIR/"
+    asuser python3 -I "$CLIENTDIR/$driver" --socket "$RUNTIME/hypr/$SIG/.socket.sock" "$@" >"$OUT/$name.txt" 2>&1
+    latencies "$name" "$OUT/$name.txt"
+}
+
+# How long switching between the windows of a workload takes to show: the focus moved to a neighbouring window by
+# SUPER+arrow, and with --workspace to workspace 2 and back (see clients/windows.py)
+switching() { # workload, windows.py options
+    local name=$1
+    shift
+    latency_phase "$name" windows.py "$@"
 }
 
 # the address of the window of a class, for the window selectors of the dispatchers
@@ -439,11 +544,15 @@ workload_custom() { # name, command
     stop_clients
 }
 
-missing() { # programs, gi:<namespace>-<version> for a library Python reaches through GObject introspection, x11 for Xwayland, root
+missing() { # programs, gi:<namespace>-<version> for a library Python reaches through GObject introspection, x11 for Xwayland, root, shell for Omarchy's
     local prog lib
     for prog in $1; do
         if [ "$prog" = x11 ]; then
             [ -n "$(xdisplay)" ] || { echo "Xwayland"; return; }
+            continue
+        fi
+        if [ "$prog" = shell ]; then
+            [ "$(asuser timeout 5 $OMARCHY_SHELL shell ping 2>/dev/null)" = ok ] || { echo "Omarchy's shell"; return; }
             continue
         fi
         if [ "$prog" = root ]; then
