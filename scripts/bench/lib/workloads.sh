@@ -168,6 +168,24 @@ renderer_of() { sed -n 's/.*renderer: //p' "$1" 2>/dev/null | head -n 1; } # log
 # Xwayland starts with the first X11 client; its display is in the environment of the session
 xdisplay() { asuser systemctl --user show-environment 2>/dev/null | sed -n 's/^DISPLAY=//p'; }
 
+# Hypoland starts Xwayland when the first X11 client connects, Hyprland with the compositor. An X11 test waits until
+# it answers (xprop's connection starts it), so neither its start nor a client waiting for it is in a measurement or
+# a check's time limit. A fresh one gets 2 s more, for what it does after its first answer
+xwayland_up() {
+    local display started=0
+    display=$(xdisplay)
+    [ -n "$display" ] || return 1
+    pgrep -u "$TESTUSER" -x Xwayland >/dev/null || started=1
+    for _ in $(seq 1 20); do
+        if asuser env DISPLAY="$display" timeout 5 xprop -root -len 1 _NET_SUPPORTING_WM_CHECK >/dev/null 2>&1; then
+            [ $started = 1 ] && sleep 2
+            return 0
+        fi
+        sleep 1
+    done
+    return 1
+}
+
 toolkit_sources() {
     cp "$CLIENTSRC/toolkit.py" "$CLIENTSRC/toolkit.qml" "$CLIENTDIR/"
 }
@@ -199,7 +217,7 @@ workload_qt_software_scroll() { toolkit_workload qt-software-scroll qt-software;
 
 # The same GTK 3 window as an X11 client, drawn through Xwayland. It gets no frame callbacks, so its frame rate is
 # its own pace, not what the compositor presents
-needs_gtk3_x11_scroll="python3 gi:Gtk-3.0 x11"
+needs_gtk3_x11_scroll="python3 gi:Gtk-3.0 x11 xprop"
 workload_gtk3_x11_scroll() { toolkit_workload gtk3-x11-scroll gtk3-x11; }
 
 needs_gtk4_spinner="python3 gi:Gtk-4.0"
@@ -490,6 +508,11 @@ workloads() {
         lacking=$(missing "${!needs}")
         if [ -n "$lacking" ]; then
             echo "=== $n $name: skipped, $lacking is not installed"
+            continue
+        fi
+        if [[ " ${!needs} " == *" x11 "* ]] && ! xwayland_up; then
+            echo "=== $n $name: skipped, Xwayland does not answer on $(xdisplay)"
+            value "invalid.$name" 1
             continue
         fi
         echo "=== $n $name"

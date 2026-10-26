@@ -149,6 +149,10 @@ check_toolkits() {
             skip "$what: $lacking is not installed"
             continue
         fi
+        if [ $tk = gtk3-x11 ] && ! xwayland_up; then
+            fail "$what: Xwayland does not answer on $(xdisplay)"
+            continue
+        fi
         log=$CLIENTDIR/check-$tk.log
         before=$(nclients)
         client 40 "$(toolkit $tk check) >$log 2>&1"
@@ -186,10 +190,12 @@ check_clients() {
     fi
 
     display=$(xdisplay)
-    if [ -n "$(missing glxgears)" ]; then
-        skip "X11 client: glxgears is not installed"
+    if [ -n "$(missing "glxgears xprop")" ]; then
+        skip "X11 client: $(missing "glxgears xprop") is not installed"
     elif [ -z "$display" ]; then
         skip "X11 client: no DISPLAY in the environment of the session"
+    elif ! xwayland_up; then
+        fail "X11 client: Xwayland does not answer on $display"
     else
         client 15 "exec env DISPLAY=$display stdbuf -oL glxgears >$CLIENTDIR/gears.log 2>&1"
         sleep 12

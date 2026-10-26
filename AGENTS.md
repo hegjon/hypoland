@@ -174,7 +174,12 @@ colour steps on a dark theme) but makes every window blended and unable to hide 
 Done so far for Xwayland: it starts when the first X11 client connects to its socket (`DISPLAY` is set at startup as
 before), not with the compositor. It costs 150 ms of CPU and 31 MiB Pss (19 MiB private) on the X200. In an Omarchy
 session it still starts a few seconds after login: fcitx5's XIM / xcb addons connect, and `xdg-settings` runs
-`xprop -root` because xdg-utils does not know `XDG_CURRENT_DESKTOP=Hyprland`.
+`xprop -root` because xdg-utils does not know `XDG_CURRENT_DESKTOP=Hyprland`. The benchmark's X11 workloads and
+checks wait until it answers (`xwayland_up()` in `scripts/bench/lib/workloads.sh`, `xprop -root`, 2 s more after a
+fresh start), so its start is never in a measurement (stock Hyprland starts it with the compositor); one that does
+not answer within 20 s makes the workload invalid and the check fail. After Xwayland dies, Hypoland does not start
+another (killed with SIGKILL on the T550 on 2026-10-26; it ignored SIGTERM): X11 clients get no answer until the
+next session. Upstream at the fork base has no restart either. The lazy start could listen on the socket again.
 Done so far: hyprpm is removed and hyprcursor is off by default. The plugin system is removed (2026-09-27): plugins
 must be built against the exact Hyprland source they load into and most draw with GLES3 era renderer code, so
 keeping up was not worth it. `hl.plugin.load()` warns once and does nothing, `hl.get_loaded_plugins()` is empty,
