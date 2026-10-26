@@ -2,16 +2,18 @@
 # and sessionbus.py next to it: the menu by a uinput keyboard (root), a notification over the session bus (as the
 # user, whose bus refuses root).
 #
-# shell.py --socket PATH [--menu N] [--search N] [--toast N]
+# shell.py --socket PATH [--menu N] [--search N] [--select N] [--toast N]
 # PATH is the compositor's hyprctl socket. In this order:
 #   --menu    N opens and closes of the menu: SUPER+SPACE until a strip at the left of the focused monitor changes
 #             (the menu's scrim darkens the whole screen, its card sits in the middle, clear of the strip), a second
 #             later Escape until the strip changes again (the scrim is gone)
 #   --search  with the menu open, N letters typed into its search line until the rows of the card change, each
 #             cleared with Escape before the next; a last Escape closes the menu
+#   --select  with the menu open and its selection moved into the middle rows, N presses of Down and Up in turns until
+#             the middle rows change (the selected row moves); Escape closes the menu
 #   --toast   N notifications sent over the session bus (what notify-send does) until the top of the shell's
 #             notification column changes, each closed again through the bus
-# Prints "latency <kind> <ms>" or "latency <kind> timeout" for every step: open, close, search, toast.
+# Prints "latency <kind> <ms>" or "latency <kind> timeout" for every step: open, close, search, select, toast.
 import argparse
 import os
 import random
@@ -31,7 +33,7 @@ GONE = 1.2  # seconds until a closed notification has faded and the column settl
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--socket", required=True)
-    for a in ("menu", "search", "toast"):
+    for a in ("menu", "search", "select", "toast"):
         ap.add_argument("--" + a, type=int, default=0)
     args = ap.parse_args()
 
@@ -47,6 +49,8 @@ def main():
     strip = Region(sc, (24, h // 2 - h // 12, max(w // 6, 32), max(h // 6, 16)))
     # the rows of the menu's card, which is centered: below its search line, which blinks its cursor
     rows = Region(sc, (w // 2 - w // 8, h // 2, max(w // 4, 32), max(h // 8, 16)))
+    # the middle rows of the card, around the middle of the screen, where the selection is moved for --select
+    middle = Region(sc, (w // 2 - w // 8, 3 * h // 8, max(w // 4, 32), max(h // 4, 16)))
     rng = random.Random(1)
     kb = Keyboard() if args.menu or args.search else None
 
@@ -73,6 +77,22 @@ def main():
             report("search", rows.until_changed(lambda: kb.chord(letter), rng.uniform(0, frame)))
             time.sleep(0.5)
             kb.chord("esc")  # clears the search line
+            time.sleep(0.5)
+        kb.chord("esc")
+        time.sleep(ANIMATION)
+
+    def select(n):
+        if open_menu() is None:
+            print("shell.py: the menu did not open for the selection", flush=True)
+            return
+        time.sleep(LINGER)
+        for _ in range(5):
+            kb.chord("down")
+            time.sleep(0.15)
+        time.sleep(0.5)
+        for i in range(n):
+            key = "down" if i % 2 == 0 else "up"
+            report("select", middle.until_changed(lambda: kb.chord(key), rng.uniform(0, frame)))
             time.sleep(0.5)
         kb.chord("esc")
         time.sleep(ANIMATION)
@@ -106,6 +126,8 @@ def main():
             menu(args.menu)
         if args.search:
             search(args.search)
+        if args.select:
+            select(args.select)
         if args.toast:
             toast(args.toast)
     finally:

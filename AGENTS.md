@@ -416,8 +416,9 @@ Tools:
   (SUPER+SPACE) every second over the same window, through the global shortcut the shell registers (`hyprctl
   globalshortcuts`): a fullscreen overlay layer with a half transparent scrim and a card in the middle, which takes
   the keyboard focus. Then `latency.menu.open_ms` from SUPER+SPACE by the uinput keyboard until the scrim shows in a
-  strip at the left of the screen, `close_ms` from Escape until it is gone, and `search_ms` from a letter typed into
-  the open menu's search line until the rows of its card change (`scripts/bench/clients/shell.py`). The shell's own
+  strip at the left of the screen, `close_ms` from Escape until it is gone, `search_ms` from a letter typed into
+  the open menu's search line until the rows of its card change, and `select_ms` from Down or Up until the selected
+  row, moved into the middle rows first, shows moved (`scripts/bench/clients/shell.py`). The shell's own
   CPU time is in `cpu.*.total_percent` (the session), not in the compositor's. Measured 2026-10-26
   (one round of 12 s on a fresh session, `performance` governor; compositor / whole session, latency medians):
 
@@ -432,6 +433,7 @@ Tools:
   Opening the menu is the shell's work: it maps a fresh fullscreen surface and fills the card every time, which
   costs the X200 both cores for most of a second and the T550 0.6 cores, and the scrim shows after 0.26 to 0.61 s
   there. Closing is an unmap, a frame or two.
+  | menu select | | 5 ms |
   Screencopy takes the compositor off direct rendering while it captures, which is why the CPU time is measured in
   the load phase only. It refuses to run on a locked session, whose password field would get the keys: on
   2026-10-25 a run typed six commands into the X200's lock screen (six failed logins for `faillock`, which locks

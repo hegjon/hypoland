@@ -432,8 +432,8 @@ workload_notifications() {
 # layer with a scrim and a card in the middle, mapped and unmapped, the keyboard focus going to it and back to the
 # window (cpu.menu.*). It is toggled as the bind does it, through the global shortcut the shell registers, or through
 # omarchy-shell where it has none. Then by keys, how long SUPER+SPACE takes until the scrim shows, Escape until it is
-# gone, and a letter typed into the open menu's search line until its rows change (latency.menu.open_ms, close_ms,
-# search_ms, see clients/shell.py)
+# gone, a letter typed into the open menu's search line until its rows change, and Down and Up moving its selected row
+# (latency.menu.open_ms, close_ms, search_ms, select_ms, see clients/shell.py)
 needs_menu="foot shell"
 MENU_SHORTCUT=0
 menu_toggle() {
@@ -461,7 +461,7 @@ workload_menu() {
     wait $toggler
     sleep 1
     menu_close
-    latency_phase menu shell.py --menu 10 --search 10
+    latency_phase menu shell.py --menu 10 --search 10 --select 10
     menu_close
     stop_clients
 }
