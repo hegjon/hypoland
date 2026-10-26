@@ -113,11 +113,13 @@ workload_shm_fullwindow() {
     sleep 1
 }
 
+# Three terminals and workspace 1 and 2 in turns, twice a second. Then how long a switch takes to show, by keys: to
+# a neighbouring window and to the other workspace (latency.workspace-switch.*, see switching())
 needs_workspace_switch="foot"
 workload_workspace_switch() {
     local i
     for i in 1 2 3; do
-        client $((SECONDS_PER_RUN + 15)) "exec foot -e sleep 60"
+        client $((SECONDS_PER_RUN + 60)) "exec foot -e sleep 600"
         sleep 1
     done
     (for i in $(seq 1 "$SECONDS_PER_RUN"); do
@@ -127,6 +129,7 @@ workload_workspace_switch() {
     local switcher=$!
     rec workspace-switch
     wait $switcher
+    switching workspace-switch --classes foot --focus 12 --workspace 8
     stop_clients
 }
 
@@ -207,7 +210,8 @@ workload_qt_software_sprites() { toolkit_workload qt-software-sprites qt-softwar
 
 # Three terminals that print for 4 s and then wait: the memory idle shm windows keep in the compositor, measured while
 # they are open (mem.idle-windows.*). A window that never drew again after its last resize has no second texture to
-# give back, see CGLTexture::update(); real windows mostly have (typing, a page that loads)
+# give back, see CGLTexture::update(); real windows mostly have (typing, a page that loads). Then how long a move of
+# the focus between them takes to show (latency.idle-windows.*)
 needs_idle_windows="foot"
 workload_idle_windows() {
     local i total purgeable before after
@@ -215,7 +219,7 @@ workload_idle_windows() {
     read -r total _ purgeable < <(gpu_memory)
     before=$((total - purgeable))
     for i in 1 2 3; do
-        client $((SECONDS_PER_RUN + 25)) "exec foot -e sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do ls -la /usr/lib | head -n 8; sleep 0.4; done; exec sleep 600'"
+        client $((SECONDS_PER_RUN + 60)) "exec foot -e sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do ls -la /usr/lib | head -n 8; sleep 0.4; done; exec sleep 600'"
         sleep 1
     done
     sleep 4
@@ -226,6 +230,7 @@ workload_idle_windows() {
     read -r total _ purgeable < <(gpu_memory)
     after=$((total - purgeable))
     value "mem.idle-windows.gpu_added_kB" "$((after - before))"
+    switching idle-windows --classes foot --focus 12
     stop_clients
 }
 
@@ -237,9 +242,10 @@ workload_idle_windows() {
 # generator changes.
 DEV=$USERHOME/.cache/hypoland-bench/dev
 dev_sources() {
-    # the generator of the files, the editor's movements, the console's shell with its pager, the log and the driver
+    # the generator of the files, the editor's movements, the console's shell with its pager and the log. The driver
+    # runs as root from where it came, not from the user's directory
     cp "$CLIENTSRC/dev-gen.sh" "$CLIENTSRC/dev-move.lua" "$CLIENTSRC/dev-shellrc" "$CLIENTSRC/dev-log.py" \
-        "$CLIENTSRC/dev-pager.py" "$CLIENTSRC/dev.py" "$CLIENTDIR/"
+        "$CLIENTSRC/dev-pager.py" "$CLIENTDIR/"
     if [ "$(cat "$DEV/generator" 2>/dev/null)" != "$(md5sum <"$CLIENTDIR/dev-gen.sh")" ]; then
         asuser bash "$CLIENTDIR/dev-gen.sh" "$DEV" >/dev/null 2>&1 &&
             asuser sh -c 'md5sum <"$0" >"$1"' "$CLIENTDIR/dev-gen.sh" "$DEV/generator"
@@ -282,7 +288,7 @@ focus() { # class
 # captures, which is why the CPU time is measured before.
 needs_dev="alacritty nvim git python3 root"
 workload_dev() {
-    local driver border kind line median p90 n timeouts i
+    local driver border i
     # the keys would go into the password field of a lock screen
     if [ -n "$(in_the_way)" ]; then
         echo "--- dev: not measured,$(in_the_way)"
@@ -298,7 +304,7 @@ workload_dev() {
     H clients -j >"$OUT/dev.clients.json"
     H monitors -j >"$OUT/dev.monitors.json"
     border=$(H getoption general:border_size | awk '/^int:/ {print $2}')
-    env -i PATH="$PATH" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" python3 -I "$CLIENTDIR/dev.py" \
+    env -i PATH="$PATH" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" python3 -I "$CLIENTSRC/dev.py" \
         --clients "$OUT/dev.clients.json" --monitors "$OUT/dev.monitors.json" --editor hypoland-dev-editor \
         --console hypoland-dev-console --border "${border:-2}" --load "$SECONDS_PER_RUN" --quiet "$CLIENTDIR/dev-quiet" \
         >"$OUT/dev.txt" 2>&1 &
@@ -312,21 +318,89 @@ workload_dev() {
     wait "$driver"
     [ -n "$(in_the_way)" ] && value "invalid.dev" 1
     stop_clients
-    grep -v -E "^(load|latency)" "$OUT/dev.txt" | sed 's/^/    /'
-    for kind in focus scroll jump type; do
-        timeouts=$(grep -c "^latency $kind timeout" "$OUT/dev.txt")
-        [ "$timeouts" -gt 0 ] && value "latency.dev.${kind}_timeouts" "$timeouts"
-        line=$(awk -v k=$kind '$1 == "latency" && $2 == k && $3 != "timeout" {print $3}' "$OUT/dev.txt" | sort -g | awk '
+    latencies dev "$OUT/dev.txt"
+}
+
+# Two terminals side by side, foot (shm) and Alacritty (GL), both full of one long line of numbers that wraps at the
+# window's edge, so that every new width reflows all of it, and the split between them dragged left and right with
+# SUPER and the right button (Omarchy's resize bind) by a uinput pointer (root only), 125 motions a second like a
+# mouse: every motion has both clients draw at a new size and the compositor take their new buffers (cpu.resize.*).
+# Then how long a step of the drag takes to show, the first frame that shows it (resize, the compositor) and the first
+# that shows both windows drawn at their new size (redrawn), and moves of the focus between them (latency.resize.*)
+needs_resize="foot alacritty python3 root"
+workload_resize() {
+    local before driver i
+    if [ -n "$(in_the_way)" ]; then
+        echo "--- resize: not measured,$(in_the_way)"
+        value "invalid.resize" 1
+        return
+    fi
+    before=$(nclients)
+    # foot reflows 100 ms after the last resize by default
+    client $((SECONDS_PER_RUN + 90)) "exec foot -o resize-delay-ms=0 -e sh -c 'seq -s, 100000 104000; exec sleep 600'"
+    mapped "$before" 10
+    before=$(nclients)
+    client $((SECONDS_PER_RUN + 90)) "exec alacritty -e sh -c 'seq -s, 100000 104000; exec sleep 600'"
+    mapped "$before" 10
+    sleep 3
+    windows_driver --classes foot,Alacritty --drag $((SECONDS_PER_RUN + 1)) --focus 8 --resize 12 >"$OUT/resize.txt" 2>&1 &
+    driver=$!
+    # the devices are there after 3.5 s
+    for i in $(seq 1 50); do
+        grep -q "^load" "$OUT/resize.txt" && break
+        sleep 0.2
+    done
+    grep -q "^load" "$OUT/resize.txt" || value "invalid.resize" 1
+    rec resize
+    wait "$driver"
+    [ -n "$(in_the_way)" ] && value "invalid.resize" 1
+    stop_clients
+    latencies resize "$OUT/resize.txt"
+}
+
+# ---- latency: drivers in clients/ press keys and move a pointer through uinput devices (root only) and print
+# "latency <kind> <ms>" or "latency <kind> timeout" for every step they waited for on the screen
+
+# medians and 90th percentiles in ms, latency.<workload>.<kind>_ms and _p90_ms, and what else the driver printed
+latencies() { # workload, the driver's output
+    local kind line median p90 n timeouts
+    grep -v -E "^(load|latency)" "$2" | sed 's/^/    /'
+    for kind in $(awk '$1 == "latency" && NF == 3 && !seen[$2]++ {print $2}' "$2"); do
+        timeouts=$(grep -c "^latency $kind timeout" "$2")
+        [ "$timeouts" -gt 0 ] && value "latency.$1.${kind}_timeouts" "$timeouts"
+        line=$(awk -v k="$kind" '$1 == "latency" && $2 == k && $3 != "timeout" {print $3}' "$2" | sort -g | awk '
             {v[NR] = $1} END {if (NR) printf "%s %s %d", v[int((NR + 1) / 2)], v[int(NR * 0.9 + 0.99)], NR}')
         if [ -z "$line" ]; then
-            echo "    $kind: nothing changed on the screen ($timeouts keys)"
+            echo "    $kind: nothing changed on the screen ($timeouts steps)"
             continue
         fi
         read -r median p90 n <<<"$line"
-        value "latency.dev.${kind}_ms" "$median"
-        value "latency.dev.${kind}_p90_ms" "$p90"
-        echo "    $kind: $median ms, 90% within $p90 ms ($n keys, $timeouts timeouts)"
+        value "latency.$1.${kind}_ms" "$median"
+        value "latency.$1.${kind}_p90_ms" "$p90"
+        echo "    $kind: $median ms, 90% within $p90 ms ($n steps, $timeouts timeouts)"
     done
+}
+
+windows_driver() { # windows.py options
+    env -i PATH="$PATH" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" python3 -I "$CLIENTSRC/windows.py" \
+        --socket "$RUNTIME/hypr/$SIG/.socket.sock" "$@"
+}
+
+# How long switching between the windows of a workload takes to show, after its CPU time is measured: the focus moved
+# to a neighbouring window by SUPER+arrow, and with --workspace to workspace 2 and back (see clients/windows.py)
+switching() { # workload, windows.py options
+    local name=$1
+    shift
+    if [ $ROOT = 0 ]; then
+        echo "    latency: not measured, its keys need root (a uinput keyboard)"
+        return
+    fi
+    if [ -n "$(in_the_way)" ]; then
+        echo "    latency: not measured,$(in_the_way)"
+        return
+    fi
+    windows_driver "$@" >"$OUT/$name.txt" 2>&1
+    latencies "$name" "$OUT/$name.txt"
 }
 
 # the address of the window of a class, for the window selectors of the dispatchers

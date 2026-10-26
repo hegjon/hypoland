@@ -341,7 +341,8 @@ Tools:
   GTK 2 is not in Arch any more. `idle-windows` opens three foot windows that print for 4 s and then sit idle, and
   reports the GPU memory they add without the purgeable part (`mem.idle-windows.gpu_added_kB`). Only meaningful as
   the only workload of a fresh session (`--workloads idle-windows`): buffers an earlier workload left are freed in
-  the meantime. radeon reports no memory in fdinfo, 0 there. `dev` (suggested by the user) is a developer's screen
+  the meantime. radeon reports no memory in fdinfo, 0 there. Its windows and those of `workspace-switch` and
+  `resize` also measure switching between them, see below. `dev` (suggested by the user) is a developer's screen
   in Alacritty: nvim (`--clean`, LazyVim would set itself up first) on a C file of 210000 lines on the left half, a
   console on the right, below it a log of 200 lines a second with a burst of 400 lines every 10 s, which never has
   the focus. The files and a git repository are generated, the same everywhere. A uinput keyboard (root only) drives
@@ -355,10 +356,33 @@ Tools:
   come from wlr-screencopy of a small region (the border above the window, or its text) until it changes. Keys go
   down at a random point of the frame, as a person's do: pressed right after a commit, as at first, every key had
   the same phase and the 90th percentile hardly differed from the median. The driver is
-  `scripts/bench/clients/dev.py`, a Python script without libraries, so it runs on every machine; the generator of
-  the files, the editor's movements, the console's shell and the log are the `dev-*` files next to it. The time
+  `scripts/bench/clients/dev.py`, a Python script without libraries, so it runs on every machine, with the parts it
+  shares with `windows.py` (Wayland, screencopy, the uinput keyboard and pointer, the hyprctl socket) in
+  `latency.py`; the generator of the files, the editor's movements, the console's shell and the log are the `dev-*`
+  files next to it. The drivers run as root from the directory `target.sh` unpacked, not from the user's. The time
   ends at the commit of that frame (the compositor stamps a copied frame when it commits it), the display shows it
-  at its next refresh.
+  at its next refresh. On a screen where nothing else draws the compositor commits right after the key, so there
+  the time is its own work (about 2 ms on the T550); in `dev` the log keeps every frame busy and a key waits for
+  the next one.
+  Every workload with several windows measures switching between them the same way after its CPU time
+  (`scripts/bench/clients/windows.py`, root only): `focus` moves the focus to a neighbouring window with SUPER+arrow,
+  in a direction picked at random among those that have one, until the border of the window that had it changes
+  (`workspace-switch`, `idle-windows`, `resize`); `workspace-switch` also has `workspace`, SUPER+2 and SUPER+1, until
+  the middle of a window changes. The driver waits 0.7 s after every step for Omarchy's border animation (539 ms)
+  to end. `resize` (added 2026-10-26) puts foot (shm) and Alacritty (GL) side by side, both full of one long line of
+  numbers that wraps at the window's edge, and drags the split between them with SUPER and the right button
+  (Omarchy's resize bind) by a uinput absolute pointer, 125 motions a second like a mouse, for the CPU time
+  (`cpu.resize.*`): every motion has both clients draw at a new size. Then single motions of the same drag,
+  `latency.resize.resize_ms` until the first frame that shows them (the compositor moved the windows) and
+  `redrawn_ms` until the first frame that shows the region across the split as it then stays for 0.5 s (both clients
+  drew at their new size). The text has to reach the split: with the short lines of `ls -la` a client's redraw
+  changed no pixel there on wide screens, and `redrawn` was the compositor's first frame. foot runs with
+  `resize-delay-ms=0`: by default it waits 100 ms after the last resize before it reflows its text, which made
+  `redrawn` 108 ms on every step. A/B against stock Hyprland 0.56.2 (2026-10-26, 4 to 5 alternating rounds on all
+  seven machines): on the T550, the XPS and the Galaxy Book stock shows a switch or a resize about a frame later
+  (focus 7.1 / 16.3 / 3.7 ms against 1.8 / 2.0 / 1.4, `redrawn` 5 to 15 ms longer), on the X200, the EliteBook, lianli
+  and the Chromebook the two are the same. `cpu.resize` is the same or up to 2 points lower, except on the X200
+  (16.8% stock with the GLES 3 override, 21.5% Hypoland, not looked into yet).
   Screencopy takes the compositor off direct rendering while it captures, which is why the CPU time is measured in
   the load phase only. It refuses to run on a locked session, whose password field would get the keys: on
   2026-10-25 a run typed six commands into the X200's lock screen (six failed logins for `faillock`, which locks
