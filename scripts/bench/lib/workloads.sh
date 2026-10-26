@@ -342,7 +342,14 @@ workload_resize() {
     before=$(nclients)
     client $((SECONDS_PER_RUN + 90)) "exec alacritty -e sh -c 'seq -s, 100000 104000; exec sleep 600'"
     mapped "$before" 10
-    sleep 3
+    sleep 1
+    # dwindle keeps the direction of a split (Omarchy's preserve_split), and a window of the workload before that was
+    # still closing can leave it top and bottom: then the new window's split is turned
+    if [ "$(H clients | awk '$1 == "at:" {split($2, a, ","); print a[2]}' | sort -u | wc -l)" -gt 1 ]; then
+        dispatch 'hl.dsp.layout("togglesplit")' "togglesplit"
+        echo "    the windows were top and bottom, turned the split"
+    fi
+    sleep 2
     windows_driver --classes foot,Alacritty --drag $((SECONDS_PER_RUN + 1)) --focus 8 --resize 12 >"$OUT/resize.txt" 2>&1 &
     driver=$!
     # the devices are there after 3.5 s
