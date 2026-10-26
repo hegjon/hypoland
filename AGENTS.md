@@ -443,12 +443,12 @@ Tools:
   | menu | 2.0% / 88% | 1.3% / 61% |
   | menu open / close | 427 / 36 ms | 178 / 10 ms |
   | menu search | | 85 ms |
+  | menu select | | 5 ms |
   | toast | | 23 ms |
 
   Opening the menu is the shell's work: it maps a fresh fullscreen surface and fills the card every time, which
   costs the X200 both cores for most of a second and the T550 0.6 cores, and the scrim shows after 0.26 to 0.61 s
   there. Closing is an unmap, a frame or two.
-  | menu select | | 5 ms |
   Screencopy takes the compositor off direct rendering while it captures, which is why the CPU time is measured in
   the load phase only. It refuses to run on a locked session, whose password field would get the keys: on
   2026-10-25 a run typed six commands into the X200's lock screen (six failed logins for `faillock`, which locks
