@@ -7,7 +7,7 @@
 
 TEST_CASE(dwindleFloatClamp) {
     for (auto const& win : {"a", "b", "c"}) {
-        SPAWN_KITTY(win);
+        SPAWN_FOOT(win);
     }
 
     OK(getFromSocket("/eval hl.config({ dwindle = { force_split = 2 } })"));
@@ -33,7 +33,7 @@ TEST_CASE(dwindleIssue13349) {
     // exposed by #13349 as a regression from #12890
 
     for (auto const& win : {"a", "b", "c"}) {
-        SPAWN_KITTY(win);
+        SPAWN_FOOT(win);
     }
 
     OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:c' })"));
@@ -64,13 +64,13 @@ TEST_CASE(dwindleIssue13349) {
 TEST_CASE(dwindleSplit) {
     // Test various split methods
 
-    SPAWN_KITTY("a");
+    SPAWN_FOOT("a");
 
     // these must not crash
     EXPECT_NOT(getFromSocket("/dispatch hl.dsp.layout('swapsplit')"), "ok");
     EXPECT_NOT(getFromSocket("/dispatch hl.dsp.layout('splitratio 1 exact')"), "ok");
 
-    SPAWN_KITTY("b");
+    SPAWN_FOOT("b");
 
     OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:a' })"));
     OK(getFromSocket("/dispatch hl.dsp.layout('splitratio -0.2')"));
@@ -118,7 +118,7 @@ TEST_CASE(dwindleRotateSplit) {
     OK(getFromSocket("r/eval hl.config({ general = { border_size = 0 } })"));
 
     for (auto const& win : {"a", "b"}) {
-        SPAWN_KITTY(win);
+        SPAWN_FOOT(win);
     }
 
     {
@@ -196,10 +196,10 @@ TEST_CASE(dwindleRotateSplit) {
 
 TEST_CASE(dwindleForceSplitOnMoveToWorkspace) {
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '2' })"));
-    SPAWN_KITTY("kitty");
+    SPAWN_FOOT("foot");
 
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '1' })"));
-    SPAWN_KITTY("kitty");
+    SPAWN_FOOT("foot");
     std::string posBefore = std::format("at: {}", Tests::getAttribute(getFromSocket("/activewindow"), "at"));
 
     OK(getFromSocket("/eval hl.config({ dwindle = { force_split = 2 } })"));
@@ -219,7 +219,7 @@ TEST_CASE(dwindleMoveAcrossToggledSplit) {
 
     OK(getFromSocket("/eval hl.config({ dwindle = { force_split = 2 } })"));
     for (auto const& win : {"a", "b"}) {
-        SPAWN_KITTY(win);
+        SPAWN_FOOT(win);
     }
     OK(getFromSocket("/dispatch hl.dsp.layout('togglesplit')"));
     // Window A, now on top, is to be moved
@@ -244,7 +244,7 @@ TEST_CASE(dwindleMoveSmallWindowAcrossSplit) {
     OK(getFromSocket("/eval hl.config({ dwindle = { force_split = 1 } })"));
     OK(getFromSocket("/eval hl.config({ dwindle = { default_split_ratio = 1.2 } })"));
     for (auto const& win : {"a", "b"}) {
-        SPAWN_KITTY(win);
+        SPAWN_FOOT(win);
     }
     // Window B, on the left, is the smaller one
 
@@ -269,10 +269,10 @@ TEST_CASE(dwindleFullscreenMaximiseDispatchers) {
 
     OK(getFromSocket("/eval hl.config({ general = { layout = 'dwindle' } })"));
 
-    SPAWN_KITTY("kitty_A");
-    SPAWN_KITTY("kitty_B");
+    SPAWN_FOOT("foot_A");
+    SPAWN_FOOT("foot_B");
 
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_A' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_A' })"));
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen', action = 'set' })"));
 
     {
@@ -356,25 +356,25 @@ TEST_CASE(dwindleTestFsingGroupedWindows) {
     OK(getFromSocket("/eval hl.workspace_rule({ workspace = 'f[1]', gaps_out = 0, border_size = 0 })"));
 
     ASSERT(Tests::windowCount(), 0);
-    auto kitten1 = Tests::spawnKitty("kitten1");
-    if (!kitten1) {
-        FAIL_TEST("Could not spawn kitty");
+    auto member1 = Tests::spawnFoot("member1");
+    if (!member1) {
+        FAIL_TEST("Could not spawn foot");
     }
     OK(getFromSocket("/dispatch hl.dsp.group.toggle()"));
 
-    auto kitten2 = Tests::spawnKitty("kitten2");
-    if (!kitten2) {
-        FAIL_TEST("Could not spawn kitty");
+    auto member2 = Tests::spawnFoot("member2");
+    if (!member2) {
+        FAIL_TEST("Could not spawn foot");
     }
     ASSERT(Tests::windowCount(), 2);
 
     // Fullscreen
     {
-        auto checkHiddenGroupMember = [&](const std::string& targetKitten) {
+        auto checkHiddenGroupMember = [&](const std::string& targetMember) {
             auto clients  = getFromSocket("/clients");
-            auto classPos = clients.find("class: " + targetKitten);
+            auto classPos = clients.find("class: " + targetMember);
             if (classPos == std::string::npos) {
-                FAIL_TEST("Could not find specific kitten in clients output");
+                FAIL_TEST("Could not find specific group member in clients output");
             } else {
                 auto entryStart  = clients.rfind("Window ", classPos);
                 auto entryEnd    = clients.find("\n\n", classPos);
@@ -387,25 +387,25 @@ TEST_CASE(dwindleTestFsingGroupedWindows) {
         // Tiled
         OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen', action = 'set', layout_aware = false })"));
         {
-            // check position and size for the focused group member (kitten2).
+            // check position and size for the focused group member (member2).
             auto str = getFromSocket("/activewindow");
-            EXPECT_CONTAINS(str, "class: kitten2");
+            EXPECT_CONTAINS(str, "class: member2");
             EXPECT_CONTAINS(str, "at: 0,0");
             EXPECT_CONTAINS(str, "size: 1920,1080");
         }
-        checkHiddenGroupMember("kitten1");
+        checkHiddenGroupMember("member1");
 
         // try switching to next window in group
         OK(getFromSocket("/dispatch hl.dsp.group.next()"));
 
         {
-            // check position and size for the focused group member (kitten2).
+            // check position and size for the focused group member (member2).
             auto str = getFromSocket("/activewindow");
-            EXPECT_CONTAINS(str, "class: kitten1");
+            EXPECT_CONTAINS(str, "class: member1");
             EXPECT_CONTAINS(str, "at: 0,0");
             EXPECT_CONTAINS(str, "size: 1920,1080");
         }
-        checkHiddenGroupMember("kitten2");
+        checkHiddenGroupMember("member2");
 
         // go back for next test
         OK(getFromSocket("/dispatch hl.dsp.group.prev()"));
@@ -417,25 +417,25 @@ TEST_CASE(dwindleTestFsingGroupedWindows) {
         OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen', action = 'set', layout_aware = false })"));
 
         {
-            // check position and size for the focused group member (kitten2).
+            // check position and size for the focused group member (member2).
             auto str = getFromSocket("/activewindow");
-            EXPECT_CONTAINS(str, "class: kitten2");
+            EXPECT_CONTAINS(str, "class: member2");
             EXPECT_CONTAINS(str, "at: 0,0");
             EXPECT_CONTAINS(str, "size: 1920,1080");
         }
-        checkHiddenGroupMember("kitten1");
+        checkHiddenGroupMember("member1");
 
         // try switching to next window in group
         OK(getFromSocket("/dispatch hl.dsp.group.next()"));
 
         {
-            // check position and size for the focused group member (kitten2).
+            // check position and size for the focused group member (member2).
             auto str = getFromSocket("/activewindow");
-            EXPECT_CONTAINS(str, "class: kitten1");
+            EXPECT_CONTAINS(str, "class: member1");
             EXPECT_CONTAINS(str, "at: 0,0");
             EXPECT_CONTAINS(str, "size: 1920,1080");
         }
-        checkHiddenGroupMember("kitten2");
+        checkHiddenGroupMember("member2");
 
         // go back for next test
         OK(getFromSocket("/dispatch hl.dsp.group.prev()"));
@@ -447,11 +447,11 @@ TEST_CASE(dwindleTestFsingGroupedWindows) {
 
     // Maximized
     {
-        auto checkHiddenGroupMember = [&](const std::string& targetKitten) {
+        auto checkHiddenGroupMember = [&](const std::string& targetMember) {
             auto clients  = getFromSocket("/clients");
-            auto classPos = clients.find("class: " + targetKitten);
+            auto classPos = clients.find("class: " + targetMember);
             if (classPos == std::string::npos) {
-                FAIL_TEST("Could not find specific kitten in clients output");
+                FAIL_TEST("Could not find specific group member in clients output");
             } else {
                 auto entryStart  = clients.rfind("Window ", classPos);
                 auto entryEnd    = clients.find("\n\n", classPos);
@@ -464,25 +464,25 @@ TEST_CASE(dwindleTestFsingGroupedWindows) {
         // Tiled
         OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'maximized', action = 'set', layout_aware = false })"));
         {
-            // check position and size for the focused group member (kitten2).
+            // check position and size for the focused group member (member2).
             auto str = getFromSocket("/activewindow");
-            EXPECT_CONTAINS(str, "class: kitten2");
+            EXPECT_CONTAINS(str, "class: member2");
             EXPECT_CONTAINS(str, "at: 0,21");
             EXPECT_CONTAINS(str, "size: 1920,1059");
         }
-        checkHiddenGroupMember("kitten1");
+        checkHiddenGroupMember("member1");
 
         // try switching to next window in group
         OK(getFromSocket("/dispatch hl.dsp.group.next()"));
 
         {
-            // check position and size for the focused group member (kitten2).
+            // check position and size for the focused group member (member2).
             auto str = getFromSocket("/activewindow");
-            EXPECT_CONTAINS(str, "class: kitten1");
+            EXPECT_CONTAINS(str, "class: member1");
             EXPECT_CONTAINS(str, "at: 0,21");
             EXPECT_CONTAINS(str, "size: 1920,1059");
         }
-        checkHiddenGroupMember("kitten2");
+        checkHiddenGroupMember("member2");
 
         // go back for next test
         OK(getFromSocket("/dispatch hl.dsp.group.prev()"));
@@ -494,25 +494,25 @@ TEST_CASE(dwindleTestFsingGroupedWindows) {
         OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'maximized', action = 'set', layout_aware = false })"));
 
         {
-            // check position and size for the focused group member (kitten2).
+            // check position and size for the focused group member (member2).
             auto str = getFromSocket("/activewindow");
-            EXPECT_CONTAINS(str, "class: kitten2");
+            EXPECT_CONTAINS(str, "class: member2");
             EXPECT_CONTAINS(str, "at: 0,21");
             EXPECT_CONTAINS(str, "size: 1920,1059");
         }
-        checkHiddenGroupMember("kitten1");
+        checkHiddenGroupMember("member1");
 
         // try switching to next window in group
         OK(getFromSocket("/dispatch hl.dsp.group.next()"));
 
         {
-            // check position and size for the focused group member (kitten2).
+            // check position and size for the focused group member (member2).
             auto str = getFromSocket("/activewindow");
-            EXPECT_CONTAINS(str, "class: kitten1");
+            EXPECT_CONTAINS(str, "class: member1");
             EXPECT_CONTAINS(str, "at: 0,21");
             EXPECT_CONTAINS(str, "size: 1920,1059");
         }
-        checkHiddenGroupMember("kitten2");
+        checkHiddenGroupMember("member2");
     }
 }
 
@@ -523,7 +523,7 @@ TEST_CASE(dwindleTestFsFocusUnderFSWindow) {
     OK(getFromSocket("r/eval hl.config({ general = { layout = 'dwindle' } })"));
 
     for (auto const& win : {"one", "two", "three"}) {
-        SPAWN_KITTY(win);
+        SPAWN_FOOT(win);
     }
 
     OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:one' })"));
@@ -538,7 +538,7 @@ TEST_CASE(dwindleTestFsFocusUnderFSWindow) {
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 1 } })"));
 
-    SPAWN_KITTY("four");
+    SPAWN_FOOT("four");
 
     {
         auto str = getFromSocket("/activewindow");
@@ -550,7 +550,7 @@ TEST_CASE(dwindleTestFsFocusUnderFSWindow) {
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 0 } })"));
 
-    SPAWN_KITTY("ignored");
+    SPAWN_FOOT("ignored");
 
     {
         auto str = getFromSocket("/activewindow");
@@ -562,7 +562,7 @@ TEST_CASE(dwindleTestFsFocusUnderFSWindow) {
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 2 } })"));
 
-    SPAWN_KITTY("erstarrwashere");
+    SPAWN_FOOT("erstarrwashere");
 
     {
         auto str = getFromSocket("/activewindow");
@@ -579,7 +579,7 @@ TEST_CASE(dwindleNewWindowTakesOverFullscreen) {
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 0 } })"));
 
-    SPAWN_KITTY("kitty_A");
+    SPAWN_FOOT("foot_A");
 
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen' })"));
 
@@ -587,48 +587,48 @@ TEST_CASE(dwindleNewWindowTakesOverFullscreen) {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 2");
         EXPECT_CONTAINS(str, "fullscreenClient: 2");
-        EXPECT_CONTAINS(str, "kitty_A");
+        EXPECT_CONTAINS(str, "foot_A");
     }
 
-    SPAWN_KITTY("kitty_B");
+    SPAWN_FOOT("foot_B");
 
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 2");
         EXPECT_CONTAINS(str, "fullscreenClient: 2");
-        EXPECT_CONTAINS(str, "kitty_A");
+        EXPECT_CONTAINS(str, "foot_A");
     }
 
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_B' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_B' })"));
 
     {
         // should be ignored as per focus_under_fullscreen 0
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 2");
         EXPECT_CONTAINS(str, "fullscreenClient: 2");
-        EXPECT_CONTAINS(str, "kitty_A");
+        EXPECT_CONTAINS(str, "foot_A");
     }
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 1 } })"));
 
-    SPAWN_KITTY("kitty_C");
+    SPAWN_FOOT("foot_C");
 
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 2");
         EXPECT_CONTAINS(str, "fullscreenClient: 2");
-        EXPECT_CONTAINS(str, "kitty_C");
+        EXPECT_CONTAINS(str, "foot_C");
     }
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 2 } })"));
 
-    SPAWN_KITTY("kitty_D");
+    SPAWN_FOOT("foot_D");
 
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 0");
         EXPECT_CONTAINS(str, "fullscreenClient: 0");
-        EXPECT_CONTAINS(str, "kitty_D");
+        EXPECT_CONTAINS(str, "foot_D");
     }
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 0 } })"));
@@ -642,8 +642,8 @@ TEST_CASE(dwindleExitWindowRetainsFullscreen) {
 
     OK(getFromSocket("/eval hl.config({ misc = { exit_window_retains_fullscreen = false } })"));
 
-    SPAWN_KITTY("kitty_A");
-    SPAWN_KITTY("kitty_B");
+    SPAWN_FOOT("foot_A");
+    SPAWN_FOOT("foot_B");
 
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen' })"));
 
@@ -662,7 +662,7 @@ TEST_CASE(dwindleExitWindowRetainsFullscreen) {
         EXPECT_CONTAINS(str, "fullscreenClient: 0");
     }
 
-    SPAWN_KITTY("kitty_B");
+    SPAWN_FOOT("foot_B");
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen' })"));
     OK(getFromSocket("/eval hl.config({ misc = { exit_window_retains_fullscreen = true } })"));
 
@@ -691,7 +691,7 @@ TEST_CASE(dwindleFullscreenPinnedWindows) {
 
     OK(getFromSocket("r/eval hl.config({ general = { layout = 'dwindle' } })"));
 
-    SPAWN_KITTY("cake");
+    SPAWN_FOOT("cake");
 
     OK(getFromSocket("/dispatch hl.dsp.window.float({action = 'enable', window = 'class:cake'})"));
 
@@ -868,12 +868,12 @@ TEST_CASE(dwindleFullscreenNonInterference) {
 
     OK(getFromSocket("r/eval hl.config({ general = { layout = 'dwindle' } })"));
 
-    SPAWN_KITTY("red");
-    SPAWN_KITTY("crimson");
-    SPAWN_KITTY("blue");
-    SPAWN_KITTY("cyan");
-    SPAWN_KITTY("azure");
-    SPAWN_KITTY("green");
+    SPAWN_FOOT("red");
+    SPAWN_FOOT("crimson");
+    SPAWN_FOOT("blue");
+    SPAWN_FOOT("cyan");
+    SPAWN_FOOT("azure");
+    SPAWN_FOOT("green");
 
     OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:red' })"));
 
@@ -1019,9 +1019,9 @@ TEST_CASE(defaultHandledFsfocusInDirection) {
             This test serves as a test for all layouts that use deafult FS behaviour
     */
 
-    SPAWN_KITTY("normal1");
-    SPAWN_KITTY("fs");
-    SPAWN_KITTY("normal2");
+    SPAWN_FOOT("normal1");
+    SPAWN_FOOT("fs");
+    SPAWN_FOOT("normal2");
 
     // if movefocus_cycles_fullscreen = false, all focus({direction}) is disallowed from moving focus from FS window
     OK(getFromSocket("r/eval hl.config({ binds = { movefocus_cycles_fullscreen = false } })"));
@@ -1189,7 +1189,7 @@ TEST_CASE(dwindleFullsreenCenterDispatchSavesPos) {
 
     */
 
-    SPAWN_KITTY("kot");
+    SPAWN_FOOT("kot");
     OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set', window = 'class:kot' })"));
 
     OK(getFromSocket("/dispatch hl.dsp.window.move({ x =100 , y =100 , relative = false, window = 'class:kot' })"));

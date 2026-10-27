@@ -45,13 +45,13 @@ TEST_CASE(followMouseShrink) {
 
     // Spawn two floating windows with a 20px gap
     // fms_a: position (100,100), size 400x400 -> hitbox [100,499] x [100,499]
-    SPAWN_KITTY("fms_a");
+    SPAWN_FOOT("fms_a");
     OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set' })"));
     OK(getFromSocket("/dispatch hl.dsp.window.resize({ x = 400, y = 400 })"));
     OK(getFromSocket("/dispatch hl.dsp.window.move({ x = 100, y = 100 })"));
 
     // fms_b: position (520,100), size 400x400 -> hitbox [520,919] x [100,499]
-    SPAWN_KITTY("fms_b");
+    SPAWN_FOOT("fms_b");
     OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set' })"));
     OK(getFromSocket("/dispatch hl.dsp.window.resize({ x = 400, y = 400 })"));
     OK(getFromSocket("/dispatch hl.dsp.window.move({ x = 520, y = 100 })"));

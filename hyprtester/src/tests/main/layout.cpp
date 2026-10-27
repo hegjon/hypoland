@@ -36,7 +36,7 @@ static bool waitForMonitorRemoved(const char* name) {
 TEST_CASE(single_window_aspect_ratio) {
     OK(getFromSocket("/eval hl.config({ layout = { single_window_aspect_ratio = '1 1' } })"));
 
-    SPAWN_KITTY("a");
+    SPAWN_FOOT("a");
 
     {
         auto str = getFromSocket("/activewindow");
@@ -44,7 +44,7 @@ TEST_CASE(single_window_aspect_ratio) {
         EXPECT_CONTAINS(str, "size: 1036,1036");
     }
 
-    SPAWN_KITTY("a");
+    SPAWN_FOOT("a");
 
     OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'activewindow' })"));
 
@@ -68,9 +68,9 @@ TEST_CASE(single_window_aspect_ratio) {
 
 // Don't crash when focus after global geometry changes
 TEST_CASE(crashOnGeomUpdate) {
-    SPAWN_KITTY("a");
-    SPAWN_KITTY("a");
-    SPAWN_KITTY("a");
+    SPAWN_FOOT("a");
+    SPAWN_FOOT("a");
+    SPAWN_FOOT("a");
 
     // move the layout
     OK(getFromSocket("/eval hl.monitor({ output = 'HEADLESS-2', mode = '1920x1080@60', position = '1000x0', scale = '1' })"));
@@ -105,9 +105,9 @@ TEST_CASE(layoutRefreshDuringMonitorTeardown) {
 
     OK(getFromSocket(std::format("/dispatch hl.dsp.focus({{ monitor = '{}' }})", TEST_OUTPUT)));
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '30' })"));
-    SPAWN_KITTY("layout_teardown_a");
+    SPAWN_FOOT("layout_teardown_a");
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '31' })"));
-    SPAWN_KITTY("layout_teardown_b");
+    SPAWN_FOOT("layout_teardown_b");
 
     OK(getFromSocket("/dispatch hl.dsp.focus({ monitor = 'HEADLESS-2' })"));
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '1' })"));
@@ -122,11 +122,11 @@ TEST_CASE(layoutRefreshDuringMonitorTeardown) {
 
 // Test if size + pos is preserved after fs cycle
 TEST_CASE(posPreserve) {
-    SPAWN_KITTY("kitty");
+    SPAWN_FOOT("foot");
 
-    OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set', window = 'class:kitty' })"));
-    OK(getFromSocket("/dispatch hl.dsp.window.resize({ x = 1337, y = 69, window = 'class:kitty' })"));
-    OK(getFromSocket("/dispatch hl.dsp.window.move({ x = 420, y = 420, window = 'class:kitty' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set', window = 'class:foot' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.resize({ x = 1337, y = 69, window = 'class:foot' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.move({ x = 420, y = 420, window = 'class:foot' })"));
 
     {
         auto str = getFromSocket("/activewindow");
@@ -161,7 +161,7 @@ TEST_CASE(posPreserve) {
 
     OK(getFromSocket("/eval hl.config({ binds = { allow_pin_fullscreen = true } })"));
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '1' })"));
-    OK(getFromSocket("/dispatch hl.dsp.window.pin({ action = 'set', window = 'class:kitty' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.pin({ action = 'set', window = 'class:foot' })"));
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '2' })"));
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen()"));
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen()"));
@@ -180,20 +180,20 @@ TEST_CASE(focusMRUAfterClose) {
     OK(getFromSocket("/eval hl.config({ dwindle = { default_split_ratio = 1.25 } })"));
     OK(getFromSocket("/eval hl.config({ input = { focus_on_close = 2 } })"));
 
-    SPAWN_KITTY("kitty_A");
-    SPAWN_KITTY("kitty_B");
-    SPAWN_KITTY("kitty_C");
+    SPAWN_FOOT("foot_A");
+    SPAWN_FOOT("foot_B");
+    SPAWN_FOOT("foot_C");
 
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_A' })"));
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_B' })"));
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_C' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_A' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_B' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_C' })"));
 
     OK(getFromSocket("/dispatch hl.dsp.window.kill()"));
     Tests::waitUntilWindowsN(2);
 
     {
         auto str = getFromSocket("/activewindow");
-        EXPECT(str.contains("class: kitty_B"), true);
+        EXPECT(str.contains("class: foot_B"), true);
     }
 
     OK(getFromSocket("/dispatch hl.dsp.window.kill()"));
@@ -201,24 +201,24 @@ TEST_CASE(focusMRUAfterClose) {
 
     {
         auto str = getFromSocket("/activewindow");
-        EXPECT(str.contains("class: kitty_A"), true);
+        EXPECT(str.contains("class: foot_A"), true);
     }
 }
 
 TEST_CASE(focusPreservedLayoutChange) {
     OK(getFromSocket("r/eval hl.config({ general = { layout = 'master' } })"));
 
-    SPAWN_KITTY("kitty_A");
-    SPAWN_KITTY("kitty_B");
-    SPAWN_KITTY("kitty_C");
-    SPAWN_KITTY("kitty_D");
+    SPAWN_FOOT("foot_A");
+    SPAWN_FOOT("foot_B");
+    SPAWN_FOOT("foot_C");
+    SPAWN_FOOT("foot_D");
 
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_C' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_C' })"));
 
     OK(getFromSocket("r/eval hl.config({ general = { layout = 'monocle' } })"));
 
     {
         auto str = getFromSocket("/activewindow");
-        EXPECT(str.contains("class: kitty_C"), true);
+        EXPECT(str.contains("class: foot_C"), true);
     }
 }

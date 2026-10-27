@@ -22,9 +22,9 @@ using namespace Hyprutils::Memory;
 //     {
 //         OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '2' })"));
 //
-//         auto kitty = Tests::spawnKitty("bad_kitty");
+//         auto foot = Tests::spawnFoot("bad_foot");
 //
-//         if (!kitty) {
+//         if (!foot) {
 //             ret = 1;
 //             return;
 //         }
@@ -36,7 +36,7 @@ using namespace Hyprutils::Memory;
 //
 //         OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '1' })"));
 //
-//         ::kill(kitty->pid(), SIGSTOP);
+//         ::kill(foot->pid(), SIGSTOP);
 //         Tests::waitUntilWindowsN(2);
 //
 //         {
@@ -57,9 +57,9 @@ using namespace Hyprutils::Memory;
 //     {
 //         OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = 'name:yummy' })"));
 //
-//         auto kitty = Tests::spawnKitty("bad_kitty");
+//         auto foot = Tests::spawnFoot("bad_foot");
 //
-//         if (!kitty) {
+//         if (!foot) {
 //             ret = 1;
 //             return;
 //         }
@@ -71,7 +71,7 @@ using namespace Hyprutils::Memory;
 //
 //         OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '1' })"));
 //
-//         ::kill(kitty->pid(), SIGSTOP);
+//         ::kill(foot->pid(), SIGSTOP);
 //         Tests::waitUntilWindowsN(2);
 //
 //         {
@@ -92,9 +92,9 @@ using namespace Hyprutils::Memory;
 //     {
 //         OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = 'special:apple' })"));
 //
-//         auto kitty = Tests::spawnKitty("bad_kitty");
+//         auto foot = Tests::spawnFoot("bad_foot");
 //
-//         if (!kitty) {
+//         if (!foot) {
 //             ret = 1;
 //             return;
 //         }
@@ -107,7 +107,7 @@ using namespace Hyprutils::Memory;
 //         OK(getFromSocket("/dispatch hl.dsp.workspace.toggle_special('apple')"));
 //         OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '1' })"));
 //
-//         ::kill(kitty->pid(), SIGSTOP);
+//         ::kill(foot->pid(), SIGSTOP);
 //         Tests::waitUntilWindowsN(2);
 //
 //         {
@@ -133,7 +133,7 @@ TEST_CASE(misc) {
     OK(getFromSocket("/eval hl.config({ misc = { close_special_on_empty = false } })"));
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = 'special:test' })"));
 
-    SPAWN_KITTY("a");
+    SPAWN_FOOT("a");
 
     {
         auto str = getFromSocket("/monitors");
@@ -147,7 +147,7 @@ TEST_CASE(misc) {
         ASSERT_CONTAINS(str, "special workspace: -");
     }
 
-    SPAWN_KITTY("a");
+    SPAWN_FOOT("a");
 
     OK(getFromSocket("/eval hl.config({ misc = { close_special_on_empty = true } })"));
 

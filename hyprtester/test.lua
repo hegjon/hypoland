@@ -27,7 +27,7 @@ hl.monitor({ output = "HEADLESS-6", mode = "1920x1080@60", position = "auto-righ
 hl.monitor({ output = "HEADLESS-PERSISTENT-TEST", mode = "1920x1080@60", position = "auto-right", scale = "1" })
 hl.monitor({ output = "", disabled = true })
 
-local terminal = "kitty"
+local terminal = "foot"
 local fileManager = "dolphin"
 local menu = "wofi --show drun"
 
@@ -272,30 +272,30 @@ hl.window_rule({
 })
 
 hl.window_rule({
-    name = "wr-kitty-stuff",
-    match = { class = "wr_kitty" },
+    name = "wr-foot-stuff",
+    match = { class = "wr_foot" },
     float = true,
     size = "200 200",
     pin = false,
 })
 
 hl.window_rule({
-    name = "tagged-kitty-floats",
-    match = { tag = "tag_kitty" },
+    name = "tagged-foot-floats",
+    match = { tag = "tag_foot" },
     float = true,
 })
 
 hl.window_rule({
-    name = "static-kitty-tag",
-    match = { class = "tag_kitty" },
-    tag = "+tag_kitty",
+    name = "static-foot-tag",
+    match = { class = "tag_foot" },
+    tag = "+tag_foot",
 })
 
 hl.gesture({
     fingers = 3,
     direction = "left",
     action = function()
-        hl.dispatch(hl.dsp.exec_cmd("kitty"))
+        hl.dispatch(hl.dsp.exec_cmd("foot"))
     end,
 })
 

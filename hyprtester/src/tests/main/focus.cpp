@@ -77,14 +77,14 @@ TEST_CASE(crossMonitorFullscreenFocus) {
 
     // 1 window on the left monitor
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = 'name:workspace1' })"));
-    SPAWN_KITTY("1A");
+    SPAWN_FOOT("1A");
     OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:1A' })"));
     const auto MON_SRC_ID = Tests::getAttribute(getFromSocket("/activewindow"), "monitor");
 
     // 2 windows on the right monitor
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = 'name:workspace2' })"));
-    SPAWN_KITTY("2A");
-    SPAWN_KITTY("2B");
+    SPAWN_FOOT("2A");
+    SPAWN_FOOT("2B");
     OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:2B' })"));
     const auto MON_DST_ID = Tests::getAttribute(getFromSocket("/activewindow"), "monitor");
 
@@ -111,7 +111,7 @@ TEST_CASE(silentMoveLastTiledWindowUnfocusesWindow) {
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '1' })"));
     ASSERT(Tests::windowCount(), 0);
 
-    SPAWN_KITTY("silent_move_last_tiled");
+    SPAWN_FOOT("silent_move_last_tiled");
     ASSERT(Tests::windowCount(), 1);
 
     const auto active = getFromSocket("/activewindow");
@@ -149,7 +149,7 @@ TEST_CASE(crossMonitorEmptyWorkspaceUnfocusesWindow) {
     OK(getFromSocket("/dispatch hl.dsp.focus({ monitor = 'HYPRTEST-UNFOCUS' })"));
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = '2' })"));
 
-    SPAWN_KITTY("cross_monitor_ws2");
+    SPAWN_FOOT("cross_monitor_ws2");
 
     {
         auto str = getFromSocket("/activewindow");

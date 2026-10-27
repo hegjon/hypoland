@@ -17,7 +17,7 @@ TEST_CASE(monocleWorkspaceRule) {
 
     // spawn 3 window, all should be compliant
 
-    SPAWN_KITTY("neutral_cat");
+    SPAWN_FOOT("neutral_cat");
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "class: neutral_cat")
@@ -25,7 +25,7 @@ TEST_CASE(monocleWorkspaceRule) {
         EXPECT_CONTAINS(str, "at: 42,42")
     }
 
-    SPAWN_KITTY("happy_cat");
+    SPAWN_FOOT("happy_cat");
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "class: happy_cat")
@@ -33,7 +33,7 @@ TEST_CASE(monocleWorkspaceRule) {
         EXPECT_CONTAINS(str, "at: 42,42")
     }
 
-    SPAWN_KITTY("angry_cat");
+    SPAWN_FOOT("angry_cat");
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "class: angry_cat")
@@ -55,7 +55,7 @@ TEST_CASE(monocleWorkspaceRule) {
     }
 
     // re-open a window after killing
-    SPAWN_KITTY("angry_cat");
+    SPAWN_FOOT("angry_cat");
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "class: angry_cat")
@@ -89,10 +89,10 @@ TEST_CASE(monocleFullscreenMaximiseDispatchers) {
 
     OK(getFromSocket("/eval hl.config({ general = { layout = 'monocle' } })"));
 
-    SPAWN_KITTY("kitty_A");
-    SPAWN_KITTY("kitty_B");
+    SPAWN_FOOT("foot_A");
+    SPAWN_FOOT("foot_B");
 
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_A' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_A' })"));
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen', action = 'set' })"));
 
     {
@@ -165,7 +165,7 @@ TEST_CASE(monocleTestFsFocusUnderFSWindow) {
     OK(getFromSocket("r/eval hl.config({ general = { layout = 'monocle' } })"));
 
     for (auto const& win : {"one", "two", "three"}) {
-        SPAWN_KITTY(win);
+        SPAWN_FOOT(win);
     }
 
     OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:one' })"));
@@ -180,7 +180,7 @@ TEST_CASE(monocleTestFsFocusUnderFSWindow) {
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 1 } })"));
 
-    SPAWN_KITTY("four");
+    SPAWN_FOOT("four");
 
     {
         auto str = getFromSocket("/activewindow");
@@ -192,7 +192,7 @@ TEST_CASE(monocleTestFsFocusUnderFSWindow) {
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 0 } })"));
 
-    SPAWN_KITTY("ignored");
+    SPAWN_FOOT("ignored");
 
     {
         auto str = getFromSocket("/activewindow");
@@ -204,7 +204,7 @@ TEST_CASE(monocleTestFsFocusUnderFSWindow) {
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 2 } })"));
 
-    SPAWN_KITTY("erstarrwashere");
+    SPAWN_FOOT("erstarrwashere");
 
     {
         auto str = getFromSocket("/activewindow");
@@ -221,7 +221,7 @@ TEST_CASE(monocleNewWindowTakesOverFullscreen) {
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 0 } })"));
 
-    SPAWN_KITTY("kitty_A");
+    SPAWN_FOOT("foot_A");
 
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen' })"));
 
@@ -229,48 +229,48 @@ TEST_CASE(monocleNewWindowTakesOverFullscreen) {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 2");
         EXPECT_CONTAINS(str, "fullscreenClient: 2");
-        EXPECT_CONTAINS(str, "kitty_A");
+        EXPECT_CONTAINS(str, "foot_A");
     }
 
-    SPAWN_KITTY("kitty_B");
+    SPAWN_FOOT("foot_B");
 
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 2");
         EXPECT_CONTAINS(str, "fullscreenClient: 2");
-        EXPECT_CONTAINS(str, "kitty_A");
+        EXPECT_CONTAINS(str, "foot_A");
     }
 
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_B' })"));
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_B' })"));
 
     {
         // should be ignored as per focus_under_fullscreen 0
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 2");
         EXPECT_CONTAINS(str, "fullscreenClient: 2");
-        EXPECT_CONTAINS(str, "kitty_A");
+        EXPECT_CONTAINS(str, "foot_A");
     }
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 1 } })"));
 
-    SPAWN_KITTY("kitty_C");
+    SPAWN_FOOT("foot_C");
 
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 2");
         EXPECT_CONTAINS(str, "fullscreenClient: 2");
-        EXPECT_CONTAINS(str, "kitty_C");
+        EXPECT_CONTAINS(str, "foot_C");
     }
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 2 } })"));
 
-    SPAWN_KITTY("kitty_D");
+    SPAWN_FOOT("foot_D");
 
     {
         auto str = getFromSocket("/activewindow");
         EXPECT_CONTAINS(str, "fullscreen: 0");
         EXPECT_CONTAINS(str, "fullscreenClient: 0");
-        EXPECT_CONTAINS(str, "kitty_D");
+        EXPECT_CONTAINS(str, "foot_D");
     }
 
     OK(getFromSocket("/eval hl.config({ misc = { on_focus_under_fullscreen = 0 } })"));
@@ -286,8 +286,8 @@ TEST_CASE(monocleExitWindowRetainsFullscreen) {
 
     OK(getFromSocket("/eval hl.config({ misc = { exit_window_retains_fullscreen = false } })"));
 
-    SPAWN_KITTY("kitty_A");
-    SPAWN_KITTY("kitty_B");
+    SPAWN_FOOT("foot_A");
+    SPAWN_FOOT("foot_B");
 
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen' })"));
 
@@ -306,7 +306,7 @@ TEST_CASE(monocleExitWindowRetainsFullscreen) {
         EXPECT_CONTAINS(str, "fullscreenClient: 0");
     }
 
-    SPAWN_KITTY("kitty_B");
+    SPAWN_FOOT("foot_B");
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen({ mode = 'fullscreen' })"));
     OK(getFromSocket("/eval hl.config({ misc = { exit_window_retains_fullscreen = true } })"));
 
@@ -337,7 +337,7 @@ TEST_CASE(monocleFullscreenPinnedWindows) {
 
     OK(getFromSocket("r/eval hl.config({ general = { layout = 'monocle' } })"));
 
-    SPAWN_KITTY("cake");
+    SPAWN_FOOT("cake");
 
     OK(getFromSocket("/dispatch hl.dsp.window.float({action = 'enable', window = 'class:cake'})"));
 
@@ -514,12 +514,12 @@ TEST_CASE(monocleFullscreenNonInterference) {
 
     OK(getFromSocket("r/eval hl.config({ general = { layout = 'monocle' } })"));
 
-    SPAWN_KITTY("red");
-    SPAWN_KITTY("crimson");
-    SPAWN_KITTY("blue");
-    SPAWN_KITTY("cyan");
-    SPAWN_KITTY("azure");
-    SPAWN_KITTY("green");
+    SPAWN_FOOT("red");
+    SPAWN_FOOT("crimson");
+    SPAWN_FOOT("blue");
+    SPAWN_FOOT("cyan");
+    SPAWN_FOOT("azure");
+    SPAWN_FOOT("green");
 
     OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:red' })"));
 

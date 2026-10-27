@@ -9,8 +9,9 @@
 // - test coverage
 // - maybe figure out a way to do some visual tests too?
 
-// Required runtime deps for checks:
-// - kitty
+// Required runtime deps for checks (what an Omarchy desktop has):
+// - foot, the terminal the tests open
+// - quickshell (qs), which draws the layer-shell surfaces of the tests (clients/layer.qml)
 // - xeyes
 
 #define INCLUDED_FROM_MAIN 1 // Prevent macro redefinition warnings from includes of "tests/*/tests.hpp"

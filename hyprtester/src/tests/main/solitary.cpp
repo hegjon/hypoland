@@ -37,8 +37,8 @@ TEST_CASE(solitaryClients) {
         CALL_SUBTEST(expectBlockedByAll, Tests::getAttribute(str, "directScanoutBlockedBy"), {"user settings", "software renders/cursors", "missing candidate"});
     }
 
-    // FIXME: need a reliable client with solitary opaque surface in fullscreen. kitty doesn't work all the time
-    // SPAWN_KITTY("a");
+    // FIXME: need a reliable client with solitary opaque surface in fullscreen. foot doesn't work all the time
+    // SPAWN_FOOT("a");
 
     // OK(getFromSocket("/eval hl.config({ general = { allow_tearing = true } })"));
     // OK(getFromSocket("/eval hl.config({ render = { direct_scanout = 1 } })"));
@@ -46,7 +46,7 @@ TEST_CASE(solitaryClients) {
     // OK(getFromSocket("/dispatch hl.dsp.window.fullscreen()"));
     // NLog::log("{}", getFromSocket("/clients"));
     // std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    // NLog::log("{}Expecting kitty to almost pass for solitary/DS/tearing", Colors::YELLOW);
+    // NLog::log("{}Expecting foot to almost pass for solitary/DS/tearing", Colors::YELLOW);
     // {
     //     auto str = getFromSocket("/monitors");
     //     ASSERT_NOT_CONTAINS(str, "solitary: 0\n");
@@ -56,7 +56,7 @@ TEST_CASE(solitaryClients) {
     // }
 
     // OK(getFromSocket("/dispatch hl.dsp.window.set_prop({ window = 'active', prop = 'immediate', value = '1' })"));
-    // NLog::log("{}Expecting kitty to almost pass for tearing", Colors::YELLOW);
+    // NLog::log("{}Expecting foot to almost pass for tearing", Colors::YELLOW);
     // {
     //     auto str = getFromSocket("/monitors");
     //     ASSERT_CONTAINS(str, "tearingBlockedBy: next frame is not torn,not supported by monitor\n");

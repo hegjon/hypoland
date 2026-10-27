@@ -33,8 +33,9 @@ TEST_CASE(processSpawning) {
         }
 
         const std::string sleepParentComm = Tests::execAndGet(std::format("cat \"/proc/$(ps -o ppid:1= -p {})/comm\"", sleepPidS));
-        NLog::log("{}Expecting that sleep's parent is Hyprland", Colors::YELLOW);
-        EXPECT_CONTAINS(sleepParentComm, "Hyprland");
+        // the compositor's binary is hypoland, so that is its comm
+        NLog::log("{}Expecting that sleep's parent is hypoland", Colors::YELLOW);
+        EXPECT_CONTAINS(sleepParentComm, "hypoland");
 
         std::this_thread::sleep_for(std::chrono::seconds(duration));
 
