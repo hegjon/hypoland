@@ -113,7 +113,8 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   is not used.
 - Removed on 2026-09-28: Tracy (submodule and the `USE_TRACY` build options), glaze (the only real use was in
   `start-hypoland`) and Nix support (`flake.nix`, `nix/`, the Nix workflows, nixGL in `start-hypoland`, the `nix`
-  flag of `hyprctl version`). `start-hypoland` still accepts `--no-nixgl` and `--force-nixgl` and ignores them.
+  flag of `hyprctl version`). The `--no-nixgl` and `--force-nixgl` options of `start-hypoland` were removed on
+  2026-10-27 (it ignores options it does not know, as upstream's does).
   A build downloads nothing any more. The Nix files of the embedded aquamarine are left alone, they are part of
   the subtree.
 - Logo: the pixel potato in `assets/logo/` (icon `hypoland.svg` with PNG exports, and the pre-2000 style banner

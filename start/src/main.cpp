@@ -74,9 +74,6 @@ int main(int argc, const char** argv, const char** envp) {
             g_state->customPath = argv[++i];
             continue;
         }
-        // Nix support is removed, the options of start-hyprland for it are accepted and do nothing
-        if (arg == "--no-nixgl" || arg == "--force-nixgl")
-            continue;
     }
 
     if (startArgv != -1)
