@@ -44,6 +44,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   the title, buttons to close, maximize and minimize, dragging by the bar, double click to maximize, and dragging a
   maximized window back to its size. Off unless a config enables them (`plugin:hyprbars:enabled`).
 
+### Changed
+
+- `start-hypoland` no longer accepts `--no-nixgl` and `--force-nixgl`, the options of Hyprland's `start-hyprland`
+  for Nix, which Hypoland removed. Like any option it does not know, they are ignored.
+
 ### Fixed
 
 - The compositor no longer aborts after a GPU hang in its own drawing. It asked for a GL context that is lost for good
