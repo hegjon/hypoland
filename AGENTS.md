@@ -637,6 +637,20 @@ Findings:
   - `CEGLSync::create` is where Mesa's threaded context runs the whole frame (draws and batch submit). A frame
     with one 60 fps client was 2 draws and 16 ioctls, all needed except the mode re-read, which is fixed
     (13 ioctls now, see below).
+- Tried and dropped (2026-10-27): reading a screen capture into an shm buffer asynchronously.
+  `CScreenshareFrame::copyShm()` calls `glReadPixels` right after drawing the capture, which waits for the GPU (24 ms
+  on the X200 after a full redraw; the comment in `CGLFramebuffer::readPixels()` suggests a pixel buffer object). A
+  pixel buffer object (`NV_pixel_buffer_object`, which Mesa offers in GLES 2) is no help on crocus: Mesa only copies
+  into one on the GPU with shader images (`st_init_pbo_helpers()`, `max_shader_images`), which Gen4 lacks, and
+  otherwise waits and copies on the CPU all the same. Tried instead: a fence after the capture and the read when it
+  signals, as `copyDmabuf()` finishes. On the X200 (weston-simple-egl and a client capturing the whole output without
+  pause, 3 rounds of each build) captures on damage, as a recorder takes them, went from 30 to 16 a second and the
+  screen from 55 to 33 fps; immediate captures showed 33 instead of 30 fps on the screen at the same rate. Traced with
+  uprobes: the GPU is the limit. Without the wait the compositor queues the next screen frame behind the capture, and
+  it misses its refresh (78 of 102 frame gaps were 33 ms, against 11 of 169); and the read, of a buffer the GPU has
+  finished, took 13.7 ms of CPU time on the main thread, against 19.3 ms for the whole read with its wait before
+  (likely Mesa reads the tiled buffer directly then, instead of copying it on the GPU into memory the CPU reads fast).
+  Clients that capture into dmabufs (the screen sharing portal, OBS) take the asynchronous path already.
 
 Memory (X200, idle Omarchy session 60 s after start, `heaptrack` and `/proc/<pid>/smaps`):
 - Fixed: aquamarine created a second EGL context for the primary GPU, which is only needed when a secondary GPU
