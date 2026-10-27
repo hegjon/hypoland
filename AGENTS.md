@@ -419,8 +419,12 @@ Tools:
   (16.8% stock with the GLES 3 override, 21.5% Hypoland). `resize-foot`, not in the default list, is the same with
   foot on both sides: shm buffers only, which no GL driver or Mesa variable touches. On the X200 (rounds 2 to 4 of
   2026-10-26) it shows the same gap as `resize`, so it is not Alacritty under stock's GLES 3 override: compositor
-  23% / 31%, clients 75% / 110%, session 98% / 141% (stock / Hypoland). Whether Hypoland shows more resize steps per
-  second, which makes the clients draw more, is what `fps.resize.screen` is for.
+  23% / 31%, clients 75% / 110%, session 98% / 141% (stock / Hypoland). It is the frames: during the drag the X200
+  shows 40 frames a second under stock and 60 under Hypoland (`fps.resize.screen`, 4 rounds of each, 2026-10-26), and
+  every frame has both clients draw at a new size. Per frame on the screen Hypoland's compositor costs 13% less
+  (`resize` 0.36 / 0.41 points per frame a second, `resize-foot` 0.52 / 0.59), the whole session the same (`resize`
+  +4%, `resize-foot` -6%). `gtk3-scroll` in the same run: stock 30 fps on the screen and the client, Hypoland 59,
+  with the session 33% cheaper per frame.
   Omarchy's shell (added 2026-10-26, both skipped where `omarchy-shell shell ping` does not answer): `notifications`
   has notify-send deliver a notification a second from four senders, low urgency (5 s each), over an idle foot window,
   so about five cards stand in the shell's column at the right of the screen, one sliding in and one going every
