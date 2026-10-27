@@ -4,11 +4,13 @@
 #   setsid -f nohup ./soak.sh [hours] >/dev/null 2>&1 </dev/null
 #
 # SOAK_SHORT=1 runs one cycle with workloads of seconds instead of minutes, to check the script itself.
+# SOAK_CYCLES=N stops after N cycles, SOAK_OUT=DIR writes there instead of ~/soak/<time>, SOAK_WORKLOADS="w_a w_b" runs
+# only those workloads (soak-ab.sh uses the first two).
 # Runs as the session user on the machine under test. It repeats a cycle of workloads (GPU client, terminal
 # scrolling in foot (shm) and alacritty (GL), a fullscreen video in mpv, nautilus (GTK 4) with fullscreen toggles,
 # flea (Quickshell) paged, searched and switched between views with keys, both file managers scrolling the same
 # 25000 files with the same keys and searching them by name (w_files_*, w_search_*, to compare them), Omarchy's screensaver (ttfx in foot and in alacritty, tiled and fullscreen), Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm, screenshots and
-# recording, config reload, DPMS off/on, idle, glmark2; the ones whose program is not installed are skipped) and samples the compositor every minute:
+# recording, config reload, DPMS off/on, idle, glmark2, notifications; the ones whose program is not installed are skipped) and samples the compositor every minute:
 # memory (Pss, anonymous, GPU buffers), CPU time, fds, threads, IPC latency, the hottest CPU temperature sensor and the
 # fastest fan (also logged to the journal with the tag soak, so the last minute before a power cut is on the desktop).
 # It records compositor restarts,
@@ -21,15 +23,20 @@
 # soak: copy energy-meter.sh to /root and start it as root (see there). Without it, or without RAPL (the X200),
 # the energy columns are nan.
 # After a compositor restart the run attaches to the new instance and goes on.
-# Omarchy's screensaver and idle lock are switched off for the run and put back afterwards. Stop early with
-# `touch <outdir>/stop`.
+# Omarchy's screensaver and idle lock are switched off for the run and put back afterwards. So are notifications
+# (cleared before every cycle, do-not-disturb on except in w_notify) and Omarchy's update check, which is stopped when
+# it starts, so that runs compare. Stop early with `touch <outdir>/stop`.
 set -u
+# clients start where the soak runs: foot cannot start its shell in a directory the user cannot enter (soak-ab.sh
+# runs it from /root)
+cd "$HOME" || exit 1
 
 HOURS=${1:-13}
 # workload lengths in seconds
 T_LONG=180 T_IDLE=300 T_DPMS=30 MAX_CYCLES=0
 [ "${SOAK_SHORT:-0}" = 1 ] && T_LONG=10 T_IDLE=10 T_DPMS=5 MAX_CYCLES=1
-OUT=$HOME/soak/$(date +%Y%m%d-%H%M%S)
+[ -n "${SOAK_CYCLES:-}" ] && MAX_CYCLES=$SOAK_CYCLES
+OUT=${SOAK_OUT:-$HOME/soak/$(date +%Y%m%d-%H%M%S)}
 mkdir -p "$OUT/shots" "$OUT/clients"
 exec >>"$OUT/soak.log" 2>&1
 END=$(($(date +%s) + HOURS * 3600))
@@ -70,9 +77,23 @@ HAD_SAVER_OFF=0 HAD_STAY_AWAKE=0
 [ -e "$OMARCHY/toggles/screensaver-off" ] && HAD_SAVER_OFF=1
 [ -e "$OMARCHY/indicators/stay-awake" ] && HAD_STAY_AWAKE=1
 
+# Omarchy's shell, called as the session calls it
+[ -d /usr/share/omarchy ] && export OMARCHY_PATH=${OMARCHY_PATH:-/usr/share/omarchy}
+shell() { command -v omarchy-shell >/dev/null && LANG=C.UTF-8 timeout 5 omarchy-shell "$@" 2>/dev/null; }
+# Notifications: a card is drawn over everything and animates by itself, so cards that come and go at random would
+# make runs incomparable. Cards are dismissed before every cycle and do-not-disturb holds new ones back, except in
+# w_notify, which sends its own. Do-not-disturb is put back as it was.
+DND=$(shell notifications isDnd)
+case $DND in on | off) ;; *) DND="" ;; esac
+quiet_notifications() {
+    shell -q notifications setDnd on
+    shell -q notifications dismissAll
+}
+
 # clients run as leaders of their own process group, so stopping one takes its children along
 CLIENTS=()
 SAMPLER=""
+UPDATE_GUARD=""
 PERF=""
 CYCLE=0
 client() {
@@ -89,7 +110,9 @@ restore() {
     trap - EXIT
     stop_clients
     [ -n "$SAMPLER" ] && kill "$SAMPLER" 2>/dev/null
+    [ -n "$UPDATE_GUARD" ] && kill "$UPDATE_GUARD" 2>/dev/null
     [ -n "$PERF" ] && stop_perf
+    [ -n "$DND" ] && shell -q notifications setDnd "$DND"
     [ $HAD_SAVER_OFF = 1 ] || rm -f "$OMARCHY/toggles/screensaver-off"
     [ $HAD_STAY_AWAKE = 1 ] || rm -f "$OMARCHY/indicators/stay-awake"
     dispatch 'hl.dsp.dpms({action=[[on]]})'
@@ -104,6 +127,20 @@ mkdir -p "$OMARCHY/toggles" "$OMARCHY/indicators"
 touch "$OMARCHY/toggles/screensaver-off" "$OMARCHY/indicators/stay-awake"
 pkill -f "[o]rg.omarchy.screensaver"
 dispatch 'hl.dsp.dpms({action=[[on]]})'
+quiet_notifications
+
+# Omarchy's bar looks for updates when the shell starts and every 6 hours: omarchy-update-available runs checkupdates,
+# a pacman database sync of its own in /tmp/checkup-db-<uid>, network and CPU for a while. There is no switch for it,
+# so a check that starts during the run is stopped (the bar then shows no update) and logged. The patterns match the
+# check's own command lines from their start, not every process that only mentions them (an ssh session did).
+UPDATE_CHECK='^(/usr)?/bin/bash /usr/(share/omarchy/)?bin/(omarchy-update-available|checkupdates)( |$)|^(/bin/sh /usr/bin/fakeroot -- )?pacman -Sy .*--dbpath /tmp/checkup-db-'
+update_guard() {
+    while sleep 10; do
+        pkill -u "$(id -u)" -f "$UPDATE_CHECK" && log "stopped an update check"
+    done
+}
+update_guard &
+UPDATE_GUARD=$!
 
 # ---- sampler, one line per minute
 
@@ -113,15 +150,19 @@ pss_of() { # Pss of the user's process with this name, 0 when it is not running
     p=$(pgrep -u "$(id -u)" -x "$1" | head -1)
     if [ -n "$p" ]; then kb /proc/"$p"/smaps_rollup Pss; else echo 0; fi
 }
-gpu_kb() { # GPU buffers of a process, counted once per DRM client
+gpu_kb() { # GPU buffers of a process, counted once per DRM client (i915: system0, msm: memory)
     cat /proc/"$1"/fdinfo/* 2>/dev/null | awk '
         $1 == "drm-client-id:" {id = $2}
-        $1 == "drm-total-system0:" && !(id in seen) {seen[id] = 1; v = $2; if ($3 == "MiB") v *= 1024; s += v}
+        ($1 == "drm-total-system0:" || $1 == "drm-total-memory:") && !(id in seen) {seen[id] = 1; v = $2
+            if ($3 == "MiB") v *= 1024; else if ($3 == "") v /= 1024; s += v}
         END {print s + 0}'
 }
-# the CPU's temperature sensors: coretemp on x86, the cpu thermal zones on ARM, all thermal zones otherwise
+# the CPU's temperature sensors: coretemp (Intel) or k10temp (AMD), the cpu thermal zones on ARM, all thermal zones
+# otherwise
 TEMPS=()
-for d in /sys/class/hwmon/hwmon*; do [ "$(cat "$d/name" 2>/dev/null)" = coretemp ] && TEMPS+=("$d"/temp*_input); done
+for d in /sys/class/hwmon/hwmon*; do
+    case $(cat "$d/name" 2>/dev/null) in coretemp | k10temp) TEMPS+=("$d"/temp*_input) ;; esac
+done
 [ ${#TEMPS[@]} = 0 ] && for z in /sys/class/thermal/thermal_zone*; do
     case $(cat "$z/type" 2>/dev/null) in cpu* | x86_pkg_temp) TEMPS+=("$z/temp") ;; esac
 done
@@ -372,6 +413,29 @@ w_dpms() {
     dispatch 'hl.dsp.dpms({action=[[on]]})'; sleep 5
 }
 w_idle() { sleep $T_IDLE; }
+# Omarchy's notifications, do-not-disturb off for the time: a card every 3 s, each up for 6 s, so two or three are on
+# screen and come and go. Every card has to come back with the id the shell gave it, and the shell has to count it on
+# screen.
+w_notify() {
+    command -v notify-send >/dev/null || return 0
+    local i id n=$((T_LONG / 3)) refused=0 shown
+    shell -q notifications setDnd off
+    for i in $(seq 1 "$n"); do
+        id=$(timeout 5 notify-send -p -t 6000 -a soak "Soak cycle $CYCLE" "Notification $i of $n" 2>/dev/null)
+        [[ $id =~ ^[0-9]+$ ]] || refused=$((refused + 1))
+        if [ "$i" = 1 ]; then
+            sleep 1
+            shown=$(shell notifications count)
+            [ "$shown" = 0 ] && log "EVENT notifications: the first card is not on screen"
+            sleep 2
+        else
+            sleep 3
+        fi
+    done
+    sleep 7
+    quiet_notifications
+    [ $refused = 0 ] || log "EVENT notifications: the shell did not take $refused of $n"
+}
 w_glmark2() { # a fixed set of scenes, the score shows whether the frames the clients get stay the same
     local d=8 score
     [ "${SOAK_SHORT:-0}" = 1 ] && d=2
@@ -516,19 +580,26 @@ report() {
 
 # ---- main loop
 
+# A locked session stays locked: the lock screen covers everything and refuses screenshots, so the run would measure it
+if H monitors | grep -q "solitaryBlockedBy:.*lock"; then
+    log "the session is locked, a new one is needed first (systemctl restart sddm as root)"
+    exit 1
+fi
+WORKLOADS=${SOAK_WORKLOADS:-w_gpu w_scroll w_scroll_alacritty w_video w_nautilus w_flea w_files_nautilus w_files_flea w_search_nautilus w_search_flea w_ttfx_foot w_ttfx_foot_fs w_ttfx_alacritty w_ttfx_alacritty_fs w_xwayland_fullscreen w_workspaces w_churn w_capture w_notify w_reload w_dpms w_idle w_glmark2}
 log "soak test for $HOURS h, compositor pid $COMP, $(comp_pkg), perf $HAVE_PERF, energy $([ -n "$(energy)" ] && echo RAPL || echo none), ${#TEMPS[@]} CPU temperature sensors, ${#FANS[@]} fan sensors"
 LAST_EVENTS=$START
 LAST_SHOT=0
 while [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ]; do
     CYCLE=$((CYCLE + 1))
     log "cycle $CYCLE"
-    for w in w_gpu w_scroll w_scroll_alacritty w_video w_nautilus w_flea w_files_nautilus w_files_flea w_search_nautilus w_search_flea w_ttfx_foot w_ttfx_foot_fs w_ttfx_alacritty w_ttfx_alacritty_fs w_xwayland_fullscreen w_workspaces w_churn w_capture w_reload w_dpms w_idle w_glmark2; do
+    quiet_notifications
+    for w in $WORKLOADS; do
         [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ] || break
         log "  $w"
         measured $w
     done
     # Chromium is heavy on this machine, every third cycle (and in the short run)
-    { [ $((CYCLE % 3)) = 0 ] || [ $MAX_CYCLES = 1 ]; } && [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ] && log "  w_chromium" && measured w_chromium
+    [ -z "${SOAK_WORKLOADS:-}" ] && { [ $((CYCLE % 3)) = 0 ] || [ $MAX_CYCLES = 1 ]; } && [ "$(date +%s)" -lt "$END" ] && [ ! -e "$OUT/stop" ] && log "  w_chromium" && measured w_chromium
     now=$(date +%s)
     check_events "$LAST_EVENTS"
     LAST_EVENTS=$now
