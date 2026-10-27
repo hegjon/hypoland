@@ -65,114 +65,114 @@ TEST_CASE(hyprctlDevicesActiveLayoutIndex) {
 }
 
 TEST_CASE(hyprctlGetprop) {
-    SPAWN_KITTY("kitty");
+    SPAWN_FOOT("foot");
 
     // animation
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty animation"), "(unset)");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty animation -j"), R"({"animation": ""})");
-    setWindowProp("class:kitty", "animation", "teststyle");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty animation"), "teststyle");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty animation -j"), R"({"animation": "teststyle"})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot animation"), "(unset)");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot animation -j"), R"({"animation": ""})");
+    setWindowProp("class:foot", "animation", "teststyle");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot animation"), "teststyle");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot animation -j"), R"({"animation": "teststyle"})");
 
     // max_size
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty max_size"), "inf inf");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty max_size -j"), R"({"max_size": [null,null]})");
-    setWindowProp("class:kitty", "max_size", "200 150");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty max_size"), "200 150");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty max_size -j"), R"({"max_size": [200,150]})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot max_size"), "inf inf");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot max_size -j"), R"({"max_size": [null,null]})");
+    setWindowProp("class:foot", "max_size", "200 150");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot max_size"), "200 150");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot max_size -j"), R"({"max_size": [200,150]})");
 
     // min_size
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty min_size"), "20 20");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty min_size -j"), R"({"min_size": [20,20]})");
-    setWindowProp("class:kitty", "min_size", "100 50");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty min_size"), "100 50");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty min_size -j"), R"({"min_size": [100,50]})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot min_size"), "20 20");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot min_size -j"), R"({"min_size": [20,20]})");
+    setWindowProp("class:foot", "min_size", "100 50");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot min_size"), "100 50");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot min_size -j"), R"({"min_size": [100,50]})");
 
     // expr-based min/max _size
-    getFromSocket("/dispatch hl.dsp.window.float({ action = 'set', window = 'class:kitty' })"); // need to set floating for tests below
-    setWindowProp("class:kitty", "max_size", "90+10 25*2");                                     // set max to the same as min above, forcing window to 100*50
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty max_size"), "100 50");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty max_size -j"), R"({"max_size": [100,50]})");
-    setWindowProp("class:kitty", "min_size", "window_w*0.5 window_h-10");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty min_size"), "50 40");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty min_size -j"), R"({"min_size": [50,40]})");
-    getFromSocket("/dispatch hl.dsp.window.float({ action = 'unset', window = 'class:kitty' })"); // go back to tiled for consistency
+    getFromSocket("/dispatch hl.dsp.window.float({ action = 'set', window = 'class:foot' })"); // need to set floating for tests below
+    setWindowProp("class:foot", "max_size", "90+10 25*2");                                     // set max to the same as min above, forcing window to 100*50
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot max_size"), "100 50");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot max_size -j"), R"({"max_size": [100,50]})");
+    setWindowProp("class:foot", "min_size", "window_w*0.5 window_h-10");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot min_size"), "50 40");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot min_size -j"), R"({"min_size": [50,40]})");
+    getFromSocket("/dispatch hl.dsp.window.float({ action = 'unset', window = 'class:foot' })"); // go back to tiled for consistency
 
     // opacity
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity"), "1");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity -j"), R"({"opacity": 1})");
-    setWindowProp("class:kitty", "opacity", "0.3");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity"), "0.3");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity -j"), R"({"opacity": 0.3})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity"), "1");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity -j"), R"({"opacity": 1})");
+    setWindowProp("class:foot", "opacity", "0.3");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity"), "0.3");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity -j"), R"({"opacity": 0.3})");
 
     // opacity_inactive
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_inactive"), "1");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_inactive -j"), R"({"opacity_inactive": 1})");
-    setWindowProp("class:kitty", "opacity_inactive", "0.5");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_inactive"), "0.5");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_inactive -j"), R"({"opacity_inactive": 0.5})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_inactive"), "1");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_inactive -j"), R"({"opacity_inactive": 1})");
+    setWindowProp("class:foot", "opacity_inactive", "0.5");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_inactive"), "0.5");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_inactive -j"), R"({"opacity_inactive": 0.5})");
 
     // opacity_fullscreen
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_fullscreen"), "1");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_fullscreen -j"), R"({"opacity_fullscreen": 1})");
-    setWindowProp("class:kitty", "opacity_fullscreen", "0.75");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_fullscreen"), "0.75");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_fullscreen -j"), R"({"opacity_fullscreen": 0.75})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_fullscreen"), "1");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_fullscreen -j"), R"({"opacity_fullscreen": 1})");
+    setWindowProp("class:foot", "opacity_fullscreen", "0.75");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_fullscreen"), "0.75");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_fullscreen -j"), R"({"opacity_fullscreen": 0.75})");
 
     // opacity_override
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_override"), "false");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_override -j"), R"({"opacity_override": false})");
-    setWindowProp("class:kitty", "opacity_override", "true");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_override"), "true");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_override -j"), R"({"opacity_override": true})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_override"), "false");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_override -j"), R"({"opacity_override": false})");
+    setWindowProp("class:foot", "opacity_override", "true");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_override"), "true");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_override -j"), R"({"opacity_override": true})");
 
     // opacity_inactive_override
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_inactive_override"), "false");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_inactive_override -j"), R"({"opacity_inactive_override": false})");
-    setWindowProp("class:kitty", "opacity_inactive_override", "true");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_inactive_override"), "true");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_inactive_override -j"), R"({"opacity_inactive_override": true})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_inactive_override"), "false");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_inactive_override -j"), R"({"opacity_inactive_override": false})");
+    setWindowProp("class:foot", "opacity_inactive_override", "true");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_inactive_override"), "true");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_inactive_override -j"), R"({"opacity_inactive_override": true})");
 
     // opacity_fullscreen_override
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_fullscreen_override"), "false");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_fullscreen_override -j"), R"({"opacity_fullscreen_override": false})");
-    setWindowProp("class:kitty", "opacity_fullscreen_override", "true");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_fullscreen_override"), "true");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty opacity_fullscreen_override -j"), R"({"opacity_fullscreen_override": true})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_fullscreen_override"), "false");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_fullscreen_override -j"), R"({"opacity_fullscreen_override": false})");
+    setWindowProp("class:foot", "opacity_fullscreen_override", "true");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_fullscreen_override"), "true");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot opacity_fullscreen_override -j"), R"({"opacity_fullscreen_override": true})");
 
     // active_border_color
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty active_border_color"), "ee33ccff ee00ff99 45deg");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty active_border_color -j"), R"({"active_border_color": "ee33ccff ee00ff99 45deg"})");
-    setWindowProp("class:kitty", "active_border_color", "rgb(abcdef)");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty active_border_color"), "ffabcdef 0deg");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty active_border_color -j"), R"({"active_border_color": "ffabcdef 0deg"})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot active_border_color"), "ee33ccff ee00ff99 45deg");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot active_border_color -j"), R"({"active_border_color": "ee33ccff ee00ff99 45deg"})");
+    setWindowProp("class:foot", "active_border_color", "rgb(abcdef)");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot active_border_color"), "ffabcdef 0deg");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot active_border_color -j"), R"({"active_border_color": "ffabcdef 0deg"})");
 
     // bool window properties
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty allows_input"), "false");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty allows_input -j"), R"({"allows_input": false})");
-    setWindowProp("class:kitty", "allows_input", "true");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty allows_input"), "true");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty allows_input -j"), R"({"allows_input": true})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot allows_input"), "false");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot allows_input -j"), R"({"allows_input": false})");
+    setWindowProp("class:foot", "allows_input", "true");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot allows_input"), "true");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot allows_input -j"), R"({"allows_input": true})");
 
     // int window properties
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty rounding"), "10");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty rounding -j"), R"({"rounding": 10})");
-    setWindowProp("class:kitty", "rounding", "4");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty rounding"), "4");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty rounding -j"), R"({"rounding": 4})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot rounding"), "10");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot rounding -j"), R"({"rounding": 10})");
+    setWindowProp("class:foot", "rounding", "4");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot rounding"), "4");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot rounding -j"), R"({"rounding": 4})");
 
     // float window properties
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty rounding_power"), "2");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty rounding_power -j"), R"({"rounding_power": 2})");
-    setWindowProp("class:kitty", "rounding_power", "1.25");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty rounding_power"), "1.25");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty rounding_power -j"), R"({"rounding_power": 1.25})");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot rounding_power"), "2");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot rounding_power -j"), R"({"rounding_power": 2})");
+    setWindowProp("class:foot", "rounding_power", "1.25");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot rounding_power"), "1.25");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot rounding_power -j"), R"({"rounding_power": 1.25})");
 
     // errors
     EXPECT(getCommandStdOut("hyprctl getprop"), "not enough args");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty"), "not enough args");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot"), "not enough args");
     EXPECT(getCommandStdOut("hyprctl getprop class:nonexistantclass animation"), "window not found");
-    EXPECT(getCommandStdOut("hyprctl getprop class:kitty nonexistantprop"), "prop not found");
+    EXPECT(getCommandStdOut("hyprctl getprop class:foot nonexistantprop"), "prop not found");
 }
 
 TEST_CASE(hyprctlSubmap) {

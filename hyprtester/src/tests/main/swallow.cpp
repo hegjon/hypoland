@@ -1,4 +1,11 @@
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <map>
+#include <sys/stat.h>
 #include <thread>
+#include <unistd.h>
+#include <hyprutils/memory/Casts.hpp>
 #include "tests.hpp"
 #include "../../shared.hpp"
 #include "../../hyprctlCompat.hpp"
@@ -7,52 +14,93 @@
 using namespace Hyprutils::OS;
 using namespace Hyprutils::Memory;
 
-static void awaitKittyPrompt(const std::string& name) {
-    // wait until we see the shell prompt, meaning it's ready for test inputs
-    for (int i = 0; i < 10; i++) {
-        std::string output = Tests::execAndGet(std::format("kitten @ --to unix:/tmp/kitty_{}.sock get-text --extent all", name));
-        if (output.rfind('$') == std::string::npos) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-            continue;
-        }
-        return;
+// The terminals of these tests run a shell that reads its commands from a FIFO, so the test starts the next
+// terminal from inside one at the moment it wants to: a swallower has to be a descendant of the swallowee's
+// process. kitty's remote control did that before, foot has none. The FIFO stays open for writing for the life
+// of the tester, so the shell never sees its end.
+static std::map<std::string, int>& shellFds() {
+    static std::map<std::string, int> fds;
+    return fds;
+}
+
+static std::string fifoPath(const std::string& name) {
+    return std::format("/tmp/hyprtester-swallow-{}.fifo", name);
+}
+
+static bool makeFifo(const std::string& name) {
+    unlink(fifoPath(name).c_str());
+    if (mkfifo(fifoPath(name).c_str(), 0600) == 0)
+        return true;
+    NLog::log("{}Error: could not create {}: {}", Colors::RED, fifoPath(name), strerror(errno));
+    return false;
+}
+
+static std::string shellCommand(const std::string& name) { // what the terminal runs
+    return std::format("exec sh < {}", fifoPath(name));
+}
+
+static bool openShell(const std::string& name) { // wait until the terminal's shell reads its FIFO
+    if (shellFds().contains(name)) {
+        close(shellFds()[name]);
+        shellFds().erase(name);
     }
-    NLog::log("{}Error: timed out waiting for kitty prompt", Colors::RED);
+
+    for (int i = 0; i < 50; i++) {
+        // ENXIO until the shell has the FIFO open for reading
+        const int FD = open(fifoPath(name).c_str(), O_WRONLY | O_NONBLOCK);
+        if (FD >= 0) {
+            shellFds()[name] = FD;
+            return true;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    NLog::log("{}Error: timed out waiting for the shell of {}", Colors::RED, name);
+    return false;
 }
 
-static CUniquePointer<CProcess> spawnRemoteControlKitty(const std::string& name) {
-    auto kittyProc =
-        Tests::spawnKitty("kitty_swallowee", {"-o", "allow_remote_control=yes", "--listen-on", std::format("unix:/tmp/kitty_{}.sock", name), "--config", "NONE", "/bin/sh"});
-    // wait a bit to ensure shell prompt is sent, we are going to read the text after it
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    if (kittyProc)
-        awaitKittyPrompt(name);
-    return kittyProc;
+static bool sendCommand(const std::string& name, const std::string& cmd) {
+    if (!shellFds().contains(name)) {
+        NLog::log("{}Error: no shell {}", Colors::RED, name);
+        return false;
+    }
+    const auto LINE = cmd + "\n";
+    return write(shellFds()[name], LINE.c_str(), LINE.size()) == sc<ssize_t>(LINE.size());
 }
 
+static bool waitForWindows(int n) {
+    Tests::waitUntilWindowsN(n);
+    return Tests::windowCount() == n;
+}
+
+// a terminal with the swallowee's class whose shell takes commands from the FIFO of this name
+static CUniquePointer<CProcess> spawnShellFoot(const std::string& name) {
+    if (!makeFifo(name))
+        return nullptr;
+    auto footProc = Tests::spawnFoot("foot_swallowee", {"sh", "-c", shellCommand(name)});
+    if (footProc && !openShell(name))
+        return nullptr;
+    return footProc;
+}
+
+// a terminal started from inside the terminal `parent`, with its own shell on a FIFO of its name
 static bool spawnSwallower(const std::string& parent, const std::string& name) {
-    auto cmd    = std::format("kitten @ --to unix:/tmp/kitty_{}.sock launch --type=background "
-                              "kitty -o allow_remote_control=yes --class kitty_{} --listen-on unix:/tmp/kitty_{}.sock --config NONE /bin/sh",
-                              parent, name, name);
-    auto result = Tests::execAndGet(cmd);
-    if (result == "error")
+    const auto COUNT_BEFORE = Tests::windowCount();
+    if (!makeFifo(name))
         return false;
-
-    // wait a bit to ensure shell prompt is sent, we are going to read the text after it
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    awaitKittyPrompt(name);
-    return true;
+    if (!sendCommand(parent, std::format("foot --app-id foot_{} sh -c '{}' </dev/null >/dev/null 2>&1 &", name, shellCommand(name))))
+        return false;
+    if (!waitForWindows(COUNT_BEFORE + 1))
+        return false;
+    return openShell(name);
 }
 
-static bool spawnKittyOsWindow(const std::string& parent) {
-    auto cmd    = std::format("kitten @ --to unix:/tmp/kitty_{}.sock launch --type=os-window", parent);
-    auto result = Tests::execAndGet(cmd);
-
-    if (result == "error")
+// a second window of the class of `parent`, started from inside it
+static bool spawnSecondWindow(const std::string& parent) {
+    const auto COUNT_BEFORE = Tests::windowCount();
+    if (!sendCommand(parent, std::format("foot --app-id foot_{} </dev/null >/dev/null 2>&1 &", parent)))
         return false;
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    return true;
+    return waitForWindows(COUNT_BEFORE + 1);
 }
 
 static int swallowingCount() {
@@ -80,10 +128,10 @@ TEST_CASE(swallow) {
     ASSERT(Tests::windowCount(), 0);
 
     OK(getFromSocket("/eval hl.config({ misc = { enable_swallow = true } })"));
-    OK(getFromSocket("/eval hl.config({ misc = { swallow_regex = '^(kitty_swallowee)$' } })"));
+    OK(getFromSocket("/eval hl.config({ misc = { swallow_regex = '^(foot_swallowee)$' } })"));
 
-    // Initial kitty window that will be swallowed
-    spawnRemoteControlKitty("swallowee");
+    // Initial foot window that will be swallowed
+    spawnShellFoot("swallowee");
 
     ASSERT(Tests::windowCount(), 1);
     ASSERT(swallowingCount(), 0);
@@ -95,7 +143,7 @@ TEST_CASE(swallow) {
     }
     NLog::log("{}Got swalloweeID: {}", Colors::YELLOW, swalloweeID);
 
-    // Spawn a child process that should swallow the initial kitty window
+    // Spawn a child process that should swallow the initial foot window
     ASSERT(spawnSwallower("swallowee", "swallower"), true);
 
     {
@@ -121,8 +169,8 @@ TEST_CASE(swallow) {
         ASSERT_CONTAINS(workspaces, "windows: 2\n");
     }
 
-    // Open new window of the swallower kitty
-    ASSERT(spawnKittyOsWindow("swallower"), true);
+    // Open new window of the swallower foot
+    ASSERT(spawnSecondWindow("swallower"), true);
 
     {
         // Verify that the initial has NOT been re-swallowed
@@ -135,10 +183,10 @@ TEST_CASE(swallow) {
     }
 
     // Re-swallow the initial window
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_swallowee' })"));
-    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: kitty_swallowee");
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_swallowee' })"));
+    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: foot_swallowee");
     OK(getFromSocket("/dispatch hl.dsp.window.toggle_swallow()"));
-    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: kitty_swallower");
+    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: foot_swallower");
 
     {
         // Verify that the initial has been re-swallowed
@@ -154,9 +202,9 @@ TEST_CASE(swallow) {
     ASSERT(Tests::windowCount(), 0);
 
     NLog::log("{}Testing chained window swallowing", Colors::GREEN);
-    OK(getFromSocket("/eval hl.config({ misc = { swallow_regex = '^(kitty_swallowee|kitty_chain_middle|kitty_chain_removed_middle)$' } })"));
+    OK(getFromSocket("/eval hl.config({ misc = { swallow_regex = '^(foot_swallowee|foot_chain_middle|foot_chain_removed_middle)$' } })"));
 
-    spawnRemoteControlKitty("chain_first");
+    spawnShellFoot("chain_first");
     const std::string chainFirstID = getActiveWindowID();
     if (chainFirstID == "error")
         FAIL_TEST("Could not get first chain window ID");
@@ -172,52 +220,52 @@ TEST_CASE(swallow) {
         ASSERT_COUNT_STRING(clients, "swallowing: 0\n", 1);
         ASSERT_COUNT_STRING(clients, std::format("swallowing: {}\n", chainFirstID), 1);
         ASSERT_COUNT_STRING(clients, std::format("swallowing: {}\n", chainMiddleID), 1);
-        ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: kitty_chain_last");
+        ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: foot_chain_last");
         ASSERT_CONTAINS(getFromSocket("/workspaces"), "windows: 1\n");
     }
 
-    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:kitty_chain_last' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:foot_chain_last' })"));
     Tests::waitUntilWindowsN(2);
     {
         const auto clients = getFromSocket("/clients");
         ASSERT_COUNT_STRING(clients, "swallowing: 0\n", 1);
         ASSERT_COUNT_STRING(clients, std::format("swallowing: {}\n", chainFirstID), 1);
-        ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: kitty_chain_middle");
+        ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: foot_chain_middle");
         ASSERT_CONTAINS(getFromSocket("/workspaces"), "windows: 1\n");
     }
 
-    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:kitty_chain_middle' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:foot_chain_middle' })"));
     Tests::waitUntilWindowsN(1);
     ASSERT_COUNT_STRING(getFromSocket("/clients"), "swallowing: 0\n", 1);
-    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: kitty_swallowee");
+    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: foot_swallowee");
     ASSERT_CONTAINS(getFromSocket("/workspaces"), "windows: 1\n");
 
     Tests::killAllWindows();
     ASSERT(Tests::windowCount(), 0);
 
-    spawnRemoteControlKitty("chain_removed_first");
+    spawnShellFoot("chain_removed_first");
     ASSERT(spawnSwallower("chain_removed_first", "chain_removed_middle"), true);
     ASSERT(spawnSwallower("chain_removed_middle", "chain_removed_last"), true);
-    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:kitty_chain_removed_middle' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:foot_chain_removed_middle' })"));
     Tests::waitUntilWindowsN(2);
     ASSERT_COUNT_STRING(getFromSocket("/clients"), "swallowing: 0\n", 2);
-    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: kitty_chain_removed_last");
+    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: foot_chain_removed_last");
     ASSERT_CONTAINS(getFromSocket("/workspaces"), "windows: 2\n");
 
     Tests::killAllWindows();
     ASSERT(Tests::windowCount(), 0);
-    OK(getFromSocket("/eval hl.config({ misc = { swallow_regex = '^(kitty_swallowee)$' } })"));
+    OK(getFromSocket("/eval hl.config({ misc = { swallow_regex = '^(foot_swallowee)$' } })"));
 
     NLog::log("{}Testing grouped window swallowing", Colors::GREEN);
     OK(getFromSocket("/eval hl.config({ group = { auto_group = true } })"));
 
-    spawnRemoteControlKitty("grouped_swallowee");
+    spawnShellFoot("grouped_swallowee");
     const std::string groupedSwalloweeID = getActiveWindowID();
     if (groupedSwalloweeID == "error")
         FAIL_TEST("Could not get grouped swallowee ID");
     OK(getFromSocket("/dispatch hl.dsp.group.toggle()"));
-    ASSERT(!!Tests::spawnKitty("swallow_group_peer"), true);
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_swallowee' })"));
+    ASSERT(!!Tests::spawnFoot("swallow_group_peer"), true);
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_swallowee' })"));
 
     {
         const auto clients = getFromSocket("/clients");
@@ -240,7 +288,7 @@ TEST_CASE(swallow) {
     OK(getFromSocket("/dispatch hl.dsp.window.toggle_swallow()"));
     {
         const auto active = getFromSocket("/activewindow");
-        ASSERT_CONTAINS(active, "class: kitty_swallowee");
+        ASSERT_CONTAINS(active, "class: foot_swallowee");
         ASSERT_CONTAINS(active, "fullscreen: 2");
         ASSERT_CONTAINS(active, "fullscreenClient: 0");
     }
@@ -250,7 +298,7 @@ TEST_CASE(swallow) {
     OK(getFromSocket("/dispatch hl.dsp.window.toggle_swallow()"));
     {
         const auto active = getFromSocket("/activewindow");
-        ASSERT_CONTAINS(active, "class: kitty_grouped_swallower");
+        ASSERT_CONTAINS(active, "class: foot_grouped_swallower");
         ASSERT_CONTAINS(active, "fullscreen: 2");
         ASSERT_CONTAINS(active, "fullscreenClient: 1");
     }
@@ -265,7 +313,7 @@ TEST_CASE(swallow) {
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen_state({ internal = 0, client = 0, action = 'set', layout_aware = false })"));
     {
         const auto active = getFromSocket("/activewindow");
-        ASSERT_CONTAINS(active, "class: kitty_grouped_swallower");
+        ASSERT_CONTAINS(active, "class: foot_grouped_swallower");
         ASSERT_CONTAINS(active, "fullscreen: 0");
         ASSERT_CONTAINS(active, "fullscreenClient: 1");
     }
@@ -277,7 +325,7 @@ TEST_CASE(swallow) {
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen_state({ internal = 2, client = 1, action = 'set', layout_aware = false })"));
 
     // Closing the source restores the swallowee and the default-handled internal fullscreen state.
-    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:kitty_grouped_swallower' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:foot_grouped_swallower' })"));
     Tests::waitUntilWindowsN(2);
     ASSERT(Tests::windowCount(), 2);
     {
@@ -287,7 +335,7 @@ TEST_CASE(swallow) {
     }
     {
         const auto active = getFromSocket("/activewindow");
-        ASSERT_CONTAINS(active, "class: kitty_swallowee");
+        ASSERT_CONTAINS(active, "class: foot_swallowee");
         ASSERT_CONTAINS(active, "fullscreen: 2");
         ASSERT_CONTAINS(active, "fullscreenClient: 0");
         ASSERT_CONTAINS(active, "fullscreenHandler: default");
@@ -297,13 +345,13 @@ TEST_CASE(swallow) {
     ASSERT(Tests::windowCount(), 0);
 
     // Destroying the revealed target restores the source to the group slot and clears both reservations.
-    spawnRemoteControlKitty("target_first_swallowee");
+    spawnShellFoot("target_first_swallowee");
     OK(getFromSocket("/dispatch hl.dsp.group.toggle()"));
-    ASSERT(!!Tests::spawnKitty("target_first_group_peer"), true);
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_swallowee' })"));
+    ASSERT(!!Tests::spawnFoot("target_first_group_peer"), true);
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_swallowee' })"));
     ASSERT(spawnSwallower("target_first_swallowee", "target_first_swallower"), true);
     OK(getFromSocket("/dispatch hl.dsp.window.toggle_swallow()"));
-    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:kitty_swallowee' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:foot_swallowee' })"));
     Tests::waitUntilWindowsN(2);
     ASSERT(Tests::windowCount(), 2);
     {
@@ -317,29 +365,29 @@ TEST_CASE(swallow) {
 
     // Layout-managed fullscreen follows the group slot and survives closing the active swallower too.
     OK(getFromSocket("/eval hl.config({ general = { layout = 'scrolling' } })"));
-    spawnRemoteControlKitty("layout_swallowee");
+    spawnShellFoot("layout_swallowee");
     OK(getFromSocket("/dispatch hl.dsp.group.toggle()"));
-    ASSERT(!!Tests::spawnKitty("layout_swallow_group_peer"), true);
-    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:kitty_swallowee' })"));
+    ASSERT(!!Tests::spawnFoot("layout_swallow_group_peer"), true);
+    OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:foot_swallowee' })"));
     ASSERT(spawnSwallower("layout_swallowee", "layout_swallower"), true);
     OK(getFromSocket("/dispatch hl.dsp.window.fullscreen_state({ internal = 2, client = 1, action = 'set', layout_aware = true })"));
 
     OK(getFromSocket("/dispatch hl.dsp.window.toggle_swallow()"));
     {
         const auto active = getFromSocket("/activewindow");
-        ASSERT_CONTAINS(active, "class: kitty_swallowee");
+        ASSERT_CONTAINS(active, "class: foot_swallowee");
         ASSERT_CONTAINS(active, "fullscreen: 2");
         ASSERT_CONTAINS(active, "fullscreenClient: 0");
         ASSERT_CONTAINS(active, "fullscreenHandler: scrolling");
     }
 
     OK(getFromSocket("/dispatch hl.dsp.window.toggle_swallow()"));
-    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:kitty_layout_swallower' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.kill({ window = 'class:foot_layout_swallower' })"));
     Tests::waitUntilWindowsN(2);
     ASSERT(Tests::windowCount(), 2);
     {
         const auto active = getFromSocket("/activewindow");
-        ASSERT_CONTAINS(active, "class: kitty_swallowee");
+        ASSERT_CONTAINS(active, "class: foot_swallowee");
         ASSERT_CONTAINS(active, "fullscreen: 2");
         ASSERT_CONTAINS(active, "fullscreenClient: 0");
         ASSERT_CONTAINS(active, "fullscreenHandler: scrolling");
@@ -350,7 +398,7 @@ TEST_CASE(swallow) {
     OK(getFromSocket("/eval hl.config({ general = { layout = 'dwindle' } })"));
 
     // A locked candidate group must remain intact and must not be swallowed.
-    spawnRemoteControlKitty("locked_swallowee");
+    spawnShellFoot("locked_swallowee");
     OK(getFromSocket("/dispatch hl.dsp.group.toggle()"));
     OK(getFromSocket("/dispatch hl.dsp.group.lock_active({ action = 'set' })"));
     ASSERT(spawnSwallower("locked_swallowee", "locked_swallower"), true);

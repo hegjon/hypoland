@@ -27,7 +27,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lua-require
 
 file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/clients/build.hpp
   "#include <string>\n"
-  "static const std::string binaryDir = \"${CMAKE_CURRENT_BINARY_DIR}\";"
+  "static const std::string binaryDir = \"${CMAKE_CURRENT_BINARY_DIR}\";\n"
+  "static const std::string clientsDir = \"${CMAKE_CURRENT_SOURCE_DIR}/clients\";"
 )
 
 ######## wayland protocols testing stuff
@@ -92,8 +93,10 @@ endfunction()
 protocolnew("staging/pointer-warp" "pointer-warp-v1" false)
 protocolnew("staging/fractional-scale" "fractional-scale-v1" false)
 protocolnew("stable/xdg-shell" "xdg-shell" false)
+protocolnew("staging/xdg-activation" "xdg-activation-v1" false)
 
 clientNew("pointer-warp" PROTOS "pointer-warp-v1" "xdg-shell")
 clientNew("surface-scale-transform" PROTOS "fractional-scale-v1" "xdg-shell")
 clientNew("child-window" PROTOS "xdg-shell")
 clientNew("fullscreen-with-monitor" PROTOS "xdg-shell")
+clientNew("activate" PROTOS "xdg-activation-v1" "xdg-shell")

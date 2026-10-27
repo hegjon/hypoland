@@ -6,9 +6,9 @@
 #include <format>
 
 TEST_CASE(tags) {
-    NLog::log("{}Spawning kittyProcA&B on ws 1", Colors::YELLOW);
-    SPAWN_KITTY("tagged");
-    SPAWN_KITTY("untagged");
+    NLog::log("{}Spawning footProcA&B on ws 1", Colors::YELLOW);
+    SPAWN_FOOT("tagged");
+    SPAWN_FOOT("untagged");
 
     NLog::log("{}Testing testTag tags", Colors::YELLOW);
 
@@ -33,7 +33,7 @@ TEST_CASE(tags) {
 }
 
 TEST_CASE(tags_fullscreen_cleanup) {
-    SPAWN_KITTY("hyprtester-16423-tags");
+    SPAWN_FOOT("hyprtester-16423-tags");
     OK(getFromSocket("/dispatch hl.dsp.focus({ window = 'class:hyprtester-16423-tags' })"));
     OK(getFromSocket("/dispatch hl.dsp.window.tag({ tag = '+hyprtester-16423-foo' })"));
     ASSERT(Tests::getAttribute(getFromSocket("/activewindow"), "tags"), "hyprtester-16423-foo");

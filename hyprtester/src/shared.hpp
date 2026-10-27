@@ -285,16 +285,16 @@ inline std::map<std::string, std::shared_ptr<CTestCase>> testCases;
             return;                                                                                                                                                                \
     } while (0)
 
-#define SPAWN_KITTY(class_, ...)                                                                                                                                                   \
+#define SPAWN_FOOT(class_, ...)                                                                                                                                                    \
     do {                                                                                                                                                                           \
-        if (!Tests::spawnKitty(class_ __VA_OPT__(, ) __VA_ARGS__))                                                                                                                 \
-            FAIL_TEST("Could not spawn kitty with class: {}", class_);                                                                                                             \
+        if (!Tests::spawnFoot(class_ __VA_OPT__(, ) __VA_ARGS__))                                                                                                                  \
+            FAIL_TEST("Could not spawn foot with class: {}", class_);                                                                                                              \
     } while (0)
 
-#define SPAWN_LAYER_KITTY(class_, ...)                                                                                                                                             \
+#define SPAWN_LAYER(namespace_, ...)                                                                                                                                               \
     do {                                                                                                                                                                           \
-        if (!Tests::spawnLayerKitty(class_ __VA_OPT__(, ) __VA_ARGS__))                                                                                                            \
-            FAIL_TEST("Could not spawn layer kitty with class: {}", class_);                                                                                                       \
+        if (!Tests::spawnLayer(namespace_ __VA_OPT__(, ) __VA_ARGS__))                                                                                                             \
+            FAIL_TEST("Could not spawn a layer with namespace: {}", namespace_);                                                                                                   \
     } while (0)
 
 #define OK(x)  ASSERT(x, "ok")

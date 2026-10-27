@@ -241,6 +241,18 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    This is NOT a faithful GM45 test (llvmpipe allows extra features); the X200 is the final judge.
 5. Quickshell (Omarchy's shell) works on the X200 with GPU rendering. Waybar is installed as a simpler
    layer-shell client for isolating problems.
+6. `make test` builds `build/` in Debug and runs hyprtester against it, nested in the desktop's session with headless
+   outputs (CI runs only the unit tests). Since 2026-10-27 the tests open foot windows, Omarchy's terminal (kitty
+   before, which Omarchy does not install): `Tests::spawnFoot()` passes the class with `--app-id`. Layer-shell bars
+   come from Quickshell, `hyprtester/clients/layer.qml` run with `qs -p`, with namespace, edge, layer and size in the
+   environment (`Tests::spawnLayer()`, kitty's panel before). The swallow tests, which start one terminal from inside
+   another, feed each terminal's shell through a FIFO in `/tmp` (kitty's remote control before). A window that
+   asks for focus is `hyprtester/clients/activate.cpp`, an xdg-activation client of the tester (foot's urgency
+   bell sends no serial, which the compositor rejects). Some tests need xeyes. One test:
+   `./build/hyprtester/hyprtester -c hyprtester/test.lua -b ./build/hypoland <names>`. Failing on the desktop for
+   other reasons (2026-10-27): surfaceScaleTransform (the contains macro reads the client twice, a race),
+   silentMoveLastTiledWindowUnfocusesWindow (expects an older `activeworkspace` format), processSpawning (any other
+   `sleep` on the machine) and windows (xeyes is not installed).
 
 ## Testing pitfalls (learned the hard way)
 

@@ -8,27 +8,29 @@
 #include <format>
 #include "../shared.hpp"
 #include "../hyprctlCompat.hpp"
+#include "clients/build.hpp"
 
 using namespace Hyprutils::OS;
 using namespace Hyprutils::Memory;
 
-CUniquePointer<CProcess> Tests::spawnKitty(const std::string& class_, const std::vector<std::string> args) {
+// foot is the terminal of the tests, Omarchy's default. --app-id sets the class the tests match windows by.
+CUniquePointer<CProcess> Tests::spawnFoot(const std::string& class_, const std::vector<std::string> args) {
     const auto               COUNT_BEFORE = windowCount();
 
     std::vector<std::string> programArgs = args;
     if (!class_.empty()) {
-        programArgs.insert(programArgs.begin(), "--class");
+        programArgs.insert(programArgs.begin(), "--app-id");
         programArgs.insert(programArgs.begin() + 1, class_);
     }
-    CUniquePointer<CProcess> kitty = makeUnique<CProcess>("kitty", programArgs);
-    kitty->addEnv("WAYLAND_DISPLAY", WLDISPLAY);
-    kitty->runAsync();
+    CUniquePointer<CProcess> foot = makeUnique<CProcess>("foot", programArgs);
+    foot->addEnv("WAYLAND_DISPLAY", WLDISPLAY);
+    foot->runAsync();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    // wait while kitty spawns
+    // wait while foot spawns
     int counter = 0;
-    while (processAlive(kitty->pid()) && windowCount() == COUNT_BEFORE) {
+    while (processAlive(foot->pid()) && windowCount() == COUNT_BEFORE) {
         counter++;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -36,31 +38,29 @@ CUniquePointer<CProcess> Tests::spawnKitty(const std::string& class_, const std:
             return nullptr;
     }
 
-    if (!processAlive(kitty->pid()))
+    if (!processAlive(foot->pid()))
         return nullptr;
 
-    return kitty;
+    return foot;
 }
 
-CUniquePointer<CProcess> Tests::spawnLayerKitty(const std::string& namespace_, const std::vector<std::string> args) {
-    std::vector<std::string> programArgs = args;
-    if (!namespace_.empty()) {
-        programArgs.insert(programArgs.begin(), "--class");
-        programArgs.insert(programArgs.begin() + 1, namespace_);
-    }
-
-    programArgs.insert(programArgs.begin(), "+kitten");
-    programArgs.insert(programArgs.begin() + 1, "panel");
-
-    CUniquePointer<CProcess> kitty = makeUnique<CProcess>("kitty", programArgs);
-    kitty->addEnv("WAYLAND_DISPLAY", WLDISPLAY);
-    kitty->runAsync();
+// A layer-shell surface along one edge of the screen, drawn by Quickshell (Omarchy's shell) from clients/layer.qml,
+// which reads its namespace, edge, layer and size from the environment. foot has no layer-shell mode.
+CUniquePointer<CProcess> Tests::spawnLayer(const std::string& namespace_, const SLayerOptions& options) {
+    CUniquePointer<CProcess> qs = makeUnique<CProcess>("qs", std::vector<std::string>{"-p", clientsDir + "/layer.qml"});
+    qs->addEnv("WAYLAND_DISPLAY", WLDISPLAY);
+    qs->addEnv("HYPRTESTER_LAYER_NAMESPACE", namespace_);
+    qs->addEnv("HYPRTESTER_LAYER_EDGE", options.edge);
+    qs->addEnv("HYPRTESTER_LAYER_LAYER", options.layer);
+    qs->addEnv("HYPRTESTER_LAYER_SIZE", std::to_string(options.size));
+    qs->addEnv("HYPRTESTER_LAYER_FOCUS", options.keyboardFocus ? "1" : "0");
+    qs->runAsync();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     // wait while the layer spawns
     int counter = 0;
-    while (processAlive(kitty->pid()) && countOccurrences(getFromSocket("/layers"), std::format("pid: {}", kitty->pid())) == 0) {
+    while (processAlive(qs->pid()) && countOccurrences(getFromSocket("/layers"), std::format("pid: {}", qs->pid())) == 0) {
         counter++;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -68,10 +68,10 @@ CUniquePointer<CProcess> Tests::spawnLayerKitty(const std::string& namespace_, c
             return nullptr;
     }
 
-    if (!processAlive(kitty->pid()))
+    if (!processAlive(qs->pid()))
         return nullptr;
 
-    return kitty;
+    return qs;
 }
 
 bool Tests::processAlive(pid_t pid) {

@@ -10,9 +10,9 @@
 using namespace Hyprutils::OS;
 using namespace Hyprutils::Memory;
 
-static bool spawnLayer(const std::string& namespace_, const std::vector<std::string>& args = {}) {
-    NLog::log("{}Spawning kitty layer {}", Colors::YELLOW, namespace_);
-    if (!Tests::spawnLayerKitty(namespace_, args)) {
+static bool spawnLayer(const std::string& namespace_, const Tests::SLayerOptions& options = {}) {
+    NLog::log("{}Spawning layer {}", Colors::YELLOW, namespace_);
+    if (!Tests::spawnLayer(namespace_, options)) {
         NLog::log("{}Error: {} layer did not spawn", Colors::RED, namespace_);
         return false;
     }
@@ -39,9 +39,9 @@ TEST_CASE(layerVisibilityOnFs) {
 
     static constexpr const char* LAYER_NAMESPACE = "bar-like-layer";
 
-    ASSERT(spawnLayer(LAYER_NAMESPACE, {"--edge=top", "--layer=top", "--lines=48px", "--focus-policy=not-allowed"}), true);
+    ASSERT(spawnLayer(LAYER_NAMESPACE, {.edge = "top", .layer = "top", .size = 48, .keyboardFocus = false}), true);
 
-    SPAWN_KITTY("cat");
+    SPAWN_FOOT("cat");
 
     {
         auto str = getLayerLine(getFromSocket("/layers"), LAYER_NAMESPACE);
