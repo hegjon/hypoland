@@ -57,6 +57,24 @@ static std::string spawnActivatingWindow(const std::string& class_ = "activating
     return tmpFilename;
 }
 
+// /activewindow once it reports this size in two reads 200 ms apart (a client's commit can change a floating
+// window's size after a resize), or the last read after 3 s
+static std::string waitForSettledActiveWindowSize(const std::string& size) {
+    const auto  WANTED = std::format("size: {}", size);
+    std::string str;
+    for (int i = 0; i < 15; ++i) {
+        str = getFromSocket("/activewindow");
+        if (str.contains(WANTED)) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            str = getFromSocket("/activewindow");
+            if (str.contains(WANTED))
+                return str;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
+    return str;
+}
+
 static std::string getWindowAddress(const std::string& winInfo) {
     auto pos  = winInfo.find("Window ");
     auto pos2 = winInfo.find(" -> ");
@@ -967,7 +985,9 @@ TEST_CASE(windows) {
     OK(getFromSocket("/dispatch hl.dsp.window.resize({ x = 600, y = 400 })"));
 
     {
-        auto str = getFromSocket("/activewindow");
+        // foot may still have a frame at its own size in flight, which the floating window takes for a moment:
+        // a window closed in that moment stores that size. Wait until it has settled at the new one.
+        auto str = waitForSettledActiveWindowSize("600,400");
         EXPECT_CONTAINS(str, "size: 600,400");
         EXPECT_CONTAINS(str, "floating: 1");
     }
@@ -977,7 +997,7 @@ TEST_CASE(windows) {
     SPAWN_FOOT("persistent_size_foot");
 
     {
-        auto str = getFromSocket("/activewindow");
+        auto str = waitForSettledActiveWindowSize("600,400");
         EXPECT_CONTAINS(str, "size: 600,400");
         EXPECT_CONTAINS(str, "floating: 1");
     }
