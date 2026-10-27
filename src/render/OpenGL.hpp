@@ -255,6 +255,7 @@ namespace Render::GL {
         bool                                      coalesceDamage() const; // whether damage is merged into few rectangles
         void                                      scheduleShaderCompilerRelease();
         void                                      scheduleHeapTrim();
+        void                                      armHeapTrim(std::chrono::milliseconds delay);
         void                                      trackBackTexture(CGLTexture* tex); // shm textures with a second texture, see CGLTexture::update()
         void                                      untrackBackTexture(CGLTexture* tex);
         WP<CShader>                               getShaderVariant(Render::ePreparedFragmentShader frag, Render::ShaderFeatureFlags features = 0);
@@ -316,6 +317,7 @@ namespace Render::GL {
         SP<CEventLoopTimer> m_shaderCompilerReleaseTimer;
         SP<CEventLoopTimer> m_heapTrimTimer;
         std::chrono::steady_clock::time_point m_lastShmUpload;
+        bool                m_trimHeapNow = false;
 
         // a texture removes itself when it is destroyed, the sweep when it gives its second texture back
         std::vector<CGLTexture*> m_backTextures;

@@ -524,7 +524,10 @@ Tools:
     for the compositor the kernel faulted and cleared it in again 4 KiB at a time: on the Chromebook (crocus, Bay
     Trail) two thirds of the compositor's time under `qt-software-scroll`, 46.5% against 18.0% for stock, which has
     huge pages. Fixed 2026-10-27 (`CCompositor::setMallocThreshold()`, `CHyprOpenGLImpl::scheduleHeapTrim()`):
-    freed memory stays up to 32 MiB and the heap is trimmed 5 s after the last upload. Chromebook
+    freed memory stays up to 32 MiB and the heap is trimmed 5 s after the last upload, or 1 s after a shm window
+    closes that was larger than any still updating (`untrackBackTexture()`; the windows left would keep the trim
+    away: on the Chromebook a closed tiled foot gave 5.7 MiB back within a second while a small floating one kept
+    printing). Chromebook
     `qt-software-scroll` 46.5% -> 15.5%, `gtk3-scroll` 54.4% -> 28.9%, `terminal-scroll` 21.9% -> 13.8%, Pss at
     the end of a run unchanged; lianli unchanged. Keeping huge pages on instead got half way (35.2% / 42.7%). The
     iris machines take the same path, not measured yet. Found with `profile.sh` (kernel `do_anonymous_page` under

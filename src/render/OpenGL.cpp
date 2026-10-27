@@ -2280,11 +2280,17 @@ void CHyprOpenGLImpl::scheduleShaderCompilerRelease() {
 // Mesa uploads a shm window into an idle tiled texture through a temporary of the window's size that it mallocs and
 // frees per upload (crocus from Gen 5, iris). glibc keeps that memory (CCompositor::setMallocThreshold()), so the
 // kernel does not fault and clear it in again for every frame; it is given back once no upload has come for a while.
-void CHyprOpenGLImpl::scheduleHeapTrim() {
-    static constexpr auto DELAY = std::chrono::seconds(5);
+static constexpr auto HEAP_TRIM_DELAY = std::chrono::seconds(5);
 
+void CHyprOpenGLImpl::scheduleHeapTrim() {
     m_lastShmUpload = std::chrono::steady_clock::now();
 
+    if (!m_heapTrimTimer || !m_heapTrimTimer->armed())
+        armHeapTrim(HEAP_TRIM_DELAY);
+}
+
+// The trim comes once the uploads have stopped for HEAP_TRIM_DELAY, or at the delay given when m_trimHeapNow is set
+void CHyprOpenGLImpl::armHeapTrim(std::chrono::milliseconds delay) {
     if (!g_pEventLoopManager)
         return;
 
@@ -2292,11 +2298,14 @@ void CHyprOpenGLImpl::scheduleHeapTrim() {
         m_heapTrimTimer = makeShared<CEventLoopTimer>(
             std::nullopt,
             [this](SP<CEventLoopTimer> self, void* data) {
-                const auto IDLE = std::chrono::steady_clock::now() - m_lastShmUpload;
-                if (IDLE < DELAY) {
-                    self->updateTimeout(std::chrono::duration_cast<std::chrono::milliseconds>(DELAY - IDLE));
-                    return;
+                if (!m_trimHeapNow) {
+                    const auto IDLE = std::chrono::steady_clock::now() - m_lastShmUpload;
+                    if (IDLE < HEAP_TRIM_DELAY) {
+                        self->updateTimeout(std::chrono::duration_cast<std::chrono::milliseconds>(HEAP_TRIM_DELAY - IDLE));
+                        return;
+                    }
                 }
+                m_trimHeapNow = false;
 #ifdef __GLIBC__
                 malloc_trim(0);
 #endif
@@ -2305,8 +2314,7 @@ void CHyprOpenGLImpl::scheduleHeapTrim() {
         g_pEventLoopManager->addTimer(m_heapTrimTimer);
     }
 
-    if (!m_heapTrimTimer->armed())
-        m_heapTrimTimer->updateTimeout(DELAY);
+    m_heapTrimTimer->updateTimeout(delay);
 }
 
 // The second texture of a shm surface is only needed while it updates. A texture that was not updated between two
@@ -2342,8 +2350,19 @@ void CHyprOpenGLImpl::trackBackTexture(CGLTexture* tex) {
         m_backTextureSweepTimer->updateTimeout(SWEEP_INTERVAL);
 }
 
+// A shm window that closes leaves the free memory of its upload temporary in the heap, and the uploads of the windows
+// left keep the idle trim away for as long as they go on. When none of them is as large, the heap is trimmed soon;
+// windows close in groups, so one trim covers them. An uploader that goes on pays one fault of its own, smaller,
+// temporary.
 void CHyprOpenGLImpl::untrackBackTexture(CGLTexture* tex) {
     std::erase(m_backTextures, tex);
+
+    const auto PIXELS = tex->m_size.x * tex->m_size.y;
+    if (std::ranges::any_of(m_backTextures, [PIXELS](CGLTexture* t) { return t->m_size.x * t->m_size.y > PIXELS; }))
+        return;
+
+    m_trimHeapNow = true;
+    armHeapTrim(std::chrono::seconds(1));
 }
 
 // Draws and texture uploads cost a call per damage rectangle. On crocus (Intel Gen4 to Haswell) a call costs far more

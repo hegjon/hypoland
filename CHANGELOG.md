@@ -30,7 +30,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   upload on Intel GPUs from Gen 5 on (`crocus`, `iris`), and the kernel faulted and cleared it in again for every
   frame: two thirds of the compositor's time under a scrolling Qt software window on a Bay Trail Chromebook, 46% of
   its CPU against 18% for stock Hyprland. Now 16%, and 29% instead of 54% for GTK 3. The heap is trimmed once no
-  upload has come for five seconds, so idle memory is as before.
+  upload has come for five seconds, and a second after a shm window closes that was larger than any still updating,
+  so idle memory is as before.
 - Uploads and draws are merged into a few strips on `r600` too, as on `crocus`: there every rectangle of a shm
   upload is a staging texture and a blit. 60 small squares moving in a Qt window took 82% of an A8-6600K's CPU
   (48% for stock Hyprland), now 26%.
