@@ -69,7 +69,9 @@ static bool         launchHyprland(Path configPath, Path binaryPath) {
 
     NLog::yellow("Launched async process");
 
-    return hyprlandProc->runAsync();
+    const bool STARTED = hyprlandProc->runAsync();
+    HYPRLAND_PID       = hyprlandProc->pid();
+    return STARTED;
 }
 
 static bool hyprlandAlive() {

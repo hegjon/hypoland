@@ -179,8 +179,10 @@ TEST_CASE(surfaceScaleTransform) {
         client.emplace();
     } catch (const std::exception& e) { FAIL_TEST("Couldn't start the surface scale/transform client: {}", e.what()); }
 
-    ASSERT_CONTAINS(client->command("report"), "root_scale=2");
-    ASSERT_CONTAINS(client->command("report"), "root_fraction=180");
+    // the scale events can arrive after the client has started (with the special workspace an earlier test left
+    // open they come in two steps), so wait for them like for the transform below
+    ASSERT_CONTAINS(waitCommandContains(*client, "report", "root_scale=2"), "root_scale=2");
+    ASSERT_CONTAINS(waitCommandContains(*client, "report", "root_fraction=180"), "root_fraction=180");
     ASSERT_CONTAINS(client->command("report"), "root_transform=0");
 
     OK(getFromSocket("/eval hl.monitor({ output = 'HEADLESS-2', mode = '1920x1080@60', position = '0x0', scale = '1.5', transform = 1 })"));

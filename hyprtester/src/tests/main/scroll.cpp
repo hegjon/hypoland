@@ -1,3 +1,5 @@
+#include <chrono>
+#include <thread>
 #include "../shared.hpp"
 #include "../../shared.hpp"
 #include "../../hyprctlCompat.hpp"
@@ -745,6 +747,8 @@ TEST_CASE(scroll_LAYOUT_HANDLED_floatingWindowHiding) {
     */
 
     OK(getFromSocket("/eval hl.config({ general = { layout = 'scrolling' } })"));
+    // the default, which scroll_LAYOUT_HANDLED_TestFsingGroupedWindows leaves switched off
+    OK(getFromSocket("/eval hl.config({ scrolling = { follow_focus = true } })"));
 
     // Spawn a window, float it
     SPAWN_FOOT("under");
@@ -777,8 +781,16 @@ TEST_CASE(scroll_LAYOUT_HANDLED_floatingWindowHiding) {
 
     // Check that tiledOne is visible - focus move is also tested here
     {
-        auto clients  = getFromSocket("/clients");
-        auto tiledOne = getClientBlock(clients, "tiledOne");
+        // the fade that hides windows under a fullscreen one is applied after the focus dispatch has answered, in the
+        // layout's next recalculation: wait for it
+        std::string clients, tiledOne;
+        for (int i = 0; i < 20; ++i) {
+            clients  = getFromSocket("/clients");
+            tiledOne = getClientBlock(clients, "tiledOne");
+            if (tiledOne.contains("visible: 1"))
+                break;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
         ASSERT_CONTAINS(tiledOne, "class: tiledOne");
         ASSERT_CONTAINS(tiledOne, "floating: 0");
 
