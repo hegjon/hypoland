@@ -66,7 +66,7 @@ if [ $INSTALL = 1 ]; then
     for p in "${PACKAGES[@]}"; do
         [ -f "$p" ] || { echo "$p is missing, build it first (leave out --no-build)"; exit 1; }
     done
-    echo "package: $(basename "${PACKAGES[0]}")"
+    echo "packages: $(basename -a "${PACKAGES[@]}" | tr '\n' ' ')"
 fi
 
 commit_pkgver() { # hosts that got the package
@@ -106,10 +106,11 @@ deploy() { # host
         for p in "${PACKAGES[@]}"; do
             cached+=("/var/cache/pacman/pkg/$(basename "$p")")
         done
-        # --ask=4 answers yes to removing what the package conflicts with (hyprland on a first install)
+        # --ask=4 answers yes to removing what the package conflicts with (hyprland on a first install). The
+        # kmsgrab built by hand into /usr/local/bin before the hypoland-bench package would come first in the path
         if scp -q "${PACKAGES[@]}" "root@$h:/var/cache/pacman/pkg/" &&
-            "${SSH[@]}" "root@$h" "pacman -U --noconfirm --ask=4 ${cached[*]}"; then
-            echo "PASS  installed $(basename "${PACKAGES[0]}")"
+            "${SSH[@]}" "root@$h" "pacman -U --noconfirm --ask=4 ${cached[*]} && rm -f /usr/local/bin/hypoland-kmsgrab"; then
+            echo "PASS  installed $(basename -a "${PACKAGES[@]}" | tr '\n' ' ')"
         else
             echo "FAIL  installing the package"
             return 1
