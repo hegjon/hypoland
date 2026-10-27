@@ -22,6 +22,7 @@ namespace Render::GL {
         SP<ITexture>            createTexture(cairo_surface_t* cairo) override;
         bool                    explicitSyncSupported() override;
         std::vector<SDRMFormat> getDRMFormats() override;
+        bool                    canRenderToFormat(DRMFormat format) override;
         std::vector<uint64_t>   getDRMFormatModifiers(DRMFormat format) override;
         SP<IFramebuffer>        createFB(const std::string& name = "") override;
         void                    disableScissor() override;

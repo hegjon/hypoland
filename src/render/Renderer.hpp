@@ -179,19 +179,21 @@ namespace Render {
         virtual SP<ITexture>         renderText(Hyprgraphics::CTextResource::STextResourceData&& data);
         SP<ITexture>                 loadAsset(const std::string& filename);
         virtual bool                 shouldUseNewBlurOptimizations(PHLLS pLayer, PHLWINDOW pWindow);
-        virtual bool                 explicitSyncSupported()                                                                                                     = 0;
-        virtual std::vector<SDRMFormat> getDRMFormats()                                                                                                          = 0;
-        virtual std::vector<uint64_t>   getDRMFormatModifiers(DRMFormat format)                                                                                  = 0;
-        virtual SP<IFramebuffer>        createFB(const std::string& name = "")                                                                                   = 0;
-        virtual void                    disableScissor()                                                                                                         = 0;
-        virtual void                    blend(bool enabled)                                                                                                      = 0;
-        virtual void                    drawShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a) = 0;
+        virtual bool                 explicitSyncSupported() = 0;
+        virtual std::vector<SDRMFormat> getDRMFormats()      = 0;
+        // whether a framebuffer can be allocated in this format (a monitor's work and blur buffers)
+        virtual bool                  canRenderToFormat(DRMFormat format)                                                                                      = 0;
+        virtual std::vector<uint64_t> getDRMFormatModifiers(DRMFormat format)                                                                                  = 0;
+        virtual SP<IFramebuffer>      createFB(const std::string& name = "")                                                                                   = 0;
+        virtual void                  disableScissor()                                                                                                         = 0;
+        virtual void                  blend(bool enabled)                                                                                                      = 0;
+        virtual void                  drawShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a) = 0;
         virtual void     drawShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2,
-                                    float lerp, float a)                                                                                                         = 0;
-        virtual void     drawGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a)                  = 0;
+                                    float lerp, float a)                                                                                                       = 0;
+        virtual void     drawGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a)                = 0;
         virtual void     drawGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2,
-                                  float lerp, float a)                                                                                                           = 0;
-        virtual void     setViewport(int x, int y, int width, int height)                                                                                        = 0;
+                                  float lerp, float a)                                                                                                         = 0;
+        virtual void     setViewport(int x, int y, int width, int height)                                                                                      = 0;
 
         bool             preBlurQueued(PHLMONITORREF pMonitor);
         void             sendFrameEventsToWorkspace(PHLMONITOR pMonitor, PHLWORKSPACE pWorkspace, const Time::steady_tp& now);

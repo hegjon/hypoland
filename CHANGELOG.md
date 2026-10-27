@@ -51,6 +51,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- A monitor rule with `bitdepth = 10` crashed the compositor on an output whose planes take a 10-bit format (Intel
+  from Broadwell on, and headless outputs): GLES 2 has no 10-bit framebuffer format, so the first frame hit an
+  incomplete framebuffer. The setting is ignored with a warning now and the monitor stays at 8 bit.
 - The compositor no longer aborts after a GPU hang in its own drawing. It asked for a GL context that is lost for good
   after a GPU reset, so every later draw failed and the next framebuffer check aborted. Mesa now replaces the hung
   context and the compositor goes on. The X200 hangs now and then while an X11 program draws fullscreen; a 10 hour

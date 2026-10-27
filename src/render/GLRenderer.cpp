@@ -18,6 +18,8 @@
 #include "pass/TexPassElement.hpp"
 #include "pass/SurfacePassElement.hpp"
 #include "../debug/log/Logger.hpp"
+#include "../helpers/GLES2Compat.hpp"
+#include <hyprgraphics/egl/Egl.hpp>
 #include "../protocols/types/ContentType.hpp"
 #include "../state/MonitorState.hpp"
 #include "OpenGL.hpp"
@@ -288,6 +290,11 @@ bool CHyprGLRenderer::explicitSyncSupported() {
 
 std::vector<SDRMFormat> CHyprGLRenderer::getDRMFormats() {
     return g_pHyprOpenGL->getDRMFormats();
+}
+
+bool CHyprGLRenderer::canRenderToFormat(DRMFormat format) {
+    const auto PFORMAT = Hyprgraphics::Egl::getPixelFormatFromDRM(format);
+    return PFORMAT && NGLES2Compat::glFormatFor(PFORMAT).usable;
 }
 
 std::vector<uint64_t> CHyprGLRenderer::getDRMFormatModifiers(DRMFormat format) {

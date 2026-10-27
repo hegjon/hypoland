@@ -19,7 +19,7 @@ namespace NGLES2Compat {
         int  internalFormat = 0;
         int  format         = 0;
         int  type           = 0;
-        bool usable         = true; // false: not expressible in GLES2
+        bool usable         = true; // false: not expressible in GLES2 (half-float and 10-bit formats)
     };
 
     // There is no texture swizzle in GLES2, so a BGRA-ordered 8888 format is
