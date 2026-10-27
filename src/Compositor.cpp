@@ -174,11 +174,17 @@ bool CCompositor::supportsDrmSyncobjTimeline() const {
 
 void CCompositor::setMallocThreshold() {
 #ifdef M_TRIM_THRESHOLD
-    // The default is 128 pages,
-    // which is very large and can lead to a lot of memory used for no reason
-    // because trimming hasn't happened
-    static const int PAGESIZE = sysconf(_SC_PAGESIZE);
-    mallopt(M_TRIM_THRESHOLD, 6 * PAGESIZE);
+    // Upstream trims the heap above 6 free pages at its top, so freed memory goes back to the kernel at once. But
+    // Mesa uploads a shm window into an idle tiled texture through a temporary of the window's size that it mallocs
+    // and frees per upload (crocus from Gen 5, iris): with that threshold, and the mmap threshold frozen at 128 KiB
+    // by this call, glibc gave the temporary back every time and the kernel faulted and cleared it in again for
+    // every frame, 4 KiB at a time since huge pages are off (main.cpp). Two thirds of the compositor's time under a
+    // scrolling shm window on a Bay Trail Chromebook. So freed memory stays, up to 32 MiB (a full-screen window at
+    // 2880x1800 is 20 MiB, and glibc allows no higher mmap threshold), and CHyprOpenGLImpl::scheduleHeapTrim()
+    // gives it back once no upload has come for a while.
+    static constexpr int KEEP = 32 << 20;
+    mallopt(M_MMAP_THRESHOLD, KEEP);
+    mallopt(M_TRIM_THRESHOLD, KEEP);
 #endif
 }
 

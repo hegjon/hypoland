@@ -9,6 +9,7 @@
 #include "../helpers/DeformableMesh.hpp"
 #include "../helpers/sync/SyncTimeline.hpp"
 #include "gl/GLES2.hpp"
+#include <chrono>
 #include <cstdint>
 #include <list>
 #include <optional>
@@ -253,6 +254,7 @@ namespace Render::GL {
         bool                                      explicitSyncSupported();
         bool                                      coalesceDamage() const; // whether damage is merged into few rectangles
         void                                      scheduleShaderCompilerRelease();
+        void                                      scheduleHeapTrim();
         void                                      trackBackTexture(CGLTexture* tex); // shm textures with a second texture, see CGLTexture::update()
         void                                      untrackBackTexture(CGLTexture* tex);
         WP<CShader>                               getShaderVariant(Render::ePreparedFragmentShader frag, Render::ShaderFeatureFlags features = 0);
@@ -312,6 +314,8 @@ namespace Render::GL {
 
       private:
         SP<CEventLoopTimer> m_shaderCompilerReleaseTimer;
+        SP<CEventLoopTimer> m_heapTrimTimer;
+        std::chrono::steady_clock::time_point m_lastShmUpload;
 
         // a texture removes itself when it is destroyed, the sweep when it gives its second texture back
         std::vector<CGLTexture*> m_backTextures;

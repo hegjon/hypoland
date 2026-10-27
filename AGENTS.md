@@ -514,7 +514,21 @@ Tools:
     55.1 fps, every other workload unchanged. Not on other drivers: on the XPS (iris, 3200x1800) merging cost
     30.2% -> 36.3%, the bounding box of the squares is the whole window, 21 MB per frame; without it the XPS is
     unchanged. The lighter `dev-log` / `dev-diff` on the XPS: 2.5% / 1.2%, the same before and after. A/B on all
-    six machines (2026-10-25, 15 workloads, 3 rounds each): only the X200 changes.
+    six machines (2026-10-25, 15 workloads, 3 rounds each): only the X200 changes. On r600 (lianli, 2026-10-27) the
+    merging is on as well: every upload rectangle is a staging texture and a blit there, and the second texture
+    doubled the rectangles, so the sprites cost 81.8% against 48.2% for stock in the A/B of 2026-10-26; merged 26.1%.
+  - Mesa uploads a shm window into an idle tiled texture through a temporary of the window's size that it mallocs
+    and frees per upload (`crocus_map_tiled_memcpy()` from Gen 5 on, `iris_map_tiled_memcpy()`; Gen 4 maps the
+    texture directly, which is why the X200 gained from the idle second texture and Bay Trail lost). Upstream's
+    `mallopt(M_TRIM_THRESHOLD, 6 pages)` gave that memory back to the kernel every time, and with huge pages off
+    for the compositor the kernel faulted and cleared it in again 4 KiB at a time: on the Chromebook (crocus, Bay
+    Trail) two thirds of the compositor's time under `qt-software-scroll`, 46.5% against 18.0% for stock, which has
+    huge pages. Fixed 2026-10-27 (`CCompositor::setMallocThreshold()`, `CHyprOpenGLImpl::scheduleHeapTrim()`):
+    freed memory stays up to 32 MiB and the heap is trimmed 5 s after the last upload. Chromebook
+    `qt-software-scroll` 46.5% -> 15.5%, `gtk3-scroll` 54.4% -> 28.9%, `terminal-scroll` 21.9% -> 13.8%, Pss at
+    the end of a run unchanged; lianli unchanged. Keeping huge pages on instead got half way (35.2% / 42.7%). The
+    iris machines take the same path, not measured yet. Found with `profile.sh` (kernel `do_anonymous_page` under
+    `CGLTexture::update`) and gdb with Arch's debuginfod for the Mesa frames.
   - The rest of it was pixman: 97% of its samples came from the `wl_surface.damage` / `damage_buffer` requests, each
     unioned into the pending region on arrival (`addSafeDamage()`), the square of the number of rectangles. They are
     collected and made into the region once at commit now (`flushDamage()`, `pixman_region32_init_rects()`), the

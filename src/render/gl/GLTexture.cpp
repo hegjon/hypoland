@@ -153,6 +153,7 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
     }
 
     m_backUsed = true;
+    g_pHyprOpenGL->scheduleHeapTrim();
 
     // the texture that was shown until now misses this update
     std::swap(m_texID, m_backTexID);

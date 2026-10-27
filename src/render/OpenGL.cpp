@@ -445,6 +445,8 @@ CHyprOpenGLImpl::CHyprOpenGLImpl() : m_drmFD(g_pCompositor->m_drmRenderNode.fd >
 CHyprOpenGLImpl::~CHyprOpenGLImpl() {
     if (m_shaderCompilerReleaseTimer && g_pEventLoopManager)
         g_pEventLoopManager->removeTimer(m_shaderCompilerReleaseTimer);
+    if (m_heapTrimTimer && g_pEventLoopManager)
+        g_pEventLoopManager->removeTimer(m_heapTrimTimer);
 
     if (m_eglDisplay && m_eglContext != EGL_NO_CONTEXT)
         eglDestroyContext(m_eglDisplay, m_eglContext);
@@ -2275,6 +2277,38 @@ void CHyprOpenGLImpl::scheduleShaderCompilerRelease() {
     m_shaderCompilerReleaseTimer->updateTimeout(DELAY);
 }
 
+// Mesa uploads a shm window into an idle tiled texture through a temporary of the window's size that it mallocs and
+// frees per upload (crocus from Gen 5, iris). glibc keeps that memory (CCompositor::setMallocThreshold()), so the
+// kernel does not fault and clear it in again for every frame; it is given back once no upload has come for a while.
+void CHyprOpenGLImpl::scheduleHeapTrim() {
+    static constexpr auto DELAY = std::chrono::seconds(5);
+
+    m_lastShmUpload = std::chrono::steady_clock::now();
+
+    if (!g_pEventLoopManager)
+        return;
+
+    if (!m_heapTrimTimer) {
+        m_heapTrimTimer = makeShared<CEventLoopTimer>(
+            std::nullopt,
+            [this](SP<CEventLoopTimer> self, void* data) {
+                const auto IDLE = std::chrono::steady_clock::now() - m_lastShmUpload;
+                if (IDLE < DELAY) {
+                    self->updateTimeout(std::chrono::duration_cast<std::chrono::milliseconds>(DELAY - IDLE));
+                    return;
+                }
+#ifdef __GLIBC__
+                malloc_trim(0);
+#endif
+            },
+            nullptr);
+        g_pEventLoopManager->addTimer(m_heapTrimTimer);
+    }
+
+    if (!m_heapTrimTimer->armed())
+        m_heapTrimTimer->updateTimeout(DELAY);
+}
+
 // The second texture of a shm surface is only needed while it updates. A texture that was not updated between two
 // sweeps, a second apart, gives it back (a full screen is 4 MiB at 1280x800, 22 MiB at 3200x1800), and its next update
 // starts a new one with the whole buffer.
@@ -2317,7 +2351,8 @@ void CHyprOpenGLImpl::untrackBackTexture(CGLTexture* tex) {
 // A faster GPU pays more for the extra pixels instead, the same window on a 3200x1800 iris took 36% instead of 30%,
 // so the rectangles stay as they are there.
 bool CHyprOpenGLImpl::coalesceDamage() const {
-    return m_eglDriverName == "crocus";
+    // r600 (2026-10-27): every upload rectangle is a staging texture and a blit, and every damage rectangle a draw
+    return m_eglDriverName == "crocus" || m_eglDriverName == "r600";
 }
 
 bool CHyprOpenGLImpl::explicitSyncSupported() {

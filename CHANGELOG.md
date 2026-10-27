@@ -25,6 +25,15 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   hid it with a frame that repainted everything the other screen buffer missed. A screen recorder, or the benchmark's
   screencopy, waiting for that frame blocked the compositor in the copy while the shell's reply waited: Omarchy's menu
   was gone 31 ms after Escape on the X200, now 6 ms, the same as stock Hyprland.
+- Freed memory stays with the compositor for a few seconds instead of going back to the kernel at once. Mesa
+  uploads a shm window into an idle texture through a temporary of the window's size that it allocates and frees per
+  upload on Intel GPUs from Gen 5 on (`crocus`, `iris`), and the kernel faulted and cleared it in again for every
+  frame: two thirds of the compositor's time under a scrolling Qt software window on a Bay Trail Chromebook, 46% of
+  its CPU against 18% for stock Hyprland. Now 16%, and 29% instead of 54% for GTK 3. The heap is trimmed once no
+  upload has come for five seconds, so idle memory is as before.
+- Uploads and draws are merged into a few strips on `r600` too, as on `crocus`: there every rectangle of a shm
+  upload is a staging texture and a blit. 60 small squares moving in a Qt window took 82% of an A8-6600K's CPU
+  (48% for stock Hyprland), now 26%.
 
 ### Added
 
