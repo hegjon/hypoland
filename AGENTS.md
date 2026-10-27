@@ -739,6 +739,16 @@ Known issues:
 - Not a bug: foot 1.28 is never blurred by default. It binds `ext-background-effect-v1` and only sets a blur
   region with `blur=yes` in its `[colors-dark]` section, and `CWindow::shouldBlur()` honours that. Live and
   precomputed blur both work on the X200 for other clients. Do not use foot to judge blur.
+- Not Hypoland's: Quickshell spins for the hour the clock repeats at the end of daylight saving time (2026-10-25,
+  03:00 to 04:00 EET for the second time). Its `SystemClock` (the bar's clock) truncates the time with
+  `QDateTime::setTime()`, which places 03:10 in the first of the two 03:10s, an hour back, so the next tick is due
+  -3570 s from now. `QTimer` warns `negative intervals aren't allowed`, fires at once and the clock schedules the
+  same again, until 04:00 (reproduced with Qt 6.12). The clock shows the right time, but one core was busy in the
+  shell for that hour on every machine with a session (anything measured then is off), and every instance wrote 0.8
+  to 3.3 million warnings, 95 to 380 MB, into its log in `/run/user/<uid>/quickshell/by-id/`. That is tmpfs, and
+  SDDM restarts do not clear it: by 2026-10-26 evening it was full on three machines, and on lianli a session came up
+  without space (`xkbcomp` and the shell's logger failed, and the benchmark's A/B lost three blocks). Remove the
+  directories of instances that no longer run (their pids are the links in `by-pid/`).
 
 ## Next steps
 
