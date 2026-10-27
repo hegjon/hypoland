@@ -7,7 +7,7 @@
 # session files and the start-hyprland command name. There is no Hyprland / hyprland command.
 
 pkgname=hypoland
-pkgver=0.1.0.r606.gc1517a245
+pkgver=0.2.0.r754.g5c89ef40f
 pkgrel=1
 pkgdesc='A fork of the Hyprland Wayland compositor for OpenGL ES 2.0 hardware'
 arch=(x86_64 aarch64)
