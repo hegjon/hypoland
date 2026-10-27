@@ -250,9 +250,11 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    asks for focus is `hyprtester/clients/activate.cpp`, an xdg-activation client of the tester (foot's urgency
    bell sends no serial, which the compositor rejects). Some tests need xeyes. One test:
    `./build/hyprtester/hyprtester -c hyprtester/test.lua -b ./build/hypoland <names>`. Failing on the desktop for
-   other reasons (2026-10-27): surfaceScaleTransform (the contains macro reads the client twice, a race),
-   silentMoveLastTiledWindowUnfocusesWindow (expects an older `activeworkspace` format), processSpawning (any other
-   `sleep` on the machine) and windows (xeyes is not installed).
+   other reasons (2026-10-27, 172 of 176 pass): surfaceScaleTransform (the contains macro reads the client twice,
+   a race), silentMoveLastTiledWindowUnfocusesWindow (expects an older `activeworkspace` format), processSpawning
+   (any other `sleep` on the machine, archci-worker has one) and scroll_LAYOUT_HANDLED_floatingWindowHiding, which
+   passes alone and fails after the other scrolling tests (the focused fullscreen window still `visible: 0` right
+   after the focus dispatch). xeyes (`xorg-xeyes`) is installed on the desktop since 2026-10-27 for the windows test.
 
 ## Testing pitfalls (learned the hard way)
 
