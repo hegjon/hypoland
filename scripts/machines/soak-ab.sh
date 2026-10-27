@@ -1,8 +1,10 @@
 #!/bin/bash
 # Soak runs that alternate the compositor, to compare Hypoland with stock Hyprland on the same machine over the same
-# hours. Run as root on the machine under test, with soak.sh in the session user's home:
+# hours. Run as root on the machine under test, installed there by the hypoland-bench package (soak.sh and
+# energy-meter.sh next to it; a soak.sh in the session user's home and /root/energy-meter.sh, the way before the
+# package, come first):
 #
-#   setsid -f nohup /root/soak-ab.sh HOURS [hypoland|hyprland|"hypoland hyprland"] >/dev/null 2>&1 </dev/null
+#   setsid -f nohup hypoland-soak-ab HOURS [hypoland|hyprland|"hypoland hyprland"] >/dev/null 2>&1 </dev/null
 #
 # Each block installs one compositor from /var/cache/pacman/pkg (the installed hypoland package, and the newest
 # hyprland and omarchy-hyprland-titlebars packages there), starts a new SDDM session, waits for it to settle and runs
@@ -22,7 +24,13 @@ USERNAME=${SOAK_USER:-a}
 BLOCK_CYCLES=${BLOCK_CYCLES:-1}
 UIDN=$(id -u "$USERNAME")
 HOMEDIR=$(getent passwd "$USERNAME" | cut -d: -f6)
-SOAK=$HOMEDIR/soak.sh
+# soak.sh and energy-meter.sh next to this script, as the hypoland-bench package installs them (/usr/lib/hypoland-bench,
+# /usr/bin/hypoland-soak-ab); a copy of soak.sh in the session user's home, as before the package, comes first
+D=$(dirname "$(readlink -f "$0")")
+SOAK=$D/soak.sh
+[ -x "$HOMEDIR/soak.sh" ] && SOAK=$HOMEDIR/soak.sh
+ENERGY_METER=$D/energy-meter.sh
+[ -x /root/energy-meter.sh ] && ENERGY_METER=/root/energy-meter.sh
 CACHE=/var/cache/pacman/pkg
 AB=$HOMEDIR/soak/ab-$(date +%Y%m%d-%H%M%S)
 END=$(($(date +%s) + HOURS * 3600))
@@ -71,8 +79,8 @@ stop_if_battery_low() {
     [ -e "$AB/stop" ] || ! battery_low || { log "battery below $MIN_BATTERY% and discharging, stopping"; touch "$AB/stop"; }
 }
 energy_meter() {
-    [ -x /root/energy-meter.sh ] && [ -r /sys/class/powercap/intel-rapl:0/energy_uj ] || return 0
-    pgrep -f "[e]nergy-meter.sh" >/dev/null || setsid -f /root/energy-meter.sh >/dev/null 2>&1 </dev/null
+    [ -x "$ENERGY_METER" ] && [ -r /sys/class/powercap/intel-rapl:0/energy_uj ] || return 0
+    pgrep -f "[e]nergy-meter.sh" >/dev/null || setsid -f "$ENERGY_METER" >/dev/null 2>&1 </dev/null
 }
 
 # ---- one compositor, a new session

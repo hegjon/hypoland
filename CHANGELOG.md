@@ -38,6 +38,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Added
 
+- `hypoland-bench`, a second package of the same build: the benchmark and the session checks (`hypoland-measure`),
+  the soak runs (`hypoland-soak`, `hypoland-soak-ab`, `hypoland-energy-meter`) and `hypoland-kmsgrab`, so the test
+  machines carry them at the version of the compositor instead of copies in home directories. The workloads'
+  clients are optional dependencies; a workload whose client is missing is skipped, as before.
+
 - Titlebars for Omarchy's floating workspaces. Omarchy draws them with a plugin of its own, which Hypoland cannot
   load, so they are built in with the plugin's interface: the `plugin:hyprbars:*` options, `hl.plugin.hyprbars.add_button()`
   and the `hyprbars:*` window rule effects. Omarchy's config turns them on as it does with the plugin: the app's name or
