@@ -122,7 +122,7 @@ TEST_CASE(silentMoveLastTiledWindowUnfocusesWindow) {
     OK(getFromSocket("/dispatch hl.dsp.window.move({ workspace = '2', follow = false })"));
 
     // Check focus before switching workspaces, which could hide stale focus.
-    EXPECT_CONTAINS(getFromSocket("/activeworkspace"), "workspace 1 ");
+    EXPECT_CONTAINS(getFromSocket("/activeworkspace"), "workspace ID 1 ");
     EXPECT(getFromSocket("/activewindow"), "Invalid");
     ASSERT(Tests::windowCount(), 1);
 

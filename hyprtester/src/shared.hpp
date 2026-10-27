@@ -8,8 +8,9 @@
 #include <string>
 
 // TODO: localize these global variables
-inline std::string HIS       = "";
-inline std::string WLDISPLAY = "";
+inline std::string HIS          = "";
+inline std::string WLDISPLAY    = "";
+inline pid_t       HYPRLAND_PID = 0; // the compositor under test
 
 // =================================
 //      TEST CASES DEFINITION

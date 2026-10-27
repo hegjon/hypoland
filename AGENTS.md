@@ -249,12 +249,17 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    another, feed each terminal's shell through a FIFO in `/tmp` (kitty's remote control before). A window that
    asks for focus is `hyprtester/clients/activate.cpp`, an xdg-activation client of the tester (foot's urgency
    bell sends no serial, which the compositor rejects). Some tests need xeyes. One test:
-   `./build/hyprtester/hyprtester -c hyprtester/test.lua -b ./build/hypoland <names>`. Failing on the desktop for
-   other reasons (2026-10-27, 172 of 176 pass): surfaceScaleTransform (the contains macro reads the client twice,
-   a race), silentMoveLastTiledWindowUnfocusesWindow (expects an older `activeworkspace` format), processSpawning
-   (any other `sleep` on the machine, archci-worker has one) and scroll_LAYOUT_HANDLED_floatingWindowHiding, which
-   passes alone and fails after the other scrolling tests (the focused fullscreen window still `visible: 0` right
-   after the focus dispatch). xeyes (`xorg-xeyes`) is installed on the desktop since 2026-10-27 for the windows test.
+   `./build/hyprtester/hyprtester -c hyprtester/test.lua -b ./build/hypoland <names>`.
+   All 176 pass on the desktop (2026-10-27; xeyes, `xorg-xeyes`, is installed there since then for the windows
+   test). Four needed fixing that day, none for foot: upstream tests that depend on the ones before
+   (surfaceScaleTransform read its client before the scale events the special workspace of
+   fullscreenWithExplicitMonitor delays; floatingWindowHiding inherited `scrolling.follow_focus = false` from
+   TestFsingGroupedWindows, and read the focused fullscreen window's visibility before the layout's next
+   recalculation applied the fullscreen fade, which only showed up late in a full run, so it waits for it now), a
+   test cherry-picked from after the base (silentMove expected the "workspace 1 (1)" text of upstream's workspace
+   refactor, 0.56.2 prints "workspace ID 1 (1)"), and processSpawning, which took any `sleep` on the machine (it
+   looks under the compositor's pid now, `HYPRLAND_PID`, and waits for `sh -c` to become `sleep`). The contains
+   macro evaluates its argument twice, so the value it prints on a failure can be newer than the one it checked.
 
 ## Testing pitfalls (learned the hard way)
 

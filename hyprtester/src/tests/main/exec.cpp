@@ -22,9 +22,14 @@ TEST_CASE(processSpawning) {
         // can't sleep for less than 1 second.
         OK(getFromSocket(std::format("/dispatch hl.dsp.exec_cmd('sleep {}')", duration)));
 
-        // Ensure that sleep is our child
-        const std::string sleepPidS = Tests::execAndGet("pgrep sleep");
-        pid_t             sleepPid;
+        // Ensure that sleep is our child: the one under the compositor under test, not any sleep on the machine.
+        // The compositor forks /bin/sh -c, which takes a moment to become sleep.
+        std::string sleepPidS;
+        for (int i = 0; i < 20 && sleepPidS.empty(); ++i) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            sleepPidS = Tests::execAndGet(std::format("pgrep -x sleep -P {}", HYPRLAND_PID));
+        }
+        pid_t sleepPid;
         try {
             sleepPid = std::stoull(sleepPidS);
         } catch (...) {
