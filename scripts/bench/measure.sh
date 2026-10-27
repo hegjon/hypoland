@@ -10,8 +10,9 @@
 #                       where the CPU time goes, energy measures the power the machine draws under each
 #                       workload and the instructions the compositor executes, check prints PASS / FAIL
 #                       lines for the session (config, a window drawn on the screen, a GPU client, an X11
-#                       client, Chromium, GTK 3 (also through Xwayland), GTK 4 and Qt Quick windows, errors
-#                       in the log) and RESULT: PASS or FAIL
+#                       client, Chromium, GTK 3 (also through Xwayland), GTK 4 and Qt Quick windows, a Tk
+#                       window with a menu and a dialog through Xwayland, errors in the log) and RESULT: PASS
+#                       or FAIL
 #   --seconds N         length of a workload (default 12)
 #   --rounds N          how often the workloads are repeated, bench only (default 1)
 #   --workloads LIST    comma separated, default: all of them (WORKLOADS below)
@@ -44,7 +45,7 @@
 
 MODE=bench SECONDS_PER_RUN=12 ROUNDS=1 SETTLE=60 PROCESS="" KEEP_GOVERNOR=0 OUT=""
 METER=auto IDLE=10 MIN_BATTERY=30 POWERCAP=/sys/class/powercap POWER_SUPPLY=/sys/class/power_supply
-WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,video-window,idle-windows,dev,resize,notifications,menu
+WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,video,nautilus,flea,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,tk-canvas,video-window,idle-windows,dev,resize,notifications,menu
 STAGES='Render::IHyprRenderer::renderMonitor|Render::GL::CHyprGLRenderer::endRender|Render::GL::CHyprGLRenderer::beginRenderInternal|Render::GL::CEGLSync::create|Render::CRenderPass::render|Render::GL::CHyprOpenGLImpl::end\(\)|Render::GL::CGLFramebuffer::internalAlloc|Render::GL::CGLTexture::update|Aquamarine::CDRMOutput::commitState|drmModeAtomicCommit|Aquamarine::getDRMProp|Aquamarine::getDRMPropBlob|__x64_sys_ioctl|clock_gettime|read_hpet|_CWlSurfaceCommit|shmem_alloc_and_add_folio|drm_clflush_sg|Render::IHyprRenderer::renderLayer|Render::IHyprRenderer::renderAllClientsForWorkspace|Monitor::CMonitor::scheduleFrame|Animation::CHyprAnimationManager::tick|CInputManager::[A-Za-z]+|CPointerManager::[A-Za-z]+'
 CLIENT_NAMES=() CLIENT_CMDS=() CLIENT_ENV=()
 

@@ -211,8 +211,8 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    config errors, removed options answering `ok`, a test window drawn in a screenshot and in the buffer the screen
    scans out (`hypoland-kmsgrab`, root and one monitor), a GPU client, an X11 client through Xwayland, Chromium,
    GTK 3 (also through Xwayland), GTK 4, Qt Quick and Qt Quick software windows (drawn, and getting at least
-   20 fps, see the toolkit workloads below), GL and shader errors in the compositor's log, crash reports and core
-   dumps. A machine without a monitor gets a headless output for the checks. It prints PASS / FAIL per machine;
+   20 fps, see the toolkit workloads below), a Tk window through Xwayland with a menu and a dialog (see `tk-canvas`
+   below), GL and shader errors in the compositor's log, crash reports and core dumps. A machine without a monitor gets a headless output for the checks. It prints PASS / FAIL per machine;
    logs and screenshots are in
    `test-results/deploy-*`. `--no-install` only checks the running session (the aarch64 Galaxy Book builds its own
    package, see `~/Work/machines/MACHINES.md`). Prefer it over improvising SSH commands. A deploy replaces the
@@ -375,7 +375,19 @@ Tools:
   `gtk4-scroll`, `qt-quick-scroll` and `qt-software-scroll` (Qt Quick's software backend, shm like Qt Widgets)
   scroll it, a full window of damage per frame; `gtk3-x11-scroll` is the GTK 3 one through Xwayland;
   `gtk4-spinner` has only a spinner moving, `qt-software-sprites` 60 small squares (many small damage regions);
-  `video-window` is the `video` clip in a tiled window instead of fullscreen. They port the useful ideas of
+  `video-window` is the `video` clip in a tiled window instead of fullscreen. `tk-canvas` (added 2026-10-27) is the
+  60 squares on a Tk canvas (`clients/toolkit-tk.py`, Python's `tkinter`): Tk draws only through X11 on Linux, with
+  core X11 requests that Xwayland carries out. The canvas redraws the bounding box of what changed into a new pixmap of
+  the X server and copies it to the window, so with the squares all over it the damage is one region of close to the
+  whole window per frame, not many small ones. An X11 client gets no frame callbacks: Tk moves the squares 60 times a
+  second by its own timer (`fps.tk-canvas`), what the screen shows is `fps.tk-canvas.screen`. On the X200 (r748, 2
+  rounds) the compositor takes 4.5%, Tk 10.4% and the session 70%: Xwayland is about 55% of a core and shows 44 of
+  the 57 frames (`gtk3-x11-scroll`: compositor 3.1%, session 57%, 28 frames on the screen). The deploy check runs the
+  same client with a menu and a dialog: the Tk window drawn, a menu (an X11 window the window manager does not manage,
+  override-redirect) posted at a fifth of the window, which has to show above it where Tk put it, compared in the
+  screenshot to the window's own box in proportion, so any scale works; and a dialog that belongs to the window
+  (`transient`, type dialog), which has to float over it and show whole. Tk is not part of Omarchy: the `tk` package
+  has to be installed (`pacman -S tk` as root), the workload and the check are skipped without it. They port the useful ideas of
   Phoronix's gtkperf, x11perf, qmlbench and video-cpu-usage (the user decided against running Phoronix tests).
   GTK 2 is not in Arch any more. `idle-windows` opens three foot windows that print for 4 s and then sit idle, and
   reports the GPU memory they add without the purgeable part (`mem.idle-windows.gpu_added_kB`). Only meaningful as

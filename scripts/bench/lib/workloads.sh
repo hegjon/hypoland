@@ -142,24 +142,28 @@ workload_workspace_switch() {
 # GTK 3 draws with cairo into shm buffers, through Xwayland as well. GTK 4 picks its renderer itself: cairo, also
 # into shm buffers, where it finds neither GLES 3 nor Vulkan (the X200). Qt Quick draws with GL, its software
 # backend into shm buffers like Qt Widgets, and only redraws what changed. Qt logs to the journal when the session
-# has one, QT_FORCE_STDERR_LOGGING brings the frame rate to the log.
-toolkit() { # gtk3|gtk4|gtk3-x11|qt-quick|qt-software, [check|spinner|sprites]
-    [ -s "$CLIENTDIR/toolkit.qml" ] || toolkit_sources
+# has one, QT_FORCE_STDERR_LOGGING brings the frame rate to the log. Tk (its own client, toolkit-tk.py) draws only
+# through X11, with core X11 requests that Xwayland carries out; its "canvas" is the 60 squares, "menu" the window of
+# the menu and dialog check.
+toolkit() { # gtk3|gtk4|gtk3-x11|qt-quick|qt-software|tk, [check|spinner|sprites|canvas|menu]
+    [ -s "$CLIENTDIR/toolkit-tk.py" ] || toolkit_sources
     case $1 in
         gtk3 | gtk4) echo "exec env GDK_BACKEND=wayland python3 -I $CLIENTDIR/toolkit.py ${1#gtk}.0 $2" ;;
         gtk3-x11) echo "exec env GDK_BACKEND=x11 DISPLAY=$(xdisplay) python3 -I $CLIENTDIR/toolkit.py 3.0 $2" ;;
         qt-quick) echo "exec env QT_QPA_PLATFORM=wayland QT_FORCE_STDERR_LOGGING=1 qml6 $CLIENTDIR/toolkit.qml -- $2" ;;
         qt-software) echo "exec env QT_QPA_PLATFORM=wayland QT_FORCE_STDERR_LOGGING=1 QT_QUICK_BACKEND=software qml6 $CLIENTDIR/toolkit.qml -- $2" ;;
+        tk) echo "exec env DISPLAY=$(xdisplay) python3 -I $CLIENTDIR/toolkit-tk.py $2" ;;
     esac
 }
 
-toolkit_name() { # gtk3|gtk4|gtk3-x11|qt-quick|qt-software
+toolkit_name() { # gtk3|gtk4|gtk3-x11|qt-quick|qt-software|tk
     case $1 in
         gtk3) echo "GTK 3" ;;
         gtk4) echo "GTK 4" ;;
         gtk3-x11) echo "GTK 3 (Xwayland)" ;;
         qt-quick) echo "Qt Quick" ;;
         qt-software) echo "Qt Quick (software)" ;;
+        tk) echo "Tk (Xwayland)" ;;
     esac
 }
 
@@ -187,7 +191,7 @@ xwayland_up() {
 }
 
 toolkit_sources() {
-    cp "$CLIENTSRC/toolkit.py" "$CLIENTSRC/toolkit.qml" "$CLIENTDIR/"
+    cp "$CLIENTSRC/toolkit.py" "$CLIENTSRC/toolkit.qml" "$CLIENTSRC/toolkit-tk.py" "$CLIENTDIR/"
 }
 
 toolkit_workload() { # workload, client, mode
@@ -225,6 +229,14 @@ workload_gtk4_spinner() { toolkit_workload gtk4-spinner gtk4 spinner; }
 
 needs_qt_software_sprites="qml6"
 workload_qt_software_sprites() { toolkit_workload qt-software-sprites qt-software sprites; }
+
+# Tk's canvas through Xwayland: 60 small squares moving over a still text. The canvas redraws the bounding box of what
+# changed, with the squares all over the window close to all of it, into a new pixmap of the X server, and copies that
+# to the window: one large damage region per frame, not the many small ones of qt-software-sprites. Core X11 drawing
+# that Xwayland does, whose CPU time is in the session's total_percent. Like gtk3-x11-scroll the frame rate is the
+# client's own pace (60 moves a second), the screen's is fps.tk-canvas.screen. Tk is not part of Omarchy (the tk package)
+needs_tk_canvas="python3 py:tkinter x11 xprop"
+workload_tk_canvas() { toolkit_workload tk-canvas tk canvas; }
 
 # Three terminals that print for 4 s and then wait: the memory idle shm windows keep in the compositor, measured while
 # they are open (mem.idle-windows.*). A window that never drew again after its last resize has no second texture to
@@ -544,9 +556,13 @@ workload_custom() { # name, command
     stop_clients
 }
 
-missing() { # programs, gi:<namespace>-<version> for a library Python reaches through GObject introspection, x11 for Xwayland, root, shell for Omarchy's
+missing() { # programs, gi:<namespace>-<version> for a library Python reaches through GObject introspection, py:<module> for a Python module, x11 for Xwayland, root, shell for Omarchy's
     local prog lib
     for prog in $1; do
+        if [[ $prog == py:* ]]; then
+            asuser python3 -I -c "import ${prog#py:}" >/dev/null 2>&1 || { echo "${prog#py:} for Python"; return; }
+            continue
+        fi
         if [ "$prog" = x11 ]; then
             [ -n "$(xdisplay)" ] || { echo "Xwayland"; return; }
             continue

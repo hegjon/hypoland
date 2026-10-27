@@ -178,6 +178,143 @@ check_toolkits() {
     done
 }
 
+# the box of a color in an image, "W H X Y" in its pixels; nothing when less than 0.1% of the image has the color
+color_box() { # file, color
+    local mask=$CLIENTDIR/mask.png
+    magick "$1" -alpha off -fuzz 12% -fill black +opaque "$2" -fill white -opaque "$2" "$mask" 2>/dev/null || return
+    [ "$(magick "$mask" -format '%[fx:mean*1000>=1]' info: 2>/dev/null)" = 1 ] || return
+    magick "$mask" -format '%@' info: 2>/dev/null | awk -F'[x+]' '{print $1, $2, $3, $4}'
+}
+
+# Whether what a client put at X11 coordinates shows there: the window's box on the screen ("W H X Y", pixels of the
+# screenshot), the window in X11 ("X Y W H", pixels of Xwayland), and the same two of the item. The ratio of the two
+# kinds of pixels is the window's width on the screen over its width in X11 (1 at scale 1 and with Xwayland's zero
+# scaling). Prints yes or no and how far off the item is (x y w h, screen pixels); within 2% of the window's width and
+# 4 pixels counts
+placed() { # window on the screen, window in X11, item on the screen, item in X11
+    awk -v a="$1" -v b="$2" -v c="$3" -v d="$4" 'BEGIN {
+        split(a, ws, " "); split(b, wx, " "); split(c, is, " "); split(d, ix, " ")
+        s = ws[1] / wx[3]; tol = ws[1] * 0.02 + 4
+        dx = is[3] - ws[3] - (ix[1] - wx[1]) * s; dy = is[4] - ws[4] - (ix[2] - wx[2]) * s
+        dw = is[1] - ix[3] * s; dh = is[2] - ix[4] * s
+        ok = dx * dx <= tol * tol && dy * dy <= tol * tol && dw * dw <= tol * tol && dh * dh <= tol * tol
+        printf "%s %+.0f %+.0f %+.0f %+.0f", ok ? "yes" : "no", dx, dy, dw, dh
+    }'
+}
+
+# waits until a client's log has a line starting with a word, and prints it
+await_line() { # log, word, seconds
+    for _ in $(seq 1 $(($3 * 5))); do
+        grep -m1 "^$2 " "$1" 2>/dev/null && return 0
+        sleep 0.2
+    done
+    return 1
+}
+
+# the window with a title as the compositor has it: "X Y W H floating" in its logical coordinates
+window_by_title() { # title
+    H clients -j | python3 -I -c 'import json, sys
+for c in json.load(sys.stdin):
+    if c["title"] == sys.argv[1]:
+        print(*c["at"], *c["size"], int(c["floating"]))
+        break' "$1" 2>/dev/null
+}
+
+# Tk draws only through X11 (clients/toolkit-tk.py, mode menu): its window through Xwayland, drawn; a menu, an X11
+# window the window manager does not manage (override-redirect), where Tk put it on the window and above it; and a
+# dialog that belongs to the window, floating and whole over it. The client takes each step when a file appears in the
+# clients' directory, and prints where it put things in X11
+check_tk() {
+    local log=$CLIENTDIR/check-tk.log before line win wbox box r dialog parent
+    if [ -n "$(missing "$needs_tk_canvas")" ]; then
+        skip "Tk window: $(missing "$needs_tk_canvas") is not installed"
+        return
+    fi
+    if ! xwayland_up; then
+        fail "Tk window: Xwayland does not answer on $(xdisplay)"
+        return
+    fi
+    rm -f "$CLIENTDIR/tk-menu" "$CLIENTDIR/tk-dialog"
+    before=$(nclients)
+    client 60 "$(toolkit tk menu) >$log 2>&1"
+    if ! mapped "$before" 15; then
+        fail "Tk window did not map: $(tail -n 1 "$log" 2>/dev/null)"
+        stop_clients
+        return
+    fi
+    sleep 1
+    check_drawn "Tk window (Xwayland) drawn" tk.png 10
+    if ! line=$(await_line "$log" window 10); then
+        fail "Tk window: it did not stay at one place ($(tail -n 1 "$log" 2>/dev/null))"
+        stop_clients
+        return
+    fi
+    win=${line#window }
+
+    touch "$CLIENTDIR/tk-menu"
+    if ! line=$(await_line "$log" menu 10); then
+        fail "Tk menu: not posted ($(tail -n 1 "$log" 2>/dev/null))"
+        stop_clients
+        return
+    fi
+    sleep 1
+    if ! screenshot tk-menu.png; then
+        fail "Tk menu: no screenshot from grim"
+    else
+        wbox=$(color_box "$OUT/tk-menu.png" "#ff00ff")
+        box=$(color_box "$OUT/tk-menu.png" "#00ff00")
+        if [ -z "$wbox" ]; then
+            fail "Tk menu: the window is not on the screen"
+        elif [ -z "$box" ]; then
+            fail "Tk menu: not on the screen (under the window, or not drawn)"
+        else
+            r=$(placed "$wbox" "$win" "$box" "${line#menu }")
+            if [ "${r%% *}" = yes ]; then pass "Tk menu above its window, where Tk put it"; else fail "Tk menu: off by ${r#* } pixels (x y w h) from where Tk put it"; fi
+        fi
+    fi
+
+    touch "$CLIENTDIR/tk-dialog"
+    line=$(await_line "$log" dialog 10)
+    for _ in $(seq 1 25); do
+        dialog=$(window_by_title "Hypoland Tk dialog")
+        [ -n "$dialog" ] && break
+        sleep 0.2
+    done
+    if [ -z "$line" ] || [ -z "$dialog" ]; then
+        fail "Tk dialog did not map ($(tail -n 1 "$log" 2>/dev/null))"
+        stop_clients
+        return
+    fi
+    # Omarchy animates a window in
+    sleep 1.5
+    parent=$(window_by_title "Hypoland Tk test")
+    # floating, with its middle on the window it belongs to
+    r=$(awk -v d="$dialog" -v p="$parent" 'BEGIN {
+        split(d, a, " "); split(p, b, " "); x = a[1] + a[3] / 2; y = a[2] + a[4] / 2
+        print (a[5] == 1 && x > b[1] && x < b[1] + b[3] && y > b[2] && y < b[2] + b[4]) ? "yes" : "no" }')
+    if [ "$r" = yes ]; then pass "Tk dialog floats over its window"; else fail "Tk dialog: at ${dialog% *}, floating ${dialog##* }, its window at ${parent% *}"; fi
+    if ! screenshot tk-dialog.png; then
+        fail "Tk dialog: no screenshot from grim"
+    else
+        wbox=$(color_box "$OUT/tk-dialog.png" "#ff00ff")
+        box=$(color_box "$OUT/tk-dialog.png" "#00ffff")
+        if [ -z "$wbox" ]; then
+            fail "Tk dialog: its window is not on the screen"
+        elif [ -z "$box" ]; then
+            fail "Tk dialog: not on the screen (under its window, or not drawn)"
+        else
+            # whole: as large on the screen as Tk made it, in the scale of its window
+            r=$(awk -v w="$wbox" -v x="$win" -v b="$box" -v d="${line#dialog }" 'BEGIN {
+                split(w, ws, " "); split(x, wx, " "); split(b, bs, " "); split(d, ds, " ")
+                s = ws[1] / wx[3]; tol = ws[1] * 0.02 + 4; dw = bs[1] - ds[1] * s; dh = bs[2] - ds[2] * s
+                printf "%s %+.0f %+.0f", dw * dw <= tol * tol && dh * dh <= tol * tol ? "yes" : "no", dw, dh }')
+            if [ "${r%% *}" = yes ]; then pass "Tk dialog shown whole"; else fail "Tk dialog: off by ${r#* } pixels (w h) from the size Tk gave it"; fi
+        fi
+    fi
+    stop_clients
+    sleep 1
+}
+
 check_clients() {
     local fps display
     if [ -n "$(missing weston-simple-egl)" ]; then
@@ -237,6 +374,7 @@ checks() {
     check_window
     check_chromium
     check_toolkits
+    check_tk
     check_clients
     info "compositor memory: $(awk '/^(Rss|Pss|Anonymous):/ {printf "%s %d MiB, ", $1, $2 / 1024}' /proc/$P/smaps_rollup | sed 's/, $//')"
     check_logs "$since"
