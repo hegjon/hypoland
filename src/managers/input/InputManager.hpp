@@ -208,6 +208,8 @@ class CInputManager {
 
     // for hiding cursor on touch
     bool m_lastInputTouch = false;
+    // a pointer move made by simulateMouseMovement(), not by the user: a layer or popup that maps or unmaps
+    bool m_simulatedMovement = false;
 
     // for hiding cursor on tablet
     bool m_lastInputTablet = false;

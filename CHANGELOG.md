@@ -20,6 +20,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   and Qt Widgets programs), after one or two seconds. Three terminals that printed something and then sat idle add
   8 instead of 16 MiB of GPU memory on a ThinkPad T550, 24 instead of 48 MiB on a Dell XPS 13 at 3200x1800 and 6
   instead of 8 MiB on the X200. On integrated graphics that is system memory.
+- A cursor that a key press hid (Omarchy sets `cursor.hide_on_key_press`) stays hidden when a layer or a popup maps
+  or unmaps. That simulates a mouse move to update the pointer focus, which showed the cursor again, and the next key
+  hid it with a frame that repainted everything the other screen buffer missed. A screen recorder, or the benchmark's
+  screencopy, waiting for that frame blocked the compositor in the copy while the shell's reply waited: Omarchy's menu
+  was gone 31 ms after Escape on the X200, now 6 ms, the same as stock Hyprland.
 
 ### Added
 

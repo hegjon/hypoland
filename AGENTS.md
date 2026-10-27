@@ -459,7 +459,15 @@ Tools:
 
   Opening the menu is the shell's work: it maps a fresh fullscreen surface and fills the card every time, which
   costs the X200 both cores for most of a second and the T550 0.6 cores, and the scrim shows after 0.26 to 0.61 s
-  there. Closing is an unmap, a frame or two.
+  there. Closing is an unmap, a frame or two. The A/B of 2026-10-26 had `close` two to three frames slower than
+  stock on the X200 and the Chromebook (31.5 against 6.3 ms), one frame on r600: the layer's map and unmap simulate
+  a mouse move (upstream #16455, cherry-picked as c56c3db8d, not in 0.56.2), that showed the cursor Omarchy hides on
+  key presses, Escape hid it again, and the frame for that repainted the whole screen (two screen buffers, the
+  benchmark's last frame was a full one) while the pending screencopy's readback blocked the compositor for about
+  24 ms and the shell's unmap waited. Fixed 2026-10-27: a simulated move keeps a cursor hidden
+  (`CInputManager::m_simulatedMovement`, checked by the renderer's mouse move listener). X200 close 5.6 ms, the rest
+  unchanged. Found with perf tracepoints (the shell's and the compositor's socket calls, the atomic commits, the
+  vblanks, `-k CLOCK_MONOTONIC`, so the driver's stamps line up) and stderr prints in the renderer.
   Screencopy takes the compositor off direct rendering while it captures, which is why the CPU time is measured in
   the load phase only. It refuses to run on a locked session, whose password field would get the keys: on
   2026-10-25 a run typed six commands into the X200's lock screen (six failed logins for `faillock`, which locks

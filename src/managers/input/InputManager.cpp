@@ -187,7 +187,10 @@ void CInputManager::onMouseWarp(IPointer::SMotionAbsoluteEvent e) {
 
 void CInputManager::simulateMouseMovement() {
     m_lastCursorPosFloored = m_lastCursorPosFloored - Vector2D(1, 1); // hack: force the mouseMoveUnified to report without making this a refocus.
+    // the cursor a key press hid stays hidden: nobody moved the mouse
+    m_simulatedMovement = true;
     mouseMoveUnified(Time::millis(Time::steadyNow()));
+    m_simulatedMovement = false;
 }
 
 void CInputManager::sendMotionEventsToFocused() {

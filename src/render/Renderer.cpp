@@ -154,6 +154,11 @@ IHyprRenderer::IHyprRenderer() {
     });
 
     static auto P2 = Event::bus()->m_events.input.mouse.move.listen([&](Vector2D pos, Event::SCallbackInfo&) {
+        // a layer or popup that maps or unmaps simulates a move to update the pointer focus; the cursor a key press
+        // hid stays hidden, and so does the frame that showing it costs (a whole one with two screen buffers)
+        if (g_pInputManager->m_simulatedMovement)
+            return;
+
         if (!m_cursorHiddenConditions.hiddenOnKeyboard && m_cursorHiddenConditions.hiddenOnTouch == g_pInputManager->m_lastInputTouch &&
             m_cursorHiddenConditions.hiddenOnTablet == g_pInputManager->m_lastInputTablet && !m_cursorHiddenConditions.hiddenOnTimeout)
             return;
