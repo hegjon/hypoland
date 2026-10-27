@@ -100,6 +100,10 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
     creates its DRM renderer for the primary GPU only when a secondary GPU needs it.
   - Framebuffers have one color attachment. The stencil is a `GL_STENCIL_INDEX8` renderbuffer per framebuffer
     (GLES2 has no packed depth/stencil texture); blur needs it for `ignore_alpha`.
+  - `bitdepth = 10` in a monitor rule is ignored with a warning (2026-10-27): GLES2 has no colour-renderable 10-bit
+    texture format, and an output whose planes took XRGB2101010 (headless outputs, Intel from Broadwell on) crashed
+    the compositor on its first frame with an incomplete framebuffer. `IHyprRenderer::canRenderToFormat()` says what
+    a framebuffer can be allocated in; `CMonitor::applyMonitorRule()` asks it before trying the 10-bit formats.
   - Removed as dead code: the color management render paths and protocol (`wp_color_manager_v1` is not
     advertised), the ICC 3D LUT, FP16 work buffers, the mirror texture (second color attachment), motion blur and
     `hyprpm/`. Their config options are still registered and ignored.

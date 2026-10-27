@@ -25,6 +25,14 @@ namespace NGLES2Compat {
             return res;
         }
 
+        // 10-bit formats (XRGB2101010 and the like): GLES2 has no colour-renderable 10-bit texture format.
+        // glTexImage2D takes the type with EXT_texture_type_2_10_10_10_REV, but a framebuffer with such a
+        // texture is incomplete, so a monitor must not be put into 10 bit (CMonitor::applyMonitorRule()).
+        if (fmt->glType == GL_UNSIGNED_INT_2_10_10_10_REV_EXT) {
+            res.usable = false;
+            return res;
+        }
+
         // GLES2 has no sized internal formats: internalformat must equal format.
         res.internalFormat = fmt->glFormat;
 

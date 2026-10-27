@@ -222,7 +222,8 @@ SP<Render::IFramebuffer> CMonitorResources::mirrorFB() {
         m_monitorMirrorFB = g_pHyprRenderer->createFB(std::format("Monitor {} mirror FB", m_monitor->m_name));
 
     if (!m_monitorMirrorFB->isAllocated()) {
-        m_monitorMirrorFB->alloc(m_size.x, m_size.y, m_monitor->m_activeMonitorRule.m_enable10bit ? DRM_FORMAT_XRGB2101010 : DRM_FORMAT_XRGB8888);
+        // the monitor's format, not the rule's wish: bitdepth 10 can be refused (CMonitor::applyMonitorRule())
+        m_monitorMirrorFB->alloc(m_size.x, m_size.y, m_drmFormat);
         m_monitorMirrorFB->setImageDescription(getMirrorTexImageDescription());
     }
 

@@ -982,7 +982,15 @@ bool CMonitor::applyMonitorRule(Config::CMonitorRule&& pMonitorRule) {
     static constexpr auto formats10bit = std::to_array<uint32_t>({DRM_FORMAT_XRGB2101010, DRM_FORMAT_XBGR2101010});
     static constexpr auto formats8bit  = std::to_array<uint32_t>({DRM_FORMAT_XRGB8888, DRM_FORMAT_XBGR8888});
 
-    const bool            set10bit = RULE->m_enable10bit && trySetFormat(formats10bit);
+    // GLES2 cannot allocate 10-bit framebuffers: an output whose planes took a 10-bit format (headless, Intel from
+    // Broadwell on) crashed the compositor with an incomplete framebuffer. bitdepth 10 is ignored with a warning.
+    bool can10bit = false;
+    for (const auto fmt : formats10bit)
+        can10bit = can10bit || (g_pHyprRenderer && g_pHyprRenderer->canRenderToFormat(fmt));
+    if (RULE->m_enable10bit && !can10bit)
+        Log::logger->log(Log::WARN, "Monitor {}: bitdepth 10 is ignored, the renderer cannot draw into 10-bit buffers with GLES2", m_name);
+
+    const bool set10bit = RULE->m_enable10bit && can10bit && trySetFormat(formats10bit);
     if (!set10bit)
         trySetFormat(formats8bit);
 

@@ -296,6 +296,9 @@ class CDMABUFTestRenderer : public Render::IHyprRenderer {
     std::vector<SDRMFormat> getDRMFormats() override {
         return {};
     }
+    bool canRenderToFormat(DRMFormat format) override {
+        return true;
+    }
     eType type() override {
         return RT_GL;
     }
