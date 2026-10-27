@@ -19,8 +19,9 @@ mapped() { # windows before, seconds
 }
 
 # the share of the test color in an image, in percent. A screenshot can have alpha (Chromium's buffers do), which
-# would count in the mean
-magenta() { magick "$1" -alpha off -fuzz 12% -fill white -opaque '#ff00ff' -fill black +opaque white -format '%[fx:int(mean*100)]' info: 2>/dev/null || echo 0; }
+# would count in the mean. Everything else turns black before the color turns white, or white pixels (the bar's
+# text) would count as the color
+magenta() { magick "$1" -alpha off -fuzz 12% -fill black +opaque '#ff00ff' -fill white -opaque '#ff00ff' -format '%[fx:int(mean*100)]' info: 2>/dev/null || echo 0; }
 # the frame rate a client printed: weston-simple-egl "... frames in 5 seconds: 60.0 fps", glxgears "= 59.9 FPS"
 fps_of() { awk '/frames in/ {s += $(NF - 1); c++} END {if (c) printf "%.0f", s / c; else print 0}' "$1" 2>/dev/null; }
 
