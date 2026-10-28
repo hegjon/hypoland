@@ -12,7 +12,7 @@
 
 pkgbase=hypoland
 pkgname=(hypoland hypoland-bench)
-pkgver=0.2.0.r775.ga7181e801
+pkgver=0.2.0.r779.g71c84ac4e
 pkgrel=1
 pkgdesc='A fork of the Hyprland Wayland compositor for OpenGL ES 2.0 hardware'
 arch=(x86_64 aarch64)
