@@ -140,6 +140,8 @@ package_hypoland-bench() {
   optdepends=(
     'foot: terminal workloads, the test window of the checks, the developer screen'
     'alacritty: alacritty-scroll, resize and the developer screen'
+    'ghostty: ghostty-scroll'
+    'kitty: kitty-scroll'
     'neovim: the developer screen'
     'git: the developer screen'
     'weston: the GPU client (weston-simple-egl)'

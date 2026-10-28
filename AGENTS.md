@@ -392,7 +392,12 @@ Tools:
   `gtk3-x11-scroll` the session is about 30% on the T550 against 5.5% compositor and 4.3% client: the X11 path's work
   is in Xwayland. Clients that run as fast as they can make their sum a measure of throughput, not of cost:
   `terminal-scroll`'s `ls` loop (133% clients on the T550) and `alacritty-scroll` print more when the terminal takes
-  their output faster. Before 2026-10-26 the clients ran in root's ssh session (`user-0.slice`), which the CPU
+  their output faster. `ghostty-scroll` (added 2026-10-28, asked for by the user) is the same loop in Ghostty, a GTK 4
+  window drawn by Ghostty's own OpenGL renderer: it needs OpenGL 3.3, so it is skipped on the X200, and the `ghostty`
+  package elsewhere (Omarchy's repository; installed on the T550, the XPS, lianli, the T460s, the Chromebook, the
+  Galaxy Book and the Mac mini that day). `kitty-scroll` is the same in kitty (OpenGL 3.3 as well, the `kitty` package,
+  installed on the same seven machines the same day; kitty takes the command as arguments, no `-e`). On the T550 the
+  compositor costs the same with all three GL terminals (5.0%); Ghostty shows 45 frames a second against 60. Before 2026-10-26 the clients ran in root's ssh session (`user-0.slice`), which the CPU
   controller weighs against the user's slice; now they share the user's slice with the compositor, as programs
   started from the desktop do in `app.slice`. `systemd-run` expands `$` in the command it runs like `ExecStart=`
   does, so it runs with `--expand-environment=no` (a client's `$$` came out as `$` and nothing stopped them).

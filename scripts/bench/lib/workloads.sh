@@ -42,6 +42,22 @@ workload_alacritty_scroll() { # the same scrolling in a terminal that draws with
     stop_clients
 }
 
+needs_ghostty_scroll="ghostty"
+workload_ghostty_scroll() { # the same in Ghostty: a GTK 4 window with Ghostty's own OpenGL renderer (needs OpenGL 3.3, not the X200)
+    client $((SECONDS_PER_RUN + 10)) "exec ghostty -e sh -c 'while true; do ls -la /usr/lib; done'"
+    sleep 4
+    rec ghostty-scroll
+    stop_clients
+}
+
+needs_kitty_scroll="kitty"
+workload_kitty_scroll() { # the same in kitty, which draws with OpenGL 3.3 as well (not the X200); it takes the command as arguments
+    client $((SECONDS_PER_RUN + 10)) "exec kitty sh -c 'while true; do ls -la /usr/lib; done'"
+    sleep 4
+    rec kitty-scroll
+    stop_clients
+}
+
 # A 20 s 720p H.264 clip, encoded once into the user's cache. Decoded in software unless the user's mpv config
 # says otherwise, as Omarchy's does not.
 VIDEO=$USERHOME/.cache/hypoland-bench/video.mp4
