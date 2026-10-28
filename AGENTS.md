@@ -841,9 +841,18 @@ startup and CPU time with animations. Measured on the X200 with the SDDM session
   monitor, a requested tick still comes after 1 ms. Same page flips, less than half the CPU.
 - Clock reads cost real time, they are not sampling skid as a note of 2026-09-27 assumed: with the HPET
   clocksource every read is a system call and an MMIO read, about 1.2% of the compositor's time per read and tick
-  while animating. The tick reads the clock once now. `Time::fromTimespec()` still makes four reads per presented
-  frame (about 1% of the GPU client's compositor time) because it does not trust `steady_clock` to be
-  `CLOCK_MONOTONIC`, and Mesa's `__crocus_bo_unreference` reads it for every buffer it caches (0.7%).
+  while animating. The tick reads the clock once now. `Time::fromTimespec()` made four reads per presented frame because it did not trust `steady_clock` to be
+  `CLOCK_MONOTONIC`, and the frame scheduler, the animation tick and the animation timer's re-arm one each: eight
+  reads per frame with a GPU client (489 a second at 60 fps, counted with `perf stat -e
+  syscalls:sys_enter_clock_gettime -p <pid>`, the callers from `perf record -g` of the same event; with the HPET
+  clocksource the vDSO cannot read the clock, so each read is a system call). Since 2026-10-28 it is one:
+  `fromTimespec()` converts directly after checking once that the two clocks agree, and
+  `CMonitorFrameScheduler::onFrame()` reads the clock once for the presentation timer, `renderMonitor()`, the
+  animation tick and the timer re-arm. 188 reads a second then; the two per frame left are Mesa's
+  `__crocus_bo_unreference`, which reads it for every buffer it caches. Effect on the X200 (three alternating fresh
+  sessions, r767 against r768): the GPU client 2.88 -> 2.82% compositor CPU, video 2.61 -> 2.56, workspace switching
+  3.77 -> 3.73, every new round below every old one; `dev` and the terminal within their spread. About 2% of the
+  compositor's time in those workloads, 0.05 points of CPU.
 - Startup, instructions of the main thread: keyboards with the same rules share one keymap (-5%), the "screen
   share denied" text is rendered on first use so pango and fontconfig (about 130 ms of CPU and a thread) are not
   loaded at all (-3%), XCursor shapes are loaded on first use (-6%).

@@ -1805,7 +1805,7 @@ void IHyprRenderer::renderMirrored() {
     m_renderPass.add(makeUnique<CTexPassElement>(std::move(data)));
 }
 
-void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit) {
+void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit, std::optional<Time::steady_tp> now) {
     if (!pMonitor)
         return;
     static std::chrono::high_resolution_clock::time_point renderStart        = std::chrono::high_resolution_clock::now();
@@ -1840,8 +1840,10 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit) {
 
     Event::bus()->m_events.render.preChecks.emit(pMonitor);
 
+    const auto NOW = now ? *now : Time::steadyNow();
+
     if (Animation::mgr())
-        Animation::mgr()->frameTick();
+        Animation::mgr()->frameTick(NOW);
 
     {
         static bool once = true;
@@ -1882,8 +1884,6 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit) {
     }
 
     Event::bus()->m_events.render.pre.emit(pMonitor);
-
-    const auto NOW = Time::steadyNow();
 
     if (!shouldRenderMonitor(pMonitor) && damageBlinkCleanup == 0)
         return;

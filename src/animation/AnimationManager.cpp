@@ -28,7 +28,7 @@ UP<CHyprAnimationManager>& Animation::mgr() {
 
 static int wlTick(SP<CEventLoopTimer> self, void* data) {
     if (mgr())
-        mgr()->frameTick();
+        mgr()->frameTick(Time::steadyNow());
 
     return 0;
 }
@@ -336,7 +336,7 @@ void CHyprAnimationManager::tick(const Time::steady_tp& now) {
     tickDone();
 }
 
-void CHyprAnimationManager::frameTick() {
+void CHyprAnimationManager::frameTick(const Time::steady_tp& now) {
     onTicked();
 
     const bool MANUALTICK = m_manualTickRequested;
@@ -348,20 +348,19 @@ void CHyprAnimationManager::frameTick() {
     if UNLIKELY (!g_pCompositor->m_sessionActive || !std::ranges::any_of(State::monitorState()->monitors(), [](const auto& mon) { return mon->m_enabled && mon->m_output; }))
         return;
 
-    // One clock read for the whole tick. Without a usable TSC (the X200's Core 2) every read is a system call and an
-    // HPET read, and ticks come at the refresh rate while something animates.
-    const auto NOW = Time::steadyNow();
-    if (!m_lastTickValid || std::chrono::duration<float, std::milli>(NOW - m_lastTick).count() >= 1.0f) {
-        m_lastTick      = NOW;
+    // One clock read for the whole tick, the caller's. Without a usable TSC (the X200's Core 2) every read is a system
+    // call and an HPET read, and ticks come at the refresh rate while something animates.
+    if (!m_lastTickValid || std::chrono::duration<float, std::milli>(now - m_lastTick).count() >= 1.0f) {
+        m_lastTick      = now;
         m_lastTickValid = true;
 
-        tick(NOW);
+        tick(now);
         Event::bus()->m_events.tick.emit();
     } else if (MANUALTICK)
         m_manualTickRequested = true;
 
     if (m_manualTickRequested || shouldTickForNext())
-        scheduleTick();
+        scheduleTick(now);
 }
 
 void CHyprAnimationManager::requestTick() {
@@ -370,6 +369,10 @@ void CHyprAnimationManager::requestTick() {
 }
 
 void CHyprAnimationManager::scheduleTick() {
+    scheduleTick(std::nullopt);
+}
+
+void CHyprAnimationManager::scheduleTick(std::optional<Time::steady_tp> now) {
     // a requested tick (an animation starts) comes soon, even when a slower one is scheduled
     if (m_tickScheduled && !m_manualTickRequested)
         return;
@@ -391,7 +394,8 @@ void CHyprAnimationManager::scheduleTick() {
     // It was 1 ms, which ran the whole tick with its damage up to 16 times per frame at 60 Hz.
     const auto MOSTHZ = g_pHyprRenderer ? g_pHyprRenderer->m_mostHzMonitor.lock() : nullptr;
     const auto HZ     = MOSTHZ && MOSTHZ->m_refreshRate > 1.F ? MOSTHZ->m_refreshRate : 60.F;
-    m_animationTimer->updateTimeout(std::chrono::microseconds(std::clamp(sc<int64_t>(1000000.F / HZ), sc<int64_t>(1000), sc<int64_t>(1000000))));
+    m_animationTimer->updateTimeout(std::chrono::microseconds(std::clamp(sc<int64_t>(1000000.F / HZ), sc<int64_t>(1000), sc<int64_t>(1000000))),
+                                    now ? *now : Time::steadyNow());
 }
 
 void CHyprAnimationManager::onTicked() {

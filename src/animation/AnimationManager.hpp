@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <hyprutils/animation/AnimationManager.hpp>
 #include <hyprutils/animation/AnimatedVariable.hpp>
 
@@ -17,9 +18,11 @@ namespace Animation {
         CHyprAnimationManager();
 
         void         tick(const Time::steady_tp& now);
-        void         frameTick();
+        // now is the frame's clock read, shared with the render and the timer re-arm
+        void         frameTick(const Time::steady_tp& now);
         void         requestTick();
         virtual void scheduleTick();
+        void         scheduleTick(std::optional<Time::steady_tp> now);
         virtual void onTicked();
 
         // Reset tick state after session changes (suspend/wake, lock/unlock)

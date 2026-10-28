@@ -18,7 +18,17 @@ void CEventLoopTimer::updateTimeout(std::optional<Time::steady_dur> timeout) {
         return;
     }
 
-    m_expires = Time::steadyNow() + *timeout;
+    updateTimeout(timeout, Time::steadyNow());
+}
+
+void CEventLoopTimer::updateTimeout(std::optional<Time::steady_dur> timeout, const Time::steady_tp& now) {
+    if (!timeout.has_value()) {
+        m_expires.reset();
+        g_pEventLoopManager->scheduleRecalc();
+        return;
+    }
+
+    m_expires = now + *timeout;
 
     g_pEventLoopManager->scheduleRecalc();
 }

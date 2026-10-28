@@ -100,9 +100,10 @@ void CMonitorFrameScheduler::onFrame() {
     }
 
     if (!newSchedulingEnabled()) {
-        PMONITOR->m_lastPresentationTimer.reset();
-
-        g_pHyprRenderer->renderMonitor(PMONITOR);
+        // one clock read for the frame: the timer, the animation tick and the render share it
+        const auto NOW = Time::steadyNow();
+        PMONITOR->m_lastPresentationTimer.reset(NOW);
+        g_pHyprRenderer->renderMonitor(PMONITOR, true, NOW);
         return;
     }
 

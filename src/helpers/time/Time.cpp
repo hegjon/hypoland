@@ -67,7 +67,25 @@ s_ns Time::secNsec(const system_tp& tp) {
 // but, since we can't *ever* be sure, we have to guess.
 // In general, this may shift the time around by a couple hundred ns. Doesn't matter, realistically.
 
+// libstdc++ on Linux reads steady_clock with clock_gettime(CLOCK_MONOTONIC), so a CLOCK_MONOTONIC timespec is a
+// steady_clock time point as it is. Checked once: the two read within a millisecond of each other. Where that does not
+// hold the conversions below guess the offset with four clock reads each, which are system calls on a machine without
+// a usable TSC (the X200 reads the HPET), four per presented frame.
+static bool steadyIsMonotonic() {
+    static const bool SAME = [] {
+        timespec mono{};
+        clock_gettime(CLOCK_MONOTONIC, &mono);
+        const auto NOW  = Time::steadyNow();
+        const auto MONO = Time::steady_tp(chr::seconds(mono.tv_sec)) + chr::nanoseconds(mono.tv_nsec);
+        return chr::abs(NOW - MONO) < chr::milliseconds(1);
+    }();
+    return SAME;
+}
+
 Time::steady_tp Time::fromTimespec(const timespec* ts) {
+    if (steadyIsMonotonic())
+        return Time::steady_tp(chr::seconds(ts->tv_sec)) + chr::nanoseconds(ts->tv_nsec);
+
     timespec mono{}, real{};
     clock_gettime(CLOCK_MONOTONIC, &mono);
     clock_gettime(CLOCK_REALTIME, &real);
@@ -103,6 +121,11 @@ Time::steady_tp Time::fromTimespec(const timespec* ts) {
 }
 
 struct timespec Time::toTimespec(const steady_tp& tp) {
+    if (steadyIsMonotonic()) {
+        const auto [S, NS] = secNsec(tp);
+        return timespec{.tv_sec = S, .tv_nsec = NS};
+    }
+
     timespec mono{}, real{};
     clock_gettime(CLOCK_MONOTONIC, &mono);
     clock_gettime(CLOCK_REALTIME, &real);

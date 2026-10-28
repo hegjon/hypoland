@@ -35,6 +35,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - Uploads and draws are merged into a few strips on `r600` too, as on `crocus`: there every rectangle of a shm
   upload is a staging texture and a blit. 60 small squares moving in a Qt window took 82% of an A8-6600K's CPU
   (48% for stock Hyprland), now 26%.
+- The compositor reads the clock once per frame instead of eight times: the presentation time is converted without
+  reading it, and the frame scheduler shares its one read with the render, the animation tick and the timers. On
+  the X200, where every read is a system call (HPET clocksource), a GPU client at 60 fps costs 2.82% instead of
+  2.88% of the CPU, video and workspace switching 2% less too.
 
 ### Added
 
