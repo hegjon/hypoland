@@ -4,6 +4,7 @@
 #include "../../Compositor.hpp"
 #include "../../helpers/Format.hpp"
 #include "../../helpers/math/Math.hpp"
+#include "../../helpers/env/Env.hpp"
 #include "../Texture.hpp"
 #include <cstring>
 #include <utility>
@@ -132,7 +133,15 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
 
     const CRegion DAMAGE = damage.copy().intersect(CBox{{}, m_size});
 
-    if (!m_backTexID) {
+    // HYPOLAND_SINGLE_TEXTURE=1 updates the shown texture in place, as upstream does, for comparing the two on a machine
+    static const bool SINGLE = Env::envEnabled("HYPOLAND_SINGLE_TEXTURE");
+
+    if (SINGLE) {
+        static constexpr size_t MAX_UPLOAD_RECTS = 8;
+        bind();
+        uploadRegion(GLFMT.format, GLFMT.type, pixels, g_pHyprOpenGL->coalesceDamage() ? Math::coalesceRegion(DAMAGE, MAX_UPLOAD_RECTS) : DAMAGE);
+        g_pHyprOpenGL->scheduleHeapTrim();
+    } else if (!m_backTexID) {
         // first update: the second texture gets the whole buffer
         GLCALL(glGenTextures(1, &m_backTexID));
         GLCALL(glBindTexture(m_target, m_backTexID));
@@ -152,13 +161,15 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
         uploadRegion(GLFMT.format, GLFMT.type, pixels, g_pHyprOpenGL->coalesceDamage() ? Math::coalesceRegion(REGION, MAX_UPLOAD_RECTS) : REGION);
     }
 
-    m_backUsed = true;
-    g_pHyprOpenGL->scheduleHeapTrim();
+    if (!SINGLE) {
+        m_backUsed = true;
+        g_pHyprOpenGL->scheduleHeapTrim();
 
-    // the texture that was shown until now misses this update
-    std::swap(m_texID, m_backTexID);
-    std::swap(m_cachedStates, m_backCachedStates);
-    m_backStaleDamage = DAMAGE;
+        // the texture that was shown until now misses this update
+        std::swap(m_texID, m_backTexID);
+        std::swap(m_cachedStates, m_backCachedStates);
+        m_backStaleDamage = DAMAGE;
+    }
 
     if (alignmentChanged)
         GLCALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 4));
