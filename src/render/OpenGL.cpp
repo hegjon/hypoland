@@ -2370,6 +2370,11 @@ void CHyprOpenGLImpl::untrackBackTexture(CGLTexture* tex) {
 // A faster GPU pays more for the extra pixels instead, the same window on a 3200x1800 iris took 36% instead of 30%,
 // so the rectangles stay as they are there.
 bool CHyprOpenGLImpl::coalesceDamage() const {
+    // HYPOLAND_NO_COALESCE=1 keeps the rectangles as the client sent them, for comparing the two on a machine
+    static const bool DISABLED = Env::envEnabled("HYPOLAND_NO_COALESCE");
+    if (DISABLED)
+        return false;
+
     // r600 (2026-10-27): every upload rectangle is a staging texture and a blit, and every damage rectangle a draw
     return m_eglDriverName == "crocus" || m_eglDriverName == "r600";
 }
