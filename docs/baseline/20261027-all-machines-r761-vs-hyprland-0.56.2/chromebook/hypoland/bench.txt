@@ -1,0 +1,1 @@
+machine: chromebook, 7.2.8-10-omarchy, 2 cores, 3815 MiB

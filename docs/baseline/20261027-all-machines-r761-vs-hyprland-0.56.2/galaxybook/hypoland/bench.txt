@@ -1,0 +1,1 @@
+machine: galaxybook, 7.3.0-3-omarchy, 12 cores, 15419 MiB

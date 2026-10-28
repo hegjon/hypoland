@@ -33,6 +33,10 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   A Lenovo ThinkPad T460s (Core i7-6600U, Intel HD 520 with Mesa `iris`, the only Skylake: its scanout buffers are
   render compressed, 20 GB RAM, 1920x1080 at scale 1.5, the only fractional scale) joined on 2026-10-26 as `t460s`
   (also as `root@t460s`) and runs the Hypoland package since then.
+  An Apple Mac mini Late 2014 (Core i5-4260U, Intel HD Graphics 5000, Haswell GT3 with Mesa `crocus` like the X200
+  and the Chromebook, 4 GB RAM, no battery, RAPL, 1920x1200 over HDMI on the desktop's monitor) joined on 2026-10-27 as
+  `macmini-intel` (also as `root@macmini-intel`) and runs the Hypoland package since 16:36 that day, with
+  `hypoland-bench` from the branch `bench-package`.
   Their hardware, addresses, logins and update steps are in `~/Work/machines/MACHINES.md`, a private file in no git
   repository, shared with the other projects that use the machines (it was `MACHINES.md` in this repository until
   2026-10-27, which is a link to it now, in `.git/info/exclude`). Read it before working on a machine, and keep machine
@@ -140,6 +144,18 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   GLES 3 override, omacom/omarchy#14764) and `docs/baseline/t550-vs-stock-hyprland-0.56.2/`. Hypoland uses
   25-64% less compositor CPU under load on the X200, 10-55% on the T550, and about 60% less Pss on both, with
   the same frames.
+- The regression baseline is `docs/baseline/20261027-all-machines-r761-vs-hyprland-0.56.2/` (the night of 2026-10-27
+  to 28): every workload on all eight machines, Hypoland r761 (the compositor code of master 233be977b) against
+  Hyprland 0.56.2-4, 37 to 41 fresh sessions of each per machine in alternating blocks (`abnight.sh` there, the runner
+  the A/B nights use), medians with min and max per machine and compositor, every block's values, the table and the
+  scripts. Its README says how to compare a build against it. Hypoland's compositor costs less in nearly every
+  workload (workspace switching about half, shm windows a half to a third where the uploads were the limit), 43 to
+  45 MiB Pss against 112 to 117 (145 on the Galaxy Book), shows a focus change, a resize step or a menu close one to
+  two frames earlier on iris and freedreno, and on the X200 shows 42 to 60 fps where Hyprland 0.56.2 shows 30. Behind Hyprland 0.56.2:
+  `qt-software-sprites` on the Mac mini (20.3% -> 32.5%, Haswell `crocus`, with the damage merging; not
+  investigated) and the Galaxy Book (21.5 -> 25.6), the Galaxy Book's workspace switch and menu by about a point,
+  its GTK 4 client (Vulkan) at 3.5 to 20% against a steady 3.5% with the compositor the same, the X200's `resize` at
+  twice the frames, and a focus change 0.3 to 1 ms slower on the crocus machines.
 
 ## Hard constraints
 
@@ -559,7 +575,11 @@ Tools:
     printing). Chromebook
     `qt-software-scroll` 46.5% -> 15.5%, `gtk3-scroll` 54.4% -> 28.9%, `terminal-scroll` 21.9% -> 13.8%, Pss at
     the end of a run unchanged; lianli unchanged. Keeping huge pages on instead got half way (35.2% / 42.7%). The
-    iris machines take the same path, not measured yet. Found with `profile.sh` (kernel `do_anonymous_page` under
+    iris machines take the same path but do not pay for it: on the T550 (alternating r725 and master twice, fresh
+    sessions, 2026-10-27) `gtk3-scroll`, `qt-software-scroll` and `qt-software-sprites` are 19.7% / 13.7% / 13.1%
+    with both, the clients the same, idle Pss 44.4 against 44.8 MiB (heap 0.3 MiB more). A run right after a deploy
+    check showed the clients 3 to 6 points higher: the check's leftovers in that session, not the build. Found with
+    `profile.sh` (kernel `do_anonymous_page` under
     `CGLTexture::update`) and gdb with Arch's debuginfod for the Mesa frames.
   - The rest of it was pixman: 97% of its samples came from the `wl_surface.damage` / `damage_buffer` requests, each
     unioned into the pending region on arrival (`addSafeDamage()`), the square of the number of rectangles. They are
