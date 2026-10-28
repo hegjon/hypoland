@@ -613,6 +613,26 @@ Tools:
     check showed the clients 3 to 6 points higher: the check's leftovers in that session, not the build. Found with
     `profile.sh` (kernel `do_anonymous_page` under
     `CGLTexture::update`) and gdb with Arch's debuginfod for the Mesa frames.
+  - - The copy itself is the compositor's time under shm windows: profiles of 2026-10-28
+    (`test-results/profile-20261028-*`) have Mesa's `linear_to_ytiled_faster` at 64 to 81% of the samples in
+    `terminal-scroll`, `gtk3-scroll` and the sprites on iris (T550, XPS), libc's memcpy into Mesa's staging texture at
+    70 to 80% on r600 and into the GTT mapping on the X200, all near memcpy speed. Experiment of that day, in the tree
+    since 2026-10-28 evening behind `HYPOLAND_SHM_TEXTURE=linear|xtiled` (off by default, see Tools below)
+    (`CGLTexture::backWithBuffer()`, a GBM buffer of that layout imported as an EGLImage as the texture's storage, so
+    `glTexSubImage2D` maps it instead of tiling on the CPU; the GBM device is opened on demand,
+    `CHyprOpenGLImpl::gbmDeviceForTextures()`, since EGL on the device platform has none): compositor CPU default ->
+    linear, two fresh sessions each, `gtk3-scroll` T550 19.6 -> 12.6%, XPS 25.6 -> 17.2, Chromebook 26.5 -> 14.9, Mac
+    mini 27.4 -> 10.2, lianli 27.3 -> 22.7, T460s 13.6 -> 13.1, X200 19.3 -> 18.1; `terminal-scroll` T550 11.0 -> 7.9,
+    XPS 24.7 -> 15.8, Chromebook 13.4 -> 7.4, Mac mini 20.7 -> 10.8, lianli 13.7 -> 11.9; `qt-software-scroll` and the
+    sprites 20 to 40% lower on those, Chromium unchanged, frames the same or higher (XPS gtk3 47 -> 50 fps). X-tiled is
+    as good on iris and does little on crocus. The one loss: XPS sprites 16.5 -> 24.1% (three more sessions each at
+    17:38: 16.4 to 16.6 against 24.0 to 24.7, X-tiled 22.7 to 23.1, the client at 38% and 60 fps in all): with an
+    imported buffer every small `glTexSubImage2D` has Mesa query and wait on the buffer and clear through blorp
+    (hundreds of ioctls a frame, `test-results/profile-20261028-144044`), so many small rectangles need the buffer kept
+    CPU-mapped and the rows copied by the compositor itself, the next step. Not done: `CSHMPool::resize()` with `mremap`
+    changed nothing in `resize` (XPS 34.1 -> 34.2%, X200 and lianli the same): foot never resizes a pool, it creates a
+    128 MiB pool per buffer and destroys the old one, so the kernel's share of that profile is the mapping and unmapping
+    of those pools.
   - The rest of it was pixman: 97% of its samples came from the `wl_surface.damage` / `damage_buffer` requests, each
     unioned into the pending region on arrival (`addSafeDamage()`), the square of the number of rectangles. They are
     collected and made into the region once at commit now (`flushDamage()`, `pixman_region32_init_rects()`), the
@@ -673,6 +693,11 @@ Tools:
   crocus and r600 (`CHyprOpenGLImpl::coalesceDamage()`), `HYPOLAND_SINGLE_TEXTURE=1` updates the shown shm texture in
   place as upstream does instead of the idle second one (`CGLTexture::update()`), both for comparing the paths on a
   machine (2026-10-28). Like `HYPOLAND_PROFILE_PASS` they have to reach the session environment (`~/.config/uwsm/env`).
+- `HYPOLAND_SHM_TEXTURE=linear|xtiled` (2026-10-28, off by default) gives every synchronous (shm) texture a GBM buffer
+  of that layout as its storage, imported as an EGLImage (`CGLTexture::backWithBuffer()`, `ytiled` is accepted too, not
+  measured): Mesa maps a linear buffer for the upload instead of tiling it on the CPU, which costs the compositor a third
+  less under most shm windows on iris, crocus from Gen 7 and r600, but more under many small rectangles on iris (the
+  XPS's sprites), see the profile notes above. Same way into the session environment.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 

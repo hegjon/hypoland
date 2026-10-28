@@ -4,6 +4,8 @@
 #include <aquamarine/buffer/Buffer.hpp>
 #include <hyprutils/math/Misc.hpp>
 
+struct gbm_bo;
+
 namespace Render::GL {
 
     class CGLTexture : public ITexture {
@@ -34,6 +36,16 @@ namespace Render::GL {
 
       private:
         void* m_eglImage = nullptr;
+
+        // HYPOLAND_SHM_TEXTURE=linear|xtiled|ytiled (experiment of 2026-10-28): the storage of a synchronous texture is a
+        // GBM buffer with that layout, imported as an EGLImage, so that Mesa maps it for the upload (a linear one
+        // directly) instead of copying into its own tiled texture on the CPU. m_bo backs m_texID, m_backBo m_backTexID.
+        gbm_bo* m_bo          = nullptr;
+        gbm_bo* m_backBo      = nullptr;
+        void*   m_boImage     = nullptr;
+        void*   m_backBoImage = nullptr;
+        bool    backWithBuffer(GLuint texID, uint32_t drmFormat, gbm_bo*& bo, void*& image);
+        void    dropBuffer(gbm_bo*& bo, void*& image);
 
         // Synchronous (shm) textures are double buffered, see update(). m_backTexID is the texture that is not
         // shown, m_backStaleDamage what it is missing compared to the shown one.
