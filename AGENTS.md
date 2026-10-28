@@ -226,8 +226,11 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
 
 ## Testing workflow
 
-1. Build and test with `scripts/deploy.sh <host>...` (e.g. `scripts/deploy.sh x200`). It builds the Arch package
-   from the working tree (`makepkg`, which keeps its build directory, so only changes are compiled), installs it
+1. Build and test with `scripts/deploy.sh <host>...` (e.g. `scripts/deploy.sh x200`). It builds the Arch packages
+   from the working tree (`makepkg`, which keeps its build directory, so only changes are compiled): `hypoland` and
+   `hypoland-bench`, the benchmark, the checks and the soak scripts of `scripts/bench` and `scripts/machines`
+   installed as `hypoland-measure`, `hypoland-soak`, `hypoland-soak-ab`, `hypoland-energy-meter` and
+   `hypoland-kmsgrab` (`/usr/lib/hypoland-bench`, the workloads' clients are optional dependencies). It installs both
    on the machines as root (the versions before stay in `/var/cache/pacman/pkg`, go back with `pacman -U`),
    restarts SDDM, which logs in again, and checks the new session with `scripts/bench/measure.sh --mode check`:
    config errors, removed options answering `ok`, a test window drawn in a screenshot and in the buffer the screen
@@ -362,7 +365,8 @@ Tools:
   The variable has to reach the session environment (e.g. `~/.config/uwsm/env`, then restart SDDM). It slows
   rendering down, remove it afterwards.
 - `debug:overlay` works and shows frame and render times.
-- `scripts/machines/kmsgrab.c` (installed on the X200 as root: `/usr/local/bin/hypoland-kmsgrab out.ppm`) saves the buffer
+- `scripts/machines/kmsgrab.c` (`hypoland-kmsgrab out.ppm`, root; built into the `hypoland-bench` package since
+  2026-10-27, by hand into `/usr/local/bin` on the machines before, which comes first in the path) saves the buffer
   the display scans out. Use it to check what really reaches the screen: a `grim` screenshot counts as screen
   sharing, which makes the compositor use the work buffer copy path instead of direct rendering. The read takes
   about 80 ms and the compositor draws into that buffer again a few frames later, so an animating client can
@@ -410,7 +414,12 @@ Tools:
   the programs it starts as clients are files in `scripts/bench/clients/`, which editors and linters can read
   (`python3 -m py_compile`, `luac -p`). `scripts/bench/target.sh` holds the ssh part for `bench.sh`, `profile.sh`
   and `scripts/deploy.sh`: it sends the whole `scripts/bench` directory as a tar stream on stdin and runs it from
-  a temporary directory, which it removes afterwards, so the machine needs no copy of the repository. Build,
+  a temporary directory, which it removes afterwards, so an edit runs without a deploy. The same files are installed
+  on the machines by the `hypoland-bench` package (since 2026-10-27, a second package of the PKGBUILD, which
+  `scripts/deploy.sh` installs with the compositor): `hypoland-measure` is `measure.sh`, for a check or a
+  measurement on the machine itself, and `hypoland-soak`, `hypoland-soak-ab` and `hypoland-energy-meter` are the
+  soak scripts, which needed copies in `~a` and `/root` before (`soak-ab.sh` still prefers those copies when they
+  are there). Build,
   install and restart go through `scripts/deploy.sh`, whose checks have to pass (`--no-build` installs the
   package that was built last).
 - Toolkit workloads (added 2026-10-25): `measure.sh` brings its own GTK client (`scripts/bench/clients/toolkit.py`,

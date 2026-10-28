@@ -5,9 +5,14 @@
 #
 # The package replaces hyprland: it provides the same config path, IPC sockets,
 # session files and the start-hyprland command name. There is no Hyprland / hyprland command.
+#
+# The same build makes hypoland-bench: the benchmark, the session checks and the soak runs of
+# scripts/bench and scripts/machines, for the test machines (hypoland-measure, hypoland-soak,
+# hypoland-soak-ab, hypoland-energy-meter and hypoland-kmsgrab). It works with stock Hyprland too.
 
-pkgname=hypoland
-pkgver=0.2.0.r760.g233be977b
+pkgbase=hypoland
+pkgname=(hypoland hypoland-bench)
+pkgver=0.2.0.r761.gcef04782e
 pkgrel=1
 pkgdesc='A fork of the Hyprland Wayland compositor for OpenGL ES 2.0 hardware'
 arch=(x86_64 aarch64)
@@ -70,18 +75,7 @@ makedepends=(
   hyprwayland-scanner
   xorgproto
 )
-optdepends=(
-  'xdg-desktop-portal-hyprland: xdg-desktop-portal backend'
-  'wf-recorder: screen recording, gpu-screen-recorder needs GLES 3 (Omarchy falls back to wf-recorder)'
-)
 _root="$(realpath "$startdir/../..")"
-
-# the Hyprland version it is based on, VERSION is the version of Hypoland
-provides=("hyprland=$(cat "$_root/VERSION_HYPRLAND")" wayland-compositor
-  # Omarchy's titlebar plugin (it needs hyprland=0.56.2). Hypoland has no plugins and draws the
-  # titlebars itself; providing the package lets Omarchy's install and migration find it
-  omarchy-hyprland-titlebars)
-conflicts=(hyprland omarchy-hyprland-titlebars)
 # the embedded aquamarine is linked statically and relies on weakened symbols
 options=(!lto)
 
@@ -106,9 +100,24 @@ build() {
     -DCMAKE_CXX_FLAGS="$CXXFLAGS $flags" \
     -DCMAKE_SKIP_RPATH=ON
   cmake --build "$srcdir/build" --parallel "$(nproc)"
+
+  # the benchmark's look at the buffer the screen scans out, root only (scripts/machines/kmsgrab.c)
+  gcc $CFLAGS $LDFLAGS -o "$srcdir/kmsgrab" "$_root/scripts/machines/kmsgrab.c" $(pkg-config --cflags --libs libdrm gbm)
 }
 
-package() {
+package_hypoland() {
+  optdepends=(
+    'xdg-desktop-portal-hyprland: xdg-desktop-portal backend'
+    'wf-recorder: screen recording, gpu-screen-recorder needs GLES 3 (Omarchy falls back to wf-recorder)'
+    'hypoland-bench: the benchmark, the session checks and the soak runs of the test machines'
+  )
+  # the Hyprland version it is based on, VERSION is the version of Hypoland
+  provides=("hyprland=$(cat "$_root/VERSION_HYPRLAND")" wayland-compositor
+    # Omarchy's titlebar plugin (it needs hyprland=0.56.2). Hypoland has no plugins and draws the
+    # titlebars itself; providing the package lets Omarchy's install and migration find it
+    omarchy-hyprland-titlebars)
+  conflicts=(hyprland omarchy-hyprland-titlebars)
+
   DESTDIR="$pkgdir" cmake --install "$srcdir/build"
 
   # Omarchy's config turns titlebars on only when the plugin's file is there. It is never loaded,
@@ -121,4 +130,49 @@ EOF2
   install -Dm644 "$_root/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
   install -Dm644 "$_root/subprojects/aquamarine/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.aquamarine"
   install -Dm644 "$_root/LICENSE.titlebars" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.titlebars"
+}
+
+package_hypoland-bench() {
+  pkgdesc='Benchmark, session checks and soak runs of the compositor, for the test machines of Hypoland'
+  # what measure.sh and the soak scripts call themselves; the compositor is hypoland or stock hyprland
+  depends=(bash coreutils grim hyprland imagemagick libdrm mesa perf procps-ng python systemd sysstat util-linux)
+  # the clients of the workloads; a workload whose client is missing is skipped
+  optdepends=(
+    'foot: terminal workloads, the test window of the checks, the developer screen'
+    'alacritty: alacritty-scroll, resize and the developer screen'
+    'neovim: the developer screen'
+    'git: the developer screen'
+    'weston: the GPU client (weston-simple-egl)'
+    'mesa-utils: the X11 client through Xwayland (glxgears)'
+    'xorg-xprop: the X11 checks'
+    'chromium: shm-fullwindow and its check'
+    'nautilus: the nautilus workload, the soak'
+    'flea: the flea workload, the soak'
+    'mpv: the video workloads'
+    'ffmpeg: the clip of the video workloads'
+    'python-gobject: the GTK 3 and GTK 4 clients'
+    'gtk3: the GTK 3 clients'
+    'gtk4: the GTK 4 clients'
+    'qt6-declarative: the Qt Quick clients (qml6)'
+    'tk: the Tk canvas workload and its check'
+    'libnotify: the notifications workload (notify-send)'
+    'glmark2: the soak'
+    'ttfx: the soak'
+    'wf-recorder: the soak'
+    'jq: the soak'
+  )
+  local lib=$pkgdir/usr/lib/hypoland-bench f
+  install -Dm755 "$_root/scripts/bench/measure.sh" "$lib/measure.sh"
+  for f in "$_root"/scripts/bench/lib/*.sh "$_root"/scripts/bench/clients/*; do
+    [ -f "$f" ] || continue
+    install -Dm644 "$f" "$lib/${f#"$_root"/scripts/bench/}"
+  done
+  install -Dm755 "$_root/scripts/machines/soak.sh" "$_root/scripts/machines/soak-ab.sh" "$_root/scripts/machines/energy-meter.sh" -t "$lib"
+  install -Dm755 "$srcdir/kmsgrab" "$pkgdir/usr/bin/hypoland-kmsgrab"
+  install -d "$pkgdir/usr/bin"
+  ln -s ../lib/hypoland-bench/measure.sh "$pkgdir/usr/bin/hypoland-measure"
+  ln -s ../lib/hypoland-bench/soak.sh "$pkgdir/usr/bin/hypoland-soak"
+  ln -s ../lib/hypoland-bench/soak-ab.sh "$pkgdir/usr/bin/hypoland-soak-ab"
+  ln -s ../lib/hypoland-bench/energy-meter.sh "$pkgdir/usr/bin/hypoland-energy-meter"
+  install -Dm644 "$_root/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
