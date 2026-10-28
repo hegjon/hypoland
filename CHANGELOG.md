@@ -52,6 +52,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   and the `hyprbars:*` window rule effects. Omarchy's config turns them on as it does with the plugin: the app's name or
   the title, buttons to close, maximize and minimize, dragging by the bar, double click to maximize, and dragging a
   maximized window back to its size. Off unless a config enables them (`plugin:hyprbars:enabled`).
+- `ghostty-scroll`, the benchmark's terminal scrolling in Ghostty (a GTK 4 window drawn by Ghostty's own OpenGL
+  renderer, which needs OpenGL 3.3, so not on the X200), and `kitty-scroll`, the same in kitty (OpenGL 3.3 too), next to
+  foot's `terminal-scroll` and `alacritty-scroll`.
 
 ### Changed
 
