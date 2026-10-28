@@ -571,6 +571,24 @@ Tools:
     six machines (2026-10-25, 15 workloads, 3 rounds each): only the X200 changes. On r600 (lianli, 2026-10-27) the
     merging is on as well: every upload rectangle is a staging texture and a blit there, and the second texture
     doubled the rectangles, so the sprites cost 81.8% against 48.2% for stock in the A/B of 2026-10-26; merged 26.1%.
+    On the Mac mini (Haswell, crocus with the tiled copy, 1920x1200) the merging loses (2026-10-28, from the overnight
+    A/B of 2026-10-27, where the sprites cost 32.5% against 20.3% for Hyprland 0.56.2 at the same 60 fps; alternating
+    fresh sessions with the switches `HYPOLAND_NO_COALESCE=1` and `HYPOLAND_SINGLE_TEXTURE=1` in the compositor's
+    environment, see Tools below): the sprites 26.7% merged against 24.1% as sent, `qt-software-scroll` 10.4 against
+    8.5, the Chromium window, the terminal and GTK 3 the same. One texture alone changes nothing (26.7 against 27.3),
+    both off at once, upstream's upload path, gives 21.1% and 8.3%, against 18.6% and 9.8% for Hyprland 0.56.2
+    measured the same way: the second texture only costs when the rectangles are not merged, since the strips cover
+    the stale damage anyway. On the Chromebook (Bay Trail, crocus, also the tiled copy, 2 slow cores) the merging
+    halves the cost, 25.5% at 49 fps against 52.6% at 34 fps, and one texture changes nothing (25.4 against 25.0), so
+    what decides is the per-call cost against the copy, not the GPU generation. The other 6 points on the Mac mini
+    come from the session's history: after about eight workloads of the benchmark's list the sprites cost 32.5%
+    instead of 26.7% and stay there (reproduced from the full list today, exactly the overnight figure; Hyprland
+    0.56.2 gains 1.7 the same way), with the same profile and the same instructions (2.68 against 2.80 G in 8 s) at
+    24% fewer per cycle and 20% more cache misses: the copies got slower, which memory is open. Not a leftover window
+    or process, not a pending capture frame or the work-buffer path (the Chromium, nautilus and workspace-switch
+    workloads and a grim capture each alone before the sprites leave it at 26.8 to 27.1). The merging stays on for
+    every crocus: its loss on the Mac mini is small, its gain on the Chromebook and the X200 large. Scripts and
+    numbers: `test-results/macmini-sprites-20261028/`.
   - Mesa uploads a shm window into an idle tiled texture through a temporary of the window's size that it mallocs
     and frees per upload (`crocus_map_tiled_memcpy()` from Gen 5 on, `iris_map_tiled_memcpy()`; Gen 4 maps the
     texture directly, which is why the X200 gained from the idle second texture and Bay Trail lost). Upstream's
@@ -596,6 +614,21 @@ Tools:
     same region. `qt-software-sprites`: X200 31.6% -> 19.4% (59.9 fps), XPS 29.6% -> 24.2%, T550 and Galaxy Book
     unchanged within noise; X200 `gtk3-scroll` and `gtk4-scroll` 0.5 to 1 point lower. `gpu-client` on the Galaxy
     Book varies by 1.5 points between runs (rounds 3.5 to 5.8%), do not read a change there.
+  - CPU time on the Galaxy Book measures cache warmth as much as work (2026-10-28, from the overnight A/B of
+    2026-10-27, where its GTK 4 and Qt Quick clients cost 3.5 to 20% under Hypoland and a steady 3.5% under Hyprland
+    0.56.2 at the same 119 fps). A slow client start runs the same instructions at the same 3.3 GHz with a quarter
+    of the instructions per cycle: every L1 miss also misses the L2 and three quarters of the cycles are instruction
+    fetch stalls. The slow or fast mode is set per client start by the core the scheduler picks: the Snapdragon's
+    three clusters of four cores sleep (`cpu-sleep-0`, the deep idle state) between the frames of a 120 Hz client,
+    and a cluster nothing else wakes loses its caches, so a client placed there refetches its working set every
+    frame. With the deep idle states disabled every start is fast (2.5% CPU, IPC 3.3), not THP, ASLR, frequency,
+    buffer modifiers or the protocol traffic, which are identical in both modes. Stock Hyprland never shows it
+    because its two extra threads keep all three clusters half awake (720 context switches a second against 590,
+    32 migrations a second against 2); under Hypoland the third cluster sleeps. The compositor pays the same way: with
+    the GTK 4 client running it executes the same 0.22 G instructions in 4 s at IPC 0.74 (2.3% CPU) with deep idle
+    on and IPC 1.64 (1.1%) with it off, which is where the Galaxy Book's `workspace-switch` 3.4 -> 4.5 against stock
+    comes from. Not a Hypoland bug: the kernel's placement and idle choices on a machine whose compositor wakes
+    less. Scripts and raw numbers of the experiments: `test-results/galaxybook-cold-caches-20261028/`.
   - GTK 3 costs the X200 about twice what GTK 4 does (19.2% / 11.0%, both cairo into shm) because GTK 3 damages the
     whole window on every frame, GTK 4 only the text column that changes (`WAYLAND_DEBUG`: 1576x850 against
     about 470x850). The client's doing, not the compositor's. GTK 3 also sends `set_window_geometry` with every
@@ -631,6 +664,10 @@ Tools:
   instructions and cycles and works on the charger. Tested with fake meters only so far (`--power-supply`,
   `--powercap`); the 0.3 W noise floor of `--compare` for power is a guess until real runs.
 - `HYPOLAND_NO_DIRECT_RENDER=1` makes every frame go through the work buffer, for comparing the two paths.
+- `HYPOLAND_NO_COALESCE=1` uploads and draws the damage rectangles as the client sent them instead of merging them on
+  crocus and r600 (`CHyprOpenGLImpl::coalesceDamage()`), `HYPOLAND_SINGLE_TEXTURE=1` updates the shown shm texture in
+  place as upstream does instead of the idle second one (`CGLTexture::update()`), both for comparing the paths on a
+  machine (2026-10-28). Like `HYPOLAND_PROFILE_PASS` they have to reach the session environment (`~/.config/uwsm/env`).
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
