@@ -124,6 +124,8 @@ git show --stat --format='%h %s' HEAD | cat
 # --- 3. package
 # the PKGBUILD names a build at the release tag with the plain version
 PKG=hypoland-$NEW-1-x86_64.pkg.tar.zst
+# the same build's second package: the benchmark, the checks and the soak scripts of the test machines
+BENCH_PKG=hypoland-bench-$NEW-1-x86_64.pkg.tar.zst
 if [ "$SKIP_BUILD" = 1 ]; then
     step "Skipping the package build"
 else
@@ -132,7 +134,8 @@ else
     (cd packaging/arch && makepkg -fC >"$LOG" 2>&1) || die "makepkg failed, see $LOG"
     git checkout -q -- packaging/arch/PKGBUILD
     [ -f "packaging/arch/$PKG" ] || die "makepkg did not write packaging/arch/$PKG"
-    echo "packaging/arch/$PKG ($(du -h "packaging/arch/$PKG" | cut -f1))"
+    [ -f "packaging/arch/$BENCH_PKG" ] || die "makepkg did not write packaging/arch/$BENCH_PKG"
+    echo "packaging/arch/$PKG ($(du -h "packaging/arch/$PKG" | cut -f1)), packaging/arch/$BENCH_PKG ($(du -h "packaging/arch/$BENCH_PKG" | cut -f1))"
     # what the packaged binary says about itself: the version, the tag and no uncommitted changes
     tmp=$(mktemp -d)
     bsdtar -xf "packaging/arch/$PKG" -C "$tmp" usr/bin/hypoland
@@ -204,7 +207,7 @@ PUSHED=1
 
 step "Publishing the GitHub release"
 gh release create "$TAG" -R "$REPO" --verify-tag --title "Hypoland $NEW" --notes-file "$NOTES" \
-    "packaging/arch/$PKG"
+    "packaging/arch/$PKG" "packaging/arch/$BENCH_PKG"
 
 step "Waiting for the release workflow to attach the source tarball"
 RUN_ID=
