@@ -63,7 +63,7 @@ TEST_CASE(floatingWindowKeepsPositionAfterMonitorReconnect) {
     OK(getFromSocket(std::format("/dispatch hl.dsp.focus({{ monitor = '{}' }})", RECONNECT_OUTPUT)));
     OK(getFromSocket("/dispatch hl.dsp.focus({ workspace = 'name:reconnect_floating' })"));
 
-    SPAWN_KITTY(RECONNECT_CLASS);
+    SPAWN_FOOT(RECONNECT_CLASS);
     OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set' })"));
     OK(getFromSocket("/dispatch hl.dsp.window.resize({ x = 400, y = 300 })"));
     // move away from the center, so re-centering the window can't make this pass by accident

@@ -1210,7 +1210,7 @@ SUBTEST(switchWorkspaceAndCheckActiveWindowFocusIsLostAndRestored) {
 }
 
 TEST_CASE(workspaceSwitchUnfocusesWindowFromOldWorkspace) {
-    SPAWN_KITTY("a");
+    SPAWN_FOOT("a");
     for (int followMouse = 0; followMouse <= 3; ++followMouse) {
         OK(getFromSocket(std::format("/eval hl.config({{ input = {{ follow_mouse = {} }} }})", followMouse)));
         CALL_SUBTEST(switchWorkspaceAndCheckActiveWindowFocusIsLostAndRestored);
