@@ -6,6 +6,10 @@ void CTimer::reset() {
     m_lastReset = Time::steadyNow();
 }
 
+void CTimer::reset(const Time::steady_tp& now) {
+    m_lastReset = now;
+}
+
 Time::steady_dur CTimer::getDuration() const {
     return Time::steadyNow() - m_lastReset;
 }

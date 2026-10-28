@@ -73,7 +73,8 @@ namespace Render {
         virtual eType                       type() = 0;
         WP<Render::GL::CHyprOpenGLImpl>     glBackend();
 
-        void                                renderMonitor(PHLMONITOR pMonitor, bool commit = true);
+        // now: the frame's clock read when the caller has one (the frame scheduler), shared with the animation tick
+        void                                renderMonitor(PHLMONITOR pMonitor, bool commit = true, std::optional<Time::steady_tp> now = std::nullopt);
         void                                arrangeLayersForMonitor(const MONITORID&);
         void                                damageSurface(SP<CWLSurfaceResource>, double, double, double scale = 1.0);
         void                                damageWindow(PHLWINDOW, bool forceFull = false);
