@@ -155,6 +155,19 @@ static int openRenderNode(int drmFd) {
     return renderFD;
 }
 
+// the GBM device for buffers the compositor allocates itself (CGLTexture::backWithBuffer()): with EXT_platform_device
+// EGL needs none, so m_gbmDevice is null then and one is opened on the render node on demand
+gbm_device* CHyprOpenGLImpl::gbmDeviceForTextures() {
+    if (m_gbmDevice)
+        return m_gbmDevice;
+    if (!m_gbmFD.isValid())
+        m_gbmFD = CFileDescriptor{openRenderNode(m_drmFD)};
+    if (!m_gbmFD.isValid())
+        return nullptr;
+    m_gbmDevice = gbm_create_device(m_gbmFD.get());
+    return m_gbmDevice;
+}
+
 void CHyprOpenGLImpl::initEGL(bool gbm) {
     std::vector<EGLint> attrs;
     if (m_exts.KHR_display_reference) {

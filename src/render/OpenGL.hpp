@@ -246,6 +246,7 @@ namespace Render::GL {
         std::vector<SDRMFormat>                   getDRMFormats();
         std::vector<uint64_t>                     getDRMFormatModifiers(DRMFormat format);
         EGLImageKHR                               createEGLImage(const Aquamarine::SDMABUFAttrs& attrs);
+        gbm_device*                               gbmDeviceForTextures();
 
         bool                                      initShaders(const std::string& path = "");
 
