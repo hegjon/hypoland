@@ -1,0 +1,1 @@
+machine: x200, 7.2.8-10-omarchy, 2 cores, 5809 MiB
