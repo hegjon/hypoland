@@ -8,6 +8,14 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Faster
 
+- A panel, dock or notification layer that is mostly transparent no longer costs the GPU its whole area on every
+  frame under it: once it has not changed for a moment the compositor finds where its pixels are and draws only that
+  part. Omarchy's shell keeps its bar's window across the whole screen, and its dock and notification column mapped
+  while empty, which cost the X200 more GPU time per frame than the window under them: a full-window frame went
+  from 8.4 to 3.4 ms of GPU time there (`HYPOLAND_ALPHA_BOUNDS=0` turns it off).
+- Terminals and Qt programs that draw on the CPU are shown without a copy on Intel GPUs without a last-level cache too
+  (GM45, Bay Trail): the compositor writes their changed cache lines back itself instead of copying the window. A Qt
+  window scrolling on a Dell Chromebook 11 took 13% of a CPU, now 4%; a scrolling terminal 5% instead of 7%.
 - Windows that change in many small places at once cost much less CPU on Intel GPUs up to Haswell (Mesa `crocus`):
   every draw and every upload of a shm window was repeated per damage rectangle, and there a call costs far more than
   the pixels in it. The damage is merged into a few strips now. 60 small squares moving in a Qt window took 59% of
