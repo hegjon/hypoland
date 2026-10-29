@@ -106,7 +106,9 @@ bool CHyprGLRenderer::needsRenderFence(PHLMONITOR monitor, const std::function<v
     if (!isIntel() || g_pHyprOpenGL->m_eglDriverName != "crocus" || isMgpu() || m_renderMode != RENDER_MODE_NORMAL || renderingDoneCallback)
         return true;
 
-    return std::ranges::any_of(monitor->m_usedAsyncBuffers, [](const auto& buf) { return !buf.first.expired() && !buf.second->m_syncReleasers.empty(); });
+    // a shm buffer sampled in place (zero copy, Shm.cpp) is written by its client as soon as it is released: that has to wait for the GPU
+    return std::ranges::any_of(monitor->m_usedAsyncBuffers,
+                               [](const auto& buf) { return !buf.first.expired() && (!buf.second->m_syncReleasers.empty() || buf.second->type() == Aquamarine::BUFFER_TYPE_SHM); });
 }
 
 void CHyprGLRenderer::endRender(const std::function<void()>& renderingDoneCallback) {

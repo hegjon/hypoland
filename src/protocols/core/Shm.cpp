@@ -8,9 +8,67 @@
 #include "../../helpers/Format.hpp"
 #include "../../render/Renderer.hpp"
 #include <hyprgraphics/egl/Egl.hpp>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cerrno>
+#include <cstring>
+#include <print>
+#include <sys/ioctl.h>
+#include <linux/udmabuf.h>
+#include <i915_drm.h>
+#include "../../Compositor.hpp"
+#include "../../render/OpenGL.hpp"
 
 using namespace Hyprgraphics::Egl;
 using namespace Hyprutils::OS;
+
+// Zero copy for shm clients (2026-10-29, on by default where the gate below allows it; HYPOLAND_SHM_ZEROCOPY=0 switches it
+// off, "force" ignores the gate): a wl_buffer whose pool is a memfd
+// sealed against shrinking gets a udmabuf of its pages (/dev/udmabuf), imported as a linear EGLImage, so the GPU samples
+// the client's memory and the compositor copies nothing. Such a buffer is asynchronous like a dmabuf: the surface keeps it
+// until the next one arrives, the renderer until the frame that read it is done, and only then is it released to the
+// client. The client's writes reach the GPU without a cache flush only where GPU reads snoop the CPU caches: Intel with
+// an LLC (iris everywhere, crocus from Sandy Bridge; not GM45 or Bay Trail) and radeon; "force" takes every driver.
+static bool zeroCopyAllowed() {
+    static int allowed = -1;
+    if (allowed >= 0)
+        return allowed;
+    allowed         = 0;
+    const char* ENV = std::getenv("HYPOLAND_SHM_ZEROCOPY");
+    if (ENV && (std::string_view{ENV} == "0" || std::string_view{ENV} == "off"))
+        return false;
+    if (!ENV)
+        ENV = "";
+    const auto& DRIVER = Render::GL::g_pHyprOpenGL->m_eglDriverName;
+    std::string why    = DRIVER;
+    if (std::string_view{ENV} == "force") {
+        allowed = 1;
+        why += ", forced";
+    } else if (DRIVER == "iris" || DRIVER == "crocus") {
+        int                 llc = 0;
+        drm_i915_getparam_t gp  = {.param = I915_PARAM_HAS_LLC, .value = &llc};
+        if (g_pCompositor->m_drm.fd >= 0 && ioctl(g_pCompositor->m_drm.fd, DRM_IOCTL_I915_GETPARAM, &gp) == 0 && llc)
+            allowed = 1;
+        why += llc ? ", LLC" : " without an LLC";
+    } else if (DRIVER == "r600" || DRIVER == "radeonsi")
+        allowed = 1;
+    else
+        why += ", not known to read CPU writes coherently";
+    std::println(stderr, "shm zero copy: {} ({})", allowed ? "on" : "off", why);
+    return allowed;
+}
+
+static int udmabufDevice() {
+    static CFileDescriptor dev;
+    static bool            tried = false;
+    if (!tried) {
+        tried = true;
+        dev   = CFileDescriptor{open("/dev/udmabuf", O_RDWR | O_CLOEXEC)};
+        if (!dev.isValid())
+            std::println(stderr, "shm zero copy: cannot open /dev/udmabuf: {}", strerror(errno));
+    }
+    return dev.isValid() ? dev.get() : -1;
+}
 
 CWLSHMBuffer::CWLSHMBuffer(WP<CWLSHMPoolResource> pool_, uint32_t id, int32_t offset_, const Vector2D& size_, int32_t stride_, uint32_t fmt_) {
     if UNLIKELY (!pool_)
@@ -32,6 +90,8 @@ CWLSHMBuffer::CWLSHMBuffer(WP<CWLSHMPoolResource> pool_, uint32_t id, int32_t of
         m_listeners.bufferResourceDestroy.reset();
         PROTO::shm->destroyResource(this);
     });
+
+    m_zeroCopy = tryZeroCopy();
 }
 
 CWLSHMBuffer::~CWLSHMBuffer() {
@@ -48,7 +108,7 @@ Aquamarine::eBufferType CWLSHMBuffer::type() {
 }
 
 bool CWLSHMBuffer::isSynchronous() {
-    return true;
+    return !m_zeroCopy;
 }
 
 Aquamarine::SSHMAttrs CWLSHMBuffer::shm() {
@@ -60,6 +120,68 @@ Aquamarine::SSHMAttrs CWLSHMBuffer::shm() {
     attrs.stride  = m_stride;
     attrs.offset  = m_offset;
     return attrs;
+}
+
+Aquamarine::SDMABUFAttrs CWLSHMBuffer::dmabuf() {
+    return m_zeroCopy ? m_dmabufAttrs : Aquamarine::SDMABUFAttrs{};
+}
+
+bool CWLSHMBuffer::tryZeroCopy() {
+    if (!zeroCopyAllowed())
+        return false;
+
+    const auto DRMFMT = NFormatUtils::shmToDRM(m_fmt);
+    if (DRMFMT != DRM_FORMAT_ARGB8888 && DRMFMT != DRM_FORMAT_XRGB8888)
+        return false;
+
+    // a udmabuf needs a memfd that cannot shrink under it: foot and Chromium seal their pools so, GTK and Qt do not
+    const int SEALS = fcntl(m_pool->m_fd.get(), F_GET_SEALS);
+    if (SEALS < 0 || !(SEALS & F_SEAL_SHRINK))
+        return false;
+
+    const int DEV = udmabufDevice();
+    if (DEV < 0)
+        return false;
+
+    static const size_t PAGE  = sc<size_t>(sysconf(_SC_PAGESIZE));
+    const size_t        START = sc<size_t>(m_offset) & ~(PAGE - 1);
+    const size_t        END   = (sc<size_t>(m_offset) + sc<size_t>(m_stride) * sc<size_t>(size.y) + PAGE - 1) & ~(PAGE - 1);
+    struct stat         st;
+    if (fstat(m_pool->m_fd.get(), &st) < 0 || END > sc<size_t>(st.st_size))
+        return false; // the last page would reach past the file
+
+    udmabuf_create create = {.memfd = sc<uint32_t>(m_pool->m_fd.get()), .flags = UDMABUF_FLAGS_CLOEXEC, .offset = START, .size = END - START};
+    m_dmabufFd            = CFileDescriptor{ioctl(DEV, UDMABUF_CREATE, &create)};
+    if (!m_dmabufFd.isValid()) {
+        static bool once = true;
+        if (once)
+            std::println(stderr, "shm zero copy: no udmabuf of {} bytes: {}", END - START, strerror(errno));
+        once = false;
+        return false;
+    }
+
+    m_dmabufAttrs            = {.success = true, .size = size, .format = DRMFMT, .modifier = DRM_FORMAT_MOD_LINEAR, .planes = 1};
+    m_dmabufAttrs.offsets[0] = sc<uint32_t>(sc<size_t>(m_offset) - START);
+    m_dmabufAttrs.strides[0] = sc<uint32_t>(m_stride);
+    m_dmabufAttrs.fds[0]     = m_dmabufFd.get();
+
+    m_texture = g_pHyprRenderer->createTexture(m_dmabufAttrs, m_opaque);
+    if (!m_texture || !m_texture->ok()) {
+        static bool once = true;
+        if (once)
+            std::println(stderr, "shm zero copy: EGL import of a {}x{} udmabuf failed", sc<int>(size.x), sc<int>(size.y));
+        once = false;
+        m_texture.reset();
+        m_dmabufFd.reset();
+        m_dmabufAttrs = {};
+        return false;
+    }
+
+    static bool said = false;
+    if (!said)
+        std::println(stderr, "shm zero copy: client buffers sampled in place");
+    said = true;
+    return true;
 }
 
 std::tuple<uint8_t*, uint32_t, size_t> CWLSHMBuffer::beginDataPtr(uint32_t flags) {
