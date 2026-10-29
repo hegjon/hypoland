@@ -11,3 +11,10 @@ bool Env::isTrace() {
     static bool TRACE = envEnabled("HYPRLAND_TRACE");
     return TRACE;
 }
+
+std::optional<std::string> Env::get(const char* env) {
+    const char* V = std::getenv(env);
+    if (!V)
+        return std::nullopt;
+    return std::string{V};
+}

@@ -260,6 +260,8 @@ namespace Render::GL {
         bool                                      coalesceDamage() const; // whether damage is merged into few rectangles
         void                                      scheduleShaderCompilerRelease();
         void                                      scheduleHeapTrim();
+        // HYPOLAND_ALPHA_BOUNDS: the box of a layer surface's pixels with alpha, so the transparent rest is not blended
+        void                                      analyzeLayerAlpha(PHLMONITOR pMonitor);
         void                                      armHeapTrim(std::chrono::milliseconds delay);
         void                                      trackBackTexture(CGLTexture* tex); // shm textures with a second texture, see CGLTexture::update()
         void                                      untrackBackTexture(CGLTexture* tex);
@@ -278,6 +280,14 @@ namespace Render::GL {
         EGLDeviceEXT                              m_eglDevice  = nullptr;
 
         std::map<PHLMONITORREF, SP<IFramebuffer>> m_monitorBGFBs;
+        SP<IFramebuffer>                          m_alphaFB; // analyzeLayerAlpha(): the block maxima of the surface analyzed last
+        struct {
+            PHLLSREF    layer;
+            uint32_t    serial = 0;
+            Vector2D    texSize;
+            UP<CEGLSync> sync;   // signals when the GPU has drawn the maxima; the readback waits for it
+            int         frames = 0; // frames waited for the fence
+        } m_alphaPending;
 
         struct {
             PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC glEGLImageTargetRenderbufferStorageOES = nullptr;

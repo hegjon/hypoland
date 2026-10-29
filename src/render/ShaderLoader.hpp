@@ -48,6 +48,7 @@ namespace Render {
         SH_FRAG_AURORAFINISH,
         SH_FRAG_HAZEFINISH,
 
+        SH_FRAG_ALPHAMAX, // the largest alpha per 8x8 block, CHyprOpenGLImpl::analyzeLayerAlpha()
         SH_FRAG_LAST,
     };
 
