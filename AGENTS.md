@@ -699,7 +699,8 @@ Tools:
   15.7, Chromebook 13.4 -> 8.7, Mac mini 19.9 -> 8.4, lianli 13.7 -> 11.8; `qt-software-sprites` lianli 25.8 -> 7.0, Mac
   mini 27.0 -> 6.6, Chromebook 25.5 -> 16.7 at 56 instead of 50 fps, X200 19.6 -> 11.1, T550 13.4 -> 10.1, XPS 25.9 ->
   23.0; `qt-software-scroll` 1 to 4 points lower except on the Chromebook; `resize`, idle Pss, heap, threads, frames and
-  latencies the same), off elsewhere (freedreno not measured with it). `0` or `off` switches it off, `linear` on,
+  latencies the same) and on freedreno (Galaxy Book, 2 fresh sessions each: sprites 27.1 -> 17.2%, `terminal-scroll` 6.9
+  -> 7.3 at 73 instead of 65 fps, GTK 3, `resize`, Pss and threads the same), off elsewhere. `0` or `off` switches it off, `linear` on,
   `linear-gl` keeps Mesa's upload into the buffer (into an imported buffer each `glTexSubImage2D` has Mesa query, wait
   and clear through blorp, hundreds of ioctls a frame: XPS sprites 24.1% against 16.5 off, `test-results/profile-20261028-144044`).
   Two versions before cost: GBM buffers of a separately opened device gave a second Mesa screen (+2.2 MiB Pss, 2 to 4

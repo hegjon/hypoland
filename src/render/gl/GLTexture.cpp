@@ -25,16 +25,16 @@ CGLTexture::CGLTexture(bool opaque) {
 
 // HYPOLAND_SHM_TEXTURE=linear backs synchronous textures with linear dumb buffers (see the header); linear-gl uploads
 // into them through GL as Mesa does, a glTexSubImage2D per rectangle, instead of copying the rows, for comparing the two.
-// HYPOLAND_SHM_TEXTURE: unset takes the driver's default, "linear" on iris, crocus and r600 (measured on all of them,
-// 2026-10-28/29), off elsewhere (freedreno not measured with the dumb buffers); "0" or "off" switches it off, "linear"
-// on, "linear-gl" keeps Mesa's upload into the buffer.
+// HYPOLAND_SHM_TEXTURE: unset takes the driver's default, "linear" on iris, crocus, r600 and freedreno (measured on all
+// of them, 2026-10-28/29), off elsewhere; "0" or "off" switches it off, "linear" on, "linear-gl" keeps Mesa's upload into
+// the buffer.
 static std::string_view shmTextureSwitch() {
     static const std::string S = [] {
         const char* v = std::getenv("HYPOLAND_SHM_TEXTURE");
         if (v && *v)
             return std::string{v};
         const auto& DRIVER = g_pHyprOpenGL->m_eglDriverName;
-        return std::string{DRIVER == "iris" || DRIVER == "crocus" || DRIVER == "r600" ? "linear" : ""};
+        return std::string{DRIVER == "iris" || DRIVER == "crocus" || DRIVER == "r600" || DRIVER == "msm" ? "linear" : ""};
     }();
     return S;
 }

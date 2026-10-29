@@ -40,7 +40,7 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   the X200, where every read is a system call (HPET clocksource), a GPU client at 60 fps costs 2.82% instead of
   2.88% of the CPU, video and workspace switching 2% less too.
 - Windows drawn by the CPU (shm: terminals such as foot, GTK 3, Qt Widgets, Qt Quick's software backend, Chromium
-  without a GPU) cost the compositor a third to a half less on Intel GPUs and Radeon r600: their textures live in linear
+  without a GPU) cost the compositor a third to a half less on Intel GPUs, Radeon r600 and the Adreno X1: their textures live in linear
   buffers the compositor fills itself instead of Mesa tiling every update on the CPU. Scrolling GTK 3 on a ThinkPad T550
   19.7% -> 13.0%, on a Mac mini 2014 28% -> 11%; 60 moving squares in a Qt software window on a Radeon HD 8570D 26% ->
   7%, on the X200 19.6% -> 11.1%.
