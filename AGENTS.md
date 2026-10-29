@@ -418,6 +418,10 @@ Tools:
   drm:drm_vblank_event_delivered`, root; the same tracepoint on i915, radeon and msm). Idle reads 0.0 and
   `gpu-client` 60.1 on the X200. Read a sum of CPU time with it: a compositor that shows more frames makes its
   clients draw more. `fps.<workload>` without `.screen` stays the client's own frame rate.
+  `gpu.<workload>.busy_percent` (since 2026-10-29) is the time the GPU's render engine was busy over the same window, from
+  the i915 PMU (`perf stat -a -e i915/rcs0-busy/`, root; radeon and msm have no such counter, nothing is reported
+  there): the compositor's blending, the clients' drawing and Mesa's copies all count. On the XPS a scrolling GTK 3
+  window keeps it at 40%, a GL client at 60 fps at 34%, the resize drag at 78%.
 - `bench.sh` and `profile.sh` are not tied to the X200 (they were `bench-x200.sh` and `profile-x200.sh` until
   2026-09-28). `--host <ssh host>` or `--host local` picks the machine, `--login` the ssh login (root by default,
   without root the governor is left alone), `--no-deploy` measures the compositor that is running,
@@ -492,7 +496,10 @@ Tools:
   (`workspace-switch`, `idle-windows`, `resize`); `workspace-switch` also has `workspace`, SUPER+2 and SUPER+1, until
   the middle of a window changes, and `bar` (added 2026-10-26), the same keys until the first quarter of Omarchy's bar
   changes: its workspace widget, redrawn by the shell after the compositor's event (T550: 15.6 ms against 1.7 ms
-  for the window). The driver waits 0.7 s after every step for Omarchy's border animation (539 ms)
+  for the window). Since Omarchy r7338 the bar's window spans the screen (see `HYPOLAND_ALPHA_BOUNDS` under Tools), so
+  the region is the strip's thickness at most (since 2026-10-29; before, a quarter of the screen, and the window
+  animation changed it at the first frame: the 2 ms `bar_ms` readings of r7338 machines were that). The driver waits
+  0.7 s after every step for Omarchy's border animation (539 ms)
   to end. `resize` (added 2026-10-26) puts foot (shm) and Alacritty (GL) side by side, both full of one long line of
   numbers that wraps at the window's edge, and drags the split between them with SUPER and the right button
   (Omarchy's resize bind) by a uinput absolute pointer, 125 motions a second like a mouse, for the CPU time
@@ -731,12 +738,87 @@ Tools:
   mapping, so read the seals from the compositor's `/proc/<pid>/fd` (`F_GET_SEALS`). On by default where GPU reads snoop
   the CPU caches, since the compositor cannot flush another process's writes: i915 with an LLC (`I915_PARAM_HAS_LLC`:
   iris, crocus from Sandy Bridge, not GM45 or Bay Trail) and r600; `0` switches it off, `force` ignores the gate.
+  Since 2026-10-29 evening it is on without an LLC as well (GM45, Bay Trail): there the GPU reads memory and the compositor
+  writes the client's damaged cache lines back itself at every commit (`CWLSHMBuffer::flushCPUWrites()`, `clflush`
+  per 64 bytes of each damaged row, x86 only; `force` is zero copy without the flush and the screen shows specks of
+  old glyphs on Bay Trail within seconds, `flush` the flush on any driver). Against the dumb-buffer copy
+  (`HYPOLAND_SHM_ZEROCOPY=0`, 2 fresh sessions each, compositor CPU): Chromebook `qt-software-scroll` 12.9 -> 4.1%,
+  the sprites 14.0 -> 7.8, `terminal-scroll` 7.1 -> 5.4, `resize` 28.6 -> 22.9, `resize-foot` 37.1 -> 25.8; X200
+  `qt-software-scroll` 9.8 -> 6.2, the sprites 11.7 -> 5.7, `terminal-scroll` 9.8 -> 9.7 (a full window's clflush costs
+  the Core 2 what its row copy did), but `resize` 19.2 -> 20.8 and `resize-foot` 25.2 -> 28.0 (foot makes a pool and
+  a buffer per resize step, each a udmabuf and an EGL import, which the GM45's driver pays more for than a new
+  texture); GTK 3 unchanged (its pools cannot be pinned), frames and latencies the same, Pss 2 MB higher (the
+  flush faults the clients' pool pages into the compositor's mapping). The i915 PMU's busy time is not to be read on
+  GM45 or Bay Trail for shm windows: it shows 0% for a scrolling window in one session and 61% in another.
   Compositor CPU with the dumb buffers -> zero copy (2 fresh sessions each, 2026-10-29): `terminal-scroll` XPS 15.8 ->
   4.1%, T550 8.0 -> 3.6, T460s 8.0 -> 3.3, Mac mini 8.8 -> 4.5, lianli 11.8 -> 2.6; `qt-software-scroll` T550 10.2 ->
   3.7 and the sprites 10.1 -> 3.8 (Qt's pools qualify); `resize` XPS 33.6 -> 21.0, T550 17.2 -> 11.6, T460s 16.2 ->
   10.7, Mac mini 26.1 -> 13.9, lianli 17.6 -> 12.1 (`redrawn` 2 to 10 ms sooner); GTK 3, frames and Pss the same, GPU
   memory at the end of a run 20 MB lower on the XPS. Deploy checks pass with it on the XPS,
   T460s, Mac mini, lianli and T550; two scanout captures of a scrolling foot differ, so nothing is stale.
+- `HYPOLAND_ALPHA_BOUNDS` (2026-10-29, asked for as "can omarchy-shell be drawn differently"): a layer surface with an alpha
+  channel is blended over everything under it, also where its pixels are fully transparent, and Omarchy's shell
+  (Quickshell: four layer surfaces per output, ARGB8888 dmabufs from Qt's GL swapchain, never an opaque region,
+  whole-surface damage on every commit) keeps three such surfaces across the screen: since Omarchy r7338 (commit
+  e2d618ac of 2026-10-19, "Keep the bar surface full-size so drags survive empty workspaces"; the T550's r7218 and the
+  Galaxy Book's are older) the bar's window spans the whole screen with the strip painted at the top, the dock's window
+  (a 207 px band at the bottom on the X200) stays mapped on every workspace with its contents hidden, and the
+  notification column (399 px at the right) stays mapped while empty, both on purpose (remapping disturbs focus and
+  the scrolling layout, the comments in `DockWindow.qml` and `notifications/Service.qml` say). On the X200 the three
+  cost more GPU time per frame than the window under them (`HYPOLAND_PROFILE_PASS`, which names a surface after its
+  layer namespace or app id since that day: under `gtk3-scroll` the GTK window 3.07 ms, the bar 3.00, the
+  notifications 1.02, the dock 0.90 of 8.35 ms, the same share in `terminal-scroll`, the sprites and `video-window`),
+  on the XPS they are 13 to 17 points of GPU busy time under a scrolling window. Hypoland cannot know a dmabuf's
+  pixels, so once such a surface has not committed for 150 ms, a frame draws the largest alpha of every 8x8 block of
+  its buffer into a small framebuffer (`alphamax.frag`, `gl_FragCoord` picks the block, 64 fetches per pixel of an
+  eighth-size target, about one full-screen pass), the next frame reads it back (64 kB for 1280x800, the GPU finished
+  it with the frame before) and `renderLayer()` clips the surface to the box of the blocks with any alpha
+  (`CHyprOpenGLImpl::analyzeLayerAlpha()`, `CLayerSurface::m_alphaBounds`; a box of nothing skips the layer). A commit
+  drops the box until the next analysis, so a surface that animates is drawn whole; not for blurred layers (their
+  transparent pixels show the blur), surfaces with a viewport source, a transform or subsurfaces (a viewport
+  destination, which Qt sets on every window, is fine). `0` switches it off, `debug` prints every box to stderr
+  (X200: bar 1280x800 -> 1280x32, dock and notifications -> nothing, the wallpaper -> all). X200, GPU time per frame with
+  the profile on: `gtk3-scroll` 8.35 -> 3.41 ms (the bar 0.03), sprites 7.08 -> 2.84, `terminal-scroll` 8.66 -> 3.70, and
+  the frames the profile had cost came back (52 -> 60, 47 -> 59, 25 -> 30 fps). Fresh sessions on the X200, on against
+  off (`bench.sh`, 12 s each): `gtk3-scroll` 60 instead of 52 fps, the sprites 59 / 47, `resize` 59 / 41,
+  `terminal-scroll` 30 / 25, `dev` 45 / 42; compositor CPU `gpu-client` 4.3 / 6.3, `video-window` 3.6 / 4.7, `dev` 8.5 /
+  9.5; the i915 PMU's busy time `gtk3-scroll` 0.0 / 26.4%, `terminal-scroll` 0.1 / 12.5, the sprites 1.4 / 21.0 (one
+  opaque window costs the GM45 almost nothing: a scrolling foot keeps it busy 0.5%; the profile's milliseconds per
+  element are mostly its own glFinish drains, read its shares); the `dev` scroll 43 / 51 ms, `resize` redrawn 52 /
+  63, the menu open 484 / 504. On the XPS (iris, 3200x1800): GPU busy `gtk3-scroll` 26.7 / 40.1%, `terminal-scroll`
+  18.8 / 34.8, the sprites 4.7 / 8.7, `gpu-client` 29.0 / 33.7, `resize` 69.4 / 78.2, `video-window` 29.8 / 36.2;
+  compositor CPU the sprites 8.1 / 10.8, `terminal-scroll` 3.6 / 4.3; `resize` redrawn 27 / 34 ms; the package's power
+  net of idle (`bench.sh --energy`, RAPL, 2 rounds) `terminal-scroll` 10.8 / 11.6 W, `gtk3-scroll` 9.1 / 9.4,
+  `gpu-client` 2.2 / 2.5, `video-window` 4.0 / 4.3. The readback waits
+  for a native fence of the analysis draw (a frame whose fence is not signaled leaves it for the next): without it
+  the readback at the next frame's start waited for the whole frame before, which iris still has in flight, and the
+  XPS opened the menu 36 ms later and spent 3 points more GPU on `workspace-switch`; the rest of those two losses
+  was the shell: while it is busy its windows commit about twice a second each (a workspace switch has the bar
+  commit 16 times for its indicator's animation, and the wallpaper, the dock and the notification column twice each,
+  every one a new buffer with the whole surface damaged: 316 + 40 + 42 + 40 commits in the X200's 56 s
+  `workspace-switch`, WAYLAND_DEBUG of the shell; a menu toggle a second has the bar, dock and wallpaper commit
+  once a second each), so each was analyzed a hundred times a minute; a surface whose last two commits came less
+  than two seconds apart is drawn whole until it has been quiet for two seconds (at one second the XPS still paid
+  27 ms of its menu's opening for three 3200x1800 analyses), and a commit without a new buffer or damage keeps the box. What stays is the shell's doing and the largest cost under it: a
+  full-size bar window whose every animation frame damages the whole screen makes the compositor repaint
+  everything under it (16 full repaints per workspace switch), and re-rendering the wallpaper on every switch
+  does the same twice more; a strip-sized bar window and no wallpaper commit would remove them (candidates for an
+  Omarchy issue, with the captures in the session's scratchpad `shell/`). With the back-off (r803, on / off, 2 fresh
+  sessions each): `workspace-switch` costs the same GPU time everywhere (T460s 11.7 / 12.0%, T550 4.4 / 4.3, Mac
+  mini 12.0 / 11.7), the menu opens the same or sooner (X200 369 / 473 ms, Chromebook 616 / 684, T460s 162 / 164),
+  a toast shows sooner (T460s 16 / 26 ms, Mac mini 30 / 37, Chromebook 31 / 41; lianli 28 / 26 and the X200 67 / 55
+  within their spread), and the scrolling gains stay (GPU busy T460s `gtk3-scroll` 22 / 29, `terminal-scroll` 11 /
+  15, `resize` 27 / 32; Mac mini `gtk3-scroll` 30 / 54, `resize` 7.5 / 46; X200 `gtk3-scroll` 55 / 40 fps, `resize`
+  60 / 40). One cost stands: the Mac mini's `resize` redraw 27.5 / 24.3 ms. Deploy checks pass on the X200, T460s,
+  lianli, Chromebook, Mac mini and Galaxy Book, the scanout is identical with it on and off. Tried and dropped: the
+  surface shader discarding its a == 0 pixels instead (`discard`): slower on GM45, the bar 3.00 -> 4.94 ms, the blend is
+  not the limit there, the shader is. The shell patched instead (bar window the strip's height, dock mapped only on
+  floating workspaces, notification column only with a toast; `shellmod.sh` in the session's scratchpad) gives the same
+  on the XPS (GPU busy `gtk3-scroll` 39.8 -> 26.7%, `terminal-scroll` 34 -> 19, `workspace-switch` 24 -> 7, GPU memory at
+  the end of a run 324 -> 251 MB) but loses the toast's latency to the map, and Omarchy chose the full-size window, so
+  the compositor side is the one kept. The shell itself: Pss 230-290 MB, 29-37 threads, GPU memory 52-107 MB of which
+  26-45 MB are its swapchains; its CPU under `menu` is the guard batch (the user's menu work of 2026-10-27), under
+  `notifications` about 4% of a core with a `ps` per toast. Captures and scripts: the session's scratchpad `shell/`.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
