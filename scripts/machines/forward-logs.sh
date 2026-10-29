@@ -69,7 +69,7 @@ machine)
         echo "== $h"
         # the journal
         ssh "root@$h" "mkdir -p /etc/systemd/journal-upload.conf.d &&
-            printf '[Upload]\nURL=http://$desktop:19532\n' >/etc/systemd/journal-upload.conf.d/desktop.conf &&
+            printf '[Upload]\nURL=http://$desktop:19532\n# compressed uploads (systemd 258 and later) reach the receiver cut: \"ZSTD stream ended unexpectedly\", answered 400, and the uploader restarts forever (2026-10-29)\nCompression=no\n' >/etc/systemd/journal-upload.conf.d/desktop.conf &&
             mkdir -p /etc/systemd/system/systemd-journal-upload.service.d &&
             printf '[Unit]\nStartLimitIntervalSec=0\n[Service]\nRestart=always\nRestartSec=30\n' \
                 >/etc/systemd/system/systemd-journal-upload.service.d/retry.conf &&
