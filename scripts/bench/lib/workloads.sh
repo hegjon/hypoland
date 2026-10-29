@@ -119,6 +119,62 @@ workload_flea() { # Omarchy's file manager, a Quickshell window, paged through w
     sleep 1
 }
 
+# A folder of empty files in Omarchy's file manager (Flea, a Quickshell window) and in Nautilus (GTK 4, its list view),
+# scrolled with the Down key held on the uinput keyboard for the whole run (root only): the compositor forwards the one
+# press and the client repeats it at the session's rate (Omarchy: 40 a second after 250 ms), as a finger resting on the
+# key would. The folder has as many files as the repeat sends in the run (480 at 40 a second for 12 s), so the selection
+# walks the whole folder and reaches the end as the run ends; a client that cannot keep up ends later. Added 2026-10-29.
+scroll_files() { # the folder, made for the session's repeat rate
+    local rate files dir
+    rate=$(H getoption input:repeat_rate 2>/dev/null | awk '/^int:/ {print $2}')
+    files=$(( ${rate:-40} * SECONDS_PER_RUN ))
+    dir=$USERHOME/.cache/hypoland-bench/files-$files
+    [ -e "$dir/file-$files.txt" ] || asuser bash -c 'mkdir -p "$0" && cd "$0" && for i in $(seq 1 "$1"); do touch "file-$i.txt"; done' "$dir" "$files"
+    echo "$dir"
+}
+scroll_folder() { # workload, seconds to wait for the window, command with FOLDER for the folder
+    local name=$1 wait=$2 driver folder
+    shift 2
+    # the key would go into the password field of a lock screen
+    if [ -n "$(in_the_way)" ]; then
+        echo "--- $name: not measured,$(in_the_way)"
+        value "invalid.$name" 1
+        return
+    fi
+    folder=$(scroll_files)
+    client $((SECONDS_PER_RUN + 25)) "${*//FOLDER/$folder}"
+    sleep "$wait"
+    rm -f "$OUT/$name.key.txt"
+    env -i PATH="$PATH" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" python3 -I "$CLIENTSRC/holdkey.py" down $((SECONDS_PER_RUN + 1)) \
+        >"$OUT/$name.key.txt" 2>&1 &
+    driver=$!
+    for _ in $(seq 1 50); do # the keyboard is there after 2 s
+        grep -q "^down" "$OUT/$name.key.txt" 2>/dev/null && break
+        sleep 0.1
+    done
+    rec "$name"
+    wait $driver
+    stop_clients
+}
+needs_flea_scroll="flea root"
+workload_flea_scroll() {
+    scroll_folder flea-scroll 8 "exec flea 'FOLDER'"
+    asuser pkill -f "[q]s -p /usr/share/flea" >/dev/null 2>&1
+    asuser pkill -x flea >/dev/null 2>&1
+    sleep 1
+}
+needs_nautilus_scroll="nautilus root"
+workload_nautilus_scroll() {
+    # the list view, one file per Down; a grid moves a row
+    local view
+    view=$(asuser gsettings get org.gnome.nautilus.preferences default-folder-viewer 2>/dev/null)
+    [ -n "$view" ] && [ "$view" != "'list-view'" ] && asuser gsettings set org.gnome.nautilus.preferences default-folder-viewer list-view >/dev/null 2>&1
+    scroll_folder nautilus-scroll 5 "exec nautilus --new-window 'FOLDER'"
+    asuser nautilus -q >/dev/null 2>&1
+    [ -n "$view" ] && [ "$view" != "'list-view'" ] && asuser gsettings set org.gnome.nautilus.preferences default-folder-viewer "${view//\'/}" >/dev/null 2>&1
+    return 0
+}
+
 needs_shm_fullwindow="chromium"
 workload_shm_fullwindow() {
     local page="data:text/html,<body style='background:linear-gradient(90deg,red,blue)'><marquee scrollamount=20 style='font:60px sans-serif;color:white'>Hypoland</marquee><div style='animation:s 2s linear infinite;width:200px;height:200px;background:lime'></div><style>@keyframes s{to{transform:translateX(900px) rotate(360deg)}}</style>"

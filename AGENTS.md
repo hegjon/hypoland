@@ -397,7 +397,15 @@ Tools:
   package elsewhere (Omarchy's repository; installed on the T550, the XPS, lianli, the T460s, the Chromebook, the
   Galaxy Book and the Mac mini that day). `kitty-scroll` is the same in kitty (OpenGL 3.3 as well, the `kitty` package,
   installed on the same seven machines the same day; kitty takes the command as arguments, no `-e`). On the T550 the
-  compositor costs the same with all three GL terminals (5.0%); Ghostty shows 45 frames a second against 60. Before 2026-10-26 the clients ran in root's ssh session (`user-0.slice`), which the CPU
+  compositor costs the same with all three GL terminals (5.0%); Ghostty shows 45 frames a second against 60. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
+  user) scroll a folder of empty files in Flea (Omarchy's file manager, a Quickshell window) and in Nautilus (GTK 4,
+  its list view, set for the run if needed) with the Down key held on the uinput keyboard for the whole run
+  (`clients/holdkey.py`, root only): the compositor forwards the one press and the client repeats it at the session's
+  rate (Omarchy: 40 a second after 250 ms). The folder has as many files as the repeat sends in the run (480 at 40 a
+  second for 12 s), so the selection walks the whole folder and reaches its end as the run ends. T550, one run: both at
+  40 frames a second, compositor 3.1% / 3.2%, Flea 13% and Nautilus 29% in the client. The older `flea` and
+  `nautilus` workloads page with four keys a second and toggle fullscreen twice a second, which is why they show 8 and
+  25 to 32 frames a second. Before 2026-10-26 the clients ran in root's ssh session (`user-0.slice`), which the CPU
   controller weighs against the user's slice; now they share the user's slice with the compositor, as programs
   started from the desktop do in `app.slice`. `systemd-run` expands `$` in the command it runs like `ExecStart=`
   does, so it runs with `--expand-environment=no` (a client's `$$` came out as `$` and nothing stopped them).
