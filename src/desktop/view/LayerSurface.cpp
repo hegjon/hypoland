@@ -321,6 +321,17 @@ void CLayerSurface::onCommit() {
     CBox geomFixed = {m_geometry.x, m_geometry.y, m_geometry.width, m_geometry.height};
     g_pHyprRenderer->damageBox(geomFixed);
 
+    // the pixels with alpha may have changed, see CHyprOpenGLImpl::analyzeLayerAlpha(); a commit without a new buffer
+    // or damage (a frame callback, an input region) changes none
+    if (m_layerSurface->m_surface && (m_layerSurface->m_surface->m_current.updated.bits.buffer || m_layerSurface->m_surface->m_current.updated.bits.damage)) {
+        const auto NOW        = Time::steadyNow();
+        m_alphaCommitInterval = std::chrono::duration_cast<std::chrono::milliseconds>(NOW - m_alphaCommitTime);
+        m_alphaCommitTime     = NOW;
+        m_alphaBounds.reset();
+        m_alphaBoundsDirty = true;
+        m_alphaSerial++;
+    }
+
     if (m_layerSurface->m_current.committed != 0) {
         if (m_layerSurface->m_current.committed & CLayerShellResource::eCommittedState::STATE_LAYER && m_layerSurface->m_current.layer != m_layer) {
 

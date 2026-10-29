@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <optional>
+#include "../../helpers/time/Time.hpp"
 #include "../../defines.hpp"
 #include "WLSurface.hpp"
 #include "View.hpp"
@@ -74,6 +76,14 @@ namespace Desktop::View {
         CBox                                    m_geometry = {0, 0, 0, 0};
         Vector2D                                m_position;
         std::string                             m_namespace = "";
+        // The box of the pixels with alpha above zero in the current buffer, in buffer pixels, found by
+        // CHyprOpenGLImpl::analyzeLayerAlpha() once the surface stops committing; renderLayer() draws only that part. A
+        // commit drops it. The serial tells an analysis of an older buffer from the current one.
+        std::optional<CBox>                     m_alphaBounds;
+        bool                                    m_alphaBoundsDirty = false;
+        uint32_t                                m_alphaSerial      = 0;
+        Time::steady_tp                         m_alphaCommitTime;
+        std::chrono::milliseconds               m_alphaCommitInterval{0}; // between the last two commits with content
         pid_t                                   getPID();
         void                                    updateSurfaceScaleTransformDetails();
 

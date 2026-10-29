@@ -979,6 +979,18 @@ void IHyprRenderer::renderLayer(PHLLS pLayer, PHLMONITOR pMonitor, const Time::s
     renderdata.blockBlurOptimization            = pLayer->m_layer == ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM || pLayer->m_layer == ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
 
     renderdata.clipBox = CBox{0, 0, pMonitor->m_size.x, pMonitor->m_size.y}.scale(pMonitor->m_scale).round();
+    // only the pixels with alpha, see CHyprOpenGLImpl::analyzeLayerAlpha(); a box of nothing means nothing to draw. Not
+    // for a blurred layer: its transparent pixels show the blur
+    if (!popups && !renderdata.blur && pLayer->m_alphaBounds && pLayer->wlSurface() && pLayer->wlSurface()->resource()) {
+        const auto& B    = *pLayer->m_alphaBounds;
+        const auto& S    = pLayer->wlSurface()->resource()->m_current;
+        const auto  UNIT = S.size / S.bufferSize; // a buffer pixel in logical units (the viewport's scaling included)
+        CBox        box  = {REALPOS.x + B.x * UNIT.x - pMonitor->m_position.x, REALPOS.y + B.y * UNIT.y - pMonitor->m_position.y, B.width * UNIT.x, B.height * UNIT.y};
+        box.scale(pMonitor->m_scale).round().expand(1);
+        renderdata.clipBox = B.width <= 0 || B.height <= 0 ? CBox{0, 0, 0, 0} : renderdata.clipBox.intersection(box);
+        if (renderdata.clipBox.width <= 0 || renderdata.clipBox.height <= 0)
+            return;
+    }
     if (renderdata.blur && pLayer->m_ruleApplicator->ignoreAlpha().hasValue()) {
         renderdata.discardMode |= DISCARD_ALPHA;
         renderdata.discardOpacity = pLayer->m_ruleApplicator->ignoreAlpha().valueOrDefault();
@@ -1942,6 +1954,8 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit, std::optiona
         damage = Math::coalesceRegion(damage, MAX_DAMAGE_RECTS);
 
     finalDamage = damage;
+
+    Render::GL::g_pHyprOpenGL->analyzeLayerAlpha(pMonitor);
 
     // update damage in renderdata as we modified it
     setDamage(damage, finalDamage);
