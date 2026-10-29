@@ -8,6 +8,10 @@ CRegion IPassElement::opaqueRegion() {
     return {};
 }
 
+std::string IPassElement::profileLabel() {
+    return "";
+}
+
 bool IPassElement::disableSimplification() {
     return false;
 }

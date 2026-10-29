@@ -171,6 +171,11 @@ static uint64_t regionArea(const CRegion& rg) {
     return area;
 }
 
+static SPassProfile& passProfile() {
+    static SPassProfile profile;
+    return profile;
+}
+
 static void logPassProfile(SPassProfile& profile) {
     uint64_t total = 0;
     for (const auto& [name, e] : profile.entries) {
@@ -180,7 +185,7 @@ static void logPassProfile(SPassProfile& profile) {
     // stderr: the compositor log is usually disabled
     std::println(stderr, "[pass profile] {} frames, {:.2f} ms per frame", profile.frames, total / 1000.0 / profile.frames);
     for (const auto& [name, e] : profile.entries) {
-        std::println(stderr, "[pass profile]   {:<36} {:>6.2f} ms/frame  {:>5.1f} draws/frame  {:>8} px/frame", name, e.us / 1000.0 / profile.frames,
+        std::println(stderr, "[pass profile]   {:<56} {:>6.2f} ms/frame  {:>5.1f} draws/frame  {:>8} px/frame", name, e.us / 1000.0 / profile.frames,
                      sc<double>(e.draws) / profile.frames, e.area / profile.frames);
     }
 
@@ -284,8 +289,6 @@ CRegion CRenderPass::render(const CRegion& damage_) {
         g_pHyprRenderer->m_renderData.damage = el.elementDamage;
 
         if (passProfilingEnabled()) {
-            static SPassProfile profile;
-
             glFinish();
             const auto STARTED = std::chrono::steady_clock::now();
             g_pHyprRenderer->draw(el.element, el.elementDamage);
@@ -294,14 +297,13 @@ CRegion CRenderPass::render(const CRegion& damage_) {
             std::string name = el.element->passName();
             if (const auto BB = el.element->boundingBox(); BB)
                 name += std::format(" {}x{}", sc<int>(BB->w), sc<int>(BB->h));
+            if (const auto LABEL = el.element->profileLabel(); !LABEL.empty())
+                name += " " + LABEL;
 
-            auto& entry = profile.entries[name];
+            auto& entry = passProfile().entries[name];
             entry.us += std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - STARTED).count();
             entry.draws++;
             entry.area += regionArea(el.elementDamage.copy().intersect(CBox{{}, pMonitor->m_transformedSize}));
-
-            if (&el == &m_passElements.back() && ++profile.frames >= 120)
-                logPassProfile(profile);
         } else
             g_pHyprRenderer->draw(el.element, el.elementDamage);
 
@@ -319,6 +321,9 @@ CRegion CRenderPass::render(const CRegion& damage_) {
 
         usesPrecomputedBlur = usesPrecomputedBlur || el.element->needsPrecomputeBlurCached;
     }
+
+    if (passProfilingEnabled() && ++passProfile().frames >= 120)
+        logPassProfile(passProfile());
 
     animatedBlurDamage.intersect(CBox{{}, pMonitor->m_transformedSize});
     g_pHyprRenderer->scheduleFrameForAnimatedBlur(animatedBlurDamage, usesPrecomputedBlur);

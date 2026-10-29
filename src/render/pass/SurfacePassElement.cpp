@@ -1,6 +1,8 @@
 #include "SurfacePassElement.hpp"
 #include "../OpenGL.hpp"
 #include "../../desktop/view/WLSurface.hpp"
+#include "../../desktop/view/LayerSurface.hpp"
+#include "../../desktop/view/window/WindowMetadata.hpp"
 #include "../../desktop/view/window/Window.hpp"
 #include "../../protocols/core/Compositor.hpp"
 #include "../../protocols/DRMSyncobj.hpp"
@@ -193,6 +195,14 @@ CRegion CSurfacePassElement::visibleRegion(bool& cancel) {
     visibleRegion.translate((m_data.pos + m_data.localPos - m_data.pMonitor->m_position) * m_data.pMonitor->m_scale);
 
     return visibleRegion;
+}
+
+std::string CSurfacePassElement::profileLabel() {
+    if (m_data.pLS)
+        return m_data.pLS->m_namespace;
+    if (m_data.pWindow)
+        return m_data.pWindow->metadata().appID();
+    return "";
 }
 
 void CSurfacePassElement::discard() {
