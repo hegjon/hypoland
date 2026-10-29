@@ -677,6 +677,8 @@ void CWLSurfaceResource::commitState(SSurfaceState& state) {
     if (m_current.buffer) {
         if (m_current.buffer->isSynchronous())
             m_current.updateSynchronousTexture(lastTexture);
+        else if (m_current.buffer->type() == Aquamarine::BUFFER_TYPE_SHM)
+            m_current.buffer->flushCPUWrites(m_current.accumulateBufferDamage()); // zero copy on a GPU that reads memory, not the caches
 
         // if the surface is a cursor, update the shm buffer
         // TODO: don't update the entire texture
