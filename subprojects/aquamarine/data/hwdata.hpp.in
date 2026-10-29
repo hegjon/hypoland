@@ -1,8 +1,11 @@
-#include <unordered_map>
-#include <string>
+#include <string_view>
+#include <utility>
 
+// Hypoland: a constant table instead of an unordered_map of std::strings, which was built on the heap at every start
+// (2559 entries, 1696 of them with a maker name too long for the small-string buffer: about 450 kB of heap and 125 kB
+// of initializer code) for a lookup that happens once per connector, in CDRMBackend's EDID parsing.
 #define __AQ_PNP_PROP(pnp, manu) {pnp, manu}
-inline std::unordered_map<std::string, std::string> PNPIDS = {
+inline constexpr std::pair<std::string_view, std::string_view> PNPIDS[] = {
 @HWDATA_PNP_IDS@
 };
 #undef __AQ_PNP_PROP
