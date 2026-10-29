@@ -1,0 +1,2181 @@
+== x200: 30 off / 30 on blocks, 1 left out, off -> on (HYPOLAND_SHM_TEXTURE=linear)
+binary.size_kB                              14713      14713      +0.00  
+compositor.age_s                               61         61      +0.00  
+cpu.alacritty-scroll.clients_percent       112.97     112.92      -0.05  
+cpu.alacritty-scroll.kernel                  1.75       1.67      -0.08  
+cpu.alacritty-scroll.machine_percent       134.20     134.12      -0.08  
+cpu.alacritty-scroll.percent                 4.58       4.59      +0.01  
+cpu.alacritty-scroll.stddev                  0.52       0.52      +0.00  
+cpu.alacritty-scroll.total_percent         118.66     118.61      -0.05  
+cpu.alacritty-scroll.user                    2.91       2.83      -0.08  
+cpu.dev.clients_percent                     11.73      11.78      +0.05  
+cpu.dev.kernel                               1.58       1.50      -0.08  
+cpu.dev.machine_percent                     21.70      21.61      -0.09  
+cpu.dev.percent                              5.07       5.06      -0.01  
+cpu.dev.stddev                               1.81       1.88      +0.07  
+cpu.dev.total_percent                       18.64      18.74      +0.10  
+cpu.dev.user                                 3.50       3.50      +0.00  
+cpu.gpu-client.clients_percent               1.05       1.04      -0.01  
+cpu.gpu-client.kernel                        0.92       0.92      +0.00  
+cpu.gpu-client.machine_percent               6.90       6.82      -0.08  
+cpu.gpu-client.percent                       2.89       2.87      -0.02  
+cpu.gpu-client.stddev                        0.58       0.51      -0.07  
+cpu.gpu-client.total_percent                 4.06       4.04      -0.02  
+cpu.gpu-client.user                          2.00       1.92      -0.08  
+cpu.gtk3-scroll.clients_percent             50.22      50.85      +0.63  
+cpu.gtk3-scroll.kernel                       1.58       1.75      +0.17  
+cpu.gtk3-scroll.machine_percent             72.28      72.42      +0.14  
+cpu.gtk3-scroll.percent                     18.79      17.62      -1.17  better
+cpu.gtk3-scroll.stddev                       0.58       0.56      -0.02  
+cpu.gtk3-scroll.total_percent               69.28      68.63      -0.65  
+cpu.gtk3-scroll.user                        17.17      15.82      -1.35  
+cpu.gtk3-x11-scroll.clients_percent          6.66       6.74      +0.08  
+cpu.gtk3-x11-scroll.kernel                   1.00       1.00      +0.00  
+cpu.gtk3-x11-scroll.machine_percent         73.73      73.54      -0.19  
+cpu.gtk3-x11-scroll.percent                  3.20       3.20      +0.00  
+cpu.gtk3-x11-scroll.stddev                   0.76       0.75      -0.01  
+cpu.gtk3-x11-scroll.total_percent           56.55      56.63      +0.08  
+cpu.gtk3-x11-scroll.user                     2.25       2.25      +0.00  
+cpu.gtk4-scroll.clients_percent             18.95      18.95      +0.00  
+cpu.gtk4-scroll.kernel                       1.50       1.50      +0.00  
+cpu.gtk4-scroll.machine_percent             33.83      33.07      -0.76  
+cpu.gtk4-scroll.percent                     10.43       9.60      -0.83  better
+cpu.gtk4-scroll.stddev                       0.52       0.52      +0.00  
+cpu.gtk4-scroll.total_percent               29.52      28.67      -0.85  
+cpu.gtk4-scroll.user                         8.92       8.08      -0.84  
+cpu.gtk4-spinner.clients_percent             5.35       5.38      +0.03  
+cpu.gtk4-spinner.kernel                      1.08       1.17      +0.09  
+cpu.gtk4-spinner.machine_percent            13.47      13.64      +0.17  
+cpu.gtk4-spinner.percent                     4.25       4.35      +0.10  
+cpu.gtk4-spinner.stddev                      0.49       0.51      +0.02  
+cpu.gtk4-spinner.total_percent               9.73       9.87      +0.14  
+cpu.gtk4-spinner.user                        3.17       3.17      +0.00  
+cpu.idle.clients_percent                     0.00       0.00      +0.00  
+cpu.idle.kernel                              0.00       0.00      +0.00  
+cpu.idle.machine_percent                     1.50       1.58      +0.08  
+cpu.idle.percent                             0.02       0.02      +0.00  
+cpu.idle.stddev                              0.00       0.00      +0.00  
+cpu.idle.total_percent                       0.11       0.12      +0.01  
+cpu.idle.user                                0.00       0.00      +0.00  
+cpu.idle-windows.clients_percent             0.01       0.01      +0.00  
+cpu.idle-windows.kernel                      0.00       0.00      +0.00  
+cpu.idle-windows.machine_percent             1.83       1.58      -0.25  
+cpu.idle-windows.percent                     0.03       0.03      +0.00  
+cpu.idle-windows.stddev                      0.00       0.00      +0.00  
+cpu.idle-windows.total_percent               0.14       0.14      +0.00  
+cpu.idle-windows.user                        0.00       0.00      +0.00  
+cpu.menu.clients_percent                     0.03       0.03      +0.00  
+cpu.menu.kernel                              0.50       0.67      +0.17  
+cpu.menu.machine_percent                    94.06      94.54      +0.48  
+cpu.menu.percent                             1.76       1.97      +0.21  
+cpu.menu.stddev                              0.80       1.08      +0.28  
+cpu.menu.total_percent                      85.64      86.20      +0.56  
+cpu.menu.user                                1.25       1.25      +0.00  
+cpu.nautilus.clients_percent                30.67      30.76      +0.09  
+cpu.nautilus.kernel                          0.83       1.83      +1.00  
+cpu.nautilus.machine_percent                42.82      44.38      +1.56  
+cpu.nautilus.percent                         2.65       3.61      +0.96  
+cpu.nautilus.stddev                          2.23       2.99      +0.76  
+cpu.nautilus.total_percent                  35.64      36.66      +1.02  
+cpu.nautilus.user                            1.83       1.83      +0.00  
+cpu.notifications.clients_percent            0.00       0.00      +0.00  
+cpu.notifications.kernel                     0.83       0.83      +0.00  
+cpu.notifications.machine_percent           19.79      19.79      +0.00  
+cpu.notifications.percent                    2.48       2.47      -0.01  
+cpu.notifications.stddev                     0.67       0.67      +0.00  
+cpu.notifications.total_percent             11.47      11.44      -0.03  
+cpu.notifications.user                       1.67       1.67      +0.00  
+cpu.qt-quick-scroll.clients_percent          6.62       6.62      +0.00  
+cpu.qt-quick-scroll.kernel                   1.00       1.00      +0.00  
+cpu.qt-quick-scroll.machine_percent         12.72      12.64      -0.08  
+cpu.qt-quick-scroll.percent                  3.25       3.24      -0.01  
+cpu.qt-quick-scroll.stddev                   0.58       0.49      -0.09  
+cpu.qt-quick-scroll.total_percent            9.99      10.00      +0.01  
+cpu.qt-quick-scroll.user                     2.25       2.25      +0.00  
+cpu.qt-software-scroll.clients_percent      25.19      25.22      +0.03  
+cpu.qt-software-scroll.kernel                1.67       1.75      +0.08  
+cpu.qt-software-scroll.machine_percent      38.22      38.15      -0.07  
+cpu.qt-software-scroll.percent               9.25       9.24      -0.01  
+cpu.qt-software-scroll.stddev                0.72       0.58      -0.14  
+cpu.qt-software-scroll.total_percent        34.54      34.59      +0.05  
+cpu.qt-software-scroll.user                  7.58       7.50      -0.08  
+cpu.qt-software-sprites.clients_percent      76.72      76.69      -0.03  
+cpu.qt-software-sprites.kernel               1.83       1.75      -0.08  
+cpu.qt-software-sprites.machine_percent     100.01      91.85      -8.16  better
+cpu.qt-software-sprites.percent             19.76      11.34      -8.42  better
+cpu.qt-software-sprites.stddev               1.06       0.67      -0.39  
+cpu.qt-software-sprites.total_percent       96.67      88.19      -8.48  better
+cpu.qt-software-sprites.user                17.92       9.58      -8.34  
+cpu.resize.clients_percent                  78.46      72.35      -6.11  
+cpu.resize.kernel                            6.17      16.65     +10.48  
+cpu.resize.machine_percent                 107.59     111.02      +3.43  
+cpu.resize.percent                          19.34      28.38      +9.04  
+cpu.resize.stddev                            0.78       1.15      +0.37  
+cpu.resize.total_percent                    98.01     101.08      +3.07  
+cpu.resize.user                             13.25      11.67      -1.58  
+cpu.shm-fullwindow.clients_percent          32.30      32.10      -0.20  
+cpu.shm-fullwindow.kernel                    1.58       1.58      +0.00  
+cpu.shm-fullwindow.machine_percent          53.27      52.86      -0.41  
+cpu.shm-fullwindow.percent                   9.44       9.06      -0.38  
+cpu.shm-fullwindow.stddev                    1.08       1.00      -0.08  
+cpu.shm-fullwindow.total_percent            50.07      49.50      -0.57  
+cpu.shm-fullwindow.user                      7.91       7.50      -0.41  
+cpu.terminal-scroll.clients_percent        108.91     109.16      +0.25  
+cpu.terminal-scroll.kernel                   1.42       1.42      +0.00  
+cpu.terminal-scroll.machine_percent        132.07     132.21      +0.14  
+cpu.terminal-scroll.percent                  9.69       9.43      -0.26  
+cpu.terminal-scroll.stddev                   0.72       0.76      +0.04  
+cpu.terminal-scroll.total_percent          119.13     119.12      -0.01  
+cpu.terminal-scroll.user                     8.33       7.92      -0.41  
+cpu.tk-canvas.clients_percent               10.33      10.31      -0.02  
+cpu.tk-canvas.kernel                         1.50       1.50      +0.00  
+cpu.tk-canvas.machine_percent               90.60      89.80      -0.80  
+cpu.tk-canvas.percent                        4.96       4.68      -0.28  
+cpu.tk-canvas.stddev                         1.08       1.08      +0.00  
+cpu.tk-canvas.total_percent                 71.70      71.96      +0.26  
+cpu.tk-canvas.user                           3.41       3.25      -0.16  
+cpu.video.clients_percent                   22.24      22.30      +0.06  
+cpu.video.kernel                             0.92       0.92      +0.00  
+cpu.video.machine_percent                   26.94      27.11      +0.17  
+cpu.video.percent                            2.52       2.52      +0.00  
+cpu.video.stddev                             0.52       0.52      +0.00  
+cpu.video.total_percent                     24.87      25.00      +0.13  
+cpu.video.user                               1.67       1.67      +0.00  
+cpu.video-window.clients_percent            22.27      22.15      -0.12  
+cpu.video-window.kernel                      0.92       1.00      +0.08  
+cpu.video-window.machine_percent            28.11      27.92      -0.19  
+cpu.video-window.percent                     3.17       3.17      +0.00  
+cpu.video-window.stddev                      0.58       0.58      +0.00  
+cpu.video-window.total_percent              25.57      25.45      -0.12  
+cpu.video-window.user                        2.25       2.17      -0.08  
+cpu.workspace-switch.clients_percent         0.06       0.06      +0.00  
+cpu.workspace-switch.kernel                  0.75       0.75      +0.00  
+cpu.workspace-switch.machine_percent        20.62      20.54      -0.08  
+cpu.workspace-switch.percent                 2.24       2.26      +0.02  
+cpu.workspace-switch.stddev                  0.72       0.75      +0.03  
+cpu.workspace-switch.total_percent           8.72       8.73      +0.01  
+cpu.workspace-switch.user                    1.50       1.42      -0.08  
+fps.alacritty-scroll.screen                  43.3       43.4      +0.10  
+fps.dev.screen                               45.2       45.2      +0.00  
+fps.gpu-client                               60.3       60.3      +0.00  
+fps.gpu-client.screen                        60.1       60.1      +0.00  
+fps.gtk3-scroll                              58.7       58.6      -0.10  
+fps.gtk3-scroll.screen                       59.2       59.2      +0.00  
+fps.gtk3-x11-scroll                          56.6       56.9      +0.30  
+fps.gtk3-x11-scroll.screen                   29.2       29.3      +0.10  
+fps.gtk4-scroll                              59.9       59.9      +0.00  
+fps.gtk4-scroll.screen                       60.1       60.1      +0.00  
+fps.gtk4-spinner                             59.9       59.9      +0.00  
+fps.gtk4-spinner.screen                      60.1       60.1      +0.00  
+fps.idle.screen                               0.0        0.0      +0.00  
+fps.idle-windows.screen                       0.0        0.0      +0.00  
+fps.menu.screen                               8.8        8.4      -0.40  
+fps.nautilus.screen                          22.8       22.5      -0.30  
+fps.notifications.screen                     28.8       28.8      +0.00  
+fps.qt-quick-scroll                          40.0       40.0      +0.00  
+fps.qt-quick-scroll.screen                   40.1       40.1      +0.00  
+fps.qt-software-scroll                       60.2       60.1      -0.10  
+fps.qt-software-scroll.screen                60.1       60.1      +0.00  
+fps.qt-software-sprites                      59.8       60.0      +0.20  
+fps.qt-software-sprites.screen               59.7       60.0      +0.30  
+fps.resize.screen                            59.8       54.2      -5.60  WORSE
+fps.shm-fullwindow.screen                    59.9       59.8      -0.10  
+fps.terminal-scroll.screen                   30.6       30.4      -0.20  
+fps.tk-canvas                                56.5       56.7      +0.20  
+fps.tk-canvas.screen                         45.5       45.0      -0.50  
+fps.video.screen                             30.0       30.0      +0.00  
+fps.video-window.screen                      30.0       30.0      +0.00  
+fps.workspace-switch.screen                  20.2       20.2      +0.00  
+latency.dev.focus_ms                          8.8        9.0      +0.20  
+latency.dev.focus_p90_ms                     18.1       18.6      +0.50  
+latency.dev.jump_ms                          42.0       42.5      +0.50  
+latency.dev.jump_p90_ms                      56.3       56.8      +0.50  
+latency.dev.scroll_ms                        31.0       30.7      -0.30  
+latency.dev.scroll_p90_ms                    75.1       75.4      +0.30  
+latency.dev.type_ms                           4.7        4.8      +0.10  
+latency.dev.type_p90_ms                      15.8       16.0      +0.20  
+latency.idle-windows.focus_ms                 4.4        4.6      +0.20  
+latency.idle-windows.focus_p90_ms             7.8        9.1      +1.30  
+latency.menu.close_ms                         5.8        5.8      +0.00  
+latency.menu.close_p90_ms                    12.6       12.7      +0.10  
+latency.menu.open_ms                        402.3      399.8      -2.50  
+latency.menu.open_p90_ms                    483.0      483.4      +0.40  
+latency.menu.search_ms                      177.1      181.1      +4.00  
+latency.menu.search_p90_ms                  241.9      243.4      +1.50  
+latency.menu.select_ms                        8.5        8.6      +0.10  
+latency.menu.select_p90_ms                   10.4       10.4      +0.00  
+latency.notifications.toast_ms               46.9       46.5      -0.40  
+latency.notifications.toast_p90_ms          112.1      110.1      -2.00  
+latency.resize.focus_ms                       4.8        5.0      +0.20  
+latency.resize.focus_p90_ms                   8.7       10.2      +1.50  
+latency.resize.redrawn_ms                    36.4       36.3      -0.10  
+latency.resize.redrawn_p90_ms                47.2       47.1      -0.10  
+latency.resize.resize_ms                      4.9        4.3      -0.60  
+latency.resize.resize_p90_ms                 13.8       13.4      -0.40  
+latency.workspace-switch.bar_ms               3.1        3.3      +0.20  
+latency.workspace-switch.bar_p90_ms           4.9        5.2      +0.30  
+latency.workspace-switch.focus_ms             4.2        4.6      +0.40  
+latency.workspace-switch.focus_p90_ms         7.7        8.9      +1.20  
+latency.workspace-switch.workspace_ms         3.2        3.2      +0.00  
+latency.workspace-switch.workspace_p90_ms        5.9        5.7      -0.20  
+mem.end.AnonHugePages_kB                        0          0      +0.00  
+mem.end.Anonymous_kB                        19192      21472   +2280.00  WORSE
+mem.end.gpu_kB                              83416      83476     +60.00  
+mem.end.gpu_private_kB                      35288      35316     +28.00  
+mem.end.gpu_purgeable_kB                     4120       4120      +0.00  
+mem.end.heap_kB                             11188      13436   +2248.00  WORSE
+mem.end.Private_Clean_kB                    17824      17796     -28.00  
+mem.end.Private_Dirty_kB                    19192      21472   +2280.00  WORSE
+mem.end.Pss_Anon_kB                         19192      21472   +2280.00  WORSE
+mem.end.Pss_File_kB                         27831      27823      -8.00  
+mem.end.Pss_kB                              47017      49310   +2293.00  
+mem.end.Rss_kB                              80940      83292   +2352.00  
+mem.end.threads                                 6          8      +2.00  
+mem.idle-windows.AnonHugePages_kB               0          0      +0.00  
+mem.idle-windows.Anonymous_kB               19224      21504   +2280.00  WORSE
+mem.idle-windows.gpu_added_kB                1024       6144   +5120.00  
+mem.idle-windows.gpu_kB                     73216      78372   +5156.00  
+mem.idle-windows.gpu_private_kB             31232      23092   -8140.00  
+mem.idle-windows.gpu_purgeable_kB            2112         64   -2048.00  
+mem.idle-windows.heap_kB                    11224      13468   +2244.00  WORSE
+mem.idle-windows.Private_Clean_kB           17864      17840     -24.00  
+mem.idle-windows.Private_Dirty_kB           19224      21504   +2280.00  WORSE
+mem.idle-windows.Pss_Anon_kB                19224      21504   +2280.00  WORSE
+mem.idle-windows.Pss_File_kB                27727      27718      -9.00  
+mem.idle-windows.Pss_kB                     48812      51092   +2280.00  WORSE
+mem.idle-windows.Rss_kB                     84668      87012   +2344.00  WORSE
+mem.idle-windows.threads                        6          8      +2.00  
+mem.start.AnonHugePages_kB                      0          0      +0.00  
+mem.start.Anonymous_kB                      17320      19604   +2284.00  WORSE
+mem.start.gpu_kB                            65500      65560     +60.00  
+mem.start.gpu_private_kB                    21724      21776     +52.00  
+mem.start.gpu_purgeable_kB                     64         64      +0.00  
+mem.start.heap_kB                            9312      11568   +2256.00  WORSE
+mem.start.Private_Clean_kB                  17580      17556     -24.00  
+mem.start.Private_Dirty_kB                  17320      19604   +2284.00  WORSE
+mem.start.Pss_Anon_kB                       17320      19604   +2284.00  WORSE
+mem.start.Pss_File_kB                       27370      27352     -18.00  
+mem.start.Pss_kB                            44681      46960   +2279.00  WORSE
+mem.start.Rss_kB                            77764      80108   +2344.00  WORSE
+mem.start.threads                               6          8      +2.00  
+NOT VALID: invalid.resize 1 1 1
+== t550: 32 off / 32 on blocks, 0 left out, off -> on (HYPOLAND_SHM_TEXTURE=linear)
+binary.size_kB                              14713      14713      +0.00  
+compositor.age_s                               61         61      +0.00  
+cpu.alacritty-scroll.clients_percent       135.32     135.38      +0.06  
+cpu.alacritty-scroll.kernel                  2.08       2.08      +0.00  
+cpu.alacritty-scroll.machine_percent       163.58     163.75      +0.17  
+cpu.alacritty-scroll.percent                 5.00       5.00      +0.00  
+cpu.alacritty-scroll.stddev                  0.51       0.67      +0.16  
+cpu.alacritty-scroll.total_percent         141.50     141.57      +0.07  
+cpu.alacritty-scroll.user                    2.83       2.83      +0.00  
+cpu.dev.clients_percent                      6.39       6.40      +0.01  
+cpu.dev.kernel                               1.33       1.33      +0.00  
+cpu.dev.machine_percent                     15.31      15.40      +0.09  
+cpu.dev.percent                              4.08       4.10      +0.02  
+cpu.dev.stddev                               1.51       1.59      +0.08  
+cpu.dev.total_percent                       11.70      11.76      +0.06  
+cpu.dev.user                                 2.75       2.75      +0.00  
+cpu.flea.clients_percent                     4.14       4.18      +0.04  
+cpu.flea.kernel                              0.25       0.25      +0.00  
+cpu.flea.machine_percent                    17.06      17.15      +0.09  
+cpu.flea.percent                             0.72       0.73      +0.01  
+cpu.flea.stddev                              0.75       0.75      +0.00  
+cpu.flea.total_percent                       5.20       5.28      +0.08  
+cpu.flea.user                                0.50       0.50      +0.00  
+cpu.ghostty-scroll.clients_percent         161.86     162.15      +0.29  
+cpu.ghostty-scroll.kernel                    2.17       2.17      +0.00  
+cpu.ghostty-scroll.machine_percent         186.70     187.03      +0.33  
+cpu.ghostty-scroll.percent                   4.97       4.99      +0.02  
+cpu.ghostty-scroll.stddev                    0.62       0.62      +0.00  
+cpu.ghostty-scroll.total_percent           167.01     167.38      +0.37  
+cpu.ghostty-scroll.user                      2.83       2.83      +0.00  
+cpu.gpu-client.clients_percent               1.84       1.84      +0.00  
+cpu.gpu-client.kernel                        1.50       1.50      +0.00  
+cpu.gpu-client.machine_percent               9.07       8.99      -0.08  
+cpu.gpu-client.percent                       3.88       3.86      -0.02  
+cpu.gpu-client.stddev                        0.67       0.67      +0.00  
+cpu.gpu-client.total_percent                 5.79       5.79      +0.00  
+cpu.gpu-client.user                          2.33       2.42      +0.09  
+cpu.gtk3-scroll.clients_percent             56.40      57.46      +1.06  
+cpu.gtk3-scroll.kernel                       1.42       1.58      +0.16  
+cpu.gtk3-scroll.machine_percent             83.12      77.20      -5.92  better
+cpu.gtk3-scroll.percent                     19.81      13.11      -6.70  better
+cpu.gtk3-scroll.stddev                       0.58       0.58      +0.00  
+cpu.gtk3-scroll.total_percent               76.31      70.67      -5.64  better
+cpu.gtk3-scroll.user                        18.42      11.58      -6.84  
+cpu.gtk3-x11-scroll.clients_percent          4.14       4.22      +0.08  
+cpu.gtk3-x11-scroll.kernel                   2.00       1.92      -0.08  
+cpu.gtk3-x11-scroll.machine_percent         44.18      43.25      -0.93  
+cpu.gtk3-x11-scroll.percent                  5.67       5.58      -0.09  
+cpu.gtk3-x11-scroll.stddev                   1.83       1.75      -0.08  
+cpu.gtk3-x11-scroll.total_percent           31.10      31.03      -0.07  
+cpu.gtk3-x11-scroll.user                     3.67       3.58      -0.09  
+cpu.gtk4-scroll.clients_percent              5.92       5.92      +0.00  
+cpu.gtk4-scroll.kernel                       1.67       1.58      -0.09  
+cpu.gtk4-scroll.machine_percent             15.40      15.40      +0.00  
+cpu.gtk4-scroll.percent                      4.44       4.45      +0.01  
+cpu.gtk4-scroll.stddev                       0.52       0.52      +0.00  
+cpu.gtk4-scroll.total_percent               10.44      10.47      +0.03  
+cpu.gtk4-scroll.user                         2.83       2.83      +0.00  
+cpu.gtk4-spinner.clients_percent             4.32       4.30      -0.02  
+cpu.gtk4-spinner.kernel                      1.42       1.50      +0.08  
+cpu.gtk4-spinner.machine_percent            12.40      12.32      -0.08  
+cpu.gtk4-spinner.percent                     4.22       4.23      +0.01  
+cpu.gtk4-spinner.stddev                      0.62       0.62      +0.00  
+cpu.gtk4-spinner.total_percent               8.62       8.63      +0.01  
+cpu.gtk4-spinner.user                        2.75       2.75      +0.00  
+cpu.idle.clients_percent                     0.00       0.00      +0.00  
+cpu.idle.kernel                              0.00       0.00      +0.00  
+cpu.idle.machine_percent                     1.66       1.66      +0.00  
+cpu.idle.percent                             0.01       0.01      +0.00  
+cpu.idle.stddev                              0.00       0.00      +0.00  
+cpu.idle.total_percent                       0.08       0.08      +0.00  
+cpu.idle.user                                0.00       0.00      +0.00  
+cpu.idle-windows.clients_percent             0.01       0.01      +0.00  
+cpu.idle-windows.kernel                      0.00       0.00      +0.00  
+cpu.idle-windows.machine_percent             1.41       1.50      +0.09  
+cpu.idle-windows.percent                     0.02       0.02      +0.00  
+cpu.idle-windows.stddev                      0.00       0.00      +0.00  
+cpu.idle-windows.total_percent               0.11       0.11      +0.00  
+cpu.idle-windows.user                        0.00       0.00      +0.00  
+cpu.kitty-scroll.clients_percent           142.76     142.72      -0.04  
+cpu.kitty-scroll.kernel                      1.92       1.92      +0.00  
+cpu.kitty-scroll.machine_percent           172.92     172.94      +0.02  
+cpu.kitty-scroll.percent                     4.98       5.00      +0.02  
+cpu.kitty-scroll.stddev                      0.62       0.58      -0.04  
+cpu.kitty-scroll.total_percent             147.83     147.81      -0.02  
+cpu.kitty-scroll.user                        3.08       3.00      -0.08  
+cpu.menu.clients_percent                     0.02       0.02      +0.00  
+cpu.menu.kernel                              0.33       0.58      +0.25  
+cpu.menu.machine_percent                    71.00      71.50      +0.50  
+cpu.menu.percent                             1.23       1.41      +0.18  
+cpu.menu.stddev                              0.72       0.67      -0.05  
+cpu.menu.total_percent                      63.68      64.03      +0.35  
+cpu.menu.user                                0.92       0.83      -0.09  
+cpu.nautilus.clients_percent                 7.95       7.95      +0.00  
+cpu.nautilus.kernel                          0.92       0.83      -0.09  
+cpu.nautilus.machine_percent                18.89      18.98      +0.09  
+cpu.nautilus.percent                         2.18       2.20      +0.02  
+cpu.nautilus.stddev                          1.85       1.87      +0.02  
+cpu.nautilus.total_percent                  11.62      11.62      +0.00  
+cpu.nautilus.user                            1.33       1.33      +0.00  
+cpu.notifications.clients_percent            0.00       0.00      +0.00  
+cpu.notifications.kernel                     0.92       0.92      +0.00  
+cpu.notifications.machine_percent           17.81      17.64      -0.17  
+cpu.notifications.percent                    2.65       2.64      -0.01  
+cpu.notifications.stddev                     0.67       0.65      -0.02  
+cpu.notifications.total_percent             11.46      11.36      -0.10  
+cpu.notifications.user                       1.67       1.67      +0.00  
+cpu.qt-quick-scroll.clients_percent          8.43       8.41      -0.02  
+cpu.qt-quick-scroll.kernel                   1.50       1.50      +0.00  
+cpu.qt-quick-scroll.machine_percent         17.56      17.47      -0.09  
+cpu.qt-quick-scroll.percent                  4.04       4.04      +0.00  
+cpu.qt-quick-scroll.stddev                   0.67       0.60      -0.07  
+cpu.qt-quick-scroll.total_percent           12.56      12.53      -0.03  
+cpu.qt-quick-scroll.user                     2.58       2.50      -0.08  
+cpu.qt-software-scroll.clients_percent      25.28      24.82      -0.46  
+cpu.qt-software-scroll.kernel                1.42       1.50      +0.08  
+cpu.qt-software-scroll.machine_percent      43.52      40.87      -2.65  better
+cpu.qt-software-scroll.percent              13.89      11.56      -2.33  better
+cpu.qt-software-scroll.stddev                0.60       0.67      +0.07  
+cpu.qt-software-scroll.total_percent        39.22      36.50      -2.72  better
+cpu.qt-software-scroll.user                 12.42      10.00      -2.42  
+cpu.qt-software-sprites.clients_percent      39.95      39.04      -0.91  
+cpu.qt-software-sprites.kernel               1.42       1.50      +0.08  
+cpu.qt-software-sprites.machine_percent      57.41      52.93      -4.48  better
+cpu.qt-software-sprites.percent             13.39      10.05      -3.34  better
+cpu.qt-software-sprites.stddev               0.53       0.67      +0.14  
+cpu.qt-software-sprites.total_percent       53.44      49.18      -4.26  better
+cpu.qt-software-sprites.user                12.00       8.58      -3.42  
+cpu.resize.clients_percent                  59.10      58.39      -0.71  
+cpu.resize.kernel                            6.75      14.50      +7.75  
+cpu.resize.machine_percent                  90.36     100.58     +10.22  WORSE
+cpu.resize.percent                          17.34      25.22      +7.88  WORSE
+cpu.resize.stddev                            1.06       1.62      +0.56  
+cpu.resize.total_percent                    76.73      83.72      +6.99  WORSE
+cpu.resize.user                             10.58      10.58      +0.00  
+cpu.shm-fullwindow.clients_percent          12.84      12.89      +0.05  
+cpu.shm-fullwindow.kernel                    1.33       1.33      +0.00  
+cpu.shm-fullwindow.machine_percent          25.31      25.30      -0.01  
+cpu.shm-fullwindow.percent                   3.73       3.73      +0.00  
+cpu.shm-fullwindow.stddev                    0.62       0.62      +0.00  
+cpu.shm-fullwindow.total_percent            20.75      20.82      +0.07  
+cpu.shm-fullwindow.user                      2.33       2.42      +0.09  
+cpu.terminal-scroll.clients_percent        133.04     133.16      +0.12  
+cpu.terminal-scroll.kernel                   1.25       1.17      -0.08  
+cpu.terminal-scroll.machine_percent        164.61     161.36      -3.25  better
+cpu.terminal-scroll.percent                 11.20       7.97      -3.23  better
+cpu.terminal-scroll.stddev                   0.67       0.60      -0.07  
+cpu.terminal-scroll.total_percent          144.27     141.24      -3.03  better
+cpu.terminal-scroll.user                     9.92       6.75      -3.17  
+cpu.video.clients_percent                    5.76       5.60      -0.16  
+cpu.video.kernel                             0.83       0.92      +0.09  
+cpu.video.machine_percent                   12.07      11.65      -0.42  
+cpu.video.percent                            2.48       2.31      -0.17  
+cpu.video.stddev                             0.67       0.65      -0.02  
+cpu.video.total_percent                      8.30       8.05      -0.25  
+cpu.video.user                               1.42       1.33      -0.09  
+cpu.video-window.clients_percent             5.08       5.12      +0.04  
+cpu.video-window.kernel                      0.83       0.92      +0.09  
+cpu.video-window.machine_percent            11.74      11.98      +0.24  
+cpu.video-window.percent                     2.56       2.57      +0.01  
+cpu.video-window.stddev                      0.52       0.52      +0.00  
+cpu.video-window.total_percent               7.72       7.74      +0.02  
+cpu.video-window.user                        1.75       1.75      +0.00  
+cpu.workspace-switch.clients_percent         0.06       0.06      +0.00  
+cpu.workspace-switch.kernel                  1.25       1.25      +0.00  
+cpu.workspace-switch.machine_percent        16.73      16.73      +0.00  
+cpu.workspace-switch.percent                 3.45       3.44      -0.01  
+cpu.workspace-switch.stddev                  0.52       0.51      -0.01  
+cpu.workspace-switch.total_percent           7.74       7.71      -0.03  
+cpu.workspace-switch.user                    2.17       2.17      +0.00  
+fps.alacritty-scroll.screen                  60.1       60.1      +0.00  
+fps.dev.screen                               45.8       45.8      +0.00  
+fps.flea.screen                               8.2        8.2      +0.00  
+fps.ghostty-scroll.screen                    45.5       45.5      +0.00  
+fps.gpu-client                               60.3       60.3      +0.00  
+fps.gpu-client.screen                        60.1       60.1      +0.00  
+fps.gtk3-scroll                              59.8       59.8      +0.00  
+fps.gtk3-scroll.screen                       60.1       60.1      +0.00  
+fps.gtk3-x11-scroll                          60.0       60.0      +0.00  
+fps.gtk3-x11-scroll.screen                   59.8       59.8      +0.00  
+fps.gtk4-scroll                              59.9       59.9      +0.00  
+fps.gtk4-scroll.screen                       60.1       60.1      +0.00  
+fps.gtk4-spinner                             59.9       59.9      +0.00  
+fps.gtk4-spinner.screen                      60.1       60.1      +0.00  
+fps.idle.screen                               0.0        0.0      +0.00  
+fps.idle-windows.screen                       0.0        0.0      +0.00  
+fps.kitty-scroll.screen                      60.0       60.0      +0.00  
+fps.menu.screen                               6.2        6.2      +0.00  
+fps.nautilus.screen                          29.6       29.6      +0.00  
+fps.notifications.screen                     35.8       35.7      -0.10  
+fps.qt-quick-scroll                          60.1       60.1      +0.00  
+fps.qt-quick-scroll.screen                   60.1       60.1      +0.00  
+fps.qt-software-scroll                       60.2       60.2      +0.00  
+fps.qt-software-scroll.screen                60.1       60.1      +0.00  
+fps.qt-software-sprites                      60.1       60.1      +0.00  
+fps.qt-software-sprites.screen               60.1       60.1      +0.00  
+fps.resize.screen                            60.1       59.9      -0.20  
+fps.shm-fullwindow.screen                    60.1       60.1      +0.00  
+fps.terminal-scroll.screen                   46.3       45.9      -0.40  
+fps.video.screen                             30.0       30.0      +0.00  
+fps.video-window.screen                      30.0       30.0      +0.00  
+fps.workspace-switch.screen                  59.9       59.9      +0.00  
+latency.dev.focus_ms                          4.5        4.4      -0.10  
+latency.dev.focus_p90_ms                      9.7        7.9      -1.80  
+latency.dev.jump_ms                          17.7       16.6      -1.10  
+latency.dev.jump_p90_ms                      28.2       28.1      -0.10  
+latency.dev.scroll_ms                        26.8       26.9      +0.10  
+latency.dev.scroll_p90_ms                    37.0       37.0      +0.00  
+latency.dev.type_ms                           9.7        9.9      +0.20  
+latency.dev.type_p90_ms                      18.0       18.0      +0.00  
+latency.idle-windows.focus_ms                 2.3        2.4      +0.10  
+latency.idle-windows.focus_p90_ms             5.5        5.3      -0.20  
+latency.menu.close_ms                         2.8        2.8      +0.00  
+latency.menu.close_p90_ms                     7.0        7.1      +0.10  
+latency.menu.open_ms                        168.6      171.9      +3.30  
+latency.menu.open_p90_ms                    183.8      187.2      +3.40  
+latency.menu.search_ms                       86.3       86.0      -0.30  
+latency.menu.search_p90_ms                  121.8      121.1      -0.70  
+latency.menu.select_ms                        5.5        5.2      -0.30  
+latency.menu.select_p90_ms                    7.8        6.8      -1.00  
+latency.notifications.toast_ms               24.8       24.1      -0.70  
+latency.notifications.toast_p90_ms           62.2       61.1      -1.10  
+latency.resize.focus_ms                       2.3        2.3      +0.00  
+latency.resize.focus_p90_ms                   4.3        4.8      +0.50  
+latency.resize.redrawn_ms                    13.2       13.3      +0.10  
+latency.resize.redrawn_p90_ms                22.8       24.0      +1.20  
+latency.resize.resize_ms                      1.0        1.0      +0.00  
+latency.resize.resize_p90_ms                  9.1        9.4      +0.30  
+latency.workspace-switch.bar_ms              17.2       17.4      +0.20  
+latency.workspace-switch.bar_p90_ms          25.5       26.4      +0.90  
+latency.workspace-switch.focus_ms             2.3        3.1      +0.80  
+latency.workspace-switch.focus_p90_ms         5.4        5.6      +0.20  
+latency.workspace-switch.workspace_ms         1.7        1.8      +0.10  
+latency.workspace-switch.workspace_p90_ms        2.2        2.3      +0.10  
+mem.end.AnonHugePages_kB                        0          0      +0.00  
+mem.end.Anonymous_kB                        19968      22340   +2372.00  WORSE
+mem.end.gpu_kB                             107836     108456    +620.00  
+mem.end.gpu_private_kB                      40252      40840    +588.00  
+mem.end.gpu_purgeable_kB                     2452       2484     +32.00  
+mem.end.heap_kB                             11888      14216   +2328.00  WORSE
+mem.end.Private_Clean_kB                    17264      17208     -56.00  
+mem.end.Private_Dirty_kB                    19968      22340   +2372.00  WORSE
+mem.end.Pss_Anon_kB                         19968      22340   +2372.00  WORSE
+mem.end.Pss_File_kB                         27615      27581     -34.00  
+mem.end.Pss_kB                              47594      49913   +2319.00  WORSE
+mem.end.Rss_kB                              82228      84608   +2380.00  WORSE
+mem.end.threads                                10         14      +4.00  
+mem.idle-windows.AnonHugePages_kB               0          0      +0.00  
+mem.idle-windows.Anonymous_kB               20020      22408   +2388.00  WORSE
+mem.idle-windows.gpu_added_kB                5432      15672  +10240.00  WORSE
+mem.idle-windows.gpu_kB                    110532     115232   +4700.00  
+mem.idle-windows.gpu_private_kB             42496      26688  -15808.00  better
+mem.idle-windows.gpu_purgeable_kB            6680        556   -6124.00  better
+mem.idle-windows.heap_kB                    11952      14292   +2340.00  WORSE
+mem.idle-windows.Private_Clean_kB           17248      17196     -52.00  
+mem.idle-windows.Private_Dirty_kB           20020      22408   +2388.00  WORSE
+mem.idle-windows.Pss_Anon_kB                20020      22408   +2388.00  WORSE
+mem.idle-windows.Pss_File_kB                27478      27440     -38.00  
+mem.idle-windows.Pss_kB                     51124      53466   +2342.00  WORSE
+mem.idle-windows.Rss_kB                     89492      91860   +2368.00  WORSE
+mem.idle-windows.threads                       10         14      +4.00  
+mem.start.AnonHugePages_kB                      0          0      +0.00  
+mem.start.Anonymous_kB                      18052      20420   +2368.00  WORSE
+mem.start.gpu_kB                           107580     107432    -148.00  
+mem.start.gpu_private_kB                    31548      31880    +332.00  
+mem.start.gpu_purgeable_kB                   8724       8752     +28.00  
+mem.start.heap_kB                            9984      12304   +2320.00  WORSE
+mem.start.Private_Clean_kB                  17004      16984     -20.00  
+mem.start.Private_Dirty_kB                  18052      20420   +2368.00  WORSE
+mem.start.Pss_Anon_kB                       18052      20420   +2368.00  WORSE
+mem.start.Pss_File_kB                       26914      26868     -46.00  
+mem.start.Pss_kB                            44974      47288   +2314.00  WORSE
+mem.start.Rss_kB                            78668      81032   +2364.00  WORSE
+mem.start.threads                              10         14      +4.00  
+== xps: 31 off / 31 on blocks, 0 left out, off -> on (HYPOLAND_SHM_TEXTURE=linear)
+binary.size_kB                              14713      14713      +0.00  
+compositor.age_s                               61         61      +0.00  
+cpu.alacritty-scroll.clients_percent       137.75     137.65      -0.10  
+cpu.alacritty-scroll.kernel                  3.00       3.00      +0.00  
+cpu.alacritty-scroll.machine_percent       169.56     169.77      +0.21  
+cpu.alacritty-scroll.percent                 6.43       6.39      -0.04  
+cpu.alacritty-scroll.stddev                  0.65       0.52      -0.13  
+cpu.alacritty-scroll.total_percent         145.87     145.83      -0.04  
+cpu.alacritty-scroll.user                    3.42       3.42      +0.00  
+cpu.dev.clients_percent                      8.58       8.50      -0.08  
+cpu.dev.kernel                               1.83       1.83      +0.00  
+cpu.dev.machine_percent                     20.62      20.21      -0.41  
+cpu.dev.percent                              4.91       4.89      -0.02  
+cpu.dev.stddev                               2.04       2.02      -0.02  
+cpu.dev.total_percent                       15.15      15.15      +0.00  
+cpu.dev.user                                 3.08       3.08      +0.00  
+cpu.flea.clients_percent                     5.40       5.34      -0.06  
+cpu.flea.kernel                              0.42       0.42      +0.00  
+cpu.flea.machine_percent                    19.81      19.39      -0.42  
+cpu.flea.percent                             0.87       0.87      +0.00  
+cpu.flea.stddev                              0.90       0.90      +0.00  
+cpu.flea.total_percent                       6.66       6.59      -0.07  
+cpu.flea.user                                0.50       0.50      +0.00  
+cpu.ghostty-scroll.clients_percent         167.34     167.40      +0.06  
+cpu.ghostty-scroll.kernel                    2.16       2.08      -0.08  
+cpu.ghostty-scroll.machine_percent         195.97     194.96      -1.01  
+cpu.ghostty-scroll.percent                   4.76       4.71      -0.05  
+cpu.ghostty-scroll.stddev                    0.65       0.67      +0.02  
+cpu.ghostty-scroll.total_percent           172.38     172.32      -0.06  
+cpu.ghostty-scroll.user                      2.58       2.58      +0.00  
+cpu.gpu-client.clients_percent               1.97       1.98      +0.01  
+cpu.gpu-client.kernel                        1.58       1.58      +0.00  
+cpu.gpu-client.machine_percent              10.65      10.74      +0.09  
+cpu.gpu-client.percent                       3.99       4.00      +0.01  
+cpu.gpu-client.stddev                        0.60       0.60      +0.00  
+cpu.gpu-client.total_percent                 6.10       6.12      +0.02  
+cpu.gpu-client.user                          2.41       2.42      +0.01  
+cpu.gtk3-scroll.clients_percent             72.60      76.15      +3.55  
+cpu.gtk3-scroll.kernel                       1.58       1.58      +0.00  
+cpu.gtk3-scroll.machine_percent            102.12      98.21      -3.91  
+cpu.gtk3-scroll.percent                     21.82      14.17      -7.65  better
+cpu.gtk3-scroll.stddev                       0.65       0.62      -0.03  
+cpu.gtk3-scroll.total_percent               94.67      90.52      -4.15  
+cpu.gtk3-scroll.user                        20.32      12.58      -7.74  
+cpu.gtk3-x11-scroll.clients_percent          9.96       9.80      -0.16  
+cpu.gtk3-x11-scroll.kernel                   2.75       2.75      +0.00  
+cpu.gtk3-x11-scroll.machine_percent        146.00     140.64      -5.36  
+cpu.gtk3-x11-scroll.percent                  7.01       6.95      -0.06  
+cpu.gtk3-x11-scroll.stddev                   0.79       0.79      +0.00  
+cpu.gtk3-x11-scroll.total_percent          113.26     113.10      -0.16  
+cpu.gtk3-x11-scroll.user                     4.25       4.25      +0.00  
+cpu.gtk4-scroll.clients_percent             11.23      11.17      -0.06  
+cpu.gtk4-scroll.kernel                       2.50       2.58      +0.08  
+cpu.gtk4-scroll.machine_percent             23.79      23.54      -0.25  
+cpu.gtk4-scroll.percent                      5.90       5.89      -0.01  
+cpu.gtk4-scroll.stddev                       0.51       0.58      +0.07  
+cpu.gtk4-scroll.total_percent               17.31      17.23      -0.08  
+cpu.gtk4-scroll.user                         3.33       3.33      +0.00  
+cpu.gtk4-spinner.clients_percent             7.44       7.43      -0.01  
+cpu.gtk4-spinner.kernel                      2.17       2.25      +0.08  
+cpu.gtk4-spinner.machine_percent            18.46      18.63      +0.17  
+cpu.gtk4-spinner.percent                     5.32       5.31      -0.01  
+cpu.gtk4-spinner.stddev                      0.52       0.51      -0.01  
+cpu.gtk4-spinner.total_percent              12.94      12.91      -0.03  
+cpu.gtk4-spinner.user                        3.08       3.08      +0.00  
+cpu.idle.clients_percent                     0.00       0.00      +0.00  
+cpu.idle.kernel                              0.00       0.00      +0.00  
+cpu.idle.machine_percent                     2.75       2.75      +0.00  
+cpu.idle.percent                             0.02       0.01      -0.01  
+cpu.idle.stddev                              0.00       0.00      +0.00  
+cpu.idle.total_percent                       0.12       0.12      +0.00  
+cpu.idle.user                                0.00       0.00      +0.00  
+cpu.idle-windows.clients_percent             0.01       0.01      +0.00  
+cpu.idle-windows.kernel                      0.00       0.00      +0.00  
+cpu.idle-windows.machine_percent             2.08       2.08      +0.00  
+cpu.idle-windows.percent                     0.02       0.02      +0.00  
+cpu.idle-windows.stddev                      0.00       0.00      +0.00  
+cpu.idle-windows.total_percent               0.15       0.15      +0.00  
+cpu.idle-windows.user                        0.00       0.00      +0.00  
+cpu.kitty-scroll.clients_percent           150.13     150.10      -0.03  
+cpu.kitty-scroll.kernel                      2.58       2.50      -0.08  
+cpu.kitty-scroll.machine_percent           184.51     184.86      +0.35  
+cpu.kitty-scroll.percent                     5.77       5.77      +0.00  
+cpu.kitty-scroll.stddev                      0.62       0.62      +0.00  
+cpu.kitty-scroll.total_percent             156.04     156.17      +0.13  
+cpu.kitty-scroll.user                        3.25       3.25      +0.00  
+cpu.menu.clients_percent                     0.04       0.04      +0.00  
+cpu.menu.kernel                              0.58       1.33      +0.75  
+cpu.menu.machine_percent                    82.24      83.57      +1.33  
+cpu.menu.percent                             2.17       2.58      +0.41  WORSE
+cpu.menu.stddev                              1.27       1.57      +0.30  
+cpu.menu.total_percent                      73.36      74.13      +0.77  
+cpu.menu.user                                1.58       1.25      -0.33  
+cpu.nautilus.clients_percent                10.63      10.65      +0.02  
+cpu.nautilus.kernel                          1.83       1.75      -0.08  
+cpu.nautilus.machine_percent                25.64      25.38      -0.26  
+cpu.nautilus.percent                         3.29       3.26      -0.03  
+cpu.nautilus.stddev                          2.59       2.61      +0.02  
+cpu.nautilus.total_percent                  15.79      15.67      -0.12  
+cpu.nautilus.user                            1.50       1.50      +0.00  
+cpu.notifications.clients_percent            0.00       0.00      +0.00  
+cpu.notifications.kernel                     1.00       1.00      +0.00  
+cpu.notifications.machine_percent           17.15      17.23      +0.08  
+cpu.notifications.percent                    2.53       2.56      +0.03  
+cpu.notifications.stddev                     0.67       0.67      +0.00  
+cpu.notifications.total_percent              9.96      10.02      +0.06  
+cpu.notifications.user                       1.58       1.58      +0.00  
+cpu.qt-quick-scroll.clients_percent         14.63      14.66      +0.03  
+cpu.qt-quick-scroll.kernel                   2.33       2.33      +0.00  
+cpu.qt-quick-scroll.machine_percent         27.53      27.19      -0.34  
+cpu.qt-quick-scroll.percent                  5.45       5.46      +0.01  
+cpu.qt-quick-scroll.stddev                   0.51       0.52      +0.01  
+cpu.qt-quick-scroll.total_percent           20.28      20.37      +0.09  
+cpu.qt-quick-scroll.user                     3.08       3.16      +0.08  
+cpu.qt-software-scroll.clients_percent      31.24      30.92      -0.32  
+cpu.qt-software-scroll.kernel                1.67       1.58      -0.09  
+cpu.qt-software-scroll.machine_percent      48.25      45.75      -2.50  
+cpu.qt-software-scroll.percent              12.39      10.17      -2.22  better
+cpu.qt-software-scroll.stddev                0.62       0.72      +0.10  
+cpu.qt-software-scroll.total_percent        43.76      41.23      -2.53  better
+cpu.qt-software-scroll.user                 10.75       8.50      -2.25  
+cpu.qt-software-sprites.clients_percent      38.25      38.24      -0.01  
+cpu.qt-software-sprites.kernel               2.83       2.83      +0.00  
+cpu.qt-software-sprites.machine_percent      69.31      65.90      -3.41  
+cpu.qt-software-sprites.percent             26.15      22.88      -3.27  better
+cpu.qt-software-sprites.stddev               1.83       1.54      -0.29  
+cpu.qt-software-sprites.total_percent       64.50      61.31      -3.19  better
+cpu.qt-software-sprites.user                23.25      20.08      -3.17  
+cpu.resize.clients_percent                 116.65     105.13     -11.52  better
+cpu.resize.kernel                           14.07      23.75      +9.68  
+cpu.resize.machine_percent                 177.44     176.79      -0.65  
+cpu.resize.percent                          33.84      38.34      +4.50  WORSE
+cpu.resize.stddev                            1.54       1.47      -0.07  
+cpu.resize.total_percent                   150.76     143.89      -6.87  better
+cpu.resize.user                             19.75      14.74      -5.01  
+cpu.shm-fullwindow.clients_percent          15.90      15.88      -0.02  
+cpu.shm-fullwindow.kernel                    1.67       1.75      +0.08  
+cpu.shm-fullwindow.machine_percent          30.61      30.95      +0.34  
+cpu.shm-fullwindow.percent                   4.31       4.33      +0.02  
+cpu.shm-fullwindow.stddev                    0.65       0.65      +0.00  
+cpu.shm-fullwindow.total_percent            25.01      25.00      -0.01  
+cpu.shm-fullwindow.user                      2.67       2.67      +0.00  
+cpu.terminal-scroll.clients_percent        139.39     141.68      +2.29  
+cpu.terminal-scroll.kernel                   1.50       1.50      +0.00  
+cpu.terminal-scroll.machine_percent        185.25     178.45      -6.80  better
+cpu.terminal-scroll.percent                 24.61      15.73      -8.88  better
+cpu.terminal-scroll.stddev                   1.00       0.90      -0.10  
+cpu.terminal-scroll.total_percent          164.20     157.66      -6.54  better
+cpu.terminal-scroll.user                    23.08      14.25      -8.83  
+cpu.video.clients_percent                    5.18       5.21      +0.03  
+cpu.video.kernel                             0.75       0.75      +0.00  
+cpu.video.machine_percent                   12.57      12.73      +0.16  
+cpu.video.percent                            2.14       2.15      +0.01  
+cpu.video.stddev                             0.62       0.67      +0.05  
+cpu.video.total_percent                      7.45       7.50      +0.05  
+cpu.video.user                               1.42       1.33      -0.09  
+cpu.video-window.clients_percent             5.05       5.08      +0.03  
+cpu.video-window.kernel                      0.92       1.08      +0.16  
+cpu.video-window.machine_percent            13.15      13.40      +0.25  
+cpu.video-window.percent                     2.73       2.87      +0.14  
+cpu.video-window.stddev                      0.62       0.62      +0.00  
+cpu.video-window.total_percent               7.93       8.03      +0.10  
+cpu.video-window.user                        1.75       1.75      +0.00  
+cpu.workspace-switch.clients_percent         0.07       0.07      +0.00  
+cpu.workspace-switch.kernel                  1.75       1.75      +0.00  
+cpu.workspace-switch.machine_percent        23.47      23.22      -0.25  
+cpu.workspace-switch.percent                 4.34       4.35      +0.01  
+cpu.workspace-switch.stddev                  0.67       0.65      -0.02  
+cpu.workspace-switch.total_percent          12.08      12.10      +0.02  
+cpu.workspace-switch.user                    2.58       2.58      +0.00  
+fps.alacritty-scroll.screen                  57.2       57.2      +0.00  
+fps.dev.screen                               45.3       45.3      +0.00  
+fps.flea.screen                               8.2        8.2      +0.00  
+fps.ghostty-scroll.screen                    33.6       33.4      -0.20  
+fps.gpu-client                               60.1       60.1      +0.00  
+fps.gpu-client.screen                        60.0       60.0      +0.00  
+fps.gtk3-scroll                              39.2       40.7      +1.50  
+fps.gtk3-scroll.screen                       39.7       41.2      +1.50  
+fps.gtk3-x11-scroll                          47.7       47.3      -0.40  
+fps.gtk3-x11-scroll.screen                   36.5       36.7      +0.20  
+fps.gtk4-scroll                              59.7       59.7      +0.00  
+fps.gtk4-scroll.screen                       60.0       60.0      +0.00  
+fps.gtk4-spinner                             59.7       59.7      +0.00  
+fps.gtk4-spinner.screen                      60.0       60.0      +0.00  
+fps.idle.screen                               0.0        0.0      +0.00  
+fps.idle-windows.screen                       0.0        0.0      +0.00  
+fps.kitty-scroll.screen                      49.9       49.7      -0.20  
+fps.menu.screen                               7.1        7.0      -0.10  
+fps.nautilus.screen                          28.4       28.3      -0.10  
+fps.notifications.screen                     30.1       30.1      +0.00  
+fps.qt-quick-scroll                          60.0       60.0      +0.00  
+fps.qt-quick-scroll.screen                   60.0       60.0      +0.00  
+fps.qt-software-scroll                       60.0       60.0      +0.00  
+fps.qt-software-scroll.screen                60.0       60.0      +0.00  
+fps.qt-software-sprites                      59.9       59.9      +0.00  
+fps.qt-software-sprites.screen               60.0       60.0      +0.00  
+fps.resize.screen                            59.3       55.2      -4.10  WORSE
+fps.shm-fullwindow.screen                    60.0       60.0      +0.00  
+fps.terminal-scroll.screen                   42.1       43.4      +1.30  
+fps.video.screen                             30.0       30.0      +0.00  
+fps.video-window.screen                      30.0       30.0      +0.00  
+fps.workspace-switch.screen                  59.5       59.5      +0.00  
+latency.dev.focus_ms                          5.3        5.5      +0.20  
+latency.dev.focus_p90_ms                      9.7       10.4      +0.70  
+latency.dev.jump_ms                          24.1       24.0      -0.10  
+latency.dev.jump_p90_ms                      36.1       36.8      +0.70  
+latency.dev.scroll_ms                        37.5       36.5      -1.00  
+latency.dev.scroll_p90_ms                    65.4       65.1      -0.30  
+latency.dev.type_ms                          11.1       11.3      +0.20  
+latency.dev.type_p90_ms                      17.9       18.0      +0.10  
+latency.idle-windows.focus_ms                 2.9        2.6      -0.30  
+latency.idle-windows.focus_p90_ms             9.1        8.4      -0.70  
+latency.menu.close_ms                         3.3        3.2      -0.10  
+latency.menu.close_p90_ms                     8.4        7.7      -0.70  
+latency.menu.open_ms                        294.6      290.2      -4.40  
+latency.menu.open_p90_ms                    326.7      329.3      +2.60  
+latency.menu.search_ms                       93.0       92.2      -0.80  
+latency.menu.search_p90_ms                  120.5      120.3      -0.20  
+latency.menu.select_ms                        8.1        8.0      -0.10  
+latency.menu.select_p90_ms                    8.6        8.4      -0.20  
+latency.notifications.toast_ms               37.7       37.1      -0.60  
+latency.notifications.toast_p90_ms           66.3       67.5      +1.20  
+latency.resize.focus_ms                       2.7        2.7      +0.00  
+latency.resize.focus_p90_ms                   6.4        9.8      +3.40  
+latency.resize.redrawn_ms                    33.3       33.7      +0.40  
+latency.resize.redrawn_p90_ms                54.2       53.1      -1.10  
+latency.resize.resize_ms                      1.4        1.5      +0.10  
+latency.resize.resize_p90_ms                  7.8        6.8      -1.00  
+latency.workspace-switch.bar_ms               2.2        2.2      +0.00  
+latency.workspace-switch.bar_p90_ms           2.8        2.7      -0.10  
+latency.workspace-switch.focus_ms             3.6        2.8      -0.80  
+latency.workspace-switch.focus_p90_ms         9.2        8.1      -1.10  
+latency.workspace-switch.workspace_ms         2.2        2.1      -0.10  
+latency.workspace-switch.workspace_p90_ms        2.7        2.7      +0.00  
+mem.end.AnonHugePages_kB                        0          0      +0.00  
+mem.end.Anonymous_kB                        20144      22528   +2384.00  WORSE
+mem.end.gpu_kB                             336720     337084    +364.00  
+mem.end.gpu_private_kB                     114332     114716    +384.00  
+mem.end.gpu_purgeable_kB                     6900       6932     +32.00  
+mem.end.heap_kB                             12056      14380   +2324.00  WORSE
+mem.end.Private_Clean_kB                    16884      16900     +16.00  
+mem.end.Private_Dirty_kB                    20144      22528   +2384.00  WORSE
+mem.end.Pss_Anon_kB                         20144      22528   +2384.00  WORSE
+mem.end.Pss_File_kB                         27274      27273      -1.00  
+mem.end.Pss_kB                              47481      49867   +2386.00  
+mem.end.Rss_kB                              82308      84728   +2420.00  
+mem.end.threads                                10         14      +4.00  
+mem.idle-windows.AnonHugePages_kB               0          0      +0.00  
+mem.idle-windows.Anonymous_kB               20260      22652   +2392.00  WORSE
+mem.idle-windows.gpu_added_kB               22424      53080  +30656.00  WORSE
+mem.idle-windows.gpu_kB                    351152     363768  +12616.00  
+mem.idle-windows.gpu_private_kB            104368      55512  -48856.00  better
+mem.idle-windows.gpu_purgeable_kB           19400       1028  -18372.00  
+mem.idle-windows.heap_kB                    12168      14512   +2344.00  WORSE
+mem.idle-windows.Private_Clean_kB           16872      16864      -8.00  
+mem.idle-windows.Private_Dirty_kB           20260      22652   +2392.00  WORSE
+mem.idle-windows.Pss_Anon_kB                20260      22652   +2392.00  WORSE
+mem.idle-windows.Pss_File_kB                27153      27150      -3.00  
+mem.idle-windows.Pss_kB                     57511      59912   +2401.00  
+mem.idle-windows.Rss_kB                    102596     105056   +2460.00  
+mem.idle-windows.threads                       10         14      +4.00  
+mem.start.AnonHugePages_kB                      0          0      +0.00  
+mem.start.Anonymous_kB                      18228      20596   +2368.00  WORSE
+mem.start.gpu_kB                           304976     299184   -5792.00  
+mem.start.gpu_private_kB                    52304      52624    +320.00  
+mem.start.gpu_purgeable_kB                    808        828     +20.00  
+mem.start.heap_kB                           10160      12480   +2320.00  WORSE
+mem.start.Private_Clean_kB                  16712      16716      +4.00  
+mem.start.Private_Dirty_kB                  18228      20596   +2368.00  WORSE
+mem.start.Pss_Anon_kB                       18228      20596   +2368.00  WORSE
+mem.start.Pss_File_kB                       26654      26657      +3.00  
+mem.start.Pss_kB                            44890      47253   +2363.00  
+mem.start.Rss_kB                            78844      81232   +2388.00  
+mem.start.threads                              10         14      +4.00  
+== lianli: 31 off / 31 on blocks, 0 left out, off -> on (HYPOLAND_SHM_TEXTURE=linear)
+binary.size_kB                              14713      14713      +0.00  
+compositor.age_s                               61         61      +0.00  
+cpu.alacritty-scroll.clients_percent       133.53     133.51      -0.02  
+cpu.alacritty-scroll.kernel                  2.00       2.00      +0.00  
+cpu.alacritty-scroll.machine_percent       173.78     174.18      +0.40  
+cpu.alacritty-scroll.percent                 4.75       4.75      +0.00  
+cpu.alacritty-scroll.stddev                  0.58       0.49      -0.09  
+cpu.alacritty-scroll.total_percent         139.51     139.50      -0.01  
+cpu.alacritty-scroll.user                    2.75       2.75      +0.00  
+cpu.dev.clients_percent                      9.22       9.23      +0.01  
+cpu.dev.kernel                               1.50       1.50      +0.00  
+cpu.dev.machine_percent                     19.38      19.39      +0.01  
+cpu.dev.percent                              4.20       4.18      -0.02  
+cpu.dev.stddev                               1.51       1.48      -0.03  
+cpu.dev.total_percent                       14.78      14.77      -0.01  
+cpu.dev.user                                 2.67       2.67      +0.00  
+cpu.flea.clients_percent                     7.19       7.18      -0.01  
+cpu.flea.kernel                              0.25       0.33      +0.08  
+cpu.flea.machine_percent                    24.04      23.96      -0.08  
+cpu.flea.percent                             0.81       0.82      +0.01  
+cpu.flea.stddev                              0.83       0.83      +0.00  
+cpu.flea.total_percent                       8.49       8.47      -0.02  
+cpu.flea.user                                0.50       0.50      +0.00  
+cpu.ghostty-scroll.clients_percent           0.00       0.00      +0.00  
+cpu.ghostty-scroll.kernel                    0.00       0.00      +0.00  
+cpu.ghostty-scroll.machine_percent           2.16       2.25      +0.09  
+cpu.ghostty-scroll.percent                   0.02       0.02      +0.00  
+cpu.ghostty-scroll.stddev                    0.00       0.00      +0.00  
+cpu.ghostty-scroll.total_percent             0.23       0.23      +0.00  
+cpu.ghostty-scroll.user                      0.00       0.00      +0.00  
+cpu.gpu-client.clients_percent               2.02       2.01      -0.01  
+cpu.gpu-client.kernel                        1.08       1.08      +0.00  
+cpu.gpu-client.machine_percent               8.82       8.99      +0.17  
+cpu.gpu-client.percent                       3.30       3.27      -0.03  
+cpu.gpu-client.stddev                        0.62       0.60      -0.02  
+cpu.gpu-client.total_percent                 5.59       5.65      +0.06  
+cpu.gpu-client.user                          2.17       2.17      +0.00  
+cpu.gtk3-scroll.clients_percent             66.36      62.73      -3.63  better
+cpu.gtk3-scroll.kernel                       2.17       1.92      -0.25  
+cpu.gtk3-scroll.machine_percent            100.84      92.69      -8.15  better
+cpu.gtk3-scroll.percent                     27.40      23.21      -4.19  better
+cpu.gtk3-scroll.stddev                       0.65       0.65      +0.00  
+cpu.gtk3-scroll.total_percent               94.09      86.23      -7.86  better
+cpu.gtk3-scroll.user                        25.25      21.33      -3.92  
+cpu.gtk3-x11-scroll.clients_percent          4.66       4.46      -0.20  
+cpu.gtk3-x11-scroll.kernel                   1.75       1.75      +0.00  
+cpu.gtk3-x11-scroll.machine_percent         26.62      26.70      +0.08  
+cpu.gtk3-x11-scroll.percent                  4.84       4.99      +0.15  
+cpu.gtk3-x11-scroll.stddev                   1.11       1.22      +0.11  
+cpu.gtk3-x11-scroll.total_percent           18.69      18.61      -0.08  
+cpu.gtk3-x11-scroll.user                     3.08       3.33      +0.25  
+cpu.gtk4-scroll.clients_percent              9.88       9.87      -0.01  
+cpu.gtk4-scroll.kernel                       1.67       1.67      +0.00  
+cpu.gtk4-scroll.machine_percent             19.05      18.80      -0.25  
+cpu.gtk4-scroll.percent                      4.53       4.52      -0.01  
+cpu.gtk4-scroll.stddev                       0.67       0.58      -0.09  
+cpu.gtk4-scroll.total_percent               14.64      14.62      -0.02  
+cpu.gtk4-scroll.user                         2.83       2.92      +0.09  
+cpu.gtk4-spinner.clients_percent             6.21       6.19      -0.02  
+cpu.gtk4-spinner.kernel                      1.67       1.67      +0.00  
+cpu.gtk4-spinner.machine_percent            14.81      14.81      +0.00  
+cpu.gtk4-spinner.percent                     4.44       4.42      -0.02  
+cpu.gtk4-spinner.stddev                      0.65       0.65      +0.00  
+cpu.gtk4-spinner.total_percent              10.92      10.83      -0.09  
+cpu.gtk4-spinner.user                        2.83       2.75      -0.08  
+cpu.idle.clients_percent                     0.00       0.00      +0.00  
+cpu.idle.kernel                              0.00       0.00      +0.00  
+cpu.idle.machine_percent                     2.16       2.25      +0.09  
+cpu.idle.percent                             0.02       0.02      +0.00  
+cpu.idle.stddev                              0.00       0.00      +0.00  
+cpu.idle.total_percent                       0.23       0.22      -0.01  
+cpu.idle.user                                0.00       0.00      +0.00  
+cpu.idle-windows.clients_percent             0.01       0.01      +0.00  
+cpu.idle-windows.kernel                      0.00       0.00      +0.00  
+cpu.idle-windows.machine_percent             2.25       2.25      +0.00  
+cpu.idle-windows.percent                     0.03       0.03      +0.00  
+cpu.idle-windows.stddev                      0.00       0.00      +0.00  
+cpu.idle-windows.total_percent               0.26       0.26      +0.00  
+cpu.idle-windows.user                        0.00       0.00      +0.00  
+cpu.kitty-scroll.clients_percent           157.45     157.59      +0.14  
+cpu.kitty-scroll.kernel                      1.58       1.58      +0.00  
+cpu.kitty-scroll.machine_percent           199.17     199.23      +0.06  
+cpu.kitty-scroll.percent                     4.09       4.09      +0.00  
+cpu.kitty-scroll.stddev                      0.67       0.60      -0.07  
+cpu.kitty-scroll.total_percent             161.93     161.98      +0.05  
+cpu.kitty-scroll.user                        2.50       2.50      +0.00  
+cpu.menu.clients_percent                     0.03       0.03      +0.00  
+cpu.menu.kernel                              0.42       0.33      -0.09  
+cpu.menu.machine_percent                    72.89      72.55      -0.34  
+cpu.menu.percent                             1.28       1.20      -0.08  
+cpu.menu.stddev                              0.62       0.62      +0.00  
+cpu.menu.total_percent                      64.83      64.68      -0.15  
+cpu.menu.user                                0.83       0.83      +0.00  
+cpu.nautilus.clients_percent                 7.43       7.43      +0.00  
+cpu.nautilus.kernel                          0.50       0.50      +0.00  
+cpu.nautilus.machine_percent                17.81      17.97      +0.16  
+cpu.nautilus.percent                         1.57       1.57      +0.00  
+cpu.nautilus.stddev                          1.50       1.51      +0.01  
+cpu.nautilus.total_percent                  10.73      10.77      +0.04  
+cpu.nautilus.user                            1.08       1.08      +0.00  
+cpu.notifications.clients_percent            0.00       0.00      +0.00  
+cpu.notifications.kernel                     0.83       0.83      +0.00  
+cpu.notifications.machine_percent           16.23      16.14      -0.09  
+cpu.notifications.percent                    2.08       2.08      +0.00  
+cpu.notifications.stddev                     0.60       0.60      +0.00  
+cpu.notifications.total_percent              9.40       9.35      -0.05  
+cpu.notifications.user                       1.25       1.25      +0.00  
+cpu.qt-quick-scroll.clients_percent         10.43      10.45      +0.02  
+cpu.qt-quick-scroll.kernel                   2.00       2.00      +0.00  
+cpu.qt-quick-scroll.machine_percent         20.30      20.63      +0.33  
+cpu.qt-quick-scroll.percent                  4.77       4.77      +0.00  
+cpu.qt-quick-scroll.stddev                   0.65       0.58      -0.07  
+cpu.qt-quick-scroll.total_percent           15.35      15.45      +0.10  
+cpu.qt-quick-scroll.user                     2.75       2.75      +0.00  
+cpu.qt-software-scroll.clients_percent      26.34      25.91      -0.43  
+cpu.qt-software-scroll.kernel                1.67       1.58      -0.09  
+cpu.qt-software-scroll.machine_percent      41.02      39.27      -1.75  
+cpu.qt-software-scroll.percent              10.20       9.01      -1.19  
+cpu.qt-software-scroll.stddev                0.63       0.60      -0.03  
+cpu.qt-software-scroll.total_percent        36.75      35.13      -1.62  
+cpu.qt-software-scroll.user                  8.58       7.42      -1.16  
+cpu.qt-software-sprites.clients_percent      42.09      41.25      -0.84  
+cpu.qt-software-sprites.kernel               2.42       1.50      -0.92  
+cpu.qt-software-sprites.machine_percent      72.79      52.58     -20.21  better
+cpu.qt-software-sprites.percent             25.84       7.00     -18.84  better
+cpu.qt-software-sprites.stddev               1.47       0.68      -0.79  
+cpu.qt-software-sprites.total_percent       68.17      48.40     -19.77  better
+cpu.qt-software-sprites.user                23.42       5.50     -17.92  
+cpu.resize.clients_percent                  89.19      88.86      -0.33  
+cpu.resize.kernel                            6.58       7.83      +1.25  
+cpu.resize.machine_percent                 116.35     115.52      -0.83  
+cpu.resize.percent                          18.28      17.39      -0.89  better
+cpu.resize.stddev                            0.75       0.67      -0.08  
+cpu.resize.total_percent                   107.73     106.54      -1.19  
+cpu.resize.user                             11.67       9.58      -2.09  
+cpu.shm-fullwindow.clients_percent          12.90      12.93      +0.03  
+cpu.shm-fullwindow.kernel                    1.17       1.17      +0.00  
+cpu.shm-fullwindow.machine_percent          24.96      25.21      +0.25  
+cpu.shm-fullwindow.percent                   3.46       3.47      +0.01  
+cpu.shm-fullwindow.stddev                    0.52       0.52      +0.00  
+cpu.shm-fullwindow.total_percent            20.57      20.62      +0.05  
+cpu.shm-fullwindow.user                      2.25       2.25      +0.00  
+cpu.terminal-scroll.clients_percent        129.45     129.53      +0.08  
+cpu.terminal-scroll.kernel                   0.83       0.83      +0.00  
+cpu.terminal-scroll.machine_percent        166.04     164.05      -1.99  
+cpu.terminal-scroll.percent                 13.70      11.81      -1.89  better
+cpu.terminal-scroll.stddev                   0.58       0.58      +0.00  
+cpu.terminal-scroll.total_percent          143.52     141.67      -1.85  better
+cpu.terminal-scroll.user                    12.83      10.92      -1.91  
+cpu.video.clients_percent                    7.25       7.24      -0.01  
+cpu.video.kernel                             0.83       0.75      -0.08  
+cpu.video.machine_percent                   12.98      12.89      -0.09  
+cpu.video.percent                            1.98       1.98      +0.00  
+cpu.video.stddev                             0.60       0.67      +0.07  
+cpu.video.total_percent                      9.43       9.44      +0.01  
+cpu.video.user                               1.17       1.25      +0.08  
+cpu.video-window.clients_percent             7.06       7.02      -0.04  
+cpu.video-window.kernel                      0.83       0.92      +0.09  
+cpu.video-window.machine_percent            12.90      13.06      +0.16  
+cpu.video-window.percent                     2.34       2.34      +0.00  
+cpu.video-window.stddev                      0.51       0.62      +0.11  
+cpu.video-window.total_percent               9.62       9.58      -0.04  
+cpu.video-window.user                        1.50       1.42      -0.08  
+cpu.workspace-switch.clients_percent         0.06       0.06      +0.00  
+cpu.workspace-switch.kernel                  1.17       1.17      +0.00  
+cpu.workspace-switch.machine_percent        19.80      19.80      +0.00  
+cpu.workspace-switch.percent                 3.45       3.42      -0.03  
+cpu.workspace-switch.stddev                  0.67       0.51      -0.16  
+cpu.workspace-switch.total_percent           9.13       9.06      -0.07  
+cpu.workspace-switch.user                    2.25       2.25      +0.00  
+fps.alacritty-scroll.screen                  59.3       59.3      +0.00  
+fps.dev.screen                               45.7       45.6      -0.10  
+fps.flea.screen                               8.8        8.8      +0.00  
+fps.ghostty-scroll.screen                     0.0        0.0      +0.00  
+fps.gpu-client                               60.1       60.1      +0.00  
+fps.gpu-client.screen                        59.9       59.9      +0.00  
+fps.gtk3-scroll                              59.0       59.6      +0.60  
+fps.gtk3-scroll.screen                       59.3       59.9      +0.60  
+fps.gtk3-x11-scroll                          60.0       60.0      +0.00  
+fps.gtk3-x11-scroll.screen                   60.0       60.0      +0.00  
+fps.gtk4-scroll                              59.7       59.7      +0.00  
+fps.gtk4-scroll.screen                       60.0       60.0      +0.00  
+fps.gtk4-spinner                             59.9       59.9      +0.00  
+fps.gtk4-spinner.screen                      60.0       60.0      +0.00  
+fps.idle.screen                               0.0        0.0      +0.00  
+fps.idle-windows.screen                       0.0        0.0      +0.00  
+fps.kitty-scroll.screen                      49.7       49.9      +0.20  
+fps.menu.screen                               6.3        6.3      +0.00  
+fps.nautilus.screen                          24.5       24.5      +0.00  
+fps.notifications.screen                     28.1       28.0      -0.10  
+fps.qt-quick-scroll                          60.1       60.1      +0.00  
+fps.qt-quick-scroll.screen                   60.0       60.0      +0.00  
+fps.qt-software-scroll                       60.1       60.1      +0.00  
+fps.qt-software-scroll.screen                59.9       59.9      +0.00  
+fps.qt-software-sprites                      60.0       60.0      +0.00  
+fps.qt-software-sprites.screen               59.9       60.0      +0.10  
+fps.resize.screen                            60.0       60.0      +0.00  
+fps.shm-fullwindow.screen                    59.9       60.0      +0.10  
+fps.terminal-scroll.screen                   32.2       32.4      +0.20  
+fps.video.screen                             30.0       30.0      +0.00  
+fps.video-window.screen                      30.0       30.0      +0.00  
+fps.workspace-switch.screen                  59.6       59.8      +0.20  
+latency.dev.focus_ms                         12.0       14.4      +2.40  
+latency.dev.focus_p90_ms                     20.2       22.3      +2.10  
+latency.dev.jump_ms                          17.2       17.6      +0.40  
+latency.dev.jump_p90_ms                      29.1       29.1      +0.00  
+latency.dev.scroll_ms                        26.5       26.3      -0.20  
+latency.dev.scroll_p90_ms                    37.3       37.2      -0.10  
+latency.dev.type_ms                          12.0       12.1      +0.10  
+latency.dev.type_p90_ms                      17.6       17.7      +0.10  
+latency.idle-windows.focus_ms                 1.6        1.6      +0.00  
+latency.idle-windows.focus_p90_ms             2.0        2.3      +0.30  
+latency.menu.close_ms                         3.1        3.0      -0.10  
+latency.menu.close_p90_ms                     8.1        7.7      -0.40  
+latency.menu.open_ms                        182.0      181.1      -0.90  
+latency.menu.open_p90_ms                    200.4      199.5      -0.90  
+latency.menu.search_ms                      116.9      117.2      +0.30  
+latency.menu.search_p90_ms                  160.9      160.6      -0.30  
+latency.menu.select_ms                        3.8        3.7      -0.10  
+latency.menu.select_p90_ms                    5.6        6.6      +1.00  
+latency.notifications.toast_ms               24.0       23.7      -0.30  
+latency.notifications.toast_p90_ms           47.8       48.7      +0.90  
+latency.resize.focus_ms                       1.7        1.7      +0.00  
+latency.resize.focus_p90_ms                   3.9        4.2      +0.30  
+latency.resize.redrawn_ms                    33.4       34.2      +0.80  
+latency.resize.redrawn_p90_ms                39.4       40.9      +1.50  
+latency.resize.resize_ms                      1.1        1.1      +0.00  
+latency.resize.resize_p90_ms                  6.6        5.2      -1.40  
+latency.workspace-switch.bar_ms               1.6        1.6      +0.00  
+latency.workspace-switch.bar_p90_ms           1.9        2.0      +0.10  
+latency.workspace-switch.focus_ms             1.6        1.6      +0.00  
+latency.workspace-switch.focus_p90_ms         2.4        3.6      +1.20  
+latency.workspace-switch.workspace_ms         1.6        1.6      +0.00  
+latency.workspace-switch.workspace_p90_ms        4.7        5.3      +0.60  
+mem.end.AnonHugePages_kB                        0          0      +0.00  
+mem.end.Anonymous_kB                        19848      22196   +2348.00  WORSE
+mem.end.gpu_kB                                  0          0      +0.00  
+mem.end.gpu_private_kB                          0          0      +0.00  
+mem.end.gpu_purgeable_kB                        0          0      +0.00  
+mem.end.heap_kB                             11860      14208   +2348.00  WORSE
+mem.end.Private_Clean_kB                    17692      17704     +12.00  
+mem.end.Private_Dirty_kB                    19848      22196   +2348.00  WORSE
+mem.end.Pss_Anon_kB                         19848      22196   +2348.00  WORSE
+mem.end.Pss_File_kB                         27642      27628     -14.00  
+mem.end.Pss_kB                              47502      49825   +2323.00  WORSE
+mem.end.Rss_kB                              81552      83888   +2336.00  WORSE
+mem.end.threads                                 6          6      +0.00  
+mem.idle-windows.AnonHugePages_kB               0          0      +0.00  
+mem.idle-windows.Anonymous_kB               19976      22324   +2348.00  WORSE
+mem.idle-windows.gpu_added_kB                   0          0      +0.00  
+mem.idle-windows.gpu_kB                         0          0      +0.00  
+mem.idle-windows.gpu_private_kB                 0          0      +0.00  
+mem.idle-windows.gpu_purgeable_kB               0          0      +0.00  
+mem.idle-windows.heap_kB                    11988      14336   +2348.00  WORSE
+mem.idle-windows.Private_Clean_kB           17676      17672      -4.00  
+mem.idle-windows.Private_Dirty_kB           19976      22324   +2348.00  WORSE
+mem.idle-windows.Pss_Anon_kB                19976      22324   +2348.00  WORSE
+mem.idle-windows.Pss_File_kB                27521      27510     -11.00  
+mem.idle-windows.Pss_kB                     51713      54041   +2328.00  WORSE
+mem.idle-windows.Rss_kB                     90052      92384   +2332.00  WORSE
+mem.idle-windows.threads                        6          6      +0.00  
+mem.start.AnonHugePages_kB                      0          0      +0.00  
+mem.start.Anonymous_kB                      18040      20368   +2328.00  WORSE
+mem.start.gpu_kB                                0          0      +0.00  
+mem.start.gpu_private_kB                        0          0      +0.00  
+mem.start.gpu_purgeable_kB                      0          0      +0.00  
+mem.start.heap_kB                           10052      12380   +2328.00  WORSE
+mem.start.Private_Clean_kB                  16952      16980     +28.00  
+mem.start.Private_Dirty_kB                  18040      20368   +2328.00  WORSE
+mem.start.Pss_Anon_kB                       18040      20368   +2328.00  WORSE
+mem.start.Pss_File_kB                       26430      26445     +15.00  
+mem.start.Pss_kB                            44474      46813   +2339.00  WORSE
+mem.start.Rss_kB                            77596      79908   +2312.00  WORSE
+mem.start.threads                               6          6      +0.00  
+== chromebook: 30 off / 30 on blocks, 0 left out, off -> on (HYPOLAND_SHM_TEXTURE=linear)
+binary.size_kB                              14713      14713      +0.00  
+compositor.age_s                               62         63      +1.00  
+cpu.alacritty-scroll.clients_percent       111.15     111.01      -0.14  
+cpu.alacritty-scroll.kernel                  2.16       2.08      -0.08  
+cpu.alacritty-scroll.machine_percent       143.92     143.60      -0.32  
+cpu.alacritty-scroll.percent                 5.03       5.09      +0.06  
+cpu.alacritty-scroll.stddev                  0.72       0.74      +0.02  
+cpu.alacritty-scroll.total_percent         117.37     117.35      -0.02  
+cpu.alacritty-scroll.user                    2.92       3.00      +0.08  
+cpu.dev.clients_percent                     15.93      15.91      -0.02  
+cpu.dev.kernel                               2.83       2.75      -0.08  
+cpu.dev.machine_percent                     36.09      36.01      -0.08  
+cpu.dev.percent                              8.77       8.72      -0.05  
+cpu.dev.stddev                               2.43       2.53      +0.10  
+cpu.dev.total_percent                       27.33      27.21      -0.12  
+cpu.dev.user                                 6.08       6.00      -0.08  
+cpu.flea.clients_percent                    10.16      10.18      +0.02  
+cpu.flea.kernel                              0.42       0.42      +0.00  
+cpu.flea.machine_percent                    40.59      40.90      +0.31  
+cpu.flea.percent                             1.12       1.12      +0.00  
+cpu.flea.stddev                              0.93       1.08      +0.15  
+cpu.flea.total_percent                      11.99      12.03      +0.04  
+cpu.flea.user                                0.75       0.75      +0.00  
+cpu.ghostty-scroll.clients_percent           0.00       0.00      +0.00  
+cpu.ghostty-scroll.kernel                    0.00       0.00      +0.00  
+cpu.ghostty-scroll.machine_percent           3.90       3.82      -0.08  
+cpu.ghostty-scroll.percent                   0.04       0.04      +0.00  
+cpu.ghostty-scroll.stddev                    0.00       0.00      +0.00  
+cpu.ghostty-scroll.total_percent             0.23       0.23      +0.00  
+cpu.ghostty-scroll.user                      0.00       0.00      +0.00  
+cpu.gpu-client.clients_percent               2.41       2.41      +0.00  
+cpu.gpu-client.kernel                        2.17       2.16      -0.01  
+cpu.gpu-client.machine_percent              15.78      15.78      +0.00  
+cpu.gpu-client.percent                       6.61       6.61      +0.00  
+cpu.gpu-client.stddev                        0.51       0.65      +0.14  
+cpu.gpu-client.total_percent                 9.19       9.20      +0.01  
+cpu.gpu-client.user                          4.50       4.50      +0.00  
+cpu.gtk3-scroll.clients_percent             42.19      42.09      -0.10  
+cpu.gtk3-scroll.kernel                       2.33       2.33      +0.00  
+cpu.gtk3-scroll.machine_percent             83.45      69.39     -14.06  better
+cpu.gtk3-scroll.percent                     29.04      15.57     -13.47  better
+cpu.gtk3-scroll.stddev                       1.11       0.65      -0.46  
+cpu.gtk3-scroll.total_percent               71.54      57.84     -13.70  better
+cpu.gtk3-scroll.user                        26.58      13.24     -13.34  
+cpu.gtk3-x11-scroll.clients_percent          9.20       9.22      +0.02  
+cpu.gtk3-x11-scroll.kernel                   2.75       2.75      +0.00  
+cpu.gtk3-x11-scroll.machine_percent         76.09      76.40      +0.31  
+cpu.gtk3-x11-scroll.percent                  8.16       8.20      +0.04  
+cpu.gtk3-x11-scroll.stddev                   0.75       0.67      -0.08  
+cpu.gtk3-x11-scroll.total_percent           57.30      57.50      +0.20  
+cpu.gtk3-x11-scroll.user                     5.42       5.50      +0.08  
+cpu.gtk4-scroll.clients_percent             13.98      14.00      +0.02  
+cpu.gtk4-scroll.kernel                       4.33       4.33      +0.00  
+cpu.gtk4-scroll.machine_percent             34.20      34.37      +0.17  
+cpu.gtk4-scroll.percent                      9.98       9.97      -0.01  
+cpu.gtk4-scroll.stddev                       0.74       0.74      +0.00  
+cpu.gtk4-scroll.total_percent               24.12      24.16      +0.04  
+cpu.gtk4-scroll.user                         5.58       5.67      +0.09  
+cpu.gtk4-spinner.clients_percent             9.41       9.43      +0.02  
+cpu.gtk4-spinner.kernel                      4.25       4.33      +0.08  
+cpu.gtk4-spinner.machine_percent            28.98      29.80      +0.82  
+cpu.gtk4-spinner.percent                     9.85       9.86      +0.01  
+cpu.gtk4-spinner.stddev                      0.75       0.83      +0.08  
+cpu.gtk4-spinner.total_percent              19.41      19.45      +0.04  
+cpu.gtk4-spinner.user                        5.58       5.58      +0.00  
+cpu.idle.clients_percent                     0.00       0.00      +0.00  
+cpu.idle.kernel                              0.00       0.00      +0.00  
+cpu.idle.machine_percent                     3.82       3.57      -0.25  
+cpu.idle.percent                             0.04       0.04      +0.00  
+cpu.idle.stddev                              0.00       0.00      +0.00  
+cpu.idle.total_percent                       0.23       0.23      +0.00  
+cpu.idle.user                                0.00       0.00      +0.00  
+cpu.idle-windows.clients_percent             0.04       0.04      +0.00  
+cpu.idle-windows.kernel                      0.00       0.00      +0.00  
+cpu.idle-windows.machine_percent             4.24       4.15      -0.09  
+cpu.idle-windows.percent                     0.06       0.05      -0.01  
+cpu.idle-windows.stddev                      0.29       0.29      +0.00  
+cpu.idle-windows.total_percent               0.30       0.31      +0.01  
+cpu.idle-windows.user                        0.00       0.00      +0.00  
+cpu.kitty-scroll.clients_percent           116.02     116.17      +0.15  
+cpu.kitty-scroll.kernel                      1.25       1.17      -0.08  
+cpu.kitty-scroll.machine_percent           144.70     144.78      +0.08  
+cpu.kitty-scroll.percent                     3.03       2.98      -0.05  
+cpu.kitty-scroll.stddev                      0.60       0.67      +0.07  
+cpu.kitty-scroll.total_percent             119.26     119.35      +0.09  
+cpu.kitty-scroll.user                        1.83       1.75      -0.08  
+cpu.menu.clients_percent                     0.03       0.03      +0.00  
+cpu.menu.kernel                              0.67       0.92      +0.25  
+cpu.menu.machine_percent                   125.91     126.03      +0.12  
+cpu.menu.percent                             2.53       2.64      +0.11  
+cpu.menu.stddev                              1.38       1.45      +0.07  
+cpu.menu.total_percent                     107.73     107.67      -0.06  
+cpu.menu.user                                1.83       1.67      -0.16  
+cpu.nautilus.clients_percent                13.13      13.27      +0.14  
+cpu.nautilus.kernel                          2.17       2.25      +0.08  
+cpu.nautilus.machine_percent                37.98      38.19      +0.21  
+cpu.nautilus.percent                         5.04       5.12      +0.08  
+cpu.nautilus.stddev                          3.49       3.58      +0.09  
+cpu.nautilus.total_percent                  21.30      21.44      +0.14  
+cpu.nautilus.user                            2.91       2.83      -0.08  
+cpu.notifications.clients_percent            0.01       0.01      +0.00  
+cpu.notifications.kernel                     1.42       1.50      +0.08  
+cpu.notifications.machine_percent           32.23      31.56      -0.67  
+cpu.notifications.percent                    3.97       3.94      -0.03  
+cpu.notifications.stddev                     0.85       0.90      +0.05  
+cpu.notifications.total_percent             16.55      16.52      -0.03  
+cpu.notifications.user                       2.50       2.50      +0.00  
+cpu.qt-quick-scroll.clients_percent         12.49      12.34      -0.15  
+cpu.qt-quick-scroll.kernel                   2.67       2.58      -0.09  
+cpu.qt-quick-scroll.machine_percent         26.81      26.65      -0.16  
+cpu.qt-quick-scroll.percent                  7.80       7.42      -0.38  
+cpu.qt-quick-scroll.stddev                   0.64       0.65      +0.01  
+cpu.qt-quick-scroll.total_percent           20.52      19.97      -0.55  
+cpu.qt-quick-scroll.user                     5.00       4.92      -0.08  
+cpu.qt-software-scroll.clients_percent      31.71      31.65      -0.06  
+cpu.qt-software-scroll.kernel                2.25       2.25      +0.00  
+cpu.qt-software-scroll.machine_percent      54.72      50.45      -4.27  better
+cpu.qt-software-scroll.percent              15.45      11.72      -3.73  better
+cpu.qt-software-scroll.stddev                0.65       0.62      -0.03  
+cpu.qt-software-scroll.total_percent        47.33      43.52      -3.81  better
+cpu.qt-software-scroll.user                 13.17       9.49      -3.68  
+cpu.qt-software-sprites.clients_percent      80.12      89.54      +9.42  WORSE
+cpu.qt-software-sprites.kernel               2.42       2.58      +0.16  
+cpu.qt-software-sprites.machine_percent     114.04     111.62      -2.42  
+cpu.qt-software-sprites.percent             26.13      14.80     -11.33  better
+cpu.qt-software-sprites.stddev               1.54       0.62      -0.92  
+cpu.qt-software-sprites.total_percent      106.48     104.53      -1.95  better
+cpu.qt-software-sprites.user                23.65      12.17     -11.48  
+cpu.resize.clients_percent                  81.64      79.17      -2.47  
+cpu.resize.kernel                            8.99      17.33      +8.34  
+cpu.resize.machine_percent                 128.84     130.00      +1.16  
+cpu.resize.percent                          29.98      32.39      +2.41  WORSE
+cpu.resize.stddev                            0.94       1.31      +0.37  
+cpu.resize.total_percent                   112.10     111.94      -0.16  
+cpu.resize.user                             20.98      15.00      -5.98  
+cpu.shm-fullwindow.clients_percent          23.53      23.68      +0.15  
+cpu.shm-fullwindow.kernel                    2.66       2.67      +0.01  
+cpu.shm-fullwindow.machine_percent          47.64      48.56      +0.92  
+cpu.shm-fullwindow.percent                   7.93       7.93      +0.00  
+cpu.shm-fullwindow.stddev                    0.59       0.67      +0.08  
+cpu.shm-fullwindow.total_percent            38.97      39.05      +0.08  
+cpu.shm-fullwindow.user                      5.25       5.17      -0.08  
+cpu.terminal-scroll.clients_percent        106.79     108.39      +1.60  
+cpu.terminal-scroll.kernel                   1.67       1.50      -0.17  
+cpu.terminal-scroll.machine_percent        141.25     136.83      -4.42  better
+cpu.terminal-scroll.percent                 12.86       7.22      -5.64  better
+cpu.terminal-scroll.stddev                   0.98       0.72      -0.26  
+cpu.terminal-scroll.total_percent          119.95     116.08      -3.87  better
+cpu.terminal-scroll.user                    11.24       5.75      -5.49  
+cpu.video.clients_percent                   27.31      27.19      -0.12  
+cpu.video.kernel                             0.75       0.83      +0.08  
+cpu.video.machine_percent                   35.44      35.14      -0.30  
+cpu.video.percent                            1.93       1.94      +0.01  
+cpu.video.stddev                             0.58       0.51      -0.07  
+cpu.video.total_percent                     29.38      29.31      -0.07  
+cpu.video.user                               1.17       1.17      +0.00  
+cpu.video-window.clients_percent            30.89      30.88      -0.01  
+cpu.video-window.kernel                      1.58       1.50      -0.08  
+cpu.video-window.machine_percent            42.42      42.91      +0.49  
+cpu.video-window.percent                     4.33       4.32      -0.01  
+cpu.video-window.stddev                      0.65       0.62      -0.03  
+cpu.video-window.total_percent              35.37      35.38      +0.01  
+cpu.video-window.user                        2.75       2.75      +0.00  
+cpu.workspace-switch.clients_percent         0.08       0.08      +0.00  
+cpu.workspace-switch.kernel                  2.00       2.00      +0.00  
+cpu.workspace-switch.machine_percent        34.95      34.70      -0.25  
+cpu.workspace-switch.percent                 6.49       6.48      -0.01  
+cpu.workspace-switch.stddev                  0.79       0.78      -0.01  
+cpu.workspace-switch.total_percent          14.58      14.59      +0.01  
+cpu.workspace-switch.user                    4.42       4.41      -0.01  
+fps.alacritty-scroll.screen                  35.5       35.8      +0.30  
+fps.dev.screen                               49.0       48.8      -0.20  
+fps.flea.screen                               7.3        7.3      +0.00  
+fps.ghostty-scroll.screen                     0.0        0.0      +0.00  
+fps.gpu-client                               60.1       60.1      +0.00  
+fps.gpu-client.screen                        60.0       60.0      +0.00  
+fps.gtk3-scroll                              59.0       59.1      +0.10  
+fps.gtk3-scroll.screen                       60.0       60.0      +0.00  
+fps.gtk3-x11-scroll                          58.7       58.9      +0.20  
+fps.gtk3-x11-scroll.screen                   58.9       59.1      +0.20  
+fps.gtk4-scroll                              59.5       59.5      +0.00  
+fps.gtk4-scroll.screen                       60.0       60.0      +0.00  
+fps.gtk4-spinner                             59.5       59.4      -0.10  
+fps.gtk4-spinner.screen                      60.0       60.0      +0.00  
+fps.idle.screen                               0.0        0.0      +0.00  
+fps.idle-windows.screen                       0.0        0.0      +0.00  
+fps.kitty-scroll.screen                      21.1       20.8      -0.30  
+fps.menu.screen                              11.8       11.6      -0.20  
+fps.nautilus.screen                          31.0       31.3      +0.30  
+fps.notifications.screen                     28.2       28.2      +0.00  
+fps.qt-quick-scroll                          60.0       60.0      +0.00  
+fps.qt-quick-scroll.screen                   60.0       60.0      +0.00  
+fps.qt-software-scroll                       59.9       60.0      +0.10  
+fps.qt-software-scroll.screen                60.0       60.0      +0.00  
+fps.qt-software-sprites                      50.2       57.5      +7.30  
+fps.qt-software-sprites.screen               51.1       58.4      +7.30  
+fps.resize.screen                            60.0       59.7      -0.30  
+fps.shm-fullwindow.screen                    60.0       60.0      +0.00  
+fps.terminal-scroll.screen                   27.4       28.0      +0.60  
+fps.video.screen                             13.8       13.8      +0.00  
+fps.video-window.screen                      25.7       25.7      +0.00  
+fps.workspace-switch.screen                  56.2       56.3      +0.10  
+latency.dev.focus_ms                         12.9       13.0      +0.10  
+latency.dev.focus_p90_ms                     23.3       21.9      -1.40  
+latency.dev.jump_ms                          43.6       43.3      -0.30  
+latency.dev.jump_p90_ms                      57.0       56.9      -0.10  
+latency.dev.scroll_ms                        53.2       52.3      -0.90  
+latency.dev.scroll_p90_ms                    70.3       70.0      -0.30  
+latency.dev.type_ms                          12.4       12.2      -0.20  
+latency.dev.type_p90_ms                      20.5       21.2      +0.70  
+latency.idle-windows.focus_ms                 6.8        6.6      -0.20  
+latency.idle-windows.focus_p90_ms            10.7        9.9      -0.80  
+latency.menu.close_ms                         8.7        8.5      -0.20  
+latency.menu.close_p90_ms                    15.6       10.1      -5.50  
+latency.menu.open_ms                        621.3      641.4     +20.10  
+latency.menu.open_p90_ms                    740.1      734.9      -5.20  
+latency.menu.search_ms                      338.4      347.1      +8.70  
+latency.menu.search_p90_ms                  539.0      549.4     +10.40  
+latency.menu.select_ms                        9.9        9.8      -0.10  
+latency.menu.select_p90_ms                   10.2       10.3      +0.10  
+latency.notifications.toast_ms               36.0       35.1      -0.90  
+latency.notifications.toast_p90_ms           61.4       62.1      +0.70  
+latency.resize.focus_ms                       6.9        6.6      -0.30  
+latency.resize.focus_p90_ms                  10.9       11.5      +0.60  
+latency.resize.redrawn_ms                    22.1       25.5      +3.40  
+latency.resize.redrawn_p90_ms                41.6       42.0      +0.40  
+latency.resize.resize_ms                      3.8        3.7      -0.10  
+latency.resize.resize_p90_ms                  4.8        4.8      +0.00  
+latency.workspace-switch.bar_ms               5.5        5.6      +0.10  
+latency.workspace-switch.bar_p90_ms           8.0        7.4      -0.60  
+latency.workspace-switch.focus_ms             6.5        6.4      -0.10  
+latency.workspace-switch.focus_p90_ms        10.8       10.1      -0.70  
+latency.workspace-switch.workspace_ms         5.6        5.7      +0.10  
+latency.workspace-switch.workspace_p90_ms        7.3        7.8      +0.50  
+mem.end.AnonHugePages_kB                        0          0      +0.00  
+mem.end.Anonymous_kB                        20280      21944   +1664.00  WORSE
+mem.end.gpu_kB                             108504     108628    +124.00  
+mem.end.gpu_private_kB                      51160      51276    +116.00  
+mem.end.gpu_purgeable_kB                     7760       7760      +0.00  
+mem.end.heap_kB                             12276      13908   +1632.00  WORSE
+mem.end.Private_Clean_kB                    16904      16896      -8.00  
+mem.end.Private_Dirty_kB                    20280      21944   +1664.00  WORSE
+mem.end.Pss_Anon_kB                         20280      21944   +1664.00  WORSE
+mem.end.Pss_File_kB                         27269      27283     +14.00  
+mem.end.Pss_kB                              47544      49231   +1687.00  WORSE
+mem.end.Rss_kB                              82204      83944   +1740.00  WORSE
+mem.end.threads                                 6          8      +2.00  
+mem.idle-windows.AnonHugePages_kB               0          0      +0.00  
+mem.idle-windows.Anonymous_kB               20352      22012   +1660.00  WORSE
+mem.idle-windows.gpu_added_kB                -240       5904   +6144.00  
+mem.idle-windows.gpu_kB                     93736      97876   +4140.00  
+mem.idle-windows.gpu_private_kB             41512      33436   -8076.00  better
+mem.idle-windows.gpu_purgeable_kB            2208        160   -2048.00  better
+mem.idle-windows.heap_kB                    12348      13976   +1628.00  WORSE
+mem.idle-windows.Private_Clean_kB           16876      16888     +12.00  
+mem.idle-windows.Private_Dirty_kB           20352      22012   +1660.00  WORSE
+mem.idle-windows.Pss_Anon_kB                20352      22012   +1660.00  WORSE
+mem.idle-windows.Pss_File_kB                27130      27153     +23.00  
+mem.idle-windows.Pss_kB                     49404      51071   +1667.00  WORSE
+mem.idle-windows.Rss_kB                     86096      87820   +1724.00  WORSE
+mem.idle-windows.threads                        6          8      +2.00  
+mem.start.AnonHugePages_kB                      0          0      +0.00  
+mem.start.Anonymous_kB                      18004      20032   +2028.00  WORSE
+mem.start.gpu_kB                            85000      83844   -1156.00  
+mem.start.gpu_private_kB                    31752      31868    +116.00  
+mem.start.gpu_purgeable_kB                    120        120      +0.00  
+mem.start.heap_kB                           10000      11996   +1996.00  WORSE
+mem.start.Private_Clean_kB                  16624      16684     +60.00  
+mem.start.Private_Dirty_kB                  18004      20032   +2028.00  WORSE
+mem.start.Pss_Anon_kB                       18004      20032   +2028.00  WORSE
+mem.start.Pss_File_kB                       26651      26695     +44.00  
+mem.start.Pss_kB                            44651      46727   +2076.00  WORSE
+mem.start.Rss_kB                            78272      80404   +2132.00  WORSE
+mem.start.threads                               6          8      +2.00  
+== t460s: 31 off / 31 on blocks, 0 left out, off -> on (HYPOLAND_SHM_TEXTURE=linear)
+binary.size_kB                              14713      14713      +0.00  
+compositor.age_s                               60         60      +0.00  
+cpu.alacritty-scroll.clients_percent       136.03     135.99      -0.04  
+cpu.alacritty-scroll.kernel                  2.17       2.17      +0.00  
+cpu.alacritty-scroll.machine_percent       160.43     160.36      -0.07  
+cpu.alacritty-scroll.percent                 4.60       4.59      -0.01  
+cpu.alacritty-scroll.stddev                  0.65       0.52      -0.13  
+cpu.alacritty-scroll.total_percent         141.67     141.64      -0.03  
+cpu.alacritty-scroll.user                    2.50       2.42      -0.08  
+cpu.dev.clients_percent                      6.35       6.32      -0.03  
+cpu.dev.kernel                               1.67       1.58      -0.09  
+cpu.dev.machine_percent                     15.56      15.81      +0.25  
+cpu.dev.percent                              3.95       3.95      +0.00  
+cpu.dev.stddev                               1.35       1.31      -0.04  
+cpu.dev.total_percent                       11.53      11.45      -0.08  
+cpu.dev.user                                 2.33       2.33      +0.00  
+cpu.flea.clients_percent                     3.58       3.58      +0.00  
+cpu.flea.kernel                              0.33       0.33      +0.00  
+cpu.flea.machine_percent                    16.15      16.06      -0.09  
+cpu.flea.percent                             0.73       0.73      +0.00  
+cpu.flea.stddev                              0.78       0.78      +0.00  
+cpu.flea.total_percent                       4.67       4.66      -0.01  
+cpu.flea.user                                0.33       0.33      +0.00  
+cpu.ghostty-scroll.clients_percent         157.23     157.08      -0.15  
+cpu.ghostty-scroll.kernel                    2.08       2.08      +0.00  
+cpu.ghostty-scroll.machine_percent         179.98     180.22      +0.24  
+cpu.ghostty-scroll.percent                   4.88       4.85      -0.03  
+cpu.ghostty-scroll.stddev                    0.58       0.58      +0.00  
+cpu.ghostty-scroll.total_percent           162.18     162.11      -0.07  
+cpu.ghostty-scroll.user                      2.83       2.83      +0.00  
+cpu.gpu-client.clients_percent               1.94       1.93      -0.01  
+cpu.gpu-client.kernel                        1.92       1.92      +0.00  
+cpu.gpu-client.machine_percent              11.49      11.24      -0.25  
+cpu.gpu-client.percent                       4.29       4.30      +0.01  
+cpu.gpu-client.stddev                        0.51       0.62      +0.11  
+cpu.gpu-client.total_percent                 6.32       6.31      -0.01  
+cpu.gpu-client.user                          2.41       2.42      +0.01  
+cpu.gtk3-scroll.clients_percent             66.62      60.97      -5.65  better
+cpu.gtk3-scroll.kernel                       2.00       1.83      -0.17  
+cpu.gtk3-scroll.machine_percent             88.70      80.93      -7.77  better
+cpu.gtk3-scroll.percent                     14.06      13.86      -0.20  
+cpu.gtk3-scroll.stddev                       0.51       0.60      +0.09  
+cpu.gtk3-scroll.total_percent               80.92      75.04      -5.88  better
+cpu.gtk3-scroll.user                        12.17      12.00      -0.17  
+cpu.gtk3-x11-scroll.clients_percent          3.98       3.96      -0.02  
+cpu.gtk3-x11-scroll.kernel                   1.58       1.67      +0.09  
+cpu.gtk3-x11-scroll.machine_percent         40.03      39.95      -0.08  
+cpu.gtk3-x11-scroll.percent                  3.93       3.94      +0.01  
+cpu.gtk3-x11-scroll.stddev                   0.67       0.62      -0.05  
+cpu.gtk3-x11-scroll.total_percent           25.71      25.51      -0.20  
+cpu.gtk3-x11-scroll.user                     2.42       2.42      +0.00  
+cpu.gtk4-scroll.clients_percent              6.81       6.84      +0.03  
+cpu.gtk4-scroll.kernel                       2.08       2.00      -0.08  
+cpu.gtk4-scroll.machine_percent             17.48      17.64      +0.16  
+cpu.gtk4-scroll.percent                      4.70       4.72      +0.02  
+cpu.gtk4-scroll.stddev                       0.50       0.62      +0.12  
+cpu.gtk4-scroll.total_percent               11.61      11.65      +0.04  
+cpu.gtk4-scroll.user                         2.67       2.67      +0.00  
+cpu.gtk4-spinner.clients_percent             5.33       5.31      -0.02  
+cpu.gtk4-spinner.kernel                      1.92       2.00      +0.08  
+cpu.gtk4-spinner.machine_percent            15.23      15.23      +0.00  
+cpu.gtk4-spinner.percent                     4.62       4.63      +0.01  
+cpu.gtk4-spinner.stddev                      0.52       0.53      +0.01  
+cpu.gtk4-spinner.total_percent              10.02      10.04      +0.02  
+cpu.gtk4-spinner.user                        2.58       2.67      +0.09  
+cpu.idle.clients_percent                     0.00       0.00      +0.00  
+cpu.idle.kernel                              0.00       0.00      +0.00  
+cpu.idle.machine_percent                     1.25       1.25      +0.00  
+cpu.idle.percent                             0.01       0.01      +0.00  
+cpu.idle.stddev                              0.00       0.00      +0.00  
+cpu.idle.total_percent                       0.08       0.09      +0.01  
+cpu.idle.user                                0.00       0.00      +0.00  
+cpu.idle-windows.clients_percent             0.01       0.01      +0.00  
+cpu.idle-windows.kernel                      0.00       0.00      +0.00  
+cpu.idle-windows.machine_percent             1.33       1.33      +0.00  
+cpu.idle-windows.percent                     0.02       0.02      +0.00  
+cpu.idle-windows.stddev                      0.00       0.00      +0.00  
+cpu.idle-windows.total_percent               0.11       0.11      +0.00  
+cpu.idle-windows.user                        0.00       0.00      +0.00  
+cpu.kitty-scroll.clients_percent           145.66     145.64      -0.02  
+cpu.kitty-scroll.kernel                      1.92       1.92      +0.00  
+cpu.kitty-scroll.machine_percent           169.34     169.36      +0.02  
+cpu.kitty-scroll.percent                     4.61       4.62      +0.01  
+cpu.kitty-scroll.stddev                      0.51       0.51      +0.00  
+cpu.kitty-scroll.total_percent             150.37     150.37      +0.00  
+cpu.kitty-scroll.user                        2.67       2.75      +0.08  
+cpu.menu.clients_percent                     0.02       0.02      +0.00  
+cpu.menu.kernel                              0.50       0.50      +0.00  
+cpu.menu.machine_percent                    73.25      73.25      +0.00  
+cpu.menu.percent                             1.23       1.23      +0.00  
+cpu.menu.stddev                              0.75       0.83      +0.08  
+cpu.menu.total_percent                      66.90      66.91      +0.01  
+cpu.menu.user                                0.75       0.75      +0.00  
+cpu.nautilus.clients_percent                 5.40       5.43      +0.03  
+cpu.nautilus.kernel                          1.00       1.00      +0.00  
+cpu.nautilus.machine_percent                16.90      17.06      +0.16  
+cpu.nautilus.percent                         2.36       2.37      +0.01  
+cpu.nautilus.stddev                          1.86       1.87      +0.01  
+cpu.nautilus.total_percent                   9.17       9.22      +0.05  
+cpu.nautilus.user                            1.33       1.33      +0.00  
+cpu.notifications.clients_percent            0.00       0.00      +0.00  
+cpu.notifications.kernel                     1.17       1.17      +0.00  
+cpu.notifications.machine_percent           16.31      15.98      -0.33  
+cpu.notifications.percent                    2.60       2.52      -0.08  
+cpu.notifications.stddev                     0.78       0.79      +0.01  
+cpu.notifications.total_percent              9.59       9.25      -0.34  
+cpu.notifications.user                       1.42       1.42      +0.00  
+cpu.qt-quick-scroll.clients_percent          8.79       8.69      -0.10  
+cpu.qt-quick-scroll.kernel                   2.00       2.00      +0.00  
+cpu.qt-quick-scroll.machine_percent         19.64      19.56      -0.08  
+cpu.qt-quick-scroll.percent                  4.56       4.55      -0.01  
+cpu.qt-quick-scroll.stddev                   0.52       0.52      +0.00  
+cpu.qt-quick-scroll.total_percent           13.45      13.34      -0.11  
+cpu.qt-quick-scroll.user                     2.58       2.58      +0.00  
+cpu.qt-software-scroll.clients_percent      27.47      25.24      -2.23  better
+cpu.qt-software-scroll.kernel                2.00       2.08      +0.08  
+cpu.qt-software-scroll.machine_percent      46.33      40.77      -5.56  better
+cpu.qt-software-scroll.percent              12.40      10.35      -2.05  better
+cpu.qt-software-scroll.stddev                0.52       0.51      -0.01  
+cpu.qt-software-scroll.total_percent        39.98      35.69      -4.29  better
+cpu.qt-software-scroll.user                 10.41       8.33      -2.08  
+cpu.qt-software-sprites.clients_percent      36.52      33.09      -3.43  better
+cpu.qt-software-sprites.kernel               2.00       1.83      -0.17  
+cpu.qt-software-sprites.machine_percent      55.09      48.43      -6.66  better
+cpu.qt-software-sprites.percent             12.63      10.37      -2.26  better
+cpu.qt-software-sprites.stddev               0.58       0.52      -0.06  
+cpu.qt-software-sprites.total_percent       49.32      43.52      -5.80  better
+cpu.qt-software-sprites.user                10.67       8.58      -2.09  
+cpu.resize.clients_percent                  55.39      52.73      -2.66  
+cpu.resize.kernel                            7.24      13.83      +6.59  
+cpu.resize.machine_percent                  84.86      92.03      +7.17  WORSE
+cpu.resize.percent                          16.42      23.18      +6.76  WORSE
+cpu.resize.stddev                            1.00       1.70      +0.70  
+cpu.resize.total_percent                    71.98      76.07      +4.09  
+cpu.resize.user                              9.17       9.33      +0.16  
+cpu.shm-fullwindow.clients_percent          11.44      11.46      +0.02  
+cpu.shm-fullwindow.kernel                    2.33       2.16      -0.17  
+cpu.shm-fullwindow.machine_percent          25.72      25.89      +0.17  
+cpu.shm-fullwindow.percent                   4.53       4.54      +0.01  
+cpu.shm-fullwindow.stddev                    0.52       0.62      +0.10  
+cpu.shm-fullwindow.total_percent            19.86      19.87      +0.01  
+cpu.shm-fullwindow.user                      2.25       2.33      +0.08  
+cpu.terminal-scroll.clients_percent        133.62     133.38      -0.24  
+cpu.terminal-scroll.kernel                   1.50       1.42      -0.08  
+cpu.terminal-scroll.machine_percent        160.66     158.34      -2.32  
+cpu.terminal-scroll.percent                  9.33       7.91      -1.42  better
+cpu.terminal-scroll.stddev                   0.58       0.60      +0.02  
+cpu.terminal-scroll.total_percent          143.01     141.41      -1.60  better
+cpu.terminal-scroll.user                     7.83       6.50      -1.33  
+cpu.video.clients_percent                    5.18       5.09      -0.09  
+cpu.video.kernel                             0.92       0.92      +0.00  
+cpu.video.machine_percent                   14.23      14.07      -0.16  
+cpu.video.percent                            2.45       2.43      -0.02  
+cpu.video.stddev                             0.60       0.62      +0.02  
+cpu.video.total_percent                      7.60       7.52      -0.08  
+cpu.video.user                               1.58       1.58      +0.00  
+cpu.video-window.clients_percent             5.05       5.04      -0.01  
+cpu.video-window.kernel                      1.00       1.00      +0.00  
+cpu.video-window.machine_percent            14.57      14.48      -0.09  
+cpu.video-window.percent                     2.87       2.79      -0.08  
+cpu.video-window.stddev                      0.60       0.58      -0.02  
+cpu.video-window.total_percent               8.01       7.93      -0.08  
+cpu.video-window.user                        1.75       1.75      +0.00  
+cpu.workspace-switch.clients_percent         0.05       0.05      +0.00  
+cpu.workspace-switch.kernel                  1.67       1.67      +0.00  
+cpu.workspace-switch.machine_percent        18.98      18.64      -0.34  
+cpu.workspace-switch.percent                 3.79       3.74      -0.05  
+cpu.workspace-switch.stddev                  0.62       0.62      +0.00  
+cpu.workspace-switch.total_percent           8.82       8.71      -0.11  
+cpu.workspace-switch.user                    2.08       2.08      +0.00  
+fps.alacritty-scroll.screen                  59.8       59.8      +0.00  
+fps.dev.screen                               45.9       46.0      +0.10  
+fps.flea.screen                               7.7        7.7      +0.00  
+fps.ghostty-scroll.screen                    52.1       51.9      -0.20  
+fps.gpu-client                               60.3       60.3      +0.00  
+fps.gpu-client.screen                        60.0       60.0      +0.00  
+fps.gtk3-scroll                              59.7       59.7      +0.00  
+fps.gtk3-scroll.screen                       60.0       60.0      +0.00  
+fps.gtk3-x11-scroll                          60.0       60.0      +0.00  
+fps.gtk3-x11-scroll.screen                   60.0       60.0      +0.00  
+fps.gtk4-scroll                              59.8       59.8      +0.00  
+fps.gtk4-scroll.screen                       60.0       60.0      +0.00  
+fps.gtk4-spinner                             59.8       59.8      +0.00  
+fps.gtk4-spinner.screen                      60.0       60.0      +0.00  
+fps.idle.screen                               0.0        0.0      +0.00  
+fps.idle-windows.screen                       0.0        0.0      +0.00  
+fps.kitty-scroll.screen                      59.4       59.2      -0.20  
+fps.menu.screen                               6.0        6.2      +0.20  
+fps.nautilus.screen                          31.9       31.9      +0.00  
+fps.notifications.screen                     30.4       30.2      -0.20  
+fps.qt-quick-scroll                          60.1       60.1      +0.00  
+fps.qt-quick-scroll.screen                   60.0       60.0      +0.00  
+fps.qt-software-scroll                       60.1       60.1      +0.00  
+fps.qt-software-scroll.screen                60.0       60.0      +0.00  
+fps.qt-software-sprites                      60.1       60.1      +0.00  
+fps.qt-software-sprites.screen               60.1       60.0      -0.10  
+fps.resize.screen                            60.0       60.0      +0.00  
+fps.shm-fullwindow.screen                    60.0       60.0      +0.00  
+fps.terminal-scroll.screen                   44.2       45.1      +0.90  
+fps.video.screen                             30.0       30.0      +0.00  
+fps.video-window.screen                      30.0       30.0      +0.00  
+fps.workspace-switch.screen                  58.8       58.8      +0.00  
+latency.dev.focus_ms                          4.6        4.6      +0.00  
+latency.dev.focus_p90_ms                      9.7        9.2      -0.50  
+latency.dev.jump_ms                          16.3       16.2      -0.10  
+latency.dev.jump_p90_ms                      31.1       31.0      -0.10  
+latency.dev.scroll_ms                        26.0       26.5      +0.50  
+latency.dev.scroll_p90_ms                    36.0       36.8      +0.80  
+latency.dev.type_ms                          10.4       10.0      -0.40  
+latency.dev.type_p90_ms                      18.4       18.3      -0.10  
+latency.idle-windows.focus_ms                 3.0        2.4      -0.60  
+latency.idle-windows.focus_p90_ms             6.0        5.1      -0.90  
+latency.menu.close_ms                         3.1        3.2      +0.10  
+latency.menu.close_p90_ms                     9.1        8.4      -0.70  
+latency.menu.open_ms                        161.9      156.2      -5.70  
+latency.menu.open_p90_ms                    183.6      175.2      -8.40  
+latency.menu.search_ms                       70.1       70.4      +0.30  
+latency.menu.search_p90_ms                   96.2       95.2      -1.00  
+latency.menu.select_ms                        4.0        4.1      +0.10  
+latency.menu.select_p90_ms                    6.3        7.2      +0.90  
+latency.notifications.toast_ms               21.0       20.6      -0.40  
+latency.notifications.toast_p90_ms           49.5       48.3      -1.20  
+latency.resize.focus_ms                       2.1        2.1      +0.00  
+latency.resize.focus_p90_ms                   3.7        6.7      +3.00  
+latency.resize.redrawn_ms                    13.3       14.0      +0.70  
+latency.resize.redrawn_p90_ms                19.6       20.3      +0.70  
+latency.resize.resize_ms                      1.2        1.2      +0.00  
+latency.resize.resize_p90_ms                 10.8       10.6      -0.20  
+latency.workspace-switch.bar_ms               1.8        1.9      +0.10  
+latency.workspace-switch.bar_p90_ms           2.2        2.3      +0.10  
+latency.workspace-switch.focus_ms             2.5        2.4      -0.10  
+latency.workspace-switch.focus_p90_ms         6.2        4.8      -1.40  
+latency.workspace-switch.workspace_ms         1.8        1.9      +0.10  
+latency.workspace-switch.workspace_p90_ms        4.9        4.2      -0.70  
+mem.end.AnonHugePages_kB                        0          0      +0.00  
+mem.end.Anonymous_kB                        19872      22060   +2188.00  WORSE
+mem.end.gpu_kB                             123260     123960    +700.00  
+mem.end.gpu_private_kB                      40316      40984    +668.00  
+mem.end.gpu_purgeable_kB                     2484       2516     +32.00  
+mem.end.heap_kB                             11792      13932   +2140.00  WORSE
+mem.end.Private_Clean_kB                    17212      17204      -8.00  
+mem.end.Private_Dirty_kB                    19872      22060   +2188.00  WORSE
+mem.end.Pss_Anon_kB                         19872      22060   +2188.00  WORSE
+mem.end.Pss_File_kB                         27794      27804     +10.00  
+mem.end.Pss_kB                              47701      49887   +2186.00  WORSE
+mem.end.Rss_kB                              82896      85100   +2204.00  WORSE
+mem.end.threads                                10         14      +4.00  
+mem.idle-windows.AnonHugePages_kB               0          0      +0.00  
+mem.idle-windows.Anonymous_kB               19940      22132   +2192.00  WORSE
+mem.idle-windows.gpu_added_kB                7476      19764  +12288.00  
+mem.idle-windows.gpu_kB                    135760     142532   +6772.00  
+mem.idle-windows.gpu_private_kB             44624      26852  -17772.00  better
+mem.idle-windows.gpu_purgeable_kB            6728        608   -6120.00  
+mem.idle-windows.heap_kB                    11872      14016   +2144.00  WORSE
+mem.idle-windows.Private_Clean_kB           17208      17180     -28.00  
+mem.idle-windows.Private_Dirty_kB           19940      22132   +2192.00  WORSE
+mem.idle-windows.Pss_Anon_kB                19940      22132   +2192.00  WORSE
+mem.idle-windows.Pss_File_kB                27671      27663      -8.00  
+mem.idle-windows.Pss_kB                     51244      53429   +2185.00  WORSE
+mem.idle-windows.Rss_kB                     90152      92404   +2252.00  WORSE
+mem.idle-windows.threads                       10         14      +4.00  
+mem.start.AnonHugePages_kB                      0          0      +0.00  
+mem.start.Anonymous_kB                      17908      20088   +2180.00  WORSE
+mem.start.gpu_kB                           114344     114660    +316.00  
+mem.start.gpu_private_kB                    23464      23764    +300.00  
+mem.start.gpu_purgeable_kB                    544        576     +32.00  
+mem.start.heap_kB                            9840      11972   +2132.00  WORSE
+mem.start.Private_Clean_kB                  16972      16984     +12.00  
+mem.start.Private_Dirty_kB                  17908      20088   +2180.00  WORSE
+mem.start.Pss_Anon_kB                       17908      20088   +2180.00  WORSE
+mem.start.Pss_File_kB                       27191      27236     +45.00  
+mem.start.Pss_kB                            45095      47340   +2245.00  WORSE
+mem.start.Rss_kB                            79604      81840   +2236.00  WORSE
+mem.start.threads                              10         14      +4.00  
+== macmini-intel: 33 off / 33 on blocks, 0 left out, off -> on (HYPOLAND_SHM_TEXTURE=linear)
+binary.size_kB                              14713      14713      +0.00  
+compositor.age_s                               61         61      +0.00  
+cpu.alacritty-scroll.clients_percent       141.51     141.53      +0.02  
+cpu.alacritty-scroll.kernel                  1.92       2.00      +0.08  
+cpu.alacritty-scroll.machine_percent       177.56     177.57      +0.01  
+cpu.alacritty-scroll.percent                 5.08       5.10      +0.02  
+cpu.alacritty-scroll.stddev                  0.60       0.58      -0.02  
+cpu.alacritty-scroll.total_percent         155.37     155.61      +0.24  
+cpu.alacritty-scroll.user                    3.17       3.08      -0.09  
+cpu.dev.clients_percent                      8.64       8.56      -0.08  
+cpu.dev.kernel                               1.17       1.17      +0.00  
+cpu.dev.machine_percent                     22.80      23.05      +0.25  
+cpu.dev.percent                              3.80       3.81      +0.01  
+cpu.dev.stddev                               1.37       1.40      +0.03  
+cpu.dev.total_percent                       19.66      19.71      +0.05  
+cpu.dev.user                                 2.66       2.66      +0.00  
+cpu.ghostty-scroll.clients_percent         169.68     169.56      -0.12  
+cpu.ghostty-scroll.kernel                    1.42       1.42      +0.00  
+cpu.ghostty-scroll.machine_percent         203.23     202.55      -0.68  
+cpu.ghostty-scroll.percent                   4.14       4.14      +0.00  
+cpu.ghostty-scroll.stddev                    0.62       0.72      +0.10  
+cpu.ghostty-scroll.total_percent           182.86     182.58      -0.28  
+cpu.ghostty-scroll.user                      2.67       2.67      +0.00  
+cpu.gpu-client.clients_percent               1.28       1.28      +0.00  
+cpu.gpu-client.kernel                        1.08       1.08      +0.00  
+cpu.gpu-client.machine_percent              12.48      12.57      +0.09  
+cpu.gpu-client.percent                       3.21       3.20      -0.01  
+cpu.gpu-client.stddev                        0.51       0.49      -0.02  
+cpu.gpu-client.total_percent                10.16      10.16      +0.00  
+cpu.gpu-client.user                          2.08       2.17      +0.09  
+cpu.gtk3-scroll.clients_percent             62.89      63.32      +0.43  
+cpu.gtk3-scroll.kernel                       1.17       1.25      +0.08  
+cpu.gtk3-scroll.machine_percent            106.92      92.68     -14.24  better
+cpu.gtk3-scroll.percent                     28.28      14.34     -13.94  better
+cpu.gtk3-scroll.stddev                       0.90       0.65      -0.25  
+cpu.gtk3-scroll.total_percent              101.72      87.81     -13.91  better
+cpu.gtk3-scroll.user                        27.14      13.08     -14.06  
+cpu.gtk3-x11-scroll.clients_percent          6.46       6.48      +0.02  
+cpu.gtk3-x11-scroll.kernel                   1.75       1.75      +0.00  
+cpu.gtk3-x11-scroll.machine_percent         70.80      70.04      -0.76  
+cpu.gtk3-x11-scroll.percent                  5.46       5.55      +0.09  
+cpu.gtk3-x11-scroll.stddev                   1.42       1.42      +0.00  
+cpu.gtk3-x11-scroll.total_percent           53.58      53.04      -0.54  
+cpu.gtk3-x11-scroll.user                     3.75       3.75      +0.00  
+cpu.gtk4-scroll.clients_percent              8.64       8.66      +0.02  
+cpu.gtk4-scroll.kernel                       1.75       1.75      +0.00  
+cpu.gtk4-scroll.machine_percent             23.97      24.38      +0.41  
+cpu.gtk4-scroll.percent                      5.02       5.05      +0.03  
+cpu.gtk4-scroll.stddev                       0.51       0.67      +0.16  
+cpu.gtk4-scroll.total_percent               20.29      20.31      +0.02  
+cpu.gtk4-scroll.user                         3.25       3.25      +0.00  
+cpu.gtk4-spinner.clients_percent             4.50       4.50      +0.00  
+cpu.gtk4-spinner.kernel                      1.67       1.67      +0.00  
+cpu.gtk4-spinner.machine_percent            19.47      19.39      -0.08  
+cpu.gtk4-spinner.percent                     4.73       4.73      +0.00  
+cpu.gtk4-spinner.stddev                      0.58       0.62      +0.04  
+cpu.gtk4-spinner.total_percent              15.71      15.68      -0.03  
+cpu.gtk4-spinner.user                        3.08       3.08      +0.00  
+cpu.idle.clients_percent                     0.00       0.00      +0.00  
+cpu.idle.kernel                              0.00       0.00      +0.00  
+cpu.idle.machine_percent                     7.32       7.49      +0.17  
+cpu.idle.percent                             0.07       0.07      +0.00  
+cpu.idle.stddev                              0.29       0.29      +0.00  
+cpu.idle.total_percent                       5.44       5.47      +0.03  
+cpu.idle.user                                0.08       0.00      -0.08  
+cpu.idle-windows.clients_percent             0.01       0.01      +0.00  
+cpu.idle-windows.kernel                      0.08       0.00      -0.08  
+cpu.idle-windows.machine_percent             7.16       7.16      +0.00  
+cpu.idle-windows.percent                     0.09       0.08      -0.01  
+cpu.idle-windows.stddev                      0.29       0.29      +0.00  
+cpu.idle-windows.total_percent               5.50       5.49      -0.01  
+cpu.idle-windows.user                        0.08       0.08      +0.00  
+cpu.kitty-scroll.clients_percent           155.01     155.13      +0.12  
+cpu.kitty-scroll.kernel                      1.33       1.42      +0.09  
+cpu.kitty-scroll.machine_percent           195.38     195.02      -0.36  
+cpu.kitty-scroll.percent                     4.05       4.05      +0.00  
+cpu.kitty-scroll.stddev                      0.60       0.60      +0.00  
+cpu.kitty-scroll.total_percent             167.05     167.33      +0.28  
+cpu.kitty-scroll.user                        2.67       2.67      +0.00  
+cpu.menu.clients_percent                     0.03       0.03      +0.00  
+cpu.menu.kernel                              0.42       0.67      +0.25  
+cpu.menu.machine_percent                    92.47      90.97      -1.50  
+cpu.menu.percent                             1.72       1.74      +0.02  
+cpu.menu.stddev                              0.97       0.94      -0.03  
+cpu.menu.total_percent                      83.86      83.33      -0.53  
+cpu.menu.user                                1.33       1.17      -0.16  
+cpu.nautilus.clients_percent                 7.10       7.02      -0.08  
+cpu.nautilus.kernel                          0.83       0.83      +0.00  
+cpu.nautilus.machine_percent                24.05      23.30      -0.75  
+cpu.nautilus.percent                         2.15       2.16      +0.01  
+cpu.nautilus.stddev                          2.04       2.04      +0.00  
+cpu.nautilus.total_percent                  16.55      16.40      -0.15  
+cpu.nautilus.user                            1.33       1.33      +0.00  
+cpu.notifications.clients_percent            0.00       0.00      +0.00  
+cpu.notifications.kernel                     0.58       0.58      +0.00  
+cpu.notifications.machine_percent           18.31      17.97      -0.34  
+cpu.notifications.percent                    1.81       1.81      +0.00  
+cpu.notifications.stddev                     0.72       0.62      -0.10  
+cpu.notifications.total_percent             12.20      12.36      +0.16  
+cpu.notifications.user                       1.17       1.17      +0.00  
+cpu.qt-quick-scroll.clients_percent          6.05       6.09      +0.04  
+cpu.qt-quick-scroll.kernel                   1.08       1.08      +0.00  
+cpu.qt-quick-scroll.machine_percent         18.56      18.72      +0.16  
+cpu.qt-quick-scroll.percent                  3.44       3.45      +0.01  
+cpu.qt-quick-scroll.stddev                   0.51       0.52      +0.01  
+cpu.qt-quick-scroll.total_percent           15.62      15.93      +0.31  
+cpu.qt-quick-scroll.user                     2.33       2.33      +0.00  
+cpu.qt-software-scroll.clients_percent      20.93      21.03      +0.10  
+cpu.qt-software-scroll.kernel                1.25       1.17      -0.08  
+cpu.qt-software-scroll.machine_percent      39.20      35.87      -3.33  
+cpu.qt-software-scroll.percent              10.43       7.35      -3.08  better
+cpu.qt-software-scroll.stddev                0.52       0.62      +0.10  
+cpu.qt-software-scroll.total_percent        36.52      33.43      -3.09  better
+cpu.qt-software-scroll.user                  9.17       6.17      -3.00  
+cpu.qt-software-sprites.clients_percent      36.61      35.94      -0.67  
+cpu.qt-software-sprites.kernel               1.25       1.25      +0.00  
+cpu.qt-software-sprites.machine_percent      80.12      51.75     -28.37  better
+cpu.qt-software-sprites.percent             32.46       6.95     -25.51  better
+cpu.qt-software-sprites.stddev               3.78       0.74      -3.04  
+cpu.qt-software-sprites.total_percent       76.29      49.27     -27.02  better
+cpu.qt-software-sprites.user                31.22       5.67     -25.55  
+cpu.resize.clients_percent                 102.97     100.94      -2.03  
+cpu.resize.kernel                            8.17      16.17      +8.00  
+cpu.resize.machine_percent                 157.48     162.62      +5.14  
+cpu.resize.percent                          27.46      29.91      +2.45  WORSE
+cpu.resize.stddev                            2.54       1.68      -0.86  
+cpu.resize.total_percent                   139.62     140.17      +0.55  
+cpu.resize.user                             19.33      13.75      -5.58  
+cpu.shm-fullwindow.clients_percent          11.63      11.64      +0.01  
+cpu.shm-fullwindow.kernel                    1.33       1.33      +0.00  
+cpu.shm-fullwindow.machine_percent          28.30      28.38      +0.08  
+cpu.shm-fullwindow.percent                   3.91       3.89      -0.02  
+cpu.shm-fullwindow.stddev                    0.67       0.67      +0.00  
+cpu.shm-fullwindow.total_percent            25.15      25.33      +0.18  
+cpu.shm-fullwindow.user                      2.58       2.50      -0.08  
+cpu.terminal-scroll.clients_percent        133.74     133.70      -0.04  
+cpu.terminal-scroll.kernel                   1.17       1.25      +0.08  
+cpu.terminal-scroll.machine_percent        179.55     168.90     -10.65  better
+cpu.terminal-scroll.percent                 20.39      10.77      -9.62  better
+cpu.terminal-scroll.stddev                   0.74       0.58      -0.16  
+cpu.terminal-scroll.total_percent          160.79     150.80      -9.99  better
+cpu.terminal-scroll.user                    19.33       9.50      -9.83  
+cpu.video.clients_percent                   19.96      19.69      -0.27  
+cpu.video.kernel                             1.00       1.00      +0.00  
+cpu.video.machine_percent                   31.87      31.46      -0.41  
+cpu.video.percent                            2.71       2.70      -0.01  
+cpu.video.stddev                             0.60       0.58      -0.02  
+cpu.video.total_percent                     28.45      28.30      -0.15  
+cpu.video.user                               1.67       1.67      +0.00  
+cpu.video-window.clients_percent            23.62      23.29      -0.33  
+cpu.video-window.kernel                      1.17       1.08      -0.09  
+cpu.video-window.machine_percent            38.04      37.61      -0.43  
+cpu.video-window.percent                     3.44       3.41      -0.03  
+cpu.video-window.stddev                      0.62       0.65      +0.03  
+cpu.video-window.total_percent              33.99      33.66      -0.33  
+cpu.video-window.user                        2.25       2.33      +0.08  
+cpu.workspace-switch.clients_percent         0.06       0.06      +0.00  
+cpu.workspace-switch.kernel                  1.00       1.00      +0.00  
+cpu.workspace-switch.machine_percent        22.88      22.97      +0.09  
+cpu.workspace-switch.percent                 3.31       3.31      +0.00  
+cpu.workspace-switch.stddev                  0.62       0.62      +0.00  
+cpu.workspace-switch.total_percent          13.96      14.08      +0.12  
+cpu.workspace-switch.user                    2.25       2.25      +0.00  
+fps.alacritty-scroll.screen                  56.7       56.9      +0.20  
+fps.dev.screen                               45.8       45.8      +0.00  
+fps.ghostty-scroll.screen                    45.6       45.8      +0.20  
+fps.gpu-client                               60.1       60.1      +0.00  
+fps.gpu-client.screen                        59.9       59.9      +0.00  
+fps.gtk3-scroll                              59.6       59.7      +0.10  
+fps.gtk3-scroll.screen                       59.9       59.9      +0.00  
+fps.gtk3-x11-scroll                          59.5       59.5      +0.00  
+fps.gtk3-x11-scroll.screen                   59.2       59.2      +0.00  
+fps.gtk4-scroll                              59.8       59.8      +0.00  
+fps.gtk4-scroll.screen                       59.9       59.9      +0.00  
+fps.gtk4-spinner                             59.8       59.8      +0.00  
+fps.gtk4-spinner.screen                      59.9       59.9      +0.00  
+fps.idle.screen                               0.0        0.0      +0.00  
+fps.idle-windows.screen                       0.0        0.0      +0.00  
+fps.kitty-scroll.screen                      46.2       45.9      -0.30  
+fps.menu.screen                               7.4        7.2      -0.20  
+fps.nautilus.screen                          24.5       24.4      -0.10  
+fps.notifications.screen                     27.5       27.4      -0.10  
+fps.qt-quick-scroll                          59.9       59.9      +0.00  
+fps.qt-quick-scroll.screen                   59.9       59.9      +0.00  
+fps.qt-software-scroll                       60.0       60.0      +0.00  
+fps.qt-software-scroll.screen                59.9       59.9      +0.00  
+fps.qt-software-sprites                      60.0       60.0      +0.00  
+fps.qt-software-sprites.screen               59.9       59.9      +0.00  
+fps.resize.screen                            59.9       59.7      -0.20  
+fps.shm-fullwindow.screen                    59.9       59.9      +0.00  
+fps.terminal-scroll.screen                   37.5       38.9      +1.40  
+fps.video.screen                             30.0       30.1      +0.10  
+fps.video-window.screen                      30.1       30.1      +0.00  
+fps.workspace-switch.screen                  59.8       59.8      +0.00  
+latency.dev.focus_ms                          5.6        5.7      +0.10  
+latency.dev.focus_p90_ms                      6.7        7.0      +0.30  
+latency.dev.jump_ms                          19.9       20.1      +0.20  
+latency.dev.jump_p90_ms                      31.7       31.1      -0.60  
+latency.dev.scroll_ms                        32.7       32.4      -0.30  
+latency.dev.scroll_p90_ms                    38.8       38.8      +0.00  
+latency.dev.type_ms                          11.8       11.6      -0.20  
+latency.dev.type_p90_ms                      18.2       18.2      +0.00  
+latency.idle-windows.focus_ms                 2.5        2.4      -0.10  
+latency.idle-windows.focus_p90_ms             6.1        5.2      -0.90  
+latency.menu.close_ms                         3.2        3.2      +0.00  
+latency.menu.close_p90_ms                     4.1        4.0      -0.10  
+latency.menu.open_ms                        271.4      272.1      +0.70  
+latency.menu.open_p90_ms                    305.5      315.6     +10.10  
+latency.menu.search_ms                       95.3       94.9      -0.40  
+latency.menu.search_p90_ms                  127.1      126.5      -0.60  
+latency.menu.select_ms                        5.3        5.4      +0.10  
+latency.menu.select_p90_ms                    5.6        5.6      +0.00  
+latency.notifications.toast_ms               33.9       33.2      -0.70  
+latency.notifications.toast_p90_ms           47.4       46.9      -0.50  
+latency.resize.focus_ms                       2.5        2.4      -0.10  
+latency.resize.focus_p90_ms                   4.9        4.6      -0.30  
+latency.resize.redrawn_ms                    27.8       28.8      +1.00  
+latency.resize.redrawn_p90_ms                33.7       33.3      -0.40  
+latency.resize.resize_ms                      1.2        1.2      +0.00  
+latency.resize.resize_p90_ms                  3.4        3.4      +0.00  
+latency.workspace-switch.bar_ms               2.0        2.0      +0.00  
+latency.workspace-switch.bar_p90_ms           2.5        2.5      +0.00  
+latency.workspace-switch.focus_ms             2.5        2.6      +0.10  
+latency.workspace-switch.focus_p90_ms         6.0        5.5      -0.50  
+latency.workspace-switch.workspace_ms         1.9        2.0      +0.10  
+latency.workspace-switch.workspace_p90_ms        2.7        2.7      +0.00  
+mem.end.AnonHugePages_kB                        0          0      +0.00  
+mem.end.Anonymous_kB                        20000      22024   +2024.00  WORSE
+mem.end.gpu_kB                             136456     136700    +244.00  
+mem.end.gpu_private_kB                      45832      46068    +236.00  
+mem.end.gpu_purgeable_kB                     5200       5200      +0.00  
+mem.end.heap_kB                             11996      13988   +1992.00  WORSE
+mem.end.Private_Clean_kB                    16984      17008     +24.00  
+mem.end.Private_Dirty_kB                    20000      22024   +2024.00  WORSE
+mem.end.Pss_Anon_kB                         20000      22024   +2024.00  WORSE
+mem.end.Pss_File_kB                         27367      27397     +30.00  
+mem.end.Pss_kB                              47349      49424   +2075.00  
+mem.end.Rss_kB                              82440      84556   +2116.00  
+mem.end.threads                                 6          8      +2.00  
+mem.idle-windows.AnonHugePages_kB               0          0      +0.00  
+mem.idle-windows.Anonymous_kB               20168      22208   +2040.00  WORSE
+mem.idle-windows.gpu_added_kB                8976      24336  +15360.00  
+mem.idle-windows.gpu_kB                    151896     162380  +10484.00  WORSE
+mem.idle-windows.gpu_private_kB             51032      30788  -20244.00  better
+mem.idle-windows.gpu_purgeable_kB            5280        160   -5120.00  
+mem.idle-windows.heap_kB                    12164      14172   +2008.00  WORSE
+mem.idle-windows.Private_Clean_kB           16940      16968     +28.00  
+mem.idle-windows.Private_Dirty_kB           20168      22208   +2040.00  WORSE
+mem.idle-windows.Pss_Anon_kB                20168      22208   +2040.00  WORSE
+mem.idle-windows.Pss_File_kB                27183      27233     +50.00  
+mem.idle-windows.Pss_kB                     51562      53628   +2066.00  
+mem.idle-windows.Rss_kB                     90960      93080   +2120.00  
+mem.idle-windows.threads                        6          8      +2.00  
+mem.start.AnonHugePages_kB                      0          0      +0.00  
+mem.start.Anonymous_kB                      17940      20356   +2416.00  WORSE
+mem.start.gpu_kB                           131704     131948    +244.00  
+mem.start.gpu_private_kB                    29304      29540    +236.00  
+mem.start.gpu_purgeable_kB                    120        120      +0.00  
+mem.start.heap_kB                            9936      12320   +2384.00  WORSE
+mem.start.Private_Clean_kB                  16720      16768     +48.00  
+mem.start.Private_Dirty_kB                  17940      20356   +2416.00  WORSE
+mem.start.Pss_Anon_kB                       17940      20356   +2416.00  WORSE
+mem.start.Pss_File_kB                       26748      26774     +26.00  
+mem.start.Pss_kB                            44692      47130   +2438.00  
+mem.start.Rss_kB                            78764      81260   +2496.00  
+mem.start.threads                               6          8      +2.00  
+== galaxybook: 6 off / 5 on blocks, 0 left out, off -> on (HYPOLAND_SHM_TEXTURE=linear)
+binary.size_kB                              13716      13716      +0.00  
+compositor.age_s                               60         60      +0.00  
+cpu.alacritty-scroll.clients_percent       130.09     128.97      -1.12  
+cpu.alacritty-scroll.kernel                  1.33       1.33      +0.00  
+cpu.alacritty-scroll.machine_percent       166.32     164.58      -1.74  
+cpu.alacritty-scroll.percent                 3.20       2.82      -0.38  
+cpu.alacritty-scroll.stddev                  0.65       0.79      +0.14  
+cpu.alacritty-scroll.total_percent         133.64     132.77      -0.87  
+cpu.alacritty-scroll.user                    1.92       1.58      -0.34  
+cpu.dev.clients_percent                      8.01       8.01      +0.00  
+cpu.dev.kernel                               1.58       1.58      +0.00  
+cpu.dev.machine_percent                     20.89      20.56      -0.33  
+cpu.dev.percent                              4.84       4.48      -0.36  
+cpu.dev.stddev                               1.71       1.51      -0.20  
+cpu.dev.total_percent                       14.14      13.64      -0.50  
+cpu.dev.user                                 3.08       2.83      -0.25  
+cpu.ghostty-scroll.clients_percent         154.73     149.73      -5.00  
+cpu.ghostty-scroll.kernel                    1.08       1.08      +0.00  
+cpu.ghostty-scroll.machine_percent         190.54     183.73      -6.81  
+cpu.ghostty-scroll.percent                   2.77       2.64      -0.13  
+cpu.ghostty-scroll.stddev                    0.52       0.62      +0.10  
+cpu.ghostty-scroll.total_percent           157.32     152.50      -4.82  
+cpu.ghostty-scroll.user                      1.58       1.58      +0.00  
+cpu.gpu-client.clients_percent               1.69       0.96      -0.73  
+cpu.gpu-client.kernel                        1.75       0.83      -0.92  
+cpu.gpu-client.machine_percent              18.56      15.15      -3.41  
+cpu.gpu-client.percent                       4.53       2.20      -2.33  
+cpu.gpu-client.stddev                        1.16       0.62      -0.54  
+cpu.gpu-client.total_percent                 6.33       3.28      -3.05  
+cpu.gpu-client.user                          2.58       1.25      -1.33  
+cpu.gtk3-scroll.clients_percent             41.43      40.19      -1.24  
+cpu.gtk3-scroll.kernel                       2.00       1.75      -0.25  
+cpu.gtk3-scroll.machine_percent             64.19      62.11      -2.08  
+cpu.gtk3-scroll.percent                     13.49      13.57      +0.08  
+cpu.gtk3-scroll.stddev                       1.19       1.09      -0.10  
+cpu.gtk3-scroll.total_percent               55.92      54.19      -1.73  
+cpu.gtk3-scroll.user                        11.58      11.66      +0.08  
+cpu.gtk3-x11-scroll.clients_percent          1.53       1.28      -0.25  
+cpu.gtk3-x11-scroll.kernel                   8.33       2.75      -5.58  
+cpu.gtk3-x11-scroll.machine_percent        106.91      97.58      -9.33  
+cpu.gtk3-x11-scroll.percent                  9.19       3.48      -5.71  
+cpu.gtk3-x11-scroll.stddev                   2.94       3.19      +0.25  
+cpu.gtk3-x11-scroll.total_percent           77.59      69.75      -7.84  
+cpu.gtk3-x11-scroll.user                     0.75       0.67      -0.08  
+cpu.gtk4-scroll.clients_percent              6.72       8.58      +1.86  
+cpu.gtk4-scroll.kernel                       1.33       1.08      -0.25  
+cpu.gtk4-scroll.machine_percent             25.14      23.89      -1.25  
+cpu.gtk4-scroll.percent                      2.72       2.43      -0.29  
+cpu.gtk4-scroll.stddev                       0.75       0.51      -0.24  
+cpu.gtk4-scroll.total_percent               12.21      11.14      -1.07  
+cpu.gtk4-scroll.user                         1.50       1.42      -0.08  
+cpu.gtk4-spinner.clients_percent             2.90       2.81      -0.09  
+cpu.gtk4-spinner.kernel                      1.00       1.00      +0.00  
+cpu.gtk4-spinner.machine_percent            17.81      17.98      +0.17  
+cpu.gtk4-spinner.percent                     2.50       2.44      -0.06  
+cpu.gtk4-spinner.stddev                      0.67       0.51      -0.16  
+cpu.gtk4-spinner.total_percent               5.50       5.34      -0.16  
+cpu.gtk4-spinner.user                        1.58       1.42      -0.16  
+cpu.idle.clients_percent                     0.00       0.00      +0.00  
+cpu.idle.kernel                              0.00       0.00      +0.00  
+cpu.idle.machine_percent                     2.25       2.08      -0.17  
+cpu.idle.percent                             0.04       0.04      +0.00  
+cpu.idle.stddev                              0.00       0.00      +0.00  
+cpu.idle.total_percent                       0.15       0.15      +0.00  
+cpu.idle.user                                0.00       0.00      +0.00  
+cpu.idle-windows.clients_percent             0.02       0.01      -0.01  
+cpu.idle-windows.kernel                      0.00       0.00      +0.00  
+cpu.idle-windows.machine_percent             2.33       2.00      -0.33  
+cpu.idle-windows.percent                     0.05       0.05      +0.00  
+cpu.idle-windows.stddev                      0.29       0.00      -0.29  
+cpu.idle-windows.total_percent               0.25       0.19      -0.06  
+cpu.idle-windows.user                        0.00       0.00      +0.00  
+cpu.kitty-scroll.clients_percent           133.25     133.69      +0.44  
+cpu.kitty-scroll.kernel                      1.00       1.08      +0.08  
+cpu.kitty-scroll.machine_percent           168.66     169.25      +0.59  
+cpu.kitty-scroll.percent                     2.58       2.71      +0.13  
+cpu.kitty-scroll.stddev                      0.51       0.45      -0.06  
+cpu.kitty-scroll.total_percent             136.16     136.80      +0.64  
+cpu.kitty-scroll.user                        1.58       1.75      +0.17  
+cpu.menu.clients_percent                     0.02       0.02      +0.00  
+cpu.menu.kernel                              1.92       1.92      +0.00  
+cpu.menu.machine_percent                    34.13      34.13      +0.00  
+cpu.menu.percent                             2.34       2.38      +0.04  
+cpu.menu.stddev                              0.79       0.78      -0.01  
+cpu.menu.total_percent                      28.61      28.83      +0.22  
+cpu.menu.user                                0.42       0.42      +0.00  
+cpu.nautilus.clients_percent                 4.74       4.67      -0.07  
+cpu.nautilus.kernel                          2.58       2.67      +0.09  
+cpu.nautilus.machine_percent                19.48      18.90      -0.58  
+cpu.nautilus.percent                         3.60       3.64      +0.04  
+cpu.nautilus.stddev                          3.29       3.26      -0.03  
+cpu.nautilus.total_percent                  10.01       9.70      -0.31  
+cpu.nautilus.user                            1.08       0.92      -0.16  
+cpu.notifications.clients_percent            0.00       0.00      +0.00  
+cpu.notifications.kernel                     0.92       0.92      +0.00  
+cpu.notifications.machine_percent           19.31      17.89      -1.42  
+cpu.notifications.percent                    1.72       1.70      -0.02  
+cpu.notifications.stddev                     0.78       0.74      -0.04  
+cpu.notifications.total_percent              9.34       8.42      -0.92  
+cpu.notifications.user                       0.83       0.75      -0.08  
+cpu.qt-quick-scroll.clients_percent          7.08       7.22      +0.14  
+cpu.qt-quick-scroll.kernel                   1.58       1.33      -0.25  
+cpu.qt-quick-scroll.machine_percent         23.30      22.47      -0.83  
+cpu.qt-quick-scroll.percent                  3.57       3.32      -0.25  
+cpu.qt-quick-scroll.stddev                   0.67       1.08      +0.41  
+cpu.qt-quick-scroll.total_percent           12.28      10.72      -1.56  
+cpu.qt-quick-scroll.user                     2.08       2.00      -0.08  
+cpu.qt-software-scroll.clients_percent      12.97      13.39      +0.42  
+cpu.qt-software-scroll.kernel                1.75       1.50      -0.25  
+cpu.qt-software-scroll.machine_percent      28.31      28.31      +0.00  
+cpu.qt-software-scroll.percent               8.47       7.60      -0.87  
+cpu.qt-software-scroll.stddev                0.67       0.80      +0.13  
+cpu.qt-software-scroll.total_percent        21.30      21.07      -0.23  
+cpu.qt-software-scroll.user                  6.58       6.17      -0.41  
+cpu.qt-software-sprites.clients_percent      23.00      23.92      +0.92  
+cpu.qt-software-sprites.kernel               1.83       2.25      +0.42  
+cpu.qt-software-sprites.machine_percent      59.11      45.94     -13.17  
+cpu.qt-software-sprites.percent             25.00      12.89     -12.11  
+cpu.qt-software-sprites.stddev               1.72       1.38      -0.34  
+cpu.qt-software-sprites.total_percent       48.08      38.60      -9.48  
+cpu.qt-software-sprites.user                23.25      10.50     -12.75  
+cpu.resize.clients_percent                  66.15      51.10     -15.05  
+cpu.resize.kernel                           35.08      61.03     +25.95  
+cpu.resize.machine_percent                 116.31     123.64      +7.33  
+cpu.resize.percent                          40.22      64.63     +24.41  
+cpu.resize.stddev                            1.83       0.94      -0.89  
+cpu.resize.total_percent                   106.80     115.91      +9.11  
+cpu.resize.user                              5.42       3.42      -2.00  
+cpu.shm-fullwindow.clients_percent           8.97       7.52      -1.45  
+cpu.shm-fullwindow.kernel                    1.25       1.08      -0.17  
+cpu.shm-fullwindow.machine_percent          29.80      28.55      -1.25  
+cpu.shm-fullwindow.percent                   3.39       2.37      -1.02  
+cpu.shm-fullwindow.stddev                    0.67       0.49      -0.18  
+cpu.shm-fullwindow.total_percent            16.42      15.89      -0.53  
+cpu.shm-fullwindow.user                      2.17       1.33      -0.84  
+cpu.terminal-scroll.clients_percent        149.33     147.36      -1.97  better
+cpu.terminal-scroll.kernel                   1.00       0.92      -0.08  
+cpu.terminal-scroll.machine_percent        181.20     178.53      -2.67  
+cpu.terminal-scroll.percent                  7.26       6.53      -0.73  better
+cpu.terminal-scroll.stddev                   0.62       0.78      +0.16  
+cpu.terminal-scroll.total_percent          156.53     154.16      -2.37  better
+cpu.terminal-scroll.user                     6.33       5.58      -0.75  
+cpu.tk-canvas.clients_percent                2.02       4.23      +2.21  
+cpu.tk-canvas.kernel                         0.50       0.42      -0.08  
+cpu.tk-canvas.machine_percent               72.10      72.85      +0.75  
+cpu.tk-canvas.percent                        1.23       1.18      -0.05  
+cpu.tk-canvas.stddev                         0.65       0.65      +0.00  
+cpu.tk-canvas.total_percent                 64.48      66.18      +1.70  
+cpu.tk-canvas.user                           0.75       0.75      +0.00  
+cpu.video.clients_percent                   11.34      11.77      +0.43  
+cpu.video.kernel                             1.42       1.00      -0.42  
+cpu.video.machine_percent                   21.48      21.56      +0.08  
+cpu.video.percent                            3.84       3.58      -0.26  
+cpu.video.stddev                             0.60       0.67      +0.07  
+cpu.video.total_percent                     15.42      15.46      +0.04  
+cpu.video.user                               2.33       2.50      +0.17  
+cpu.video-window.clients_percent            11.34      11.12      -0.22  
+cpu.video-window.kernel                      1.50       1.33      -0.17  
+cpu.video-window.machine_percent            21.97      22.22      +0.25  
+cpu.video-window.percent                     4.42       4.31      -0.11  
+cpu.video-window.stddev                      0.51       0.49      -0.02  
+cpu.video-window.total_percent              15.52      15.51      -0.01  
+cpu.video-window.user                        2.92       2.92      +0.00  
+cpu.workspace-switch.clients_percent         0.07       0.07      +0.00  
+cpu.workspace-switch.kernel                  1.75       1.42      -0.33  
+cpu.workspace-switch.machine_percent        23.64      21.98      -1.66  
+cpu.workspace-switch.percent                 4.23       3.89      -0.34  
+cpu.workspace-switch.stddev                  0.79       0.67      -0.12  
+cpu.workspace-switch.total_percent           7.53       6.79      -0.74  
+cpu.workspace-switch.user                    2.50       2.50      +0.00  
+fps.alacritty-scroll.screen                 107.1      106.7      -0.40  
+fps.dev.screen                               56.2       56.4      +0.20  
+fps.ghostty-scroll.screen                   115.3      109.2      -6.10  WORSE
+fps.gpu-client                              120.1      120.1      +0.00  
+fps.gpu-client.screen                       119.9      119.9      +0.00  
+fps.gtk3-scroll                             119.2      119.1      -0.10  
+fps.gtk3-scroll.screen                      119.8      119.7      -0.10  
+fps.gtk3-x11-scroll                          59.5       59.9      +0.40  
+fps.gtk3-x11-scroll.screen                   29.6       60.0     +30.40  
+fps.gtk4-scroll                             119.3      119.3      +0.00  
+fps.gtk4-scroll.screen                      119.9      119.9      +0.00  
+fps.gtk4-spinner                            119.3      119.3      +0.00  
+fps.gtk4-spinner.screen                     119.9      119.8      -0.10  
+fps.idle.screen                               0.0        0.0      +0.00  
+fps.idle-windows.screen                       0.0        0.0      +0.00  
+fps.kitty-scroll.screen                      90.2       86.3      -3.90  WORSE
+fps.menu.screen                               3.2        3.3      +0.10  
+fps.nautilus.screen                          53.2       53.2      +0.00  
+fps.notifications.screen                     54.2       54.0      -0.20  
+fps.qt-quick-scroll                         119.8      119.8      +0.00  
+fps.qt-quick-scroll.screen                  119.8      119.9      +0.10  
+fps.qt-software-scroll                       87.5       87.3      -0.20  
+fps.qt-software-scroll.screen                87.4       87.6      +0.20  
+fps.qt-software-sprites                      62.6       62.2      -0.40  
+fps.qt-software-sprites.screen               62.5       62.1      -0.40  
+fps.resize.screen                           114.5       78.1     -36.40  WORSE
+fps.shm-fullwindow.screen                   119.8      119.9      +0.10  
+fps.terminal-scroll.screen                   69.2       65.8      -3.40  WORSE
+fps.tk-canvas                                60.0       60.0      +0.00  
+fps.tk-canvas.screen                         60.0       60.0      +0.00  
+fps.video.screen                             30.0       30.1      +0.10  
+fps.video-window.screen                      30.0       30.0      +0.00  
+fps.workspace-switch.screen                 118.9      118.8      -0.10  
+latency.dev.focus_ms                          3.1        2.9      -0.20  
+latency.dev.focus_p90_ms                      4.5        4.9      +0.40  
+latency.dev.jump_ms                          11.7       12.1      +0.40  
+latency.dev.jump_p90_ms                      17.7       15.7      -2.00  
+latency.dev.scroll_ms                        16.3       16.5      +0.20  
+latency.dev.scroll_p90_ms                    18.9       18.7      -0.20  
+latency.dev.type_ms                           7.5        7.3      -0.20  
+latency.dev.type_p90_ms                      10.2       10.0      -0.20  
+latency.idle-windows.focus_ms                 1.2        1.2      +0.00  
+latency.idle-windows.focus_p90_ms             9.9        6.8      -3.10  better
+latency.menu.close_ms                         3.6        3.1      -0.50  
+latency.menu.close_p90_ms                     5.6        4.5      -1.10  
+latency.menu.open_ms                         55.2       54.6      -0.60  
+latency.menu.open_p90_ms                     59.2       57.4      -1.80  
+latency.menu.search_ms                       44.2       44.3      +0.10  
+latency.menu.search_p90_ms                   66.7       66.4      -0.30  
+latency.menu.select_ms                        5.0        4.9      -0.10  
+latency.menu.select_p90_ms                    6.2        6.1      -0.10  
+latency.notifications.toast_ms               14.7       15.0      +0.30  
+latency.notifications.toast_p90_ms           26.0       26.4      +0.40  
+latency.resize.focus_ms                       1.2        1.4      +0.20  
+latency.resize.focus_p90_ms                   2.1        2.7      +0.60  
+latency.resize.redrawn_ms                    15.7       22.5      +6.80  WORSE
+latency.resize.redrawn_p90_ms                22.3       25.2      +2.90  
+latency.resize.resize_ms                      1.0        1.1      +0.10  
+latency.resize.resize_p90_ms                  4.7        4.6      -0.10  
+latency.workspace-switch.bar_ms               8.9        8.3      -0.60  
+latency.workspace-switch.bar_p90_ms          12.4       12.0      -0.40  
+latency.workspace-switch.focus_ms             1.6        1.7      +0.10  
+latency.workspace-switch.focus_p90_ms         9.7        7.1      -2.60  
+latency.workspace-switch.workspace_ms         1.6        1.7      +0.10  
+latency.workspace-switch.workspace_p90_ms        2.0        1.8      -0.20  
+mem.end.AnonHugePages_kB                        0          0      +0.00  
+mem.end.Anonymous_kB                        25468      28020   +2552.00  
+mem.end.gpu_kB                             356280     323552  -32728.00  
+mem.end.gpu_private_kB                     204216     171464  -32752.00  
+mem.end.gpu_purgeable_kB                    20928      20928      +0.00  
+mem.end.heap_kB                              1540        740    -800.00  
+mem.end.Private_Clean_kB                    16568      16568      +0.00  
+mem.end.Private_Dirty_kB                    25468      28020   +2552.00  
+mem.end.Pss_Anon_kB                         25468      28020   +2552.00  
+mem.end.Pss_File_kB                         26950      26946      -4.00  
+mem.end.Pss_kB                              52408      54986   +2578.00  
+mem.end.Rss_kB                              92760      95368   +2608.00  
+mem.end.threads                                15         21      +6.00  
+mem.idle-windows.AnonHugePages_kB               0          0      +0.00  
+mem.idle-windows.Anonymous_kB               24708      27308   +2600.00  
+mem.idle-windows.gpu_added_kB               20504      51240  +30736.00  
+mem.idle-windows.gpu_kB                    348688     333384  -15304.00  
+mem.idle-windows.gpu_private_kB            196624     130096  -66528.00  
+mem.idle-windows.gpu_purgeable_kB           15376          8  -15368.00  
+mem.idle-windows.heap_kB                     1540        740    -800.00  
+mem.idle-windows.Private_Clean_kB           16568      16568      +0.00  
+mem.idle-windows.Private_Dirty_kB           24708      27308   +2600.00  
+mem.idle-windows.Pss_Anon_kB                24708      27308   +2600.00  
+mem.idle-windows.Pss_File_kB                26879      26883      +4.00  
+mem.idle-windows.Pss_kB                     60485      63115   +2630.00  
+mem.idle-windows.Rss_kB                    109796     112504   +2708.00  
+mem.idle-windows.threads                       15         21      +6.00  
+mem.start.AnonHugePages_kB                      0          0      +0.00  
+mem.start.Anonymous_kB                      18980      21768   +2788.00  WORSE
+mem.start.gpu_kB                           282868     294420  +11552.00  
+mem.start.gpu_private_kB                   110836     123132  +12296.00  
+mem.start.gpu_purgeable_kB                      0          0      +0.00  
+mem.start.heap_kB                            1540        740    -800.00  
+mem.start.Private_Clean_kB                  16300      16300      +0.00  
+mem.start.Private_Dirty_kB                  18980      21768   +2788.00  WORSE
+mem.start.Pss_Anon_kB                       18980      21768   +2788.00  WORSE
+mem.start.Pss_File_kB                       26258      26264      +6.00  
+mem.start.Pss_kB                            45238      48054   +2816.00  WORSE
+mem.start.Rss_kB                            84864      87708   +2844.00  WORSE
+mem.start.threads                              14         20      +6.00  
+NOT VALID: invalid.resize 1 1 1
+NOT VALID: invalid.tk-canvas 1 1 1

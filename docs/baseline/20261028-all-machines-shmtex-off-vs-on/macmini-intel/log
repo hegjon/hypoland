@@ -1,0 +1,186 @@
+2026-10-28 19:28:58 until 2026-10-29 07:30:00 on macmini-intel, user a, hypoland 0.2.0.r781.gabc3769a2-1, off: '', on: 'export HYPOLAND_SHM_TEXTURE=linear'
+2026-10-28 19:28:58 stopped timers: archlinux-keyring-wkd-sync.timer man-db.timer plocate-updatedb.timer shadow.timer snapper-cleanup.timer systemd-tmpfiles-clean.timer 
+2026-10-28 19:29:03 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 19:29:08 stopped an update check
+2026-10-28 19:40:09 off round 1: 266 values
+2026-10-28 19:41:19 off check: 26 passed, 0 failed
+2026-10-28 19:41:23 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 19:41:29 stopped an update check
+2026-10-28 19:52:30 on round 1: 266 values
+2026-10-28 19:53:40 on check: 26 passed, 0 failed
+2026-10-28 19:53:44 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 19:53:49 stopped an update check
+2026-10-28 20:04:51 on round 2: 266 values
+2026-10-28 20:04:55 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 20:04:59 stopped an update check
+2026-10-28 20:16:02 off round 2: 266 values
+2026-10-28 20:16:07 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 20:27:13 off round 3: 266 values
+2026-10-28 20:27:18 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 20:27:24 stopped an update check
+2026-10-28 20:38:24 on round 3: 266 values
+2026-10-28 20:38:29 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 20:38:35 stopped an update check
+2026-10-28 20:49:36 on round 4: 266 values
+2026-10-28 20:49:40 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 20:49:45 stopped an update check
+2026-10-28 21:00:47 off round 4: 266 values
+2026-10-28 21:00:52 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 21:11:58 off round 5: 266 values
+2026-10-28 21:12:03 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 21:23:10 on round 5: 266 values
+2026-10-28 21:23:15 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 21:23:20 stopped an update check
+2026-10-28 21:34:21 on round 6: 266 values
+2026-10-28 21:34:26 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 21:34:30 stopped an update check
+2026-10-28 21:45:33 off round 6: 266 values
+2026-10-28 21:45:37 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 21:45:40 stopped an update check
+2026-10-28 21:56:44 off round 7: 266 values
+2026-10-28 21:56:48 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 22:07:55 on round 7: 266 values
+2026-10-28 22:08:00 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 22:08:06 stopped an update check
+2026-10-28 22:19:07 on round 8: 266 values
+2026-10-28 22:19:11 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 22:19:16 stopped an update check
+2026-10-28 22:30:18 off round 8: 266 values
+2026-10-28 22:30:22 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 22:30:26 stopped an update check
+2026-10-28 22:30:31 stopped an update check
+2026-10-28 22:41:29 off round 9: 266 values
+2026-10-28 22:41:34 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 22:41:36 stopped an update check
+2026-10-28 22:52:40 on round 9: 266 values
+2026-10-28 22:52:45 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 23:03:51 on round 10: 266 values
+2026-10-28 23:03:56 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 23:04:02 stopped an update check
+2026-10-28 23:15:03 off round 10: 266 values
+2026-10-28 23:15:07 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 23:15:12 stopped an update check
+2026-10-28 23:26:14 off round 11: 266 values
+2026-10-28 23:26:19 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 23:26:23 stopped an update check
+2026-10-28 23:37:26 on round 11: 266 values
+2026-10-28 23:37:31 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 23:48:38 on round 12: 266 values
+2026-10-28 23:48:43 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 23:48:49 stopped an update check
+2026-10-28 23:59:49 off round 12: 266 values
+2026-10-28 23:59:54 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-28 23:59:59 stopped an update check
+2026-10-29 00:11:01 off round 13: 266 values
+2026-10-29 00:11:05 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 00:11:09 stopped an update check
+2026-10-29 00:22:12 on round 13: 266 values
+2026-10-29 00:22:17 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 00:22:20 stopped an update check
+2026-10-29 00:33:23 on round 14: 266 values
+2026-10-29 00:33:28 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 00:44:35 off round 14: 266 values
+2026-10-29 00:44:39 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 00:44:46 stopped an update check
+2026-10-29 00:55:46 off round 15: 266 values
+2026-10-29 00:55:50 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 00:55:56 stopped an update check
+2026-10-29 01:06:57 on round 15: 266 values
+2026-10-29 01:07:02 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 01:07:07 stopped an update check
+2026-10-29 01:18:08 on round 16: 266 values
+2026-10-29 01:18:13 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 01:18:17 stopped an update check
+2026-10-29 01:29:19 off round 16: 266 values
+2026-10-29 01:29:24 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 01:29:28 stopped an update check
+2026-10-29 01:40:30 off round 17: 266 values
+2026-10-29 01:40:35 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 01:40:39 stopped an update check
+2026-10-29 01:51:42 on round 17: 266 values
+2026-10-29 01:51:46 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 02:02:53 on round 18: 266 values
+2026-10-29 02:02:57 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 02:14:04 off round 18: 266 values
+2026-10-29 02:14:09 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 02:14:15 stopped an update check
+2026-10-29 02:25:15 off round 19: 266 values
+2026-10-29 02:25:20 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 02:25:26 stopped an update check
+2026-10-29 02:36:26 on round 19: 266 values
+2026-10-29 02:36:31 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 02:36:36 stopped an update check
+2026-10-29 02:47:38 on round 20: 266 values
+2026-10-29 02:47:42 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 02:47:47 stopped an update check
+2026-10-29 02:58:49 off round 20: 266 values
+2026-10-29 02:58:54 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 03:10:00 off round 21: 266 values
+2026-10-29 03:10:05 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 03:10:09 stopped an update check
+2026-10-29 03:21:12 on round 21: 266 values
+2026-10-29 03:21:16 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 03:32:23 on round 22: 266 values
+2026-10-29 03:32:28 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 03:43:34 off round 22: 266 values
+2026-10-29 03:43:39 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 03:43:46 stopped an update check
+2026-10-29 03:54:46 off round 23: 266 values
+2026-10-29 03:54:51 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 03:54:56 stopped an update check
+2026-10-29 04:05:57 on round 23: 266 values
+2026-10-29 04:06:02 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 04:06:07 stopped an update check
+2026-10-29 04:17:09 on round 24: 266 values
+2026-10-29 04:17:13 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 04:17:18 stopped an update check
+2026-10-29 04:28:20 off round 24: 266 values
+2026-10-29 04:28:25 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 04:28:29 stopped an update check
+2026-10-29 04:39:32 off round 25: 266 values
+2026-10-29 04:39:37 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 04:50:43 on round 25: 266 values
+2026-10-29 04:50:48 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 05:01:55 on round 26: 266 values
+2026-10-29 05:01:59 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 05:02:06 stopped an update check
+2026-10-29 05:13:05 off round 26: 266 values
+2026-10-29 05:13:10 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 05:24:17 off round 27: 266 values
+2026-10-29 05:24:21 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 05:24:28 stopped an update check
+2026-10-29 05:35:28 on round 27: 266 values
+2026-10-29 05:35:32 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 05:46:39 on round 28: 266 values
+2026-10-29 05:46:44 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 05:46:50 stopped an update check
+2026-10-29 05:57:50 off round 28: 266 values
+2026-10-29 05:57:55 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 05:58:01 stopped an update check
+2026-10-29 06:09:02 off round 29: 266 values
+2026-10-29 06:09:07 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 06:09:12 stopped an update check
+2026-10-29 06:20:13 on round 29: 266 values
+2026-10-29 06:20:18 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 06:20:23 stopped an update check
+2026-10-29 06:31:25 on round 30: 266 values
+2026-10-29 06:31:29 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 06:31:34 stopped an update check
+2026-10-29 06:42:36 off round 30: 266 values
+2026-10-29 06:42:41 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 06:42:45 stopped an update check
+2026-10-29 06:53:47 off round 31: 266 values
+2026-10-29 06:53:52 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 06:53:56 stopped an update check
+2026-10-29 07:04:59 on round 31: 266 values
+2026-10-29 07:05:04 on up: hypoland 0.2.0.r781.gabc3769a2-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-29 07:05:07 stopped an update check
+2026-10-29 07:16:10 on round 32: 266 values
+2026-10-29 07:16:15 off up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 07:16:18 stopped an update check
+2026-10-29 07:27:22 off round 32: 266 values
+2026-10-29 07:27:22 no time for round 33
+2026-10-29 07:27:22 env file back as before, a fresh session
+2026-10-29 07:27:27 restore up: hypoland 0.2.0.r781.gabc3769a2-1, env: 
+2026-10-29 07:28:27 started the timers again
+2026-10-29 07:28:27 done

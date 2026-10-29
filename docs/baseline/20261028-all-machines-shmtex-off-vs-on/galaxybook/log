@@ -1,0 +1,361 @@
+2026-10-28 19:29:01 until 2026-10-29 07:30:00 on galaxybook, user a, hypoland 0.2.0.r781.gabc3769-1, off: '', on: 'export HYPOLAND_SHM_TEXTURE=linear'
+2026-10-28 19:29:01 stopped timers: archlinux-keyring-wkd-sync.timer man-db.timer plocate-updatedb.timer shadow.timer snapper-cleanup.timer systemd-tmpfiles-clean.timer 
+2026-10-28 19:29:06 off up: hypoland 0.2.0.r781.gabc3769-1, env: 
+2026-10-28 19:29:06 stopped an update check
+2026-10-28 19:40:16 off round 1: 275 values
+2026-10-28 19:42:02 off check: 30 passed, 0 failed
+2026-10-28 19:42:06 on up: hypoland 0.2.0.r781.gabc3769-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 19:53:16 on round 1: 275 values
+2026-10-28 19:55:03 on check: 30 passed, 0 failed
+2026-10-28 19:55:07 on up: hypoland 0.2.0.r781.gabc3769-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 20:06:18 on round 2: 275 values
+2026-10-28 20:06:22 off up: hypoland 0.2.0.r781.gabc3769-1, env: 
+2026-10-28 20:17:32 off round 2: 275 values
+2026-10-28 20:17:36 off up: hypoland 0.2.0.r781.gabc3769-1, env: 
+2026-10-28 20:28:46 off round 3: 275 values
+2026-10-28 20:28:50 on up: hypoland 0.2.0.r781.gabc3769-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 20:40:01 on round 3: 275 values
+2026-10-28 20:40:04 on up: hypoland 0.2.0.r781.gabc3769-1, env: HYPOLAND_SHM_TEXTURE=linear 
+2026-10-28 20:51:15 on round 4: 275 values
+2026-10-28 20:51:18 off up: hypoland 0.2.0.r781.gabc3769-1, env: 
+2026-10-28 21:02:29 off round 4: 275 values
+2026-10-28 21:02:33 off up: hypoland 0.2.0.r781.gabc3769-1, env: 
+2026-10-28 22:02:48 off round 5: 228 values, some invalid
+2026-10-28 22:04:41 on: the variable did not reach the compositor
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 22:10:13 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 22:18:00 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 22:25:48 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 22:33:35 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 22:41:22 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 22:49:09 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 22:56:57 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 23:04:44 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 23:12:31 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 23:20:18 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 23:28:06 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 23:35:53 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 23:44:26 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-28 23:52:58 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 00:01:31 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 00:10:03 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 00:18:36 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 00:27:08 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 00:35:41 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 00:44:14 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 00:52:46 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 01:01:19 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 01:09:51 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 01:18:24 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 01:26:57 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 01:35:29 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 01:44:02 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 01:52:34 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 02:01:07 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 02:09:39 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 02:18:12 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 02:26:44 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 02:35:17 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 02:43:49 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 02:52:22 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 03:00:54 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 03:09:27 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 03:17:59 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 03:26:32 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 03:35:05 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 03:43:37 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 03:52:10 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 04:00:43 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 04:09:15 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 04:17:48 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 04:26:20 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 04:34:53 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 04:43:25 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 04:51:58 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 05:00:31 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 05:09:03 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 05:17:36 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 05:26:08 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 05:34:41 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 05:43:14 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 05:51:46 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 06:00:19 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 06:08:51 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 06:17:24 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 06:25:56 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 06:34:29 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 06:43:01 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 06:51:34 no session for off
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 07:00:06 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 07:08:39 no session for on
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 07:17:12 no session for off
+2026-10-29 07:17:12 no time for round 39
+2026-10-29 07:17:12 env file back as before, a fresh session
+Failed to stop sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+Failed to start sddm.service: Transport endpoint is not connected
+See system logs and 'systemctl status sddm.service' for details.
+2026-10-29 07:25:44 no session for restore
+Failed to enqueue jobs: Transport endpoint is not connected
+2026-10-29 07:27:14 done
