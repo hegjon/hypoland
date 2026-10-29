@@ -3,15 +3,17 @@
 # switched itself off during a soak on 2026-10-24 and kept nothing) can be read there. soak.sh logs the CPU
 # temperature to the journal every minute for that. Run the machine step for every new test machine.
 #
-#   sudo ./forward-logs.sh desktop               on the desktop: receive both, see below
-#   ./forward-logs.sh machine <desktop address> <ssh host>...   send from these machines (over ssh as root)
+#   sudo ./forward-logs.sh desktop [subnet]...   on the desktop: receive both, see below; the firewall lets the
+#                                                 lab subnet 192.168.2.0/24 in, or the subnets given
+#   ./forward-logs.sh machine <desktop address> <ssh host>...   send from these machines (over ssh as root);
+#                                                 the desktop's address on the lab is 192.168.2.71 (MACHINES.md)
 #
 # Two ways, for two kinds of death:
 # - The journal, with systemd-journal-upload over http to port 19532. Complete and reliable: a machine that loses
 #   the desktop (switched off, asleep) retries every 30 s and catches up from where it stopped. But only what
 #   journald already wrote gets out, a machine that dies loses its last seconds. The desktop keeps one journal
 #   per sending address in /var/log/journal/remote/ (readable by the group systemd-journal-remote):
-#     journalctl -D /var/log/journal/remote _HOSTNAME=aa -b -1 -e
+#     journalctl -D /var/log/journal/remote _HOSTNAME=t550 -b -1 -e
 # - The kernel log, with netconsole over UDP to port 6666 (netconsole-desktop.sh). The kernel sends every message
 #   the moment it is printed, also from an oops or a panic, without disk or user space; journald forwards its
 #   notice and higher messages (soak.sh's temperature line too) into the kernel log, so they go out the same way.
@@ -57,8 +59,13 @@ EOF
     systemctl enable netconsole-receiver.service
     systemctl restart netconsole-receiver.service # also to load a new receiver
     if command -v ufw >/dev/null; then
-        ufw allow from 192.168.1.0/24 to any port 19532 proto tcp comment journal-remote
-        ufw allow from 192.168.1.0/24 to any port 6666 proto udp comment netconsole
+        # the machines send from the lab subnet (the router hypolab since 2026-10-29; the home LAN 192.168.1.0/24 before)
+        subnets=("${@:2}")
+        [ ${#subnets[@]} -gt 0 ] || subnets=(192.168.2.0/24)
+        for net in "${subnets[@]}"; do
+            ufw allow from "$net" to any port 19532 proto tcp comment journal-remote
+            ufw allow from "$net" to any port 6666 proto udp comment netconsole
+        done
     fi
     systemctl --no-pager is-active systemd-journal-remote.socket netconsole-receiver.service
     ;;
