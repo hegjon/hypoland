@@ -616,20 +616,15 @@ Tools:
   - - The copy itself is the compositor's time under shm windows: profiles of 2026-10-28
     (`test-results/profile-20261028-*`) have Mesa's `linear_to_ytiled_faster` at 64 to 81% of the samples in
     `terminal-scroll`, `gtk3-scroll` and the sprites on iris (T550, XPS), libc's memcpy into Mesa's staging texture at
-    70 to 80% on r600 and into the GTT mapping on the X200, all near memcpy speed. Experiment of that day, in the tree
-    since 2026-10-28 evening behind `HYPOLAND_SHM_TEXTURE=linear|xtiled` (off by default, see Tools below)
-    (`CGLTexture::backWithBuffer()`, a GBM buffer of that layout imported as an EGLImage as the texture's storage, so
-    `glTexSubImage2D` maps it instead of tiling on the CPU; the GBM device is opened on demand,
-    `CHyprOpenGLImpl::gbmDeviceForTextures()`, since EGL on the device platform has none): compositor CPU default ->
-    linear, two fresh sessions each, `gtk3-scroll` T550 19.6 -> 12.6%, XPS 25.6 -> 17.2, Chromebook 26.5 -> 14.9, Mac
-    mini 27.4 -> 10.2, lianli 27.3 -> 22.7, T460s 13.6 -> 13.1, X200 19.3 -> 18.1; `terminal-scroll` T550 11.0 -> 7.9,
-    XPS 24.7 -> 15.8, Chromebook 13.4 -> 7.4, Mac mini 20.7 -> 10.8, lianli 13.7 -> 11.9; `qt-software-scroll` and the
-    sprites 20 to 40% lower on those, Chromium unchanged, frames the same or higher (XPS gtk3 47 -> 50 fps). X-tiled is
-    as good on iris and does little on crocus. The one loss: XPS sprites 16.5 -> 24.1% (three more sessions each at
-    17:38: 16.4 to 16.6 against 24.0 to 24.7, X-tiled 22.7 to 23.1, the client at 38% and 60 fps in all): with an
-    imported buffer every small `glTexSubImage2D` has Mesa query and wait on the buffer and clear through blorp
-    (hundreds of ioctls a frame, `test-results/profile-20261028-144044`), so many small rectangles need the buffer kept
-    CPU-mapped and the rows copied by the compositor itself, the next step. Not done: `CSHMPool::resize()` with `mremap`
+    70 to 80% on r600 and into the GTT mapping on the X200, all near memcpy speed. Fixed in two steps, see `HYPOLAND_SHM_TEXTURE` and
+    `HYPOLAND_SHM_ZEROCOPY` under Tools below: a linear buffer of our own as the texture's storage, filled by the
+    compositor's own row copy, and no copy at all for the clients whose pools can be pinned. The first experiment
+    (2026-10-28, GBM buffers, Mesa's upload into them, two fresh sessions each) already gave `gtk3-scroll` T550 19.6 ->
+    12.6%, XPS 25.6 -> 17.2, Chromebook 26.5 -> 14.9, Mac mini 27.4 -> 10.2, lianli 27.3 -> 22.7, `terminal-scroll` T550
+    11.0 -> 7.9, XPS 24.7 -> 15.8, Mac mini 20.7 -> 10.8, X-tiled as good on iris and little on crocus, and one loss, the
+    XPS sprites 16.5 -> 24.1%: into an imported buffer every small `glTexSubImage2D` has Mesa query and wait on the
+    buffer and clear through blorp, hundreds of ioctls a frame (`test-results/profile-20261028-144044`), hence the row
+    copy. Not done: `CSHMPool::resize()` with `mremap`
     changed nothing in `resize` (XPS 34.1 -> 34.2%, X200 and lianli the same): foot never resizes a pool, it creates a
     128 MiB pool per buffer and destroys the old one, so the kernel's share of that profile is the mapping and unmapping
     of those pools.
@@ -693,11 +688,42 @@ Tools:
   crocus and r600 (`CHyprOpenGLImpl::coalesceDamage()`), `HYPOLAND_SINGLE_TEXTURE=1` updates the shown shm texture in
   place as upstream does instead of the idle second one (`CGLTexture::update()`), both for comparing the paths on a
   machine (2026-10-28). Like `HYPOLAND_PROFILE_PASS` they have to reach the session environment (`~/.config/uwsm/env`).
-- `HYPOLAND_SHM_TEXTURE=linear|xtiled` (2026-10-28, off by default) gives every synchronous (shm) texture a GBM buffer
-  of that layout as its storage, imported as an EGLImage (`CGLTexture::backWithBuffer()`, `ytiled` is accepted too, not
-  measured): Mesa maps a linear buffer for the upload instead of tiling it on the CPU, which costs the compositor a third
-  less under most shm windows on iris, crocus from Gen 7 and r600, but more under many small rectangles on iris (the
-  XPS's sprites), see the profile notes above. Same way into the session environment.
+- `HYPOLAND_SHM_TEXTURE` (2026-10-28/29): every synchronous (shm) texture gets a linear DRM dumb buffer of the
+  compositor's own device as its storage, imported as an EGLImage (`CGLTexture::backWithBuffer()`, aquamarine's
+  `CDRMDumbAllocator` on the primary node; a texture gets its buffer at its second update, the first stays on Mesa's
+  storage so a one-shot texture costs nothing extra), and the compositor copies the damaged rows into the mapped buffer
+  itself (`copyIntoBuffer()`, a 1x1 `glTexSubImage2D` afterwards so the driver knows the texture changed) instead of Mesa
+  tiling every upload on the CPU. On by default on iris, crocus and r600, where it was measured (off -> on, two fresh
+  sessions each, 2026-10-29: `gtk3-scroll` T550 19.7 -> 13.0%, XPS 21.7 -> 14.0, Chromebook 26.8 -> 17.7, Mac mini 28.1
+  -> 11.3, lianli 27.4 -> 23.3, X200 18.1 -> 17.4, T460s 14.2 -> 14.0; `terminal-scroll` T550 11.4 -> 8.5, XPS 23.5 ->
+  15.7, Chromebook 13.4 -> 8.7, Mac mini 19.9 -> 8.4, lianli 13.7 -> 11.8; `qt-software-sprites` lianli 25.8 -> 7.0, Mac
+  mini 27.0 -> 6.6, Chromebook 25.5 -> 16.7 at 56 instead of 50 fps, X200 19.6 -> 11.1, T550 13.4 -> 10.1, XPS 25.9 ->
+  23.0; `qt-software-scroll` 1 to 4 points lower except on the Chromebook; `resize`, idle Pss, heap, threads, frames and
+  latencies the same), off elsewhere (freedreno not measured with it). `0` or `off` switches it off, `linear` on,
+  `linear-gl` keeps Mesa's upload into the buffer (into an imported buffer each `glTexSubImage2D` has Mesa query, wait
+  and clear through blorp, hundreds of ioctls a frame: XPS sprites 24.1% against 16.5 off, `test-results/profile-20261028-144044`).
+  Two versions before cost: GBM buffers of a separately opened device gave a second Mesa screen (+2.2 MiB Pss, 2 to 4
+  threads) and a fresh GEM object per buffer, cleared by the kernel per resize commit (`resize` +2 to +9 points on Intel,
+  54 fps on the X200 and XPS; the night of 2026-10-28, 30 to 33 fresh sessions each on seven machines,
+  `test-results/abnight-20261028-shmtex/`), and `DMA_BUF_IOCTL_SYNC` calls around the copy made i915 flush the whole
+  buffer from the caches twice per update on GM45 (X200 `gtk3-scroll` 18.5 -> 27.7%); the mapping is write-combining, so
+  they are gone. Same way into the session environment (`~/.config/uwsm/env`).
+- `HYPOLAND_SHM_ZEROCOPY` (2026-10-29): a wl_shm buffer whose pool is a memfd sealed against shrinking gets a udmabuf of
+  its own pages (`/dev/udmabuf`, which logind's uaccess gives the seat's user) imported as a linear EGLImage and used as
+  the texture, so nothing is copied (`CWLSHMBuffer::tryZeroCopy()`). The buffer is asynchronous like a dmabuf: the
+  surface keeps it until the next one, the renderer until the frame that read it is done (`needsRenderFence()` fences for
+  such a buffer on crocus too) and the client gets its release after that (foot: 276 releases for 279 commits in 8 s on
+  lianli). foot and Qt's software backend seal their pools so; GTK 3 seals only against further seals (`gdk-wayland`, no
+  zero copy there), GTK 4, Chromium and Xwayland use GPU buffers on the test machines; clients close the pool fd after
+  mapping, so read the seals from the compositor's `/proc/<pid>/fd` (`F_GET_SEALS`). On by default where GPU reads snoop
+  the CPU caches, since the compositor cannot flush another process's writes: i915 with an LLC (`I915_PARAM_HAS_LLC`:
+  iris, crocus from Sandy Bridge, not GM45 or Bay Trail) and r600; `0` switches it off, `force` ignores the gate.
+  Compositor CPU with the dumb buffers -> zero copy (2 fresh sessions each, 2026-10-29): `terminal-scroll` XPS 15.8 ->
+  4.1%, T550 8.0 -> 3.6, T460s 8.0 -> 3.3, Mac mini 8.8 -> 4.5, lianli 11.8 -> 2.6; `qt-software-scroll` T550 10.2 ->
+  3.7 and the sprites 10.1 -> 3.8 (Qt's pools qualify); `resize` XPS 33.6 -> 21.0, T550 17.2 -> 11.6, T460s 16.2 ->
+  10.7, Mac mini 26.1 -> 13.9, lianli 17.6 -> 12.1 (`redrawn` 2 to 10 ms sooner); GTK 3, frames and Pss the same, GPU
+  memory at the end of a run 20 MB lower on the XPS. Deploy checks pass with it on the XPS,
+  T460s, Mac mini, lianli and T550; two scanout captures of a scrolling foot differ, so nothing is stale.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
@@ -821,6 +847,16 @@ Overnight run 2026-09-28 (journal in `test-results/overnight/journal.md`), measu
   memory: `--gc-sections`, `-O2`, and `-Os` for code outside the frame and input paths take the binary from
   18.1 to 13.9 MiB and Pss down by 2.9 MiB without a change in CPU time. `-Os` for everything saves 5 MiB more
   but costs 3 to 9% CPU time, `-Os` for everything except render / helpers / output costs 4% in workspace switching.
+  `--gc-sections` alone (`-ffunction-sections -fdata-sections`, no `-O2` / `-Os`) is in since 2026-10-29: the binary
+  14.99 -> 13.56 MB, `.text` 12.0 -> 10.85 MB, 1.0 MiB less file Pss on the X200 and T550 with CPU and latencies
+  unchanged (2 fresh sessions each).
+- Two static tables (2026-10-29): aquamarine's PNP id table is a constexpr array of string_views searched once per
+  connector instead of an unordered_map a static initializer built at startup (`hwdata.hpp.in`, -450 kB of heap, -125 kB
+  of code), and the keybind manager's XKB translation state shares the keyboards' keymap (`IKeyboard::keymapForRules()`,
+  one xkb compile per config reload instead of two, -110 kB): Pss at start X200 44.7 -> 43.9 MiB, T550 44.9 -> 44.3
+  (anonymous -0.6 MiB), 43.1 / 43.2 with gc-sections. Found with a preload allocation tracer and per-file Pss
+  (`test-results/heap-20261028/`): the binary's 11.6 MiB of code is the largest Pss item, paged in almost completely; the
+  165 other libraries cost 1.6 MiB together; Hypoland's own C++ heap is about 1.4 MB, Mesa's several.
 - Idle shm windows give their second texture back (2026-10-25, `CHyprOpenGLImpl::trackBackTexture()`): a texture
   that was not updated between two sweeps a second apart frees the one its updates went into. Three foot windows that
   printed and then sat idle, GPU memory without the purgeable part: X200 8 -> 6 MiB, T550 16 -> 8, XPS 48 -> 24,
