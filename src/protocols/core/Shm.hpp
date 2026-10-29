@@ -41,6 +41,7 @@ class CWLSHMBuffer : public IHLBuffer {
     virtual void                                   update(const CRegion& damage);
     virtual bool                                   isSynchronous();
     virtual Aquamarine::SSHMAttrs                  shm();
+    virtual Aquamarine::SDMABUFAttrs               dmabuf();
     virtual std::tuple<uint8_t*, uint32_t, size_t> beginDataPtr(uint32_t flags);
     virtual void                                   endDataPtr();
 
@@ -55,6 +56,12 @@ class CWLSHMBuffer : public IHLBuffer {
     struct {
         CHyprSignalListener bufferResourceDestroy;
     } m_listeners;
+
+    bool                           tryZeroCopy();
+
+    bool                           m_zeroCopy = false; // the texture samples the client's memory through a udmabuf, see Shm.cpp
+    Aquamarine::SDMABUFAttrs       m_dmabufAttrs;
+    Hyprutils::OS::CFileDescriptor m_dmabufFd;
 };
 
 class CWLSHMPoolResource {
