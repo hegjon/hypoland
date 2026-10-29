@@ -16,6 +16,9 @@
 #include <sys/ioctl.h>
 #include <linux/udmabuf.h>
 #include <i915_drm.h>
+#if defined(__x86_64__) || defined(__i386__)
+#include <immintrin.h>
+#endif
 #include "../../Compositor.hpp"
 #include "../../render/OpenGL.hpp"
 
@@ -28,7 +31,12 @@ using namespace Hyprutils::OS;
 // the client's memory and the compositor copies nothing. Such a buffer is asynchronous like a dmabuf: the surface keeps it
 // until the next one arrives, the renderer until the frame that read it is done, and only then is it released to the
 // client. The client's writes reach the GPU without a cache flush only where GPU reads snoop the CPU caches: Intel with
-// an LLC (iris everywhere, crocus from Sandy Bridge; not GM45 or Bay Trail) and radeon; "force" takes every driver.
+// an LLC (iris everywhere, crocus from Sandy Bridge) and radeon. On Intel without an LLC (GM45, Bay Trail) the GPU
+// reads memory, so there the compositor writes the client's damaged cache lines back itself at every commit (clflush,
+// x86 only; without it the screen shows specks of old glyphs): still far cheaper than a copy (Chromebook
+// terminal-scroll 7.2 -> 5.5% of a CPU, Qt's software scroll 12.9 -> 4.1, 2026-10-29). "force" takes every driver
+// without a flush, "flush" every driver with one.
+static bool s_flushWrites = false;
 static bool zeroCopyAllowed() {
     static int allowed = -1;
     if (allowed >= 0)
@@ -44,12 +52,30 @@ static bool zeroCopyAllowed() {
     if (std::string_view{ENV} == "force") {
         allowed = 1;
         why += ", forced";
+    } else if (std::string_view{ENV} == "flush") {
+#if defined(__x86_64__) || defined(__i386__)
+        allowed       = 1;
+        s_flushWrites = true;
+        why += ", the compositor flushes the caches";
+#else
+        why += ", no cache flush on this architecture";
+#endif
     } else if (DRIVER == "iris" || DRIVER == "crocus") {
         int                 llc = 0;
         drm_i915_getparam_t gp  = {.param = I915_PARAM_HAS_LLC, .value = &llc};
-        if (g_pCompositor->m_drm.fd >= 0 && ioctl(g_pCompositor->m_drm.fd, DRM_IOCTL_I915_GETPARAM, &gp) == 0 && llc)
+        if (g_pCompositor->m_drm.fd >= 0 && ioctl(g_pCompositor->m_drm.fd, DRM_IOCTL_I915_GETPARAM, &gp) == 0 && llc) {
             allowed = 1;
-        why += llc ? ", LLC" : " without an LLC";
+            why += ", LLC";
+        } else {
+#if defined(__x86_64__) || defined(__i386__)
+            // GM45, Bay Trail: the GPU reads memory, so the compositor writes the client's lines back itself
+            allowed       = 1;
+            s_flushWrites = true;
+            why += " without an LLC, the compositor flushes the caches";
+#else
+            why += " without an LLC";
+#endif
+        }
     } else if (DRIVER == "r600" || DRIVER == "radeonsi")
         allowed = 1;
     else
@@ -105,6 +131,24 @@ Aquamarine::eBufferCapability CWLSHMBuffer::caps() {
 
 Aquamarine::eBufferType CWLSHMBuffer::type() {
     return Aquamarine::eBufferType::BUFFER_TYPE_SHM;
+}
+
+void CWLSHMBuffer::flushCPUWrites(const CRegion& bufferDamage) {
+#if defined(__x86_64__) || defined(__i386__)
+    if (!m_zeroCopy || !s_flushWrites || !m_pool || !m_pool->m_data)
+        return;
+
+    const auto BASE = rc<uint8_t*>(m_pool->m_data) + m_offset;
+    bufferDamage.copy().intersect(CBox{{}, size}).forEachRect([&](const auto& RECT) {
+        for (int y = RECT.y1; y < RECT.y2; y++) {
+            const auto ROW = BASE + sc<size_t>(y) * m_stride;
+            const auto END = ROW + sc<size_t>(RECT.x2) * 4;
+            for (auto p = rc<uintptr_t>(ROW + sc<size_t>(RECT.x1) * 4) & ~sc<uintptr_t>(63); p < rc<uintptr_t>(END); p += 64)
+                _mm_clflush(rc<const void*>(p));
+        }
+    });
+    _mm_mfence();
+#endif
 }
 
 bool CWLSHMBuffer::isSynchronous() {
