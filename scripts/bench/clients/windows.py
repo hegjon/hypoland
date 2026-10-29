@@ -164,7 +164,9 @@ def main():
             print("windows.py: the shell has no bar on this monitor", flush=True)
             return
         x, y, w, h = box
-        strip = region((x, y, w // 4, h) if w >= h else (x, y, w, h // 4))
+        # the bar's window spans the screen since Omarchy r7338 (the strip is at its anchored edge, the rest is clear), so
+        # the region is the strip's thickness at most, or the window animation under the clear part changes it first
+        strip = region((x, y, w // 4, min(h, 40)) if w >= h else (x, y, min(w, 40), h // 4))
         for i in range(n):
             chord = "super+2" if i % 2 == 0 else "super+1"
             report("bar", strip.until_changed(lambda: kb.chord(chord), rng.uniform(0, frame)))

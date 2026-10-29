@@ -2,6 +2,7 @@
 
 #include "../../defines.hpp"
 #include <vector>
+#include <string>
 
 enum ePassElementType : uint8_t {
     EK_UNKNOWN = 0,
@@ -35,6 +36,7 @@ class IPassElement {
     virtual bool                undiscardable();
     virtual std::optional<CBox> boundingBox();  // in monitor-local logical coordinates
     virtual CRegion             opaqueRegion(); // in monitor-local logical coordinates
+    virtual std::string         profileLabel(); // what HYPOLAND_PROFILE_PASS names the element after, e.g. the layer namespace
     virtual bool                disableSimplification();
 
     // cached results, computed once per frame in CRenderPass::render()

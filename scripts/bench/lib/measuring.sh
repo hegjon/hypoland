@@ -27,6 +27,19 @@ flips_counted() {
     [ $FLIPS = 1 ]
 }
 
+# The time the GPU's render engine was busy over the same window, from the i915 PMU (`gpu.<workload>.busy_percent`;
+# radeon and msm have no such counter, nothing is reported there). The compositor's blending, the clients' drawing
+# and Mesa's copies all count, so read it with the compositor's CPU time: work that moves to the GPU shows here.
+GPU_EVENT=i915/rcs0-busy/
+GPU_BUSY=""
+gpu_busy_counted() {
+    if [ -z "$GPU_BUSY" ]; then
+        GPU_BUSY=0
+        [ $ROOT = 1 ] && command -v perf >/dev/null && perf stat -a -x, -e $GPU_EVENT -- true >/dev/null 2>&1 && GPU_BUSY=1
+    fi
+    [ $GPU_BUSY = 1 ]
+}
+
 # GPU buffers are system memory on integrated graphics and in no process statistic. Prints the total, the shared and the
 # purgeable part in KiB: an open DRM file shows up once per file descriptor, a client id is counted once. Purgeable
 # buffers are those Mesa keeps in its cache for reuse, counted in the total, but the kernel takes them back when it
@@ -78,7 +91,9 @@ bench() { # name
         sampler=$!
     fi
     if flips_counted; then
-        perf stat -a -x, -e $FLIP_EVENT -o "$OUT/$name.flips" -- sleep "$SECONDS_PER_RUN" >/dev/null 2>&1 &
+        local events="-e $FLIP_EVENT"
+        gpu_busy_counted && events="$events -e $GPU_EVENT"
+        perf stat -a -x, $events -o "$OUT/$name.flips" -- sleep "$SECONDS_PER_RUN" >/dev/null 2>&1 &
         flipper=$!
     fi
     battery_check
@@ -97,8 +112,9 @@ bench() { # name
     fi
     [ -n "$u0" ] && [ -n "$u1" ] && value "cpu.$name.total_percent" "$(percent $((u1 - u0)) $((t1 - t0)))"
     value "cpu.$name.machine_percent" "$(percent $((b1 - b0)) $((t1 - t0)))"
-    [ -n "$flipper" ] && awk -F, -v r=$ROUND -v n="$name" -v s="$SECONDS_PER_RUN" -v e=$FLIP_EVENT '
-        $3 == e && $1 ~ /^[0-9]+$/ {printf "@ %s fps.%s.screen %.1f\n", r, n, $1 / s}' "$OUT/$name.flips"
+    [ -n "$flipper" ] && awk -F, -v r=$ROUND -v n="$name" -v s="$SECONDS_PER_RUN" -v e=$FLIP_EVENT -v g=$GPU_EVENT '
+        $3 == e && $1 ~ /^[0-9]+$/ {printf "@ %s fps.%s.screen %.1f\n", r, n, $1 / s}
+        $3 == g && $1 ~ /^[0-9]+$/ {printf "@ %s gpu.%s.busy_percent %.1f\n", r, n, 100 * $1 / (s * 1e9)}' "$OUT/$name.flips"
     if [ "$MODE" = energy ]; then
         [ -s "$OUT/$name.perf" ] && awk -v r=$ROUND -v n="$name" -F, '
             $1 ~ /^[0-9]+$/ {k = $3; sub(/:.*/, "", k); printf "@ %s perf.%s.M%s %.2f\n", r, n, k, $1 / 1e6}
