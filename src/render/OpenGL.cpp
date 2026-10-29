@@ -13,6 +13,8 @@
 #include <random>
 #include <pango/pangocairo.h>
 #include "OpenGL.hpp"
+#include <aquamarine/allocator/DRMDumb.hpp>
+#include <cstdlib>
 #include "../desktop/view/window/WindowPresentation.hpp"
 #include "Renderer.hpp"
 #include "../Compositor.hpp"
@@ -155,17 +157,21 @@ static int openRenderNode(int drmFd) {
     return renderFD;
 }
 
-// the GBM device for buffers the compositor allocates itself (CGLTexture::backWithBuffer()): with EXT_platform_device
-// EGL needs none, so m_gbmDevice is null then and one is opened on the render node on demand
-gbm_device* CHyprOpenGLImpl::gbmDeviceForTextures() {
-    if (m_gbmDevice)
-        return m_gbmDevice;
-    if (!m_gbmFD.isValid())
-        m_gbmFD = CFileDescriptor{openRenderNode(m_drmFD)};
-    if (!m_gbmFD.isValid())
-        return nullptr;
-    m_gbmDevice = gbm_create_device(m_gbmFD.get());
-    return m_gbmDevice;
+// the allocator of the linear dumb buffers CGLTexture::backWithBuffer() uses as texture storage (HYPOLAND_SHM_TEXTURE):
+// on the GPU's primary node, so no second Mesa screen is opened for them (a GBM device costs 2 to 7 MiB of heap)
+SP<Aquamarine::CDRMDumbAllocator> CHyprOpenGLImpl::dumbAllocatorForTextures() {
+    if (m_dumbAllocator)
+        return m_dumbAllocator;
+
+    int fd = g_pCompositor->m_drm.fd;
+    // HYPOLAND_SHM_TEXTURE_DEVICE names a primary node to use instead, for a nested run on the desktop, which has none
+    if (const char* dev = std::getenv("HYPOLAND_SHM_TEXTURE_DEVICE"); dev) {
+        m_dumbFD = CFileDescriptor{open(dev, O_RDWR | O_CLOEXEC)};
+        fd       = m_dumbFD.get();
+    }
+    if (fd >= 0)
+        m_dumbAllocator = Aquamarine::CDRMDumbAllocator::create(fd, g_pCompositor->m_aqBackend);
+    return m_dumbAllocator;
 }
 
 void CHyprOpenGLImpl::initEGL(bool gbm) {
