@@ -106,6 +106,11 @@ add_compile_options(
 # disable lto, the embedded aquamarine relies on weakened symbols
 add_compile_options(-fno-lto)
 
+# let the linker drop functions and data nothing refers to: the binary's code is paged in almost completely over a
+# session (12.8 MiB of private file pages on the X200, the largest item of the compositor's Pss)
+add_compile_options(-ffunction-sections -fdata-sections)
+add_link_options(-Wl,--gc-sections)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 message(STATUS "Checking deps...")
