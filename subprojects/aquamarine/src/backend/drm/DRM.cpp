@@ -35,6 +35,7 @@ extern "C" {
 #include "FormatUtils.hpp"
 #include "Shared.hpp"
 #include "hwdata.hpp"
+#include <string_view>
 #include "Renderer.hpp"
 #include "OutputTiming.hpp"
 
@@ -1695,11 +1696,14 @@ IOutput::SParsedEDID Aquamarine::SDRMConnector::parseEDID(std::vector<uint8_t> d
 
     auto edid       = di_info_get_edid(info);
     auto venProduct = di_edid_get_vendor_product(edid);
-    auto pnpID      = std::string{venProduct->manufacturer, 3};
-    if (PNPIDS.contains(pnpID))
-        make = PNPIDS.at(pnpID);
-    else
-        make = pnpID;
+    auto pnpID      = std::string_view{venProduct->manufacturer, 3};
+    make            = std::string{pnpID};
+    for (const auto& [id, maker] : PNPIDS) {
+        if (id != pnpID)
+            continue;
+        make = std::string{maker};
+        break;
+    }
 
     auto mod = di_info_get_model(info);
     auto ser = di_info_get_serial(info);
