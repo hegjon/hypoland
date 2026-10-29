@@ -39,6 +39,19 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   reading it, and the frame scheduler shares its one read with the render, the animation tick and the timers. On
   the X200, where every read is a system call (HPET clocksource), a GPU client at 60 fps costs 2.82% instead of
   2.88% of the CPU, video and workspace switching 2% less too.
+- Windows drawn by the CPU (shm: terminals such as foot, GTK 3, Qt Widgets, Qt Quick's software backend, Chromium
+  without a GPU) cost the compositor a third to a half less on Intel GPUs and Radeon r600: their textures live in linear
+  buffers the compositor fills itself instead of Mesa tiling every update on the CPU. Scrolling GTK 3 on a ThinkPad T550
+  19.7% -> 13.0%, on a Mac mini 2014 28% -> 11%; 60 moving squares in a Qt software window on a Radeon HD 8570D 26% ->
+  7%, on the X200 19.6% -> 11.1%.
+- Clients whose shared memory pools are sealed against shrinking (foot, Qt) are drawn straight from their own memory,
+  with no copy at all, on Intel GPUs with an LLC and on Radeon: a fast-scrolling foot costs the compositor 4% of a core
+  instead of 16% on a Dell XPS 13 and 2.6% instead of 12% on the Radeon desktop, a scrolling Qt software window 3.7%
+  instead of 10.2% on a ThinkPad T550, resizing a terminal next to a GL window 21% instead of 34% on the XPS. Not on the X200 or Bay Trail, whose GPUs do not see what the CPU wrote until the caches
+  are flushed. `HYPOLAND_SHM_TEXTURE=0` and `HYPOLAND_SHM_ZEROCOPY=0` in the session environment switch the two off.
+- 1.6 MiB less memory at idle: the linker drops code nothing refers to (the binary 15.0 -> 13.6 MB), the keyboard layout
+  is compiled once instead of twice per config reload, and the table of monitor makers is built into the binary instead
+  of into the heap at startup (X200: 44.7 -> 43.1 MiB Pss).
 
 ### Added
 
