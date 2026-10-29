@@ -55,8 +55,10 @@ class IKeyboard : public IHID {
         std::string rules   = "";
     };
 
-    void                              setKeymap(const SStringRuleNames& rules);
-    static void                       clearKeymapCache();
+    void        setKeymap(const SStringRuleNames& rules);
+    static void clearKeymapCache();
+    // the keymap for these rules, compiled once and shared by every keyboard and the keybind manager (a new reference)
+    static xkb_keymap*                keymapForRules(const SStringRuleNames& rules);
     void                              updateXKBTranslationState(xkb_keymap* const keymap = nullptr);
     std::optional<xkb_layout_index_t> getActiveLayoutIndex();
     std::string                       getActiveLayout();

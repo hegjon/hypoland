@@ -842,8 +842,9 @@ void CKeybindManager::updateXKBTranslationState() {
     xkb_rule_names    rules   = {.rules = RULES.c_str(), .model = MODEL.c_str(), .layout = LAYOUT.c_str(), .variant = VARIANT.c_str(), .options = OPTIONS.c_str()};
     const auto        CONTEXT = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     FILE* const       FILE    = FILEPATH.empty() ? nullptr : fopen(absolutePath(FILEPATH, Config::mgr()->currentConfigPath()).c_str(), "r");
-    auto              keymap  = FILE ? xkb_keymap_new_from_file(CONTEXT, FILE, XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS) :
-                                       xkb_keymap_new_from_names2(CONTEXT, &rules, XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    // the keyboards' keymap for the same rules, compiled once (IKeyboard::keymapForRules), not a second one
+    auto keymap = FILE ? xkb_keymap_new_from_file(CONTEXT, FILE, XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS) :
+                         IKeyboard::keymapForRules({.layout = LAYOUT, .model = MODEL, .variant = VARIANT, .options = OPTIONS, .rules = RULES});
     if (FILE)
         fclose(FILE);
 

@@ -39,6 +39,24 @@ void IKeyboard::clearKeymapCache() {
     lastKeymap = nullptr;
 }
 
+xkb_keymap* IKeyboard::keymapForRules(const SStringRuleNames& rules) {
+    if (lastKeymap && sameRules(rules, lastKeymapRules))
+        return xkb_keymap_ref(lastKeymap);
+
+    xkb_rule_names XKBRULES = {
+        .rules = rules.rules.c_str(), .model = rules.model.c_str(), .layout = rules.layout.c_str(), .variant = rules.variant.c_str(), .options = rules.options.c_str()};
+    const auto CONTEXT = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    const auto KEYMAP  = xkb_keymap_new_from_names2(CONTEXT, &XKBRULES, XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    xkb_context_unref(CONTEXT);
+    if (!KEYMAP)
+        return nullptr;
+
+    clearKeymapCache();
+    lastKeymap      = xkb_keymap_ref(KEYMAP);
+    lastKeymapRules = rules;
+    return KEYMAP;
+}
+
 //
 uint32_t IKeyboard::getCapabilities() {
     return HID_INPUT_CAPABILITY_KEYBOARD;
@@ -113,17 +131,11 @@ void IKeyboard::setKeymap(const SStringRuleNames& rules) {
         }
     }
 
-    if (!m_xkbKeymap && m_xkbFilePath.empty() && lastKeymap && sameRules(rules, lastKeymapRules))
-        m_xkbKeymap = xkb_keymap_ref(lastKeymap);
+    if (!m_xkbKeymap && m_xkbFilePath.empty())
+        m_xkbKeymap = keymapForRules(rules);
 
     if (!m_xkbKeymap) {
         m_xkbKeymap = xkb_keymap_new_from_names2(CONTEXT, &XKBRULES, XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS);
-
-        if (m_xkbKeymap && m_xkbFilePath.empty()) {
-            clearKeymapCache();
-            lastKeymap      = xkb_keymap_ref(m_xkbKeymap);
-            lastKeymapRules = rules;
-        }
     }
 
     if (!m_xkbKeymap) {
