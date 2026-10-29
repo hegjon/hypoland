@@ -119,18 +119,33 @@ workload_flea() { # Omarchy's file manager, a Quickshell window, paged through w
     sleep 1
 }
 
-# A folder of empty files in Omarchy's file manager (Flea, a Quickshell window) and in Nautilus (GTK 4, its list view),
-# scrolled with the Down key held on the uinput keyboard for the whole run (root only): the compositor forwards the one
-# press and the client repeats it at the session's rate (Omarchy: 40 a second after 250 ms), as a finger resting on the
-# key would. The folder has as many files as the repeat sends in the run (480 at 40 a second for 12 s), so the selection
-# walks the whole folder and reaches the end as the run ends; a client that cannot keep up ends later. Added 2026-10-29.
-scroll_files() { # the folder, made for the session's repeat rate
-    local rate files dir
-    rate=$(H getoption input:repeat_rate 2>/dev/null | awk '/^int:/ {print $2}')
-    files=$(( ${rate:-40} * SECONDS_PER_RUN ))
-    dir=$USERHOME/.cache/hypoland-bench/files-$files
-    [ -e "$dir/file-$files.txt" ] || asuser bash -c 'mkdir -p "$0" && cd "$0" && for i in $(seq 1 "$1"); do touch "file-$i.txt"; done' "$dir" "$files"
+# A folder of 5000 empty files in Omarchy's file manager (Flea, a Quickshell window) and in Nautilus (GTK 4, its list
+# view), scrolled with the Down key held on the uinput keyboard for the whole run (root only): the compositor forwards
+# the one press and the client repeats it at the session's rate (Omarchy: 40 a second after 250 ms, so about 480 of
+# the files in a 12 s run), as a finger resting on the key would. At the end, with the window still open, the memory of
+# the clients (mem.<name>.clients_*: the Pss of their processes, their cgroups' current and peak memory) and of the
+# compositor (mem.<name>.*, as for mem.start). Added 2026-10-29, 5000 files and the memory asked for by the user.
+SCROLL_FILES=5000
+scroll_files() { # the folder
+    local dir=$USERHOME/.cache/hypoland-bench/files-$SCROLL_FILES
+    [ -e "$dir/file-$SCROLL_FILES.txt" ] || asuser bash -c 'mkdir -p "$0" && cd "$0" && touch file-{0001..5000}.txt' "$dir"
     echo "$dir"
+}
+clients_memory() { # name: the processes in the clients' scopes
+    local root pss=0 cur=0 peak=0 d p
+    root=$(cgroot)
+    [ -n "$root" ] && [ -d "$root/$SLICE" ] || return 0
+    for d in "$root/$SLICE"/*.scope; do
+        [ -d "$d" ] || continue
+        cur=$((cur + $(cat "$d/memory.current" 2>/dev/null || echo 0) / 1024))
+        peak=$((peak + $(cat "$d/memory.peak" 2>/dev/null || echo 0) / 1024))
+        for p in $(cat "$d/cgroup.procs" 2>/dev/null); do
+            pss=$((pss + $(awk '/^Pss:/ {print $2}' "/proc/$p/smaps_rollup" 2>/dev/null || echo 0)))
+        done
+    done
+    value "mem.$1.clients_Pss_kB" "$pss"
+    value "mem.$1.clients_cgroup_kB" "$cur"
+    value "mem.$1.clients_peak_kB" "$peak"
 }
 scroll_folder() { # workload, seconds to wait for the window, command with FOLDER for the folder
     local name=$1 wait=$2 driver folder
@@ -154,6 +169,8 @@ scroll_folder() { # workload, seconds to wait for the window, command with FOLDE
     done
     rec "$name"
     wait $driver
+    clients_memory "$name"
+    memory "$name"
     stop_clients
 }
 needs_flea_scroll="flea root"
