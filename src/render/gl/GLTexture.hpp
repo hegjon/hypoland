@@ -4,7 +4,9 @@
 #include <aquamarine/buffer/Buffer.hpp>
 #include <hyprutils/math/Misc.hpp>
 
-struct gbm_bo;
+namespace Aquamarine {
+    class IBuffer;
+}
 
 namespace Render::GL {
 
@@ -37,15 +39,18 @@ namespace Render::GL {
       private:
         void* m_eglImage = nullptr;
 
-        // HYPOLAND_SHM_TEXTURE=linear|xtiled|ytiled (experiment of 2026-10-28): the storage of a synchronous texture is a
-        // GBM buffer with that layout, imported as an EGLImage, so that Mesa maps it for the upload (a linear one
-        // directly) instead of copying into its own tiled texture on the CPU. m_bo backs m_texID, m_backBo m_backTexID.
-        gbm_bo* m_bo          = nullptr;
-        gbm_bo* m_backBo      = nullptr;
-        void*   m_boImage     = nullptr;
-        void*   m_backBoImage = nullptr;
-        bool    backWithBuffer(GLuint texID, uint32_t drmFormat, gbm_bo*& bo, void*& image);
-        void    dropBuffer(gbm_bo*& bo, void*& image);
+        // HYPOLAND_SHM_TEXTURE=linear (experiment of 2026-10-28): the storage of a synchronous texture is a linear DRM dumb
+        // buffer of the GPU's device, imported as an EGLImage, into which the compositor copies the damaged rows itself
+        // (copyIntoBuffer()) instead of Mesa tiling them on the CPU. m_buffer backs m_texID, m_backBuffer m_backTexID. A
+        // texture starts with Mesa's own storage (the constructor) and gets a buffer at its second update, so the
+        // textures a resize makes, one per commit, never allocate one.
+        Hyprutils::Memory::CSharedPointer<Aquamarine::IBuffer> m_buffer, m_backBuffer;
+        void*                                                  m_boImage     = nullptr;
+        void*                                                  m_backBoImage = nullptr;
+        bool backWithBuffer(GLuint texID, uint32_t drmFormat, Hyprutils::Memory::CSharedPointer<Aquamarine::IBuffer>& buffer, void*& image);
+        bool copyIntoBuffer(Hyprutils::Memory::CSharedPointer<Aquamarine::IBuffer>& buffer, GLenum format, GLenum type, uint8_t* pixels, uint32_t stride, uint32_t bpp,
+                            const CRegion& region);
+        void dropBuffer(Hyprutils::Memory::CSharedPointer<Aquamarine::IBuffer>& buffer, void*& image);
 
         // Synchronous (shm) textures are double buffered, see update(). m_backTexID is the texture that is not
         // shown, m_backStaleDamage what it is missing compared to the shown one.

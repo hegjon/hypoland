@@ -50,6 +50,10 @@ namespace Config {
     class CGradientValueData;
 }
 
+namespace Aquamarine {
+    class CDRMDumbAllocator;
+}
+
 namespace Render::GL {
     class CDualKawaseBlurProvider;
     class CGLTexture;
@@ -246,7 +250,7 @@ namespace Render::GL {
         std::vector<SDRMFormat>                   getDRMFormats();
         std::vector<uint64_t>                     getDRMFormatModifiers(DRMFormat format);
         EGLImageKHR                               createEGLImage(const Aquamarine::SDMABUFAttrs& attrs);
-        gbm_device*                               gbmDeviceForTextures();
+        SP<Aquamarine::CDRMDumbAllocator>         dumbAllocatorForTextures();
 
         bool                                      initShaders(const std::string& path = "");
 
@@ -267,6 +271,8 @@ namespace Render::GL {
 
         Hyprutils::OS::CFileDescriptor            m_gbmFD;
         gbm_device*                               m_gbmDevice  = nullptr;
+        SP<Aquamarine::CDRMDumbAllocator>         m_dumbAllocator; // for the shm textures of CGLTexture, on demand
+        Hyprutils::OS::CFileDescriptor            m_dumbFD;        // only with HYPOLAND_SHM_TEXTURE_DEVICE
         EGLContext                                m_eglContext = nullptr;
         EGLDisplay                                m_eglDisplay = nullptr;
         EGLDeviceEXT                              m_eglDevice  = nullptr;
