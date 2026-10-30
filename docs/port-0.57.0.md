@@ -1,8 +1,8 @@
 # Hyprland 0.57.0: what Hypoland takes
 
 Every upstream commit between Hypoland's base (d8504461f, upstream main at 0.56.0+141) and v0.57.0, in order, and what
-was done with it on 2026-10-30. Hypoland's master then had the first 28 picks from 2026-10-28 replayed on it (branch
-`port/0.57.0`), 18 more picked with their test conflicts settled, the rest of 0.57.0's config surface written on
+was done with it on 2026-10-30, merged into master that evening. On master, the first 28 picks of 2026-10-28 (branch
+`port/0.57.0`) were replayed, 18 more picked with their test conflicts settled, the rest of 0.57.0's config surface written on
 Hypoland's own code, and one fixup (`IKeyboard::isVirtual()` is const). "Later" marks commits whose conflicts sit in
 code the workspace refactor (e9e2f64cc) rewrote; they wait for that port. "Ignore" marks CI, docs, reverts, and code
 Hypoland removed (the scene composition renderer, colour management, FP16 buffers, the test plugin, Nix). The dry-run

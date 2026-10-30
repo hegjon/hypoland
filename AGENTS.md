@@ -68,8 +68,8 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   Both pages share `web/style.css`. `web/header.svg`, `web/icon.svg` and `web/favicon.png` are copies of the logo
   in `assets/logo/`: after regenerating the logo run `scripts/web/update-logo.sh`, which copies them and renders
   the link preview image `web/og.png` (1200x630) from `scripts/web/og.html` with `scripts/web/og.sh`.
-- Hyprland 0.57.0 (released 2026-10-28) is being ported on the branch `port/0.57.0-r2` (worktree `~/Work/hypoland-port`,
-  its own `build/` and package build): on master, the 28 picks of the earlier `port/0.57.0` replayed, 18 more upstream
+- Hyprland 0.57.0 (released 2026-10-28) is partly ported, on master since 2026-10-30 (prepared on the branch
+  `port/0.57.0-r2`, worktree `~/Work/hypoland-port`): the 28 picks of the earlier `port/0.57.0` replayed, 18 more upstream
   commits with their test-only conflicts settled, a fixup, and the rest of 0.57.0's config surface written on Hypoland's
   own code, so that a 0.57.0 config (its `example/hyprland.lua`, Omarchy's edge config) loads with no config error: the
   `layers` category (`layers_hog_keyboard_focus`, `allow_new_top_layers_over_existing_fullscreen`; the `misc:` one keeps
