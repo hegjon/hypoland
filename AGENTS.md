@@ -890,7 +890,10 @@ Tools:
   workspace switch's window 5.9 -> 5.3 on the Chromebook, the whole session's CPU under `dev` 0.6 to 1.4 points lower
   (Chromebook 26.2 -> 24.8%, Mac mini 17.9 -> 17.3, T550 11.5 -> 10.9, lianli 14.3 -> 13.5: the bar's `hyprctl` runs),
   the compositor's and memory the same. Against the baseline's Hyprland 0.56.2 the Chromebook's focus change is now
-  5.3 against 5.8 ms and the Mac mini's 1.9 against 2.1; the X200 was off the lab network that afternoon.
+  5.3 against 5.8 ms and the Mac mini's 1.9 against 2.1. The X200, measured in the evening (r800 against r811, 10 sessions
+  each): the focus change 3.9 -> 3.35 ms (Hyprland 0.56.2: 3.6), 3.95 -> 3.4 in `workspace-switch`, 6.15 -> 5.4 under
+  `dev`; compositor CPU `dev` 4.88 -> 4.53%, `workspace-switch` 2.50 -> 2.32, the session under `dev` 18.6 -> 17.4;
+  Pss at the end of a run 45.4 -> 44.0 MB; `dev.type_ms` 2.9 -> 3.6 is the one figure that went the other way there.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
