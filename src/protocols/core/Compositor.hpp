@@ -29,6 +29,7 @@ class CWLSurfaceResource;
 class CWLSubsurfaceResource;
 class CViewportResource;
 class CDRMSyncobjSurfaceResource;
+class CCPUFlushTracker;
 class CFifoResource;
 class CCommitTimerResource;
 class CContentType;
@@ -137,8 +138,10 @@ class CWLSurfaceResource {
     std::optional<int>                 m_lastScale     = std::nullopt;
     std::vector<pixman_box32_t>        m_pendingDamageBoxes; // damage requests of the pending state, made into its regions on commit
     std::vector<pixman_box32_t>        m_pendingBufferDamageBoxes;
+    UP<CCPUFlushTracker>               m_cpuFlush; // only for a surface whose buffers were written back from the caches
 
     void                               destroy();
+    void                               flushCPUWrites();
     void                               releaseBuffers(bool onlyCurrent = true);
     void                               dropPendingBuffer();
     void                               dropCurrentBuffer();

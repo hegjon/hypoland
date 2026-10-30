@@ -1,5 +1,10 @@
 #include "Buffer.hpp"
 
+uint64_t IHLBuffer::nextUniqueId() {
+    static uint64_t next = 0;
+    return ++next;
+}
+
 IHLBuffer::~IHLBuffer() {
     if (locked() && m_resource)
         sendRelease();

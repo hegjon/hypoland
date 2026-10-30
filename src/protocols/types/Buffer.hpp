@@ -21,6 +21,10 @@ class IHLBuffer : public Aquamarine::IBuffer {
     virtual void flushCPUWrites(const CRegion& bufferDamage) {
         ;
     }
+    // whether flushCPUWrites() does anything for this buffer
+    virtual bool needsCPUFlush() {
+        return false;
+    }
     virtual bool                                good() = 0;
     virtual void                                sendRelease();
     virtual void                                lock();
@@ -31,7 +35,8 @@ class IHLBuffer : public Aquamarine::IBuffer {
     void                                        addReleasePoint(CDRMSyncPointState& point);
 
     SP<Render::ITexture>                        m_texture;
-    bool                                        m_opaque = false;
+    bool                                        m_opaque   = false;
+    const uint64_t                              m_uniqueId = nextUniqueId(); // tells buffers apart without keeping them (CCPUFlushTracker)
     SP<CWLBufferResource>                       m_resource;
     std::vector<UP<CSyncReleaser>>              m_syncReleasers;
     std::vector<Hyprutils::OS::CFileDescriptor> m_syncFds;
@@ -44,6 +49,8 @@ class IHLBuffer : public Aquamarine::IBuffer {
   private:
     int                   m_locks = 0;
     std::function<void()> m_backendReleaseQueuedFn;
+
+    static uint64_t       nextUniqueId();
 
     friend class CHLBufferReference;
 };
