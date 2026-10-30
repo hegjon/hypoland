@@ -8,8 +8,9 @@
 using namespace Render;
 
 static const std::array<std::string, SH_FRAG_LAST> FRAGS = {
-    "quad.frag",       "passthru.frag", "rgbamatte.frag", "ext.frag",    "blur1.frag",       "blur2.frag",       "blurprepare.frag",       "blurfinish.frag",   "shadow.frag",
-    "inner_glow.frag", "surface.frag",  "border.frag",    "glitch.frag", "frostfinish.frag", "dropsfinish.frag", "heatshimmerfinish.frag", "aurorafinish.frag", "hazefinish.frag",
+    "quad.frag",         "passthru.frag",   "rgbamatte.frag", "ext.frag",    "blur1.frag",  "blur2.frag",       "blurprepare.frag", "blurfinish.frag",
+    "shadow.frag",       "inner_glow.frag", "surface.frag",   "border.frag", "glitch.frag", "frostfinish.frag", "dropsfinish.frag", "heatshimmerfinish.frag",
+    "aurorafinish.frag", "hazefinish.frag", "alphamax.frag",
 };
 
 class CShaderLoaderTest : public testing::Test {
