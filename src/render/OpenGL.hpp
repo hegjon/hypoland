@@ -261,7 +261,8 @@ namespace Render::GL {
         void                                      scheduleShaderCompilerRelease();
         void                                      scheduleHeapTrim();
         // HYPOLAND_ALPHA_BOUNDS: the box of a layer surface's pixels with alpha, so the transparent rest is not blended
-        void                                      analyzeLayerAlpha(PHLMONITOR pMonitor);
+        void                                      scheduleAlphaAnalysis(std::chrono::milliseconds delay); // from a layer's commit: a tick once it settled
+        void                                      analyzeLayerAlpha();                                    // the timer's tick
         void                                      armHeapTrim(std::chrono::milliseconds delay);
         void                                      trackBackTexture(CGLTexture* tex); // shm textures with a second texture, see CGLTexture::update()
         void                                      untrackBackTexture(CGLTexture* tex);
@@ -280,14 +281,23 @@ namespace Render::GL {
         EGLDeviceEXT                              m_eglDevice  = nullptr;
 
         std::map<PHLMONITORREF, SP<IFramebuffer>> m_monitorBGFBs;
-        SP<IFramebuffer>                          m_alphaFB; // analyzeLayerAlpha(): the block maxima of the surface analyzed last
+        SP<IFramebuffer>                          m_alphaFB; // analyzeLayerAlpha(): the blocks of the surface analyzed last
         struct {
-            PHLLSREF    layer;
-            uint32_t    serial = 0;
-            Vector2D    texSize;
-            UP<CEGLSync> sync;   // signals when the GPU has drawn the maxima; the readback waits for it
-            int         frames = 0; // frames waited for the fence
+            PHLLSREF                              layer;
+            uint32_t                              serial = 0;
+            Vector2D                              texSize;
+            Vector2D                              small;                                    // the framebuffer: a pixel per block
+            int                                   rows = 0, rowsPerStrip = 0, rowsDone = 0; // of the framebuffer
+            UP<CEGLSync>                          sync;                                     // signals when the GPU has drawn the blocks; the readback waits for it
+            int                                   ticks = 0;                                // waited for the fence
+            std::chrono::steady_clock::time_point started;
         } m_alphaPending;
+        SP<CEventLoopTimer>                   m_alphaTimer;
+        bool                                  m_alphaTimerArmed = false;
+        std::chrono::steady_clock::time_point m_alphaTimerDue;
+        bool                                  startAlphaAnalysis(PHLLS LS);
+        bool                                  issueAlphaStrip(PHLLS LS);
+        void                                  readAlphaBounds(PHLLS LS);
 
         struct {
             PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC glEGLImageTargetRenderbufferStorageOES = nullptr;

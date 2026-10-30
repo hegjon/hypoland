@@ -296,6 +296,14 @@ void CLayerSurface::onUnmap() {
     g_pHyprRenderer->arrangeLayersForMonitor(PMONITOR->m_id);
 }
 
+// How long CHyprOpenGLImpl::analyzeLayerAlpha() leaves the surface alone after a commit: a surface that keeps committing
+// (the shell's bar, dock and wallpaper commit once or twice a second while the shell is busy, a toast animates for a
+// second) is drawn whole until it has been quiet for two seconds, so it is not analyzed at every change; a quiet one
+// after 150 ms.
+std::chrono::milliseconds CLayerSurface::alphaSettle() const {
+    return m_alphaCommitInterval < std::chrono::milliseconds(2000) ? std::chrono::milliseconds(2000) : std::chrono::milliseconds(150);
+}
+
 void CLayerSurface::onCommit() {
     if (!m_layerSurface)
         return;
@@ -330,6 +338,7 @@ void CLayerSurface::onCommit() {
         m_alphaBounds.reset();
         m_alphaBoundsDirty = true;
         m_alphaSerial++;
+        Render::GL::g_pHyprOpenGL->scheduleAlphaAnalysis(alphaSettle());
     }
 
     if (m_layerSurface->m_current.committed != 0) {
