@@ -22,7 +22,7 @@ mac=$(ip neigh show "$hop" dev "$dev" | grep -o 'lladdr [^ ]*' | cut -d' ' -f2)
 [ -n "$mac" ] || mac=ff:ff:ff:ff:ff:ff
 
 if [ -d $T ] && [ "$(cat $T/enabled)" = 1 ] && [ "$(cat $T/dev_name)" = "$dev" ] &&
-    [ "$(cat $T/local_ip)" = "$src" ] && [ "$(cat $T/remote_mac)" = "$mac" ]; then
+    [ "$(cat $T/local_ip)" = "$src" ] && [ "$(cat $T/remote_ip)" = "$DESKTOP" ] && [ "$(cat $T/remote_mac)" = "$mac" ]; then
     exit 0
 fi
 [ -d $T ] || mkdir $T

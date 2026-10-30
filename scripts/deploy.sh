@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the Arch package from the working tree and installs it on test machines (see
-# ~/Work/machines/MACHINES.md): copies it into the pacman cache there, so the versions before it stay for going
+# ~/Work/infrastructure/MACHINES.md): copies it into the pacman cache there, so the versions before it stay for going
 # back, installs it with pacman, restarts SDDM (which logs in again) and checks the new session with
 # `scripts/bench/measure.sh --mode check`, sent there by scripts/bench/target.sh. Logs in as root@<host>. The hosts
 # are deployed in parallel, each into its own log.
@@ -9,7 +9,7 @@
 #
 #   --no-build     install the package that was built last
 #   --no-install   only check the session that is running (the aarch64 Galaxy Book builds its own package on
-#                  the machine, see ~/Work/machines/MACHINES.md)
+#                  the machine, see ~/Work/infrastructure/MACHINES.md)
 #   --restart      restart SDDM also with --no-install: a machine left without input locks its session after
 #                  5 minutes, and only a new session gets past the lock screen
 #   --no-check     install and restart, check nothing
@@ -100,7 +100,7 @@ deploy() { # host
     if [ $INSTALL = 1 ]; then
         arch=$("${SSH[@]}" "root@$h" uname -m)
         if [ "$arch" != "$(uname -m)" ]; then
-            echo "FAIL  $h is $arch and the package $(uname -m): build it on the machine (~/Work/machines/MACHINES.md), then check it with --no-install"
+            echo "FAIL  $h is $arch and the package $(uname -m): build it on the machine (~/Work/infrastructure/MACHINES.md), then check it with --no-install"
             return 1
         fi
         for p in "${PACKAGES[@]}"; do

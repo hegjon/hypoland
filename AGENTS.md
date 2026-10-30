@@ -37,10 +37,11 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   and the Chromebook, 4 GB RAM, no battery, RAPL, 1920x1200 over HDMI on the desktop's monitor) joined on 2026-10-27 as
   `macmini-intel` (also as `root@macmini-intel`) and runs the Hypoland package since 16:36 that day, with
   `hypoland-bench` from the branch `bench-package`.
-  Their hardware, addresses, logins and update steps are in `~/Work/machines/MACHINES.md`, a private file in no git
-  repository, shared with the other projects that use the machines (it was `MACHINES.md` in this repository until
-  2026-10-27, which is a link to it now, in `.git/info/exclude`). Read it before working on a machine, and keep machine
-  details there, not here.
+  Their hardware, addresses, logins and update steps are in `~/Work/infrastructure/MACHINES.md`, a private file in a local git
+  repository without a remote (since 2026-10-30), shared with the other projects that use the machines (it was `MACHINES.md` in this repository until
+  2026-10-27, which is a link to it now, in `.git/info/exclude`; the folder was `~/Work/machines` until 2026-10-30). The network
+  (the lab router `hypolab`, the wifi networks, the subnets and their names) is `NETWORK.md` next to it, linked here the same
+  way. Read them before working on a machine, and keep machine and network details there, not here.
   Every test machine sends its journal and its kernel log (netconsole) to the desktop, so a machine that dies
   leaves its last words there: when adding a machine, run `scripts/machines/forward-logs.sh machine <desktop address>
   <ssh host>` (it says where the logs end up). The scripts for the test machines (the soak, the energy meter, the log
@@ -240,7 +241,7 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    below), GL and shader errors in the compositor's log, crash reports and core dumps. A machine without a monitor gets a headless output for the checks. It prints PASS / FAIL per machine;
    logs and screenshots are in
    `test-results/deploy-*`. `--no-install` only checks the running session (the aarch64 Galaxy Book builds its own
-   package, see `~/Work/machines/MACHINES.md`). Prefer it over improvising SSH commands. A deploy replaces the
+   package, see `~/Work/infrastructure/MACHINES.md`). Prefer it over improvising SSH commands. A deploy replaces the
    Hypoland the machine runs, so say which build went where (`pacman -Q hypoland`). When the package was installed
    on at least one machine, the deploy commits the pkgver makepkg wrote into the PKGBUILD (`PKGBUILD: pkgver
    <version>, deployed to <hosts>`, the pkgver line is the only change it takes), so every deploy is a commit and
@@ -1082,7 +1083,7 @@ Known issues:
   Chromium numbers of soaks and benchmarks on r600 with Arch's Chromium measure that bug, and it delayed Chromium's
   first frame in the deploy check on lianli by up to 30 s. Patched packages, the patches, the analysis and the
   scripts are in `~/Work/chromium/` on the desktop (its `README.md`); which machine runs which Chromium is in
-  `~/Work/machines/MACHINES.md`.
+  `~/Work/infrastructure/MACHINES.md`.
 - Open, in the radeon driver or the hardware (2026-10-25): on the EliteBook (r600, HD 6470M) the screen can stand
   still for 17 to 36 s when a Qt Quick software window opens (the deploy check's "Qt Quick (software) window" fails:
   no screenshot, 0 to 7 fps). The compositor is idle in `epoll_wait` and answers IPC; its frame waits on the GPU. The
