@@ -105,16 +105,27 @@ bench() { # name
     [ -n "$flipper" ] && wait "$flipper"
     echo "--- $name; clients: $(clients)$(in_the_way)"
     [ -n "$(in_the_way)" ] && value "invalid.$name" 1
-    value "cpu.$name.percent" "$(percent $((c1 - c0)) $((t1 - t0)))"
+    cpu=$(percent $((c1 - c0)) $((t1 - t0)))
+    value "cpu.$name.percent" "$cpu"
     # the clients' slice is there while they run; without clients it reads nothing at both ends
     if [ ${#SCOPE[@]} -gt 0 ] && [ "${k1:-0}" -ge "${k0:-0}" ]; then
         value "cpu.$name.clients_percent" "$(percent $((${k1:-0} - ${k0:-0})) $((t1 - t0)))"
     fi
     [ -n "$u0" ] && [ -n "$u1" ] && value "cpu.$name.total_percent" "$(percent $((u1 - u0)) $((t1 - t0)))"
     value "cpu.$name.machine_percent" "$(percent $((b1 - b0)) $((t1 - t0)))"
-    [ -n "$flipper" ] && awk -F, -v r=$ROUND -v n="$name" -v s="$SECONDS_PER_RUN" -v e=$FLIP_EVENT -v g=$GPU_EVENT '
-        $3 == e && $1 ~ /^[0-9]+$/ {printf "@ %s fps.%s.screen %.1f\n", r, n, $1 / s}
-        $3 == g && $1 ~ /^[0-9]+$/ {printf "@ %s gpu.%s.busy_percent %.1f\n", r, n, 100 * $1 / (s * 1e9)}' "$OUT/$name.flips"
+    # and per frame on the screen (`cpu.<workload>.ms_per_frame`, `gpu.<workload>.busy_ms_per_frame`): the compositor's
+    # CPU time and the GPU's busy time in milliseconds for each frame it showed, so a build that shows more frames is
+    # not read as one that costs more (asked for by the user on 2026-10-29: 14.4% at 40 fps against 18.2% at 55 is
+    # 3.6 against 3.3 ms a frame)
+    [ -n "$flipper" ] && awk -F, -v r=$ROUND -v n="$name" -v s="$SECONDS_PER_RUN" -v e=$FLIP_EVENT -v g=$GPU_EVENT -v cpu="$cpu" '
+        $3 == e && $1 ~ /^[0-9]+$/ {fps = $1 / s; printf "@ %s fps.%s.screen %.1f\n", r, n, fps}
+        $3 == g && $1 ~ /^[0-9]+$/ {busy = 100 * $1 / (s * 1e9); printf "@ %s gpu.%s.busy_percent %.1f\n", r, n, busy}
+        END {
+            if (fps >= 1) {
+                printf "@ %s cpu.%s.ms_per_frame %.2f\n", r, n, cpu * 10 / fps
+                if (busy != "") printf "@ %s gpu.%s.busy_ms_per_frame %.2f\n", r, n, busy * 10 / fps
+            }
+        }' "$OUT/$name.flips"
     if [ "$MODE" = energy ]; then
         [ -s "$OUT/$name.perf" ] && awk -v r=$ROUND -v n="$name" -F, '
             $1 ~ /^[0-9]+$/ {k = $3; sub(/:.*/, "", k); printf "@ %s perf.%s.M%s %.2f\n", r, n, k, $1 / 1e6}
