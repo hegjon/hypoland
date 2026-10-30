@@ -8,6 +8,17 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Faster
 
+- A focus change under Omarchy's input method no longer compiles and writes out the keyboard layout again. fcitx5
+  grabs the keyboard and recreates its virtual keyboard with the keymap it got back on every focus change, and the
+  compositor compiled that 100 kB of text, wrote it twice in two formats into four shared-memory files, copied it once
+  more for the grab, and compared the whole text against a copy kept per client keyboard. The text and files are now
+  made once per compiled keymap and shared, a virtual keyboard whose text matches reuses the keymap, and the key handler
+  asks the shortcuts-inhibit protocol once per key instead of once per bind. The `activelayout` event is only sent when
+  a keyboard's layout changes: it came twice per focus change, and Omarchy's bar runs `hyprctl -j devices` for each. A
+  focus change shows 0.1 to 0.4 ms sooner at idle (Dell Chromebook 11 6.3 -> 5.9 ms, Mac mini 2014 2.3 -> 2.1) and 1 to
+  3 ms sooner while the editor and log of the `dev` workload draw (Chromebook 12.7 -> 9.6, Mac mini 5.6 -> 4.0, ThinkPad
+  T550 4.4 -> 3.5), with 3 to 7% less compositor CPU there, 0.6 to 1.4 points less CPU for the whole session (the
+  bar's `hyprctl` runs), and about 1 MB less memory at the end of a run.
 - A panel, dock or notification layer that is mostly transparent no longer costs the GPU its whole area on every
   frame under it: once it has not changed for a moment the compositor finds where its pixels are and draws only that
   part. Omarchy's shell keeps its bar's window across the whole screen, and its dock and notification column mapped

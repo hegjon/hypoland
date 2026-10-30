@@ -860,6 +860,37 @@ Tools:
   has no alpha whole instead of skipping it. The night also showed the GTK 4 cost of the zero copy under `HYPOLAND_SHM_ZEROCOPY`
   above, and the Chromebook's `workspace-switch` 0.7 points of CPU higher with the alpha bounds (6.3 -> 7.1%, every block,
   the same with the timer build; its GPU time 22 -> 13%), not looked into.
+- A focus change under fcitx5 (2026-10-30, the user: "a focus change shown is worse is a regression on Hypoland"): the
+  baseline of 2026-10-27 had it 0.3 to 1 ms slower than Hyprland 0.56.2 on the crocus machines, the 90th percentile twice
+  as slow. A perf timeline of the compositor (its reads, ioctls, context switches) and a 20 kHz sampled profile windowed
+  between the arrow key's evdev read and the atomic commit (the scripts are `focus/` in the session's scratchpad:
+  `focustrace.sh`, `focusprof.sh`, `analyze.py`, `profwin.py`, `callers.py`, `probes.sh`, `swap.sh`) showed the extra as
+  main-thread CPU in libc and libxkbcommon: fcitx5 (Omarchy's input method) grabs the keyboard on every focus change,
+  for which the compositor copied the keymap text into a new shm file, and recreates its virtual keyboard with the
+  keymap it got back, which the compositor compiled (100 kB of text), serialized twice in both formats into four shm
+  files, and compared as a whole against a copy kept per wl_keyboard resource at the keyboard switch; uprobes on the Mac
+  mini counted 15 `xkb_keymap_new_from_string` and 62 `xkb_keymap_get_as_string` in 12 focus steps. Hyprland 0.56.2 does
+  the same work, its loop ordering just put it after the commit more often. Since then the text and files are made once
+  per compiled keymap and shared (`IKeyboard::SKeymapFiles`, `filesForKeymap()`, a cache of four that references the
+  keymaps), a virtual keyboard whose text matches a keyboard's reuses that keymap (`CVirtualKeyboardV1Resource`), the
+  IME grab sends the shared read-only file, and the seat tells keymaps apart by hash and length (0 compiles and
+  serializations in the same 12 steps). A/B r800 against r809, 6 to 7 fresh sessions each (`idle-windows`,
+  `workspace-switch`, `dev`): the focus change Chromebook 6.25 -> 5.85 ms, Mac mini 2.3 -> 2.1, T550 2.1 -> 2.0,
+  lianli 1.7 -> 1.6; under the `dev` load 12.7 -> 9.6, 5.6 -> 4.0, 4.4 -> 3.5, 13.2 -> 11.2; compositor CPU in `dev`
+  8.27 -> 7.72% on the Chromebook and 0.15 to 0.2 points lower on the others, `workspace-switch` 0.1 to 0.2 lower; Pss at
+  the end of a run 0.9 to 1.3 MB lower on all four (the keymap copies), the heap at start 0.2 to 0.6 MB lower.
+  Two more in the same path, measured as r811 against r809 the same way (7 to 8 sessions each): `Keybinds::CKeybindManager::
+  canInvokeNow()` asked the shortcuts-inhibit protocol, a view query over every window, once per bind on every key event,
+  a hundred queries per key press, now once per event; and the `activelayout` IPC event came twice per focus change (on
+  `applyConfigToKeyboard()` and on the virtual keyboard's keymap request: 31 events in a run with 16 focus changes on
+  the T490) and Omarchy's bar (`shell/plugins/bar/widgets/KeyboardLayout.qml`) runs `hyprctl -j devices` for each; a
+  keyboard posts it only when its layout name changes now (`IKeyboard::m_activeLayoutPosted`), a virtual keyboard that
+  types in the seat's active layout posts none at its creation (1 event and 30 fewer `hyprctl` runs in the same run).
+  r809 -> r811: the focus change Chromebook 5.8 -> 5.3 ms, Mac mini 2.15 -> 1.9, T550 1.95 -> 1.8, lianli 1.6 -> 1.5, the
+  workspace switch's window 5.9 -> 5.3 on the Chromebook, the whole session's CPU under `dev` 0.6 to 1.4 points lower
+  (Chromebook 26.2 -> 24.8%, Mac mini 17.9 -> 17.3, T550 11.5 -> 10.9, lianli 14.3 -> 13.5: the bar's `hyprctl` runs),
+  the compositor's and memory the same. Against the baseline's Hyprland 0.56.2 the Chromebook's focus change is now
+  5.3 against 5.8 ms and the Mac mini's 1.9 against 2.1; the X200 was off the lab network that afternoon.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
