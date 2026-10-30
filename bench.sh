@@ -37,6 +37,9 @@ compare() {
             # two starts of the same build differ by up to 1.2 MiB and 0.2 points of CPU time; a key lands anywhere in a
             # frame of 16.7 ms, a guess for latencies until more runs show their spread
             floor = ($1 ~ /^mem\./) ? 1500 : ($1 ~ /^latency\./) ? 3 : 0.3
+            # the start of a session is one sample a round, with the 10 ms steps of the process start time and the shell in it
+            if ($1 ~ /^startup\..*_ms$/)
+                floor = 30
             if (noise < floor)
                 noise = floor
             mark = ""
@@ -46,7 +49,7 @@ compare() {
             # instructions repeat to about a percent
             if ($1 ~ /^perf\./ && noise < base[$1] / 50)
                 noise = base[$1] / 50
-            if ($1 ~ /^(cpu\..*[._]percent|cpu\..*\.ms_per_frame|gpu\..*\.busy_(percent|ms_per_frame)|mem\..*_kB|binary\.size_kB|power\.(baseline\.W|.*\.net_W)|perf\..*\.Minstructions|latency\..*_ms)$/ && (d > noise || d < -noise) && d != 0)
+            if ($1 ~ /^(cpu\..*[._]percent|cpu\..*\.ms_per_frame|gpu\..*\.busy_(percent|ms_per_frame)|mem\..*_kB|binary\.size_kB|power\.(baseline\.W|.*\.net_W)|perf\..*\.Minstructions|latency\..*_ms|startup\..*_ms)$/ && (d > noise || d < -noise) && d != 0)
                 mark = (d < 0) ? "better" : "WORSE"
             if ($1 ~ /^fps\./ && d < -1)
                 mark = "WORSE"

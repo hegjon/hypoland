@@ -567,6 +567,163 @@ workload_menu() {
     stop_clients
 }
 
+# ---- the session's start, opening and closing windows, many windows
+
+# The start of a session (added 2026-10-30, asked for by the user for the 0.3.0 numbers): SDDM restarted, which logs in
+# again, and the new compositor followed from the start of its process (clients/startup.py): when its IPC answers
+# (startup.ipc_ms), when its first frame reaches the screen (first_frame_ms, its first page flip), when the shell's
+# wallpaper and bar layers are there (wallpaper_ms, bar_ms), the CPU time the compositor (cpu_ms, with its ended
+# threads) and uwsm's service with the compositor, the shell and Xwayland (session_cpu_ms) have used STARTUP_SECONDS
+# after the start, and the compositor's memory then (mem.startup.*). exec_ms is the time from the restart to the
+# process, the old session ending and the login, the same for any compositor. Not in WORKLOADS: the rest of the run
+# measures the new session, which is younger than --settle. Run it alone (--workloads startup, with --rounds for
+# several starts) or first in a list.
+needs_startup="python3 root"
+STARTUP_SECONDS=20
+workload_startup() {
+    local key v
+    stop_clients
+    python3 -I "$CLIENTSRC/startup.py" --process "$PROCESS" --runtime "$RUNTIME" --seconds $STARTUP_SECONDS \
+        --perf "$OUT/startup.$ROUND.perf" >"$OUT/startup.txt" 2>&1
+    grep -v -E "^(startup|pid) " "$OUT/startup.txt" | sed 's/^/    /'
+    while read -r _ key v; do
+        if [ "$v" = timeout ]; then
+            echo "    $key: nothing within 60 s"
+            value "invalid.startup" 1
+            continue
+        fi
+        value "startup.$key" "$v"
+    done < <(grep "^startup " "$OUT/startup.txt")
+    grep -q "^pid " "$OUT/startup.txt" || { echo "--- startup: no new compositor"; exit 1; }
+    # the workloads after it run in the new session: its compositor, instance, socket and environment
+    # shellcheck source=session.sh
+    . "$HERE/lib/session.sh"
+    echo "--- startup: compositor pid $P, instance $SIG"
+    memory startup
+    [ -n "$OMARCHY" ] && asuser /usr/share/omarchy/bin/omarchy-shell -q notifications dismissAll >/dev/null 2>&1
+    dispatch 'hl.dsp.dpms({action=[[on]]})' "dpms on"
+}
+
+# a workspace on the focused monitor without windows, among 5 to 9 (1 and 2 are the workloads')
+empty_workspace() {
+    local used ws
+    used=$(H clients | awk '$1 == "workspace:" {print $2}' | sort -u)
+    for ws in 5 6 7 8 9; do
+        grep -qx "$ws" <<<"$used" || { echo "$ws"; return 0; }
+    done
+    return 1
+}
+
+close_on_workspace() { # workspace
+    local a
+    for a in $(H clients | awk -v w="$1" '/^Window / {a = $2} $1 == "workspace:" && $2 == w {print "0x" a}'); do
+        dispatch "hl.dsp.window.close({window=\"address:$a\"})" "closewindow address:$a"
+    done
+}
+
+# Omarchy's terminal opened with its bind (SUPER+RETURN, uwsm-app and xdg-terminal-exec as a person's key starts it) on
+# an empty workspace and closed with SUPER+W, by a uinput keyboard (clients/launch.py, root only; added 2026-10-30): the
+# time until the middle of the screen first changes (latency.launch.open_ms, close_ms) and until it stays as it then is
+# (opened_ms, closed_ms: the animation has ended and the terminal has drawn, or the wallpaper shows again). Opening is
+# mostly the terminal's start, the same under any compositor; the compositor's part is the bind, the map, the layout,
+# the animation and the frame. The terminal runs outside the clients' slice, so there is no CPU time here.
+needs_launch="python3 root xdg-terminal-exec"
+LAUNCH_STEPS=8
+workload_launch() {
+    local ws xy
+    if [ -n "$(in_the_way)" ]; then
+        echo "--- launch: not measured,$(in_the_way)"
+        value "invalid.launch" 1
+        return
+    fi
+    if ! ws=$(empty_workspace); then
+        echo "--- launch: not measured, no empty workspace among 5 to 9"
+        value "invalid.launch" 1
+        return
+    fi
+    dispatch "hl.dsp.focus({workspace=$ws})" "workspace $ws"
+    sleep 1
+    # the pointer at the right edge, out of the region and of the bar and the dock, which show on hover
+    xy=$(H monitors | awk '/^Monitor/ {m = 1} m && / at / {split($1, r, "[x@]"); split($3, p, "x")} m && /scale:/ {s = $2}
+        m && /focused: yes/ {printf "%d %d", p[1] + r[1] / s - 2, p[2] + r[2] / s / 2; exit}')
+    dispatch "hl.dsp.cursor.move({x=${xy% *}, y=${xy#* }})" "movecursor $xy"
+    sleep 0.5
+    echo "--- launch: on workspace $ws"
+    latency_phase launch launch.py --steps $LAUNCH_STEPS
+    grep -q "launch.py: no window opened" "$OUT/launch.txt" 2>/dev/null && value "invalid.launch" 1
+    close_on_workspace "$ws"
+    sleep 1
+    dispatch "hl.dsp.focus({workspace=1})" "workspace 1"
+    sleep 1
+}
+
+# Many terminals on one workspace (added 2026-10-30): 10, then 20, then 40 foot windows (shm) in an even grid over the
+# work area (5x2, 5x4, 8x5), floating, as dwindle would split the newest window again and again until the last ones are a
+# few pixels wide. Each prints a line five times a second, so most frames have several small windows to update. For each
+# count the CPU time (cpu.many-windows-<n>.*, with ms_per_frame: what a frame costs with n windows), the memory with them
+# open (mem.many-windows-<n>.*, the windows' textures) and how long a move of the focus and a switch to workspace 2 and
+# back take to show (latency.many-windows-<n>.*, see switching()). The windows stop printing for the latencies: the
+# switch is timed by the middle of a window, which a line printed after the key would change first.
+needs_many_windows="foot python3"
+MANY_WINDOWS="10:5x2 20:5x4 40:8x5"
+
+# the work area of the focused monitor in the compositor's logical coordinates, without the bar: x y width height
+work_area() {
+    H monitors -j | python3 -I -c '
+import json, sys
+m = next(m for m in json.load(sys.stdin) if m["focused"])
+w, h = m["width"] / m["scale"], m["height"] / m["scale"]
+if m.get("transform", 0) % 2:
+    w, h = h, w
+l, t, r, b = (m.get("reserved") or [0, 0, 0, 0])[:4]
+print(int(m["x"] + l), int(m["y"] + t), int(w - l - r), int(h - t - b))'
+}
+
+# the windows of a class floating in a grid of cells over the work area, in the order hyprctl lists them
+grid_windows() { # class, columns, rows
+    local cols=$2 rows=$3 x y w h cw ch i=0 a wx wy
+    read -r x y w h < <(work_area)
+    cw=$((w / cols)) ch=$((h / rows))
+    for a in $(H clients | awk -v c="$1" '/^Window / {a = $2} $1 == "class:" && $2 == c {print "0x" a}'); do
+        wx=$((x + i % cols * cw + 4)) wy=$((y + i / cols * ch + 4))
+        dispatch "hl.dsp.window.float({action=\"enable\", window=\"address:$a\"})" "setfloating address:$a"
+        dispatch "hl.dsp.window.resize({x=$((cw - 8)), y=$((ch - 8)), window=\"address:$a\"})" "resizewindowpixel exact $((cw - 8)) $((ch - 8)),address:$a"
+        dispatch "hl.dsp.window.move({x=$wx, y=$wy, window=\"address:$a\"})" "movewindowpixel exact $wx $wy,address:$a"
+        i=$((i + 1))
+    done
+}
+
+workload_many_windows() {
+    local n=0 step target cols rows before flag=$CLIENTDIR/many-windows-print
+    touch "$flag"
+    for step in $MANY_WINDOWS; do
+        target=${step%%:*} cols=${step#*:} rows=${step##*x}
+        cols=${cols%x*}
+        while [ $n -lt "$target" ]; do
+            before=$(nclients)
+            client $((SECONDS_PER_RUN * 3 + 400)) "exec foot --app-id hypoland-many -e sh -c 'while :; do [ -e $flag ] && date +%T.%N; sleep 0.2; done'"
+            if ! mapped "$before" 10; then
+                echo "--- many-windows-$target: window $((n + 1)) did not open"
+                value "invalid.many-windows-$target" 1
+                stop_clients
+                return
+            fi
+            n=$((n + 1))
+        done
+        grid_windows hypoland-many "$cols" "$rows"
+        sleep 4
+        rec "many-windows-$target"
+        memory "many-windows-$target"
+        rm -f "$flag"
+        sleep 0.5
+        switching "many-windows-$target" --classes hypoland-many --focus 6 --workspace 6
+        touch "$flag"
+    done
+    rm -f "$flag"
+    stop_clients
+    sleep 2
+}
+
 # ---- latency: drivers in clients/ press keys and move a pointer through uinput devices (root only) and print
 # "latency <kind> <ms>" or "latency <kind> timeout" for every step they waited for on the screen
 
