@@ -999,13 +999,24 @@ void IHyprRenderer::renderLayer(PHLLS pLayer, PHLMONITOR pMonitor, const Time::s
         const auto  UNIT = S.size / S.bufferSize; // a buffer pixel in logical units (the viewport's scaling included)
         CBox        box  = {REALPOS.x + B.x * UNIT.x - pMonitor->m_position.x, REALPOS.y + B.y * UNIT.y - pMonitor->m_position.y, B.width * UNIT.x, B.height * UNIT.y};
         box.scale(pMonitor->m_scale).round().expand(1);
+        // a layer left out still gets its frame callbacks, as a surface outside the damage does
+        // (CSurfacePassElement::discard()): a client that asks for one without a new buffer would wait for it
+        const auto LEAVEOUT = [&] {
+            if (!m_bBlockSurfaceFeedback)
+                pLayer->wlSurface()->resource()->breadthfirst(
+                    [&time, &pMonitor](SP<CWLSurfaceResource> s, const Vector2D& offset, void* data) { s->presentFeedback(time, pMonitor, true); }, nullptr);
+        };
         if (B.width <= 0 || B.height <= 0) {
-            if (alphaBoundsSkip())
+            if (alphaBoundsSkip()) {
+                LEAVEOUT();
                 return;
+            }
         } else {
             renderdata.clipBox = renderdata.clipBox.intersection(box);
-            if (renderdata.clipBox.width <= 0 || renderdata.clipBox.height <= 0)
+            if (renderdata.clipBox.width <= 0 || renderdata.clipBox.height <= 0) {
+                LEAVEOUT();
                 return;
+            }
         }
     }
     if (renderdata.blur && pLayer->m_ruleApplicator->ignoreAlpha().hasValue()) {
