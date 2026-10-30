@@ -151,6 +151,10 @@ void CWLSHMBuffer::flushCPUWrites(const CRegion& bufferDamage) {
 #endif
 }
 
+bool CWLSHMBuffer::needsCPUFlush() {
+    return m_zeroCopy && s_flushWrites && m_pool && m_pool->m_data;
+}
+
 bool CWLSHMBuffer::isSynchronous() {
     return !m_zeroCopy;
 }

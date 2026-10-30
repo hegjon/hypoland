@@ -41,6 +41,7 @@ class CWLSHMBuffer : public IHLBuffer {
     virtual void                                   update(const CRegion& damage);
     virtual bool                                   isSynchronous();
     virtual void                                   flushCPUWrites(const CRegion& bufferDamage);
+    virtual bool                                   needsCPUFlush();
     virtual Aquamarine::SSHMAttrs                  shm();
     virtual Aquamarine::SDMABUFAttrs               dmabuf();
     virtual std::tuple<uint8_t*, uint32_t, size_t> beginDataPtr(uint32_t flags);

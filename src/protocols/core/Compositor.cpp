@@ -1,4 +1,5 @@
 #include "Compositor.hpp"
+#include "../types/CPUFlushTracker.hpp"
 #include "../../Compositor.hpp"
 #include "Output.hpp"
 #include "Seat.hpp"
@@ -672,6 +673,23 @@ void CWLSurfaceResource::drainSyncFds(WP<SSurfaceState> state, eLockReason reaso
     m_stateQueue.unlockFence(state);
 }
 
+// shm zero copy on a GPU that reads memory, not the caches: write the client's writes back before the GPU samples the
+// buffer, the damage since this buffer's last commit and not only this commit's (see CPUFlushTracker.hpp)
+void CWLSurfaceResource::flushCPUWrites() {
+    const auto  DAMAGE = m_current.accumulateBufferDamage();
+    const auto& BUF    = m_current.buffer.m_buffer;
+    if (!BUF || !BUF->needsCPUFlush()) {
+        if (m_cpuFlush)
+            m_cpuFlush->reset();
+        return;
+    }
+
+    if (!m_cpuFlush)
+        m_cpuFlush = makeUnique<CCPUFlushTracker>();
+
+    BUF->flushCPUWrites(m_cpuFlush->regionToFlush(BUF->m_uniqueId, DAMAGE, BUF->size));
+}
+
 void CWLSurfaceResource::commitState(SSurfaceState& state) {
     if (!state.updated.all && m_mapped)
         return;
@@ -683,7 +701,11 @@ void CWLSurfaceResource::commitState(SSurfaceState& state) {
         if (m_current.buffer->isSynchronous())
             m_current.updateSynchronousTexture(lastTexture);
         else if (m_current.buffer->type() == Aquamarine::BUFFER_TYPE_SHM)
-            m_current.buffer->flushCPUWrites(m_current.accumulateBufferDamage()); // zero copy on a GPU that reads memory, not the caches
+            flushCPUWrites();
+
+        // a commit the flush tracker does not see (a copied shm buffer, a dmabuf): what the client wrote meanwhile is unknown
+        if (m_cpuFlush && (m_current.buffer->isSynchronous() || m_current.buffer->type() != Aquamarine::BUFFER_TYPE_SHM))
+            m_cpuFlush->reset();
 
         // if the surface is a cursor, update the shm buffer
         // TODO: don't update the entire texture
