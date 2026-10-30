@@ -127,23 +127,28 @@ $ <span class="w">hypoland</span>
       <div class="scroll"><table>
         <thead><tr><th>Compositor on the X200</th><th>Hypoland</th><th>Hyprland 0.56.2</th><th></th></tr></thead>
         <tbody>
-          <tr><td>CPU, GPU client at 60&nbsp;fps</td><td>2.7%</td><td>3.8%</td><td class="yes">&minus;30%</td></tr>
-          <tr><td>CPU, terminal scrolling fast</td><td>10.2%</td><td>15.1%</td><td class="yes">&minus;33%</td></tr>
-          <tr><td>CPU, Chromium in a full window</td><td>9.9%</td><td>26.6%</td><td class="yes">&minus;63%</td></tr>
-          <tr><td>CPU, workspace switching with animations</td><td>3.7%</td><td>10.3%</td><td class="yes">&minus;64%</td></tr>
-          <tr><td>Memory (PSS), 60&nbsp;s after the start</td><td>46&nbsp;MiB</td><td>114&nbsp;MiB</td><td class="yes">&minus;60%</td></tr>
+          <tr><td>CPU, GPU client at 60&nbsp;fps</td><td>2.9%</td><td>4.0%</td><td class="yes">&minus;27%</td></tr>
+          <tr><td>CPU, terminal scrolling fast</td><td>10.1%</td><td>16.5%</td><td class="yes">&minus;39%</td></tr>
+          <tr><td>CPU, Chromium in a full window</td><td>10.6%</td><td>27.6%</td><td class="yes">&minus;61%</td></tr>
+          <tr><td>CPU, workspace switching with animations</td><td>3.8%</td><td>9.7%</td><td class="yes">&minus;61%</td></tr>
+          <tr><td>Memory (PSS), 60&nbsp;s after the start</td><td>46&nbsp;MiB</td><td>115&nbsp;MiB</td><td class="yes">&minus;60%</td></tr>
+          <tr><td>Frames on the screen, a GTK&nbsp;3 window scrolling</td><td>56&nbsp;fps</td><td>30&nbsp;fps</td><td class="yes">&plus;85%</td></tr>
+          <tr><td>Frames on the screen, dragging a window split</td><td>60&nbsp;fps</td><td>30&nbsp;fps</td><td class="yes">&plus;99%</td></tr>
         </tbody>
       </table></div>
       <p class="note">
         Measured on the test machine running the full <a href="https://omarchy.org/">Omarchy</a> session
         (Quickshell bar, wallpaper, notifications). Stock Hyprland 0.56.2 aborts at startup on the same machine;
         for the comparison above it ran with Omarchy's GLES&nbsp;3 override
-        (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), medians of 3 rounds on
-        2026-10-22, with the same frames drawn. On a ThinkPad T550, whose GPU has GLES&nbsp;3, Hypoland used
-        10&ndash;55% less CPU and 62% less memory than stock Hyprland
+        (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), medians of 37 to 41 fresh
+        sessions of each, alternating through the night of 2026-10-27, the frames counted as the compositor's own
+        page flips. On the seven other machines of the lab, from a Bay Trail Chromebook to a Snapdragon X Elite
+        laptop, the compositor costs less in nearly every workload (workspace switching about half, shm windows a
+        half to a third) and 43&ndash;45&nbsp;MiB against 112&ndash;117
         (<a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline">raw data and scripts</a>).
         Hypoland's own optimizations for this hardware include drawing straight into the scanout buffer,
-        clearing only damaged areas and double-buffered shm uploads.
+        clearing only damaged areas, showing terminals and Qt windows from their own buffers without a copy, and
+        drawing panels only where they have pixels; the last two came after these measurements.
       </p>
     </div>
   </section>
@@ -159,8 +164,9 @@ $ <span class="w">hypoland</span>
       </ul>
       <p class="note">
         Developed on a ThinkPad X200 with Mesa's <code>crocus</code> driver. Also tested on GPUs with GLES&nbsp;3,
-        which run the same GLES&nbsp;2 renderer: Intel HD 5500 (<code>iris</code>), AMD Radeon HD 6470M and
-        HD 8570D (<code>r600</code>) and Qualcomm Adreno X1-85 (<code>freedreno</code>, aarch64).
+        which run the same GLES&nbsp;2 renderer: Intel Bay Trail, HD Graphics 5000, HD 5500, HD 520 and UHD 620
+        (<code>crocus</code> and <code>iris</code>, from a Dell Chromebook 11 to a ThinkPad T490), AMD Radeon
+        HD 6470M and HD 8570D (<code>r600</code>) and Qualcomm Adreno X1-85 (<code>freedreno</code>, aarch64).
       </p>
     </div>
   </section>
@@ -260,8 +266,8 @@ $ <span class="w">hypoland</span>
         <p>
           If Hyprland dies with <code>eglCreateContext failed</code> and <code>eglinfo</code> shows
           OpenGL ES 2.0 but no 3.0, Hypoland is meant for you. Of those GPUs, Gen4 Intel is tested; the others
-          are untested, and reports are welcome. Newer GPUs work too: Hypoland is also tested on Intel HD 5500,
-          AMD Radeon (<code>r600</code>) and Qualcomm Adreno.
+          are untested, and reports are welcome. Newer GPUs work too: Hypoland is also tested on Intel GPUs from
+          Bay Trail to Whiskey Lake, AMD Radeon (<code>r600</code>) and Qualcomm Adreno.
         </p>
       </details>
       <details>
