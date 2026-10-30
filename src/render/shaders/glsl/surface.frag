@@ -79,7 +79,13 @@ void main() {
         pixBlurAlphaMask = 0.0;
 #endif
     vec3 blurredPixColor = texture2D(blurredBG, blurUV).rgb;
-    float pixBlurBgAlpha = (1.0 - pixColor.a) * pixBlurAlphaMask;
+#if USE_BLUR_PROPORTIONAL
+    float blurredPixT     = 1.0 - pixColor.a;
+    float blurredPixAlpha = 1.0 - blurredPixT * blurredPixT * blurredPixT;
+#else
+    float blurredPixAlpha = 1.0;
+#endif
+    float pixBlurBgAlpha = (1.0 - pixColor.a) * pixBlurAlphaMask * blurredPixAlpha;
     pixColor             = vec4(pixColor.rgb + blurredPixColor * pixBlurBgAlpha, pixColor.a + pixBlurBgAlpha);
 #else
 #if USE_BLUR_ALPHA_MASK
@@ -92,7 +98,13 @@ void main() {
     float pixBlurAlphaMask = 1.0;
 #endif
     vec3 blurredPixColor = texture2D(blurredBG, blurUV).rgb;
-    float pixBlurBgAlpha = (1.0 - pixColor.a) * pixBlurAlphaMask;
+#if USE_BLUR_PROPORTIONAL
+    float blurredPixT     = 1.0 - pixColor.a;
+    float blurredPixAlpha = 1.0 - blurredPixT * blurredPixT * blurredPixT;
+#else
+    float blurredPixAlpha = 1.0;
+#endif
+    float pixBlurBgAlpha = (1.0 - pixColor.a) * pixBlurAlphaMask * blurredPixAlpha;
     pixColor             = vec4(pixColor.rgb + blurredPixColor * pixBlurBgAlpha, pixColor.a + pixBlurBgAlpha);
 #endif
 #endif

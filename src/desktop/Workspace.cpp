@@ -72,6 +72,7 @@ void CWorkspace::init(PHLWORKSPACE self) {
 
     IPC::Socket2::sock()->postEvent({.event = "createworkspace", .data = m_name});
     IPC::Socket2::sock()->postEvent({.event = "createworkspacev2", .data = std::format("{},{}", m_id, m_name)});
+    Event::bus()->m_events.workspace.createdEarly.emit(self);
     Event::bus()->m_events.workspace.created.emit(self);
 }
 

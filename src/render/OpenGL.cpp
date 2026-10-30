@@ -1332,8 +1332,13 @@ WP<CShader> CHyprOpenGLImpl::renderToFBInternal(SP<ITexture> tex, const STexture
     if (data.finalOutput || (g_pHyprRenderer->m_renderData.currentWindow && g_pHyprRenderer->m_renderData.currentWindow->m_ruleApplicator->RGBX().valueOrDefault()))
         shaderFeatures &= ~SH_FEAT_RGBA;
 
-    if (data.blur && data.blurredBG && (*PBLEND || data.forceBlurBlend))
+    static auto PPROPORTIONAL = CConfigValue<Config::INTEGER>("decoration:blur:proportional");
+
+    if (data.blur && data.blurredBG && (*PBLEND || data.forceBlurBlend)) {
         shaderFeatures |= SH_FEAT_BLUR;
+        if (*PPROPORTIONAL)
+            shaderFeatures |= SH_FEAT_BLUR_PROPORTIONAL;
+    }
 
     if (data.blur && data.blurredBG && data.blurAlphaMatte && (*PBLEND || data.forceBlurBlend))
         shaderFeatures |= SH_FEAT_BLUR_MATTE;

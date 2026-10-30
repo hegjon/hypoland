@@ -132,7 +132,7 @@ static int workspaceIndex(lua_State* L) {
         lua_pushboolean(L, ws->isPersistent());
     else if (key == "is_empty")
         lua_pushboolean(L, ws->getWindowCount() == 0);
-    else if (key == "config_name")
+    else if (key == "config_name" || key == "addressable_name")
         lua_pushstring(L, ws->getConfigName().c_str());
     else if (key == "tiled_layout") {
         std::string layoutName = "unknown";
