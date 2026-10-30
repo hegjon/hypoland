@@ -394,8 +394,7 @@ void CHyprAnimationManager::scheduleTick(std::optional<Time::steady_tp> now) {
     // It was 1 ms, which ran the whole tick with its damage up to 16 times per frame at 60 Hz.
     const auto MOSTHZ = g_pHyprRenderer ? g_pHyprRenderer->m_mostHzMonitor.lock() : nullptr;
     const auto HZ     = MOSTHZ && MOSTHZ->m_refreshRate > 1.F ? MOSTHZ->m_refreshRate : 60.F;
-    m_animationTimer->updateTimeout(std::chrono::microseconds(std::clamp(sc<int64_t>(1000000.F / HZ), sc<int64_t>(1000), sc<int64_t>(1000000))),
-                                    now ? *now : Time::steadyNow());
+    m_animationTimer->updateTimeout(std::chrono::microseconds(std::clamp(sc<int64_t>(1000000.F / HZ), sc<int64_t>(1000), sc<int64_t>(1000000))), now ? *now : Time::steadyNow());
 }
 
 void CHyprAnimationManager::onTicked() {

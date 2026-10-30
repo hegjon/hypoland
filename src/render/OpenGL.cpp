@@ -943,9 +943,9 @@ static const std::vector<std::string> SHADER_INCLUDES = {
 
 // order matters, see ePreparedFragmentShader
 const std::array<std::string, SH_FRAG_LAST> FRAG_SHADERS = {
-    "quad.frag",       "passthru.frag", "rgbamatte.frag", "ext.frag",    "blur1.frag",       "blur2.frag",       "blurprepare.frag",       "blurfinish.frag",   "shadow.frag",
-    "inner_glow.frag", "surface.frag",  "border.frag",    "glitch.frag", "frostfinish.frag", "dropsfinish.frag", "heatshimmerfinish.frag", "aurorafinish.frag", "hazefinish.frag",
-    "alphamax.frag",
+    "quad.frag",         "passthru.frag",   "rgbamatte.frag", "ext.frag",    "blur1.frag",  "blur2.frag",       "blurprepare.frag", "blurfinish.frag",
+    "shadow.frag",       "inner_glow.frag", "surface.frag",   "border.frag", "glitch.frag", "frostfinish.frag", "dropsfinish.frag", "heatshimmerfinish.frag",
+    "aurorafinish.frag", "hazefinish.frag", "alphamax.frag",
 };
 
 bool CHyprOpenGLImpl::initShaders(const std::string& path) {
@@ -2567,7 +2567,7 @@ void CHyprOpenGLImpl::scheduleShaderCompilerRelease() {
 // kernel does not fault and clear it in again for every frame; it is given back once no upload has come for a while.
 static constexpr auto HEAP_TRIM_DELAY = std::chrono::seconds(5);
 
-void CHyprOpenGLImpl::scheduleHeapTrim() {
+void                  CHyprOpenGLImpl::scheduleHeapTrim() {
     m_lastShmUpload = std::chrono::steady_clock::now();
 
     if (!m_heapTrimTimer || !m_heapTrimTimer->armed())
