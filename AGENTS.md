@@ -280,6 +280,12 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    refactor, 0.56.2 prints "workspace ID 1 (1)"), and processSpawning, which took any `sleep` on the machine (it
    looks under the compositor's pid now, `HYPRLAND_PID`, and waits for `sh -c` to become `sleep`). The contains
    macro evaluates its argument twice, so the value it prints on a failure can be newer than the one it checked.
+   The unit tests CI runs are `./build/hyprland_gtests` (427 on 2026-10-30, built by the same Debug tree); `make test` does not
+   run them. A new fragment shader has to be added to the list in `tests/render/ShaderLoader.cpp` as well, or the list's last
+   entry is empty and the loader reads a directory (the three shader loader tests failed in CI from 2026-10-29 to 30 for
+   that). CI's Code Style job uses Arch's current clang-format, so a clang upgrade can make it fail on untouched files
+   (23.1.4 on 2026-10-27, eleven files realigned on 2026-10-30): run `.github/workflows/clang-format-check.sh . llvm
+   '^subprojects$' ''` with `GITHUB_WORKSPACE=$PWD` and format what it names among the tracked files.
 
 ## Testing pitfalls (learned the hard way)
 
