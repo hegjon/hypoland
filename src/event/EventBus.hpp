@@ -154,7 +154,7 @@ namespace Event {
                 Event<PHLWORKSPACE, PHLMONITOR> moveToMonitor;
                 Event<PHLWORKSPACE>             active;
                 Event<PHLWORKSPACE, PHLMONITOR> specialActive;
-                Event<PHLWORKSPACEREF>          createdEarly; // right after creation, before it is placed on its monitor
+                Event<PHLWORKSPACEREF>          createdEarly; // Hyprland 0.57's workspace.created_early; fires together with created here
                 Event<PHLWORKSPACEREF>          created;
                 Event<PHLWORKSPACEREF>          removed;
             } workspace;
