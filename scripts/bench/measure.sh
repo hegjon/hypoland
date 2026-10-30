@@ -15,7 +15,8 @@
 #                       or FAIL
 #   --seconds N         length of a workload (default 12)
 #   --rounds N          how often the workloads are repeated, bench only (default 1)
-#   --workloads LIST    comma separated, default: all of them (WORKLOADS below)
+#   --workloads LIST    comma separated, default: all of them (WORKLOADS below). startup (restarts SDDM and measures the
+#                       new session's start, then the rest of the list runs in it) is not among them, see workloads.sh
 #   --client NAME=CMD   one more workload: CMD is started as a client and measured as NAME, can be repeated
 #   --env NAME=VALUE    a variable for the clients, as a session's hl.env gives it to the programs it starts (the
 #                       Mesa overrides of Omarchy's GLES 3 override for stock Hyprland on the X200), can be repeated
@@ -45,7 +46,7 @@
 
 MODE=bench SECONDS_PER_RUN=12 ROUNDS=1 SETTLE=60 PROCESS="" KEEP_GOVERNOR=0 OUT=""
 METER=auto IDLE=10 MIN_BATTERY=30 POWERCAP=/sys/class/powercap POWER_SUPPLY=/sys/class/power_supply
-WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,ghostty-scroll,kitty-scroll,video,nautilus,flea,flea-scroll,nautilus-scroll,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,tk-canvas,video-window,idle-windows,dev,resize,notifications,menu
+WORKLOADS=idle,gpu-client,terminal-scroll,alacritty-scroll,ghostty-scroll,kitty-scroll,video,nautilus,flea,flea-scroll,nautilus-scroll,shm-fullwindow,workspace-switch,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,tk-canvas,video-window,idle-windows,dev,resize,notifications,menu,launch,many-windows
 STAGES='Render::IHyprRenderer::renderMonitor|Render::GL::CHyprGLRenderer::endRender|Render::GL::CHyprGLRenderer::beginRenderInternal|Render::GL::CEGLSync::create|Render::CRenderPass::render|Render::GL::CHyprOpenGLImpl::end\(\)|Render::GL::CGLFramebuffer::internalAlloc|Render::GL::CGLTexture::update|Aquamarine::CDRMOutput::commitState|drmModeAtomicCommit|Aquamarine::getDRMProp|Aquamarine::getDRMPropBlob|__x64_sys_ioctl|clock_gettime|read_hpet|_CWlSurfaceCommit|shmem_alloc_and_add_folio|drm_clflush_sg|Render::IHyprRenderer::renderLayer|Render::IHyprRenderer::renderAllClientsForWorkspace|Monitor::CMonitor::scheduleFrame|Animation::CHyprAnimationManager::tick|CInputManager::[A-Za-z]+|CPointerManager::[A-Za-z]+'
 CLIENT_NAMES=() CLIENT_CMDS=() CLIENT_ENV=()
 
