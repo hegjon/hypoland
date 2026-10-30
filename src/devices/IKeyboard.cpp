@@ -10,6 +10,7 @@
 #include <aquamarine/input/Input.hpp>
 #include <hyprutils/string/VarList.hpp>
 #include <cstring>
+#include <functional>
 
 using namespace Hyprutils::OS;
 using namespace Hyprutils::String;
@@ -32,11 +33,76 @@ static bool                        sameRules(const IKeyboard::SStringRuleNames& 
     return a.layout == b.layout && a.model == b.model && a.variant == b.variant && a.options == b.options && a.rules == b.rules;
 }
 
+// The text and shm files of the keymaps serialized last, by compiled keymap. Serializing a keymap in both formats and
+// writing the files takes about half a millisecond on a slow CPU, and it was done for every keyboard device and twice
+// for every virtual keyboard an input method makes: fcitx5 makes one per focus change, with the keymap it got from the
+// compositor. A cached keymap is referenced, so its address stays its own. Cleared with the keymap cache.
+constexpr static size_t                                                 KEYMAP_FILES_CACHE = 4;
+static std::vector<std::pair<xkb_keymap*, SP<IKeyboard::SKeymapFiles>>> keymapFilesCache;
+
+static void                                                             clearKeymapFilesCache() {
+    for (auto& [keymap, files] : keymapFilesCache)
+        xkb_keymap_unref(keymap);
+    keymapFilesCache.clear();
+}
+
 void IKeyboard::clearKeymapCache() {
     if (lastKeymap)
         xkb_keymap_unref(lastKeymap);
 
     lastKeymap = nullptr;
+
+    clearKeymapFilesCache();
+}
+
+static bool writeKeymapFile(const std::string& text, CFileDescriptor& ro) {
+    CFileDescriptor rw;
+    if (!allocateSHMFilePair(text.length() + 1, rw, ro))
+        return false;
+
+    auto dest = mmap(nullptr, text.length() + 1, PROT_READ | PROT_WRITE, MAP_SHARED, rw.get(), 0);
+    if (dest == MAP_FAILED) {
+        ro.reset();
+        return false;
+    }
+
+    memcpy(dest, text.c_str(), text.length() + 1);
+    munmap(dest, text.length() + 1);
+    ro.setFlags(ro.getFlags() | FD_CLOEXEC);
+    return true;
+}
+
+SP<IKeyboard::SKeymapFiles> IKeyboard::filesForKeymap(xkb_keymap* keymap) {
+    for (auto it = keymapFilesCache.begin(); it != keymapFilesCache.end(); ++it) {
+        if (it->first != keymap)
+            continue;
+
+        auto files = it->second;
+        keymapFilesCache.erase(it); // the one used last goes to the back
+        keymapFilesCache.emplace_back(keymap, files);
+        return files;
+    }
+
+    auto files = makeShared<SKeymapFiles>();
+    auto text  = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V2);
+    files->v2  = text ? text : "";
+    free(text); // NOLINT(cppcoreguidelines-no-malloc,-warnings-as-errors)
+    text      = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+    files->v1 = text ? text : "";
+    free(text); // NOLINT(cppcoreguidelines-no-malloc,-warnings-as-errors)
+    files->hashV1 = std::hash<std::string>{}(files->v1);
+
+    if (!writeKeymapFile(files->v2, files->fdV2) || !writeKeymapFile(files->v1, files->fdV1)) {
+        Log::logger->log(Log::ERR, "IKeyboard: failed to allocate shm files for the keymap");
+        return nullptr;
+    }
+
+    if (keymapFilesCache.size() >= KEYMAP_FILES_CACHE) {
+        xkb_keymap_unref(keymapFilesCache.front().first);
+        keymapFilesCache.erase(keymapFilesCache.begin());
+    }
+    keymapFilesCache.emplace_back(xkb_keymap_ref(keymap), files);
+    return files;
 }
 
 xkb_keymap* IKeyboard::keymapForRules(const SStringRuleNames& rules) {
@@ -89,8 +155,7 @@ void IKeyboard::clearManuallyAllocd() {
     m_xkbKeymap      = nullptr;
     m_xkbState       = nullptr;
     m_xkbStaticState = nullptr;
-    m_xkbKeymapFD.reset();
-    m_xkbKeymapV1FD.reset();
+    m_keymapFiles.reset();
 }
 
 void IKeyboard::setKeymap(const SStringRuleNames& rules) {
@@ -190,50 +255,15 @@ void IKeyboard::setKeymap(const SStringRuleNames& rules) {
 void IKeyboard::updateKeymapFD() {
     Log::logger->log(Log::DEBUG, "Updating keymap fd for keyboard {}", m_deviceName);
 
-    if (m_xkbKeymapFD.isValid())
-        m_xkbKeymapFD.reset();
+    m_keymapFiles.reset();
 
-    if (m_xkbKeymapV1FD.isValid())
-        m_xkbKeymapV1FD.reset();
+    if (!m_xkbKeymap)
+        return;
 
-    auto cKeymapStr   = xkb_keymap_get_as_string(m_xkbKeymap, XKB_KEYMAP_FORMAT_TEXT_V2);
-    m_xkbKeymapString = cKeymapStr;
-    free(cKeymapStr); // NOLINT(cppcoreguidelines-no-malloc,-warnings-as-errors)
-    auto cKeymapV1Str   = xkb_keymap_get_as_string(m_xkbKeymap, XKB_KEYMAP_FORMAT_TEXT_V1);
-    m_xkbKeymapV1String = cKeymapV1Str;
-    free(cKeymapV1Str); // NOLINT(cppcoreguidelines-no-malloc,-warnings-as-errors)
+    m_keymapFiles = filesForKeymap(m_xkbKeymap);
 
-    CFileDescriptor rw, ro, rwV1, roV1;
-    if (!allocateSHMFilePair(m_xkbKeymapString.length() + 1, rw, ro))
-        Log::logger->log(Log::ERR, "IKeyboard: failed to allocate shm pair for the keymap");
-    else if (!allocateSHMFilePair(m_xkbKeymapV1String.length() + 1, rwV1, roV1)) {
-        ro.reset();
-        rw.reset();
-        Log::logger->log(Log::ERR, "IKeyboard: failed to allocate shm pair for keymap V1");
-    } else {
-        auto keymapFDDest   = mmap(nullptr, m_xkbKeymapString.length() + 1, PROT_READ | PROT_WRITE, MAP_SHARED, rw.get(), 0);
-        auto keymapV1FDDest = mmap(nullptr, m_xkbKeymapV1String.length() + 1, PROT_READ | PROT_WRITE, MAP_SHARED, rwV1.get(), 0);
-        rw.reset();
-        rwV1.reset();
-
-        if (keymapFDDest == MAP_FAILED || keymapV1FDDest == MAP_FAILED) {
-            Log::logger->log(Log::ERR, "IKeyboard: failed to mmap a shm pair for the keymap");
-            ro.reset();
-            roV1.reset();
-        } else {
-            memcpy(keymapFDDest, m_xkbKeymapString.c_str(), m_xkbKeymapString.length());
-            munmap(keymapFDDest, m_xkbKeymapString.length() + 1);
-            m_xkbKeymapFD = std::move(ro);
-            memcpy(keymapV1FDDest, m_xkbKeymapV1String.c_str(), m_xkbKeymapV1String.length());
-            munmap(keymapV1FDDest, m_xkbKeymapV1String.length() + 1);
-            m_xkbKeymapV1FD = std::move(roV1);
-
-            m_xkbKeymapFD.setFlags(m_xkbKeymapFD.getFlags() | FD_CLOEXEC);
-            m_xkbKeymapV1FD.setFlags(m_xkbKeymapV1FD.getFlags() | FD_CLOEXEC);
-        }
-    }
-
-    Log::logger->log(Log::DEBUG, "Updated keymap fd to {}, keymap V1 to: {}", m_xkbKeymapFD.get(), m_xkbKeymapV1FD.get());
+    if (m_keymapFiles)
+        Log::logger->log(Log::DEBUG, "Updated keymap fd to {}, keymap V1 to: {}", m_keymapFiles->fdV2.get(), m_keymapFiles->fdV1.get());
 }
 
 void IKeyboard::updateXKBTranslationState(xkb_keymap* const keymap) {

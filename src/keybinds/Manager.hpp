@@ -67,6 +67,7 @@ namespace Keybinds {
         bool                          handleInternalKeybinds(xkb_keysym_t keysym);
         bool                          handleVT(xkb_keysym_t keysym);
         bool                          canInvokeNow(const PBind& bind) const;
+        bool                          canInvokeNow(const PBind& bind, bool inhibited) const;
 
         CRegistry                     m_registry;
         CInputState                   m_inputState;

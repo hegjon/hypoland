@@ -134,9 +134,10 @@ class CWLKeyboardResource {
         CHyprSignalListener destroySurface;
     } m_listeners;
 
-    std::string m_lastKeymap  = "<none>";
-    uint32_t    m_lastRate    = 0;
-    uint32_t    m_lastDelayMs = 0;
+    size_t   m_lastKeymapHash   = 0; // IKeyboard::SKeymapFiles::hashV1 and the text's length: a copy of the text per
+    size_t   m_lastKeymapLength = 0; // resource was 100 kB each, compared on every keyboard switch
+    uint32_t m_lastRate         = 0;
+    uint32_t m_lastDelayMs      = 0;
 };
 
 class CWLSeatResource {

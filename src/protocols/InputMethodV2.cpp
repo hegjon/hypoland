@@ -34,22 +34,15 @@ void CInputMethodKeyboardGrabV2::sendKeyboardData(SP<IKeyboard> keyboard) {
 
     m_lastKeyboard = keyboard;
 
-    auto keymapFD = allocateSHMFile(keyboard->m_xkbKeymapV1String.length() + 1);
-    if UNLIKELY (!keymapFD.isValid()) {
-        LOGM(Log::ERR, "Failed to create a keymap file for keyboard grab");
+    // the keyboard's read-only file, the one the seat sends to every client; a copy of the text into a new file per
+    // grab was 100 kB per focus change with fcitx5
+    const auto& FILES = keyboard->m_keymapFiles;
+    if UNLIKELY (!FILES) {
+        LOGM(Log::ERR, "No keymap file for the keyboard grab");
         return;
     }
 
-    void* data = mmap(nullptr, keyboard->m_xkbKeymapV1String.length() + 1, PROT_READ | PROT_WRITE, MAP_SHARED, keymapFD.get(), 0);
-    if UNLIKELY (data == MAP_FAILED) {
-        LOGM(Log::ERR, "Failed to mmap a keymap file for keyboard grab");
-        return;
-    }
-
-    memcpy(data, keyboard->m_xkbKeymapV1String.c_str(), keyboard->m_xkbKeymapV1String.length());
-    munmap(data, keyboard->m_xkbKeymapV1String.length() + 1);
-
-    m_resource->sendKeymap(WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, keymapFD.get(), keyboard->m_xkbKeymapV1String.length() + 1);
+    m_resource->sendKeymap(WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, FILES->fdV1.get(), FILES->v1.length() + 1);
 
     sendMods(keyboard->m_modifiersState.depressed, keyboard->m_modifiersState.latched, keyboard->m_modifiersState.locked, keyboard->m_modifiersState.group);
 

@@ -1134,6 +1134,11 @@ void CInputManager::newKeyboard(SP<Aquamarine::IKeyboard> keyboard) {
 void CInputManager::newVirtualKeyboard(SP<CVirtualKeyboardV1Resource> keyboard) {
     const auto PNEWKEYBOARD = m_keyboards.emplace_back(CVirtualKeyboard::create(keyboard));
 
+    // a virtual keyboard that types in the layout already active announces no layout: fcitx5 makes one on every focus
+    // change, with the keymap it got from the compositor
+    if (const auto SEATKB = g_pSeatManager->m_keyboard.lock(); SEATKB && SEATKB->m_xkbKeymap && SEATKB->m_xkbState)
+        PNEWKEYBOARD->m_activeLayoutPosted = SEATKB->getActiveLayout();
+
     setupKeyboard(PNEWKEYBOARD);
 
     Log::logger->log(Log::DEBUG, "New virtual keyboard created at {:x}", rc<uintptr_t>(PNEWKEYBOARD.get()));
@@ -1193,6 +1198,12 @@ void CInputManager::setupKeyboard(SP<IKeyboard> keeb) {
             Keybinds::resolver()->clearKeycodeCache();
         }
 
+        // an event only when the layout changed: an input method's virtual keyboard gets the compositor's own keymap on
+        // every focus change (fcitx5), and Omarchy's bar runs hyprctl for every activelayout event
+        if (LAYOUT == PKEEB->m_activeLayoutPosted)
+            return;
+
+        PKEEB->m_activeLayoutPosted = LAYOUT;
         IPC::Socket2::sock()->postEvent({"activelayout", std::format("{},{}", PKEEB->m_hlName, LAYOUT)});
         Event::bus()->m_events.input.keyboard.layout.emit(PKEEB, LAYOUT);
     });
@@ -1297,8 +1308,11 @@ void CInputManager::applyConfigToKeyboard(SP<IKeyboard> pKeyboard) {
 
     const auto LAYOUTSTR = pKeyboard->getActiveLayout();
 
-    IPC::Socket2::sock()->postEvent({"activelayout", std::format("{},{}", pKeyboard->m_hlName, LAYOUTSTR)});
-    Event::bus()->m_events.input.keyboard.layout.emit(pKeyboard, LAYOUTSTR);
+    if (LAYOUTSTR != pKeyboard->m_activeLayoutPosted) {
+        pKeyboard->m_activeLayoutPosted = LAYOUTSTR;
+        IPC::Socket2::sock()->postEvent({"activelayout", std::format("{},{}", pKeyboard->m_hlName, LAYOUTSTR)});
+        Event::bus()->m_events.input.keyboard.layout.emit(pKeyboard, LAYOUTSTR);
+    }
 
     Log::logger->log(Log::DEBUG, "Set the keyboard layout to {} and variant to {} for keyboard \"{}\"", pKeyboard->m_currentRules.layout, pKeyboard->m_currentRules.variant,
                      pKeyboard->m_hlName);
@@ -1817,6 +1831,7 @@ void CInputManager::onKeyboardMod(SP<IKeyboard> pKeyboard) {
 
         Log::logger->log(Log::DEBUG, "LAYOUT CHANGED TO {} GROUP {}", LAYOUT, MODS.group);
 
+        pKeyboard->m_activeLayoutPosted = LAYOUT;
         IPC::Socket2::sock()->postEvent({"activelayout", std::format("{},{}", pKeyboard->m_hlName, LAYOUT)});
         Event::bus()->m_events.input.keyboard.layout.emit(pKeyboard, LAYOUT);
     }
