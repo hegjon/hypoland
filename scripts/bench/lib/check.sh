@@ -84,6 +84,18 @@ check_output() {
         return 1
     fi
     pass "no lock screen in the way"
+    # a check while Omarchy's startup cover is up sees a black screen (the Chromebook's first check after its update of
+    # 2026-10-30, every pixel of the screenshot and the scanout black, a minute before the same check passed)
+    local waited=0
+    while startup_cover && [ $waited -lt 60 ]; do
+        sleep 1
+        waited=$((waited + 1))
+    done
+    if startup_cover; then
+        fail "Omarchy's startup cover is still up after 60 s"
+    elif [ $waited -gt 0 ]; then
+        info "waited $waited s for Omarchy's startup cover to go"
+    fi
     info "$(H layers | grep -c 'namespace:') layer surfaces (bar, wallpaper, notifications)"
 }
 
