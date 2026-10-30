@@ -11,13 +11,13 @@ namespace Render {
     enum ePreparedFragmentShaderFeature : uint16_t {
         SH_FEAT_UNKNOWN = 0, // all features just in case
 
-        SH_FEAT_RGBA            = (1 << 0), // RGBA/RGBX texture sampling
-        SH_FEAT_DISCARD         = (1 << 1), // RGBA/RGBX texture sampling
-        SH_FEAT_TINT            = (1 << 2), // uniforms: tint; condition: applyTint
-        SH_FEAT_ROUNDING        = (1 << 3), // uniforms: radius, roundingPower, topLeft, fullSize; condition: radius > 0
-        SH_FEAT_BLUR            = (1 << 4), // condition: render:use_shader_blur_blend
-        SH_FEAT_BLUR_ALPHA_MASK = (1 << 5), // condition: transformed-window shader blur blend
-        SH_FEAT_BLUR_MATTE      = (1 << 6), // condition: transformed-window blur matte
+        SH_FEAT_RGBA              = (1 << 0), // RGBA/RGBX texture sampling
+        SH_FEAT_DISCARD           = (1 << 1), // RGBA/RGBX texture sampling
+        SH_FEAT_TINT              = (1 << 2), // uniforms: tint; condition: applyTint
+        SH_FEAT_ROUNDING          = (1 << 3), // uniforms: radius, roundingPower, topLeft, fullSize; condition: radius > 0
+        SH_FEAT_BLUR              = (1 << 4), // condition: render:use_shader_blur_blend
+        SH_FEAT_BLUR_ALPHA_MASK   = (1 << 5), // condition: transformed-window shader blur blend
+        SH_FEAT_BLUR_MATTE        = (1 << 6), // condition: transformed-window blur matte
         SH_FEAT_BLUR_PROPORTIONAL = (1 << 7), // condition: decoration:blur:proportional
     };
 
