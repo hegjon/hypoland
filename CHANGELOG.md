@@ -76,6 +76,13 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Added
 
+- Configs written for Hyprland 0.57.0 load without errors: the `layers` category, `decoration:blur:proportional`,
+  `input:swallow_focus_click`, `input:tablet:enabled`, `binds:client_requested_fs_uses_layout_handler`,
+  `render:async_commit` (accepted, not available), `binds:workspace_back_and_forth` and `scrolling:follow_focus` with
+  their new 0/1/2 values, `hl.get_devices()`, `hl.dsp.reload_config()`, the `no_glow` window rule, a workspace's
+  `addressable_name`, a monitor's `mode` and `hardware_details`, and the events `window.update_state`,
+  `window.minimize`, `workspace.created_early` and `config.unload`. Most of it is 0.57.0's own code; 49 of its commits
+  are in, the rest is listed with a decision in `docs/port-0.57.0.md`.
 - `hypoland-bench`, a second package of the same build: the benchmark and the session checks (`hypoland-measure`),
   the soak runs (`hypoland-soak`, `hypoland-soak-ab`, `hypoland-energy-meter`) and `hypoland-kmsgrab`, so the test
   machines carry them at the version of the compositor instead of copies in home directories. The workloads'

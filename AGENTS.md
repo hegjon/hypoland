@@ -68,6 +68,21 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   Both pages share `web/style.css`. `web/header.svg`, `web/icon.svg` and `web/favicon.png` are copies of the logo
   in `assets/logo/`: after regenerating the logo run `scripts/web/update-logo.sh`, which copies them and renders
   the link preview image `web/og.png` (1200x630) from `scripts/web/og.html` with `scripts/web/og.sh`.
+- Hyprland 0.57.0 (released 2026-10-28) is being ported on the branch `port/0.57.0-r2` (worktree `~/Work/hypoland-port`,
+  its own `build/` and package build): on master, the 28 picks of the earlier `port/0.57.0` replayed, 18 more upstream
+  commits with their test-only conflicts settled, a fixup, and the rest of 0.57.0's config surface written on Hypoland's
+  own code, so that a 0.57.0 config (its `example/hyprland.lua`, Omarchy's edge config) loads with no config error: the
+  `layers` category (`layers_hog_keyboard_focus`, `allow_new_top_layers_over_existing_fullscreen`; the `misc:` one keeps
+  working), `decoration:blur:proportional` (on the GLES 2 blend), `input:swallow_focus_click`, `input:tablet:enabled`,
+  `binds:client_requested_fs_uses_layout_handler`, `render:async_commit` (accepted and ignored: it needs aquamarine
+  0.15), `binds:workspace_back_and_forth` and `scrolling:follow_focus` as 0/1/2 with the old booleans still accepted,
+  `hl.get_devices()`, `hl.dsp.reload_config()`, the `no_glow` rule, a workspace's `addressable_name`, a monitor's `mode`
+  and `hardware_details`, and the events `window.update_state`, `window.minimize`, `workspace.created_early` and
+  `config.unload`. `docs/port-0.57.0.md` on the branch lists every upstream commit with its decision (cherry-pick, by
+  hand, ignore, later): about 110 wait behind the workspace refactor (e9e2f64cc, 163 files), which with aquamarine 0.15
+  is the real remaining port. The 2026-10-27 baseline and the lab page compare against Hyprland 0.56.2; the user wants
+  0.3.0 compared with 0.57.0. A config is tested headless as hyprtester starts the compositor
+  (`HYPRLAND_HEADLESS_ONLY=1 ./build/hypoland --config <file>`, then `hyprctl configerrors`).
 - `CHANGELOG.md` lists Hypoland's changes per release. Add user-visible changes and measured speedups to
   "Unreleased" with the commit that makes them, and move them under the version when releasing.
 - Release with `scripts/release.sh <version>` (`--dry-run` first): it checks master and CI, updates `VERSION`,
