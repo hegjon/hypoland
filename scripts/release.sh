@@ -1,30 +1,35 @@
 #!/bin/bash
 # Release a new version of Hypoland.
 #
-#   scripts/release.sh [--dry-run] [--skip-build] [--yes] <version>
+#   scripts/release.sh [--dry-run] [--skip-build] [--yes] [--aarch64[=<ssh host>]] <version>
 #
 # 1. Checks: on master, no uncommitted changes, the same as origin/master, the tag is free, CHANGELOG.md has an
 #    "Unreleased" section and CI passed for the newest commit it built on master.
 # 2. Writes the version into VERSION, CHANGELOG.md ("Unreleased" becomes "<version> - <date>") and AGENTS.md,
 #    commits "Release <version>" and tags it v<version> (annotated, "Hypoland <version>").
-# 3. Builds the Arch package from scratch (makepkg -fC in packaging/arch) and resets the PKGBUILD.
+# 3. Builds the Arch package from scratch (makepkg -fC in packaging/arch) and resets the PKGBUILD. With --aarch64 it
+#    also builds the aarch64 packages on an aarch64 machine over ssh (galaxybook unless a host is named): the tag and
+#    master are pushed to its ~/hypoland (a repository with receive.denyCurrentBranch updateInstead, as on the Galaxy
+#    Book), the tag is checked out there, makepkg -fC runs, and the packages are copied back to packaging/arch.
 # 4. Writes the release notes from the CHANGELOG.md section to packaging/arch/release-notes-v<version>.md.
 # 5. Asks, then pushes master and the tag together and publishes the GitHub release with the package attached.
 #    The release workflow adds the source tarball; the script waits for it and checks that it is there.
 #
 # Nothing leaves this machine before the question in step 5. Answering no, an error or Ctrl-C before the push
 # removes the commit and the tag again. --dry-run does steps 1-4 and then removes them, --skip-build (only with
-# --dry-run) leaves out the package. --yes does not ask. The X200 is not touched, install the package there
-# yourself.
+# --dry-run) leaves out the packages. --yes does not ask. The X200 is not touched, install the package there
+# yourself. A dry run or an abort also deletes the tag from the aarch64 machine again.
 set -eu
 
 REPO=hegjon/hypoland
-DRY=0 SKIP_BUILD=0 YES=0 NEW=
+DRY=0 SKIP_BUILD=0 YES=0 NEW= ARM_HOST=
 for arg in "$@"; do
     case $arg in
     --dry-run) DRY=1 ;;
     --skip-build) SKIP_BUILD=1 ;;
     --yes) YES=1 ;;
+    --aarch64) ARM_HOST=galaxybook ;;
+    --aarch64=*) ARM_HOST=${arg#*=} ;;
     -h | --help)
         sed -n '2,/^[^#]/s/^# \{0,1\}//p' "$0"
         exit 0
@@ -43,7 +48,7 @@ die() {
 }
 step() { printf '\n==> %s\n' "$*"; }
 
-[ -n "$NEW" ] || die "usage: $0 [--dry-run] [--skip-build] [--yes] <version>"
+[ -n "$NEW" ] || die "usage: $0 [--dry-run] [--skip-build] [--yes] [--aarch64[=<ssh host>]] <version>"
 [[ $NEW =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "the version must look like 0.2.0, not $NEW"
 [ "$SKIP_BUILD" = 0 ] || [ "$DRY" = 1 ] || die "--skip-build only works with --dry-run"
 
@@ -67,6 +72,14 @@ git diff --quiet HEAD -- || die "uncommitted changes: $(git diff --name-only HEA
 git fetch -q origin master
 [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)" ] ||
     die "master and origin/master differ, push or pull first"
+if [ -n "$ARM_HOST" ]; then
+    # the aarch64 machine: reachable, an aarch64 makepkg, and ~/hypoland a repository that takes pushes
+    ssh -o BatchMode=yes -o ConnectTimeout=10 "$ARM_HOST" '. /etc/makepkg.conf && [ "$CARCH" = aarch64 ] && command -v makepkg >/dev/null &&
+        [ "$(git -C ~/hypoland config --get receive.denyCurrentBranch)" = updateInstead ]' ||
+        die "$ARM_HOST is not reachable, not aarch64, or its ~/hypoland does not take pushes (receive.denyCurrentBranch updateInstead)"
+    ssh -o BatchMode=yes "$ARM_HOST" "git -C ~/hypoland rev-parse -q --verify refs/tags/$TAG >/dev/null" && die "$ARM_HOST already has the tag $TAG"
+fi
+
 # The local repository also has the tags of upstream Hyprland and possibly aquamarine, some of which use the
 # same names as Hypoland versions
 git rev-parse -q --verify "refs/tags/$TAG" >/dev/null &&
@@ -101,7 +114,12 @@ echo "Hypoland $OLD -> $NEW, based on Hyprland $BASE"
 # --- 2. version, changelog, commit and tag
 step "Committing the release and tagging $TAG"
 START=$HEAD_SHA CREATED=0 PUSHED=0
+ARM_TAG_PUSHED=0
 cleanup() {
+    if [ "$ARM_TAG_PUSHED" = 1 ]; then
+        git push -q --delete "$ARM_HOST:hypoland" "refs/tags/$TAG" 2>/dev/null || echo "could not delete $TAG on $ARM_HOST, do it there: git tag -d $TAG" >&2
+        ARM_TAG_PUSHED=0
+    fi
     git checkout -q -- packaging/arch/PKGBUILD 2>/dev/null || true
     [ "$CREATED" = 1 ] && [ "$PUSHED" = 0 ] || return 0
     echo "Removing the release commit and the tag $TAG again"
@@ -150,9 +168,42 @@ else
         die "the session file of the package does not start /usr/bin/start-hypoland"
 fi
 
+# --- 3b. the aarch64 packages, built on the aarch64 machine
+ARM_PKG= ARM_BENCH_PKG= ARM_LIBS= ARM_FILES=()
+if [ -n "$ARM_HOST" ] && [ "$SKIP_BUILD" = 0 ]; then
+    step "Building the aarch64 packages on $ARM_HOST (a clean build)"
+    # makepkg dirties the PKGBUILD there and a dirty checked-out branch refuses the push
+    ssh -o BatchMode=yes "$ARM_HOST" 'cd ~/hypoland && git checkout -q -- packaging/arch/PKGBUILD && git checkout -q --detach' ||
+        die "could not prepare ~/hypoland on $ARM_HOST"
+    git push -q "$ARM_HOST:hypoland" "refs/tags/$TAG" master || die "could not push $TAG to $ARM_HOST"
+    ARM_TAG_PUSHED=1
+    ssh -o BatchMode=yes "$ARM_HOST" "cd ~/hypoland && git checkout -q --detach refs/tags/$TAG && git submodule update --init >/dev/null &&
+        cd packaging/arch && rm -f hypoland-$NEW-1-aarch64.pkg.tar.* hypoland-bench-$NEW-1-aarch64.pkg.tar.* &&
+        makepkg -fC >makepkg-$TAG.log 2>&1; r=\$?; git checkout -q -- PKGBUILD; exit \$r" ||
+        die "makepkg failed on $ARM_HOST, see ~/hypoland/packaging/arch/makepkg-$TAG.log there"
+    ARM_PKG=$(ssh -o BatchMode=yes "$ARM_HOST" "ls ~/hypoland/packaging/arch/hypoland-$NEW-1-aarch64.pkg.tar.* 2>/dev/null" | head -1)
+    ARM_BENCH_PKG=$(ssh -o BatchMode=yes "$ARM_HOST" "ls ~/hypoland/packaging/arch/hypoland-bench-$NEW-1-aarch64.pkg.tar.* 2>/dev/null" | head -1)
+    [ -n "$ARM_PKG" ] && [ -n "$ARM_BENCH_PKG" ] || die "makepkg on $ARM_HOST did not write hypoland-$NEW-1-aarch64 and hypoland-bench-$NEW-1-aarch64"
+    # what the packaged binary says about itself, run on the machine
+    version=$(ssh -o BatchMode=yes "$ARM_HOST" "t=\$(mktemp -d) && bsdtar -xf $ARM_PKG -C \$t usr/bin/hypoland && \$t/usr/bin/hypoland --version 2>&1; rm -rf \$t" || true)
+    echo "$version" | sed 's/^/  /'
+    echo "$version" | grep -qF "Hypoland $NEW, based on Hyprland $BASE" &&
+        echo "$version" | grep -qF "Tag: $TAG," && echo "$version" | grep -q " clean (" ||
+        die "the hypoland binary of the aarch64 package does not report version $NEW, tag $TAG and a clean tree"
+    scp -q "$ARM_HOST:$ARM_PKG" "$ARM_HOST:$ARM_BENCH_PKG" packaging/arch/ || die "could not copy the aarch64 packages from $ARM_HOST"
+    ARM_PKG=$(basename "$ARM_PKG") ARM_BENCH_PKG=$(basename "$ARM_BENCH_PKG")
+    ARM_FILES=("packaging/arch/$ARM_PKG" "packaging/arch/$ARM_BENCH_PKG")
+    echo "packaging/arch/$ARM_PKG ($(du -h "packaging/arch/$ARM_PKG" | cut -f1)), packaging/arch/$ARM_BENCH_PKG ($(du -h "packaging/arch/$ARM_BENCH_PKG" | cut -f1))"
+    ARM_LIBS=$(ssh -o BatchMode=yes "$ARM_HOST" 'pacman -Q hyprutils hyprlang hyprcursor hyprgraphics hyprwire 2>/dev/null' |
+        awk '{ sub(/-[0-9.]+$/, "", $2); printf "%s%s %s", sep, $1, $2; sep = ", " }')
+fi
+
 # --- 4. release notes
 step "Writing the release notes"
 libs=$(pacman -Q hyprutils hyprlang hyprcursor hyprgraphics hyprwire | awk '{ sub(/-[0-9]+$/, "", $2); printf "%s%s %s", sep, $1, $2; sep = ", " }')
+ARM_NOTE=
+[ -z "$ARM_PKG" ] || ARM_NOTE="On aarch64 (Omarchy on a Snapdragon laptop, or on an Apple Silicon Mac through omarchy-mac), download \`$ARM_PKG\` instead and install it the same way. It is built on an aarch64 machine running Omarchy against the aarch64 packages of $TODAY ($ARM_LIBS).
+"
 {
     echo "Hypoland $NEW, based on Hyprland $BASE. Hypoland is a fork of [Hyprland](https://github.com/hyprwm/Hyprland) for old GPUs that only support OpenGL ES 2.0 / OpenGL 2.1, developed and tested on a ThinkPad X200 (GMA 4500MHD) running Omarchy."
     echo
@@ -176,6 +227,7 @@ sudo pacman -U $PKG
 
 It provides and conflicts with \`hyprland\`, so it replaces the installed Hyprland; Omarchy's session starts it unchanged. It is built for baseline \`x86-64\` against the Arch packages of $TODAY ($libs). If pacman reports newer versions of these libraries, build the package yourself in \`packaging/arch\` with \`makepkg -f\`.
 
+$ARM_NOTE
 For other distributions see the [README](https://github.com/$REPO#building), and build for baseline \`x86-64\`, not \`-march=native\`.
 
 The full list of changes is in [CHANGELOG.md](https://github.com/$REPO/blob/$TAG/CHANGELOG.md).
@@ -207,7 +259,7 @@ PUSHED=1
 
 step "Publishing the GitHub release"
 gh release create "$TAG" -R "$REPO" --verify-tag --title "Hypoland $NEW" --notes-file "$NOTES" \
-    "packaging/arch/$PKG" "packaging/arch/$BENCH_PKG"
+    "packaging/arch/$PKG" "packaging/arch/$BENCH_PKG" "${ARM_FILES[@]}"
 
 step "Waiting for the release workflow to attach the source tarball"
 RUN_ID=
