@@ -46,7 +46,7 @@ where it stands against Hyprland 0.56.2.
 | `macmini-intel` | Apple Mac mini Late 2014, Core i5-4260U | HD Graphics 5000 (Haswell GT3), `crocus` | 1920x1200 | 4, 4 GB |
 
 The CPU count is what the kernel sees (threads). The hardware, addresses and rules of the machines are in
-`~/Work/machines/MACHINES.md` on the desktop.
+`~/Work/infrastructure/MACHINES.md` on the desktop.
 
 ## Files
 

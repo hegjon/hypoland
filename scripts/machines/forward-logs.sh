@@ -6,7 +6,7 @@
 #   sudo ./forward-logs.sh desktop [subnet]...   on the desktop: receive both, see below; the firewall lets the
 #                                                 lab subnet 192.168.2.0/24 in, or the subnets given
 #   ./forward-logs.sh machine <desktop address> <ssh host>...   send from these machines (over ssh as root);
-#                                                 the desktop's address on the lab is 192.168.2.71 (MACHINES.md)
+#                                                 the desktop's address on the lab is 192.168.2.2 (NETWORK.md)
 #
 # Two ways, for two kinds of death:
 # - The journal, with systemd-journal-upload over http to port 19532. Complete and reliable: a machine that loses
