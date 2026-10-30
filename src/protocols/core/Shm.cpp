@@ -32,8 +32,9 @@ using namespace Hyprutils::OS;
 // until the next one arrives, the renderer until the frame that read it is done, and only then is it released to the
 // client. The client's writes reach the GPU without a cache flush only where GPU reads snoop the CPU caches: Intel with
 // an LLC (iris everywhere, crocus from Sandy Bridge) and radeon. On Intel without an LLC (GM45, Bay Trail) the GPU
-// reads memory, so there the compositor writes the client's damaged cache lines back itself at every commit (clflush,
-// x86 only; without it the screen shows specks of old glyphs): still far cheaper than a copy (Chromebook
+// reads memory, so there the compositor writes the client's cache lines back itself at every commit, the damage since
+// the buffer's last commit (CCPUFlushTracker; clflush, x86 only; without it the screen shows specks of old glyphs):
+// still far cheaper than a copy (Chromebook
 // terminal-scroll 7.2 -> 5.5% of a CPU, Qt's software scroll 12.9 -> 4.1, 2026-10-29). "force" takes every driver
 // without a flush, "flush" every driver with one.
 static bool s_flushWrites = false;
