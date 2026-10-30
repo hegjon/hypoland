@@ -41,6 +41,14 @@ asuser() {
 }
 H() { asuser timeout 8 "$BINDIR/hyprctl" "$@"; }
 
+# Omarchy (r7438 on) covers the screen after login with an overlay layer named omarchy-background until its background is
+# ready, and fades it out then (the shell's BackgroundIntro): whether that cover is still up
+startup_cover() {
+    H -j layers 2>/dev/null | python3 -c 'import json, sys
+d = json.load(sys.stdin)
+sys.exit(0 if any(l.get("namespace") == "omarchy-background" for m in d.values() for l in m.get("levels", {}).get("3", [])) else 1)'
+}
+
 # the dispatchers are Lua in this version and plain words before it
 dispatch() { # lua, legacy
     [ "$(H dispatch "$1" 2>/dev/null)" = ok ] || H dispatch $2 >/dev/null 2>&1
