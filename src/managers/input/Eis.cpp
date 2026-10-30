@@ -216,13 +216,11 @@ CEis::SKeymap CEis::getKeymap() {
     SKeymap       _keymap = {.m_fd = -1, .m_size = -1};
 
     SP<IKeyboard> keyboard = g_pSeatManager->m_keyboard.lock();
-    if (!keyboard)
+    if (!keyboard || !keyboard->m_keymapFiles)
         return _keymap;
 
-    int32_t size   = keyboard->m_xkbKeymapString.length() + 1;
-    int     fd     = keyboard->m_xkbKeymapFD.get();
-    _keymap.m_size = size;
-    _keymap.m_fd   = fd;
+    _keymap.m_size = keyboard->m_keymapFiles->v2.length() + 1;
+    _keymap.m_fd   = keyboard->m_keymapFiles->fdV2.get();
     return _keymap;
 }
 

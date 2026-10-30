@@ -6,6 +6,8 @@
 #include "../devices/IKeyboard.hpp"
 #include "../helpers/time/Time.hpp"
 #include "../helpers/MiscFunctions.hpp"
+#include "../managers/input/InputManager.hpp"
+#include <cstring>
 using namespace Hyprutils::OS;
 
 static std::string virtualKeyboardNameForWlClient(wl_client* client) {
@@ -88,7 +90,20 @@ CVirtualKeyboardV1Resource::CVirtualKeyboardV1Resource(SP<CZwpVirtualKeyboardV1>
             return;
         }
 
-        auto xkbKeymap = xkb_keymap_new_from_string(xkbContext, sc<const char*>(keymapData), XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS);
+        // an input method sends back the keymap it got from its keyboard grab (fcitx5 makes a new virtual keyboard
+        // with it on every focus change): the text of one of our keyboards is its compiled keymap, no compile needed
+        xkb_keymap*            xkbKeymap = nullptr;
+        const std::string_view TEXT{sc<const char*>(keymapData), strnlen(sc<const char*>(keymapData), len)};
+        for (auto const& k : g_pInputManager->m_keyboards) {
+            if (!k || !k->m_xkbKeymap || !k->m_keymapFiles || k->m_keymapFiles->v1 != TEXT)
+                continue;
+
+            xkbKeymap = xkb_keymap_ref(k->m_xkbKeymap);
+            break;
+        }
+
+        if (!xkbKeymap)
+            xkbKeymap = xkb_keymap_new_from_string(xkbContext, sc<const char*>(keymapData), XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS);
         munmap(keymapData, len);
 
         if UNLIKELY (!xkbKeymap) {

@@ -55,10 +55,22 @@ class IKeyboard : public IHID {
         std::string rules   = "";
     };
 
+    // a keymap as text in both formats and as read-only shm files for clients, shared by every keyboard with the same
+    // compiled keymap (filesForKeymap())
+    struct SKeymapFiles {
+        std::string                    v2;
+        std::string                    v1;
+        Hyprutils::OS::CFileDescriptor fdV2;
+        Hyprutils::OS::CFileDescriptor fdV1;
+        size_t                         hashV1 = 0; // of v1, to tell keymaps apart without comparing 100 kB of text
+    };
+
     void        setKeymap(const SStringRuleNames& rules);
     static void clearKeymapCache();
     // the keymap for these rules, compiled once and shared by every keyboard and the keybind manager (a new reference)
-    static xkb_keymap*                keymapForRules(const SStringRuleNames& rules);
+    static xkb_keymap* keymapForRules(const SStringRuleNames& rules);
+    // the text and files of a compiled keymap, made once per keymap
+    static SP<SKeymapFiles>           filesForKeymap(xkb_keymap* keymap);
     void                              updateXKBTranslationState(xkb_keymap* const keymap = nullptr);
     std::optional<xkb_layout_index_t> getActiveLayoutIndex();
     std::string                       getActiveLayout();
@@ -103,14 +115,11 @@ class IKeyboard : public IHID {
     std::array<xkb_mod_index_t, 8> m_modIndexes = {XKB_MOD_INVALID};
     uint32_t                       m_leds       = 0;
 
-    std::string                    m_xkbFilePath     = "";
-    std::string                    m_xkbKeymapString = "";
-    Hyprutils::OS::CFileDescriptor m_xkbKeymapFD;
-
-    std::string                    m_xkbKeymapV1String = "";
-    Hyprutils::OS::CFileDescriptor m_xkbKeymapV1FD;
+    std::string                    m_xkbFilePath = "";
+    SP<SKeymapFiles>               m_keymapFiles; // of m_xkbKeymap, see updateKeymapFD()
 
     SStringRuleNames               m_currentRules;
+    std::string                    m_activeLayoutPosted; // the layout the last activelayout event named for this keyboard
     int                            m_repeatRate        = 0;
     int                            m_repeatDelay       = 0;
     int                            m_numlockOn         = -1;

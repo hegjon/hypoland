@@ -465,7 +465,7 @@ SBindResult CKeybindManager::processEvent(const SBindEventContext& context, cons
     }
 
     for (const auto& bind : m_registry.binds()) {
-        if (!canInvokeNow(bind))
+        if (!canInvokeNow(bind, INHIBITED))
             continue;
         if (!context.pressed && pressedInput && pressedInput->capturedAtPress && !bind->hasFlag(BIND_FLAG_ALLOW_INPUT_CAPTURE))
             continue;
@@ -546,7 +546,7 @@ SBindResult CKeybindManager::processEvent(const SBindEventContext& context, cons
 
     std::vector<PBind> repeatHits;
     for (const auto& bind : hits) {
-        if (!releaseFollowUps.contains(bind) && !canInvokeNow(bind))
+        if (!releaseFollowUps.contains(bind) && !canInvokeNow(bind, INHIBITED))
             continue;
 
         auto* livePressedInput = INPUT_KEY ? m_inputState.find(*INPUT_KEY, INPUT_DEVICE) : nullptr;
@@ -563,7 +563,7 @@ SBindResult CKeybindManager::processEvent(const SBindEventContext& context, cons
         const bool CONSUMES = !bind->hasFlag(BIND_FLAG_NON_CONSUMING) && (!bind->hasFlag(BIND_FLAG_AUTO_CONSUMING) || result.success) && !result.passEvent;
         claimed |= CONSUMES;
 
-        if (context.pressed && bind->hasFlag(BIND_FLAG_REPEAT) && canInvokeNow(bind))
+        if (context.pressed && bind->hasFlag(BIND_FLAG_REPEAT) && canInvokeNow(bind, INHIBITED))
             repeatHits.emplace_back(bind);
     }
 
@@ -896,13 +896,19 @@ bool CKeybindManager::handleInternalKeybinds(xkb_keysym_t keysym) {
 bool CKeybindManager::canInvokeNow(const PBind& bind) const {
     static auto PDISABLEINHIBIT = CConfigValue<Config::INTEGER>("binds:disable_keybind_grabbing");
 
+    return canInvokeNow(bind, !*PDISABLEINHIBIT && PROTO::shortcutsInhibit->isInhibited());
+}
+
+// inhibited: whether the focused surface inhibits shortcuts, found once per event. It runs a view query over every
+// window, and the loop over the binds of a key event asked for it once per bind: a hundred queries per key press.
+bool CKeybindManager::canInvokeNow(const PBind& bind, bool inhibited) const {
     if (!bind->enabled() || !m_registry.contains(bind) || m_shadowed.contains(bind))
         return false;
     if (PROTO::inputCapture->isCaptured() && !bind->hasFlag(BIND_FLAG_ALLOW_INPUT_CAPTURE))
         return false;
     if (g_pSessionLockManager->isSessionLocked() && !bind->hasFlag(BIND_FLAG_LOCKED))
         return false;
-    return *PDISABLEINHIBIT || !PROTO::shortcutsInhibit->isInhibited() || bind->hasFlag(BIND_FLAG_DONT_INHIBIT);
+    return !inhibited || bind->hasFlag(BIND_FLAG_DONT_INHIBIT);
 }
 
 UP<CKeybindManager>& Keybinds::mgr() {
