@@ -421,7 +421,11 @@ Tools:
   `gpu.<workload>.busy_percent` (since 2026-10-29) is the time the GPU's render engine was busy over the same window, from
   the i915 PMU (`perf stat -a -e i915/rcs0-busy/`, root; radeon and msm have no such counter, nothing is reported
   there): the compositor's blending, the clients' drawing and Mesa's copies all count. On the XPS a scrolling GTK 3
-  window keeps it at 40%, a GL client at 60 fps at 34%, the resize drag at 78%.
+  window keeps it at 40%, a GL client at 60 fps at 34%, the resize drag at 78%. `cpu.<workload>.ms_per_frame` and
+  `gpu.<workload>.busy_ms_per_frame` (since 2026-10-29 evening, asked for by the user) are the same two per frame the
+  compositor put on the screen, in milliseconds (percent times ten over `fps.<workload>.screen`), so a build that shows
+  more frames is not read as one that costs more: on the X200 `gtk3-scroll` went from 14.4% at 40 fps to 18.2% at 55
+  with the alpha bounds, which is 3.6 to 3.3 ms of compositor CPU a frame.
 - `bench.sh` and `profile.sh` are not tied to the X200 (they were `bench-x200.sh` and `profile-x200.sh` until
   2026-09-28). `--host <ssh host>` or `--host local` picks the machine, `--login` the ssh login (root by default,
   without root the governor is left alone), `--no-deploy` measures the compositor that is running,
@@ -734,7 +738,8 @@ Tools:
   surface keeps it until the next one, the renderer until the frame that read it is done (`needsRenderFence()` fences for
   such a buffer on crocus too) and the client gets its release after that (foot: 276 releases for 279 commits in 8 s on
   lianli). foot and Qt's software backend seal their pools so; GTK 3 seals only against further seals (`gdk-wayland`, no
-  zero copy there), GTK 4, Chromium and Xwayland use GPU buffers on the test machines; clients close the pool fd after
+  zero copy there), GTK 4 (4.24) seals against shrinking as well, so its cairo buffers on the X200 take the path; GTK 4
+  elsewhere, Chromium and Xwayland use GPU buffers on the test machines; clients close the pool fd after
   mapping, so read the seals from the compositor's `/proc/<pid>/fd` (`F_GET_SEALS`). On by default where GPU reads snoop
   the CPU caches, since the compositor cannot flush another process's writes: i915 with an LLC (`I915_PARAM_HAS_LLC`:
   iris, crocus from Sandy Bridge, not GM45 or Bay Trail) and r600; `0` switches it off, `force` ignores the gate.
@@ -748,7 +753,14 @@ Tools:
   the Core 2 what its row copy did), but `resize` 19.2 -> 20.8 and `resize-foot` 25.2 -> 28.0 (foot makes a pool and
   a buffer per resize step, each a udmabuf and an EGL import, which the GM45's driver pays more for than a new
   texture); GTK 3 unchanged (its pools cannot be pinned), frames and latencies the same, Pss 2 MB higher (the
-  flush faults the clients' pool pages into the compositor's mapping). The i915 PMU's busy time is not to be read on
+  flush faults the clients' pool pages into the compositor's mapping). A client that painted into one buffer and got it
+  back at once pays instead: the compositor holds the committed buffer until the next one, so GTK 4's cairo backend
+  (the X200, where GTK 4 has no GL) paints the next frame into a second buffer with that buffer's stale region on top,
+  and Nautilus toggling fullscreen twice a second (`nautilus`) costs 34.7% of a CPU against 30.2% with the copy
+  (2026-10-30, 4 fresh sessions each, the compositor at 3.35% and the frames the same, the same pools made, 4.09 against
+  3.73 s of user time per 10 s; `force`, zero copy without the flush, costs the client the same, the flush itself is 0.4
+  points of the compositor). foot and Qt's software backend double-buffer anyway and cost the same or less (the night of
+  2026-10-29, 31 fresh sessions each: Qt software clients 25.2 -> 24.3% on the X200). The i915 PMU's busy time is not to be read on
   GM45 or Bay Trail for shm windows: it shows 0% for a scrolling window in one session and 61% in another.
   Compositor CPU with the dumb buffers -> zero copy (2 fresh sessions each, 2026-10-29): `terminal-scroll` XPS 15.8 ->
   4.1%, T550 8.0 -> 3.6, T460s 8.0 -> 3.3, Mac mini 8.8 -> 4.5, lianli 11.8 -> 2.6; `qt-software-scroll` T550 10.2 ->
@@ -802,8 +814,8 @@ Tools:
   27 ms of its menu's opening for three 3200x1800 analyses), and a commit without a new buffer or damage keeps the box. What stays is the shell's doing and the largest cost under it: a
   full-size bar window whose every animation frame damages the whole screen makes the compositor repaint
   everything under it (16 full repaints per workspace switch), and re-rendering the wallpaper on every switch
-  does the same twice more; a strip-sized bar window and no wallpaper commit would remove them (candidates for an
-  Omarchy issue, with the captures in the session's scratchpad `shell/`). With the back-off (r803, on / off, 2 fresh
+  does the same twice more; a strip-sized bar window and no wallpaper commit would remove them (reported as
+  omacom/omarchy#16997 on 2026-10-29, the captures and scripts in `~/Work/omarchy-shell-layers/`). With the back-off (r803, on / off, 2 fresh
   sessions each): `workspace-switch` costs the same GPU time everywhere (T460s 11.7 / 12.0%, T550 4.4 / 4.3, Mac
   mini 12.0 / 11.7), the menu opens the same or sooner (X200 369 / 473 ms, Chromebook 616 / 684, T460s 162 / 164),
   a toast shows sooner (T460s 16 / 26 ms, Mac mini 30 / 37, Chromebook 31 / 41; lianli 28 / 26 and the X200 67 / 55
@@ -819,6 +831,28 @@ Tools:
   the compositor side is the one kept. The shell itself: Pss 230-290 MB, 29-37 threads, GPU memory 52-107 MB of which
   26-45 MB are its swapchains; its CPU under `menu` is the guard batch (the user's menu work of 2026-10-27), under
   `notifications` about 4% of a core with a `ps` per toast. Captures and scripts: the session's scratchpad `shell/`.
+  Since 2026-10-30 the analysis runs between frames, not in one: a layer's commit arms a timer for its settle time (150 ms,
+  or 2 s while its commits come less than 2 s apart), and the tick draws the block maxima in strips of about a million
+  pixels of the buffer every 2 ms (`CHyprOpenGLImpl::issueAlphaStrip()`, each strip flushed, the last one with a native
+  fence), polls the fence and reads the box back (`readAlphaBounds()`, `m_alphaTimer`, `m_alphaPending`); the shader takes
+  16 bilinear taps between the texels of an 8x8 block instead of 64 fetches, with the result scaled so a quarter of 1/255
+  still leaves a nonzero pixel, and the backdrop (the wallpaper) is not analyzed. Before, the whole draw sat in the first
+  frame after the settle, which was the user's next action: the XPS opened the menu 11 ms later in every one of 30 night
+  blocks (r786 against r797, 2026-10-29 to 30, 29 to 31 fresh sessions of each on all eight machines, `night2` in the
+  session's scratchpad), and that is gone (on against off with the timer build, 10 rounds: 296 against 295 ms); the menu
+  closes 0.4 to 2.6 ms sooner than with the in-frame draw on the T550, Mac mini, Chromebook, Galaxy Book and X200, a toast
+  shows 1.8 to 6 ms sooner on the T550, lianli and X200, and CPU, frames and GPU time are the same (r797 against r799, 7 to
+  8 fresh sessions each, 2026-10-30 morning). On iris the readback itself blocks the main thread for 0.3 to 12 ms (median
+  0.7 to 0.9) and the strips issue in about 150 us each (the first 1.7 to 2.7 ms). Open: on the T460s (scale 1.5) the
+  first frame of a resize step comes 1 ms later with the bar clipped (1.1 to 1.5 ms without, 1.1 to 4.2 with, in every
+  block of the night; the same with the timer build, with the GPU clock pinned to its maximum, and with the empty layers
+  drawn instead of skipped, so it is the clip of the bar's surface itself; `redrawn`, which is what the user sees, is
+  unchanged), while on the XPS the clip makes the step faster (1.3 against 1.6 ms) and spread its `redrawn` only through
+  i915's frequency scaling (tight and better, 27 to 31 against 32 to 42 ms, with the clock pinned). For telling such costs
+  apart `HYPOLAND_ALPHA_BOUNDS=noclip` analyzes but draws every layer whole and `=noskip` clips but draws a layer whose buffer
+  has no alpha whole instead of skipping it. The night also showed the GTK 4 cost of the zero copy under `HYPOLAND_SHM_ZEROCOPY`
+  above, and the Chromebook's `workspace-switch` 0.7 points of CPU higher with the alpha bounds (6.3 -> 7.1%, every block,
+  the same with the timer build; its GPU time 22 -> 13%), not looked into.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
