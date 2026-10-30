@@ -18,6 +18,7 @@ namespace Render {
         SH_FEAT_BLUR            = (1 << 4), // condition: render:use_shader_blur_blend
         SH_FEAT_BLUR_ALPHA_MASK = (1 << 5), // condition: transformed-window shader blur blend
         SH_FEAT_BLUR_MATTE      = (1 << 6), // condition: transformed-window blur matte
+        SH_FEAT_BLUR_PROPORTIONAL = (1 << 7), // condition: decoration:blur:proportional
     };
 
     using ShaderFeatureFlags = uint16_t;
