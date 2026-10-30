@@ -768,7 +768,20 @@ Tools:
   Since 2026-10-29 evening it is on without an LLC as well (GM45, Bay Trail): there the GPU reads memory and the compositor
   writes the client's damaged cache lines back itself at every commit (`CWLSHMBuffer::flushCPUWrites()`, `clflush`
   per 64 bytes of each damaged row, x86 only; `force` is zero copy without the flush and the screen shows specks of
-  old glyphs on Bay Trail within seconds, `flush` the flush on any driver). Against the dumb-buffer copy
+  old glyphs on Bay Trail within seconds, `flush` the flush on any driver). Since 2026-10-30 it writes back the damage
+  since the buffer's last commit, not only the commit's: a client that draws into several buffers in turn first repaints
+  into the one it reuses what changed since that buffer was last shown (buffer age, foot's `reapply_old_damage`), and
+  the next frame, which redraws the previous frame's damage from this buffer, read those lines stale from memory (the
+  user saw old glyphs flash in foot on the X200 while omarchy-update printed its progress bars). `CCPUFlushTracker` keeps
+  per surface the damage of its last 8 commits and when each of its last 8 buffers was last committed; a buffer new to
+  the surface is written back whole (kernel-zeroed pages included), as is one back after more than 8 commits or after a
+  size change, and a commit it does not see (a copied buffer, a dmabuf) resets it. A check for it:
+  `scripts/machines/stale-check.sh` (copy it to the machine, run it as root) has foot rewrite random lines in place, stops the
+  writer, captures the scanout, evicts the caches with 256 MB of writes, switches workspace away and back and captures
+  again; differing window pixels are a stale frame. Before, 15 of 15 runs on the X200 (12 to 92 rows) and 4 of 15 on
+  the Chromebook; after, 0 of 15 on both. Its cost (4 fresh sessions of each, X200 / Chromebook): `qt-software-sprites`
+  5.6 -> 6.0% / 7.7 -> 8.1% of a CPU, since the previous frame's squares are written back too; `terminal-scroll` (per
+  frame), `gtk4-scroll`, `resize-foot`, frames and memory the same. Against the dumb-buffer copy
   (`HYPOLAND_SHM_ZEROCOPY=0`, 2 fresh sessions each, compositor CPU): Chromebook `qt-software-scroll` 12.9 -> 4.1%,
   the sprites 14.0 -> 7.8, `terminal-scroll` 7.1 -> 5.4, `resize` 28.6 -> 22.9, `resize-foot` 37.1 -> 25.8; X200
   `qt-software-scroll` 9.8 -> 6.2, the sprites 11.7 -> 5.7, `terminal-scroll` 9.8 -> 9.7 (a full window's clflush costs

@@ -104,6 +104,12 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- Old characters flashed up in terminals on the X200 and other Intel GPUs without a last-level cache (GM45, Bay Trail)
+  while a line was rewritten in place, as in progress bars. The compositor shows such windows straight from the
+  client's memory and writes the changed lines out of the CPU caches first, but only those of the frame itself; foot
+  also repaints the previous frame's changes into the buffer it reuses, and those stayed in the caches. Now everything
+  changed since the buffer was last shown is written out. In a check that rewrites random lines in foot, 15 of 15 runs
+  on the X200 showed stale lines before, none after.
 - A monitor rule with `bitdepth = 10` crashed the compositor on an output whose planes take a 10-bit format (Intel
   from Broadwell on, and headless outputs): GLES 2 has no 10-bit framebuffer format, so the first frame hit an
   incomplete framebuffer. The setting is ignored with a warning now and the monitor stays at 8 bit.
