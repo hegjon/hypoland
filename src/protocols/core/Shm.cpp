@@ -178,7 +178,7 @@ bool CWLSHMBuffer::tryZeroCopy() {
     if (DRMFMT != DRM_FORMAT_ARGB8888 && DRMFMT != DRM_FORMAT_XRGB8888)
         return false;
 
-    // a udmabuf needs a memfd that cannot shrink under it: foot and Chromium seal their pools so, GTK and Qt do not
+    // a udmabuf needs a memfd that cannot shrink under it: foot, Chromium, GTK 4 and Qt seal their pools so, GTK 3 does not
     const int SEALS = fcntl(m_pool->m_fd.get(), F_GET_SEALS);
     if (SEALS < 0 || !(SEALS & F_SEAL_SHRINK))
         return false;

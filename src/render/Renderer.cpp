@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "../helpers/env/Env.hpp"
 #include "../Compositor.hpp"
 #include "../helpers/math/Math.hpp"
 #include <algorithm>
@@ -944,6 +945,17 @@ static bool isLowestBackgroundLayer(PHLLS pLayer, PHLMONITOR pMonitor) {
     return false;
 }
 
+// HYPOLAND_ALPHA_BOUNDS=noclip analyzes the layers but draws them whole, =noskip clips them to their box but draws a layer
+// whose buffer has no alpha whole instead of skipping it: for telling the two costs apart (2026-10-30)
+static bool alphaBoundsApply() {
+    static const bool APPLY = Env::get("HYPOLAND_ALPHA_BOUNDS").value_or("") != "noclip";
+    return APPLY;
+}
+static bool alphaBoundsSkip() {
+    static const bool SKIP = Env::get("HYPOLAND_ALPHA_BOUNDS").value_or("") != "noskip";
+    return SKIP;
+}
+
 void IHyprRenderer::renderLayer(PHLLS pLayer, PHLMONITOR pMonitor, const Time::steady_tp& time, bool popups, bool lockscreen) {
     if (!pLayer)
         return;
@@ -981,15 +993,20 @@ void IHyprRenderer::renderLayer(PHLLS pLayer, PHLMONITOR pMonitor, const Time::s
     renderdata.clipBox = CBox{0, 0, pMonitor->m_size.x, pMonitor->m_size.y}.scale(pMonitor->m_scale).round();
     // only the pixels with alpha, see CHyprOpenGLImpl::analyzeLayerAlpha(); a box of nothing means nothing to draw. Not
     // for a blurred layer: its transparent pixels show the blur
-    if (!popups && !renderdata.blur && pLayer->m_alphaBounds && pLayer->wlSurface() && pLayer->wlSurface()->resource()) {
+    if (!popups && !renderdata.blur && alphaBoundsApply() && pLayer->m_alphaBounds && pLayer->wlSurface() && pLayer->wlSurface()->resource()) {
         const auto& B    = *pLayer->m_alphaBounds;
         const auto& S    = pLayer->wlSurface()->resource()->m_current;
         const auto  UNIT = S.size / S.bufferSize; // a buffer pixel in logical units (the viewport's scaling included)
         CBox        box  = {REALPOS.x + B.x * UNIT.x - pMonitor->m_position.x, REALPOS.y + B.y * UNIT.y - pMonitor->m_position.y, B.width * UNIT.x, B.height * UNIT.y};
         box.scale(pMonitor->m_scale).round().expand(1);
-        renderdata.clipBox = B.width <= 0 || B.height <= 0 ? CBox{0, 0, 0, 0} : renderdata.clipBox.intersection(box);
-        if (renderdata.clipBox.width <= 0 || renderdata.clipBox.height <= 0)
-            return;
+        if (B.width <= 0 || B.height <= 0) {
+            if (alphaBoundsSkip())
+                return;
+        } else {
+            renderdata.clipBox = renderdata.clipBox.intersection(box);
+            if (renderdata.clipBox.width <= 0 || renderdata.clipBox.height <= 0)
+                return;
+        }
     }
     if (renderdata.blur && pLayer->m_ruleApplicator->ignoreAlpha().hasValue()) {
         renderdata.discardMode |= DISCARD_ALPHA;
@@ -1954,8 +1971,6 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit, std::optiona
         damage = Math::coalesceRegion(damage, MAX_DAMAGE_RECTS);
 
     finalDamage = damage;
-
-    Render::GL::g_pHyprOpenGL->analyzeLayerAlpha(pMonitor);
 
     // update damage in renderdata as we modified it
     setDamage(damage, finalDamage);

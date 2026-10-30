@@ -466,6 +466,8 @@ CHyprOpenGLImpl::~CHyprOpenGLImpl() {
         g_pEventLoopManager->removeTimer(m_shaderCompilerReleaseTimer);
     if (m_heapTrimTimer && g_pEventLoopManager)
         g_pEventLoopManager->removeTimer(m_heapTrimTimer);
+    if (m_alphaTimer && g_pEventLoopManager)
+        g_pEventLoopManager->removeTimer(m_alphaTimer);
 
     if (m_eglDisplay && m_eglContext != EGL_NO_CONTEXT)
         eglDestroyContext(m_eglDisplay, m_eglContext);
@@ -2174,137 +2176,263 @@ void CHyprOpenGLImpl::destroyMonitorResources(PHLMONITORREF pMonitor) {
 // where its pixels are fully transparent, and Omarchy's shell keeps three such surfaces across the screen (the bar's
 // window spans the screen since Omarchy r7338, the dock and the notification column stay mapped while empty): on the
 // X200 they cost more GPU time per frame than the window under them (2026-10-29). Once such a surface has not committed
-// for 150 ms, a frame draws the largest alpha of every 8x8 block of its buffer into a small framebuffer, the next frame
-// reads that back (64 kB for a 1280x800 surface; the GPU finished it with the frame before) and renderLayer() clips the
-// surface to the box of the blocks with any alpha, a box of nothing included. A commit drops the box until the next
-// analysis, so a surface that animates is drawn whole. One analysis at a time, one per frame.
-void CHyprOpenGLImpl::analyzeLayerAlpha(PHLMONITOR pMonitor) {
-    static const auto MODE  = Env::get("HYPOLAND_ALPHA_BOUNDS").value_or("");
+// for a while (CLayerSurface::alphaSettle()), a timer draws whether every 8x8 block of its buffer has any alpha into a
+// small framebuffer (alphamax.frag), in strips of about a million of the surface's pixels a tick, so that no frame
+// queues behind more than that on the GPU, reads it back once the GPU's fence says the draw is done (64 kB for a
+// 1280x800 surface) and renderLayer() clips the surface to the box of the blocks with alpha, a box of nothing included.
+// All of it between frames: until 2026-10-29 evening a frame issued the draw, whole, and that was the first frame
+// after the surface settled, so whatever the user did first after the bar's clock tick paid for it (the XPS opened its
+// menu 20 ms later for the analysis of its 3200x1800 bar). A commit drops the box until the next analysis, so a
+// surface that animates is drawn whole. One analysis at a time.
+static bool alphaBoundsEnabled() {
+    static const auto MODE    = Env::get("HYPOLAND_ALPHA_BOUNDS").value_or("");
     static const bool ENABLED = MODE != "0" && MODE != "off";
-    static const bool DEBUG   = MODE == "debug";
-    if (!ENABLED || !pMonitor)
+    return ENABLED;
+}
+
+static bool alphaBoundsDebug() {
+    static const bool DEBUG = Env::get("HYPOLAND_ALPHA_BOUNDS").value_or("") == "debug";
+    return DEBUG;
+}
+
+// The lowest background layer covering its monitor is drawn without blending as the backdrop
+// (CSurfacePassElement::isBackdrop()), so there is nothing to clip, and Omarchy's wallpaper commits at every workspace
+// switch and menu toggle: not analyzed.
+static bool isBackdropLayer(PHLLS LS) {
+    const auto PMONITOR = LS->m_monitor.lock();
+    if (!PMONITOR || LS->m_layer != ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND)
+        return false;
+
+    bool lowest = false;
+    for (auto const& ls : PMONITOR->m_layerSurfaceLayers[ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND]) {
+        const auto LAYER = ls.lock();
+        // the layers renderLayer() skips
+        if (!LAYER || !LAYER->mapped() || !LAYER->acceptsInput() || !LAYER->alphaNonZero())
+            continue;
+        lowest = LAYER == LS;
+        break;
+    }
+    if (!lowest)
+        return false;
+
+    const auto& G = LS->m_geometry;
+    return G.x <= PMONITOR->m_position.x && G.y <= PMONITOR->m_position.y && G.x + G.width >= PMONITOR->m_position.x + PMONITOR->m_size.x &&
+        G.y + G.height >= PMONITOR->m_position.y + PMONITOR->m_size.y;
+}
+
+void CHyprOpenGLImpl::scheduleAlphaAnalysis(std::chrono::milliseconds delay) {
+    if (!alphaBoundsEnabled() || !g_pEventLoopManager)
         return;
 
-    // the analysis of a frame before: its result, once the GPU is done with it (a readback before that would wait for
-    // the whole frame before, which iris still has in flight at the next frame's start, and stall the compositor)
-    if (m_alphaFB && m_alphaPending.layer) {
-        if (m_alphaPending.sync && m_alphaPending.sync->isValid() && !m_alphaPending.sync->fd().isReadable() && ++m_alphaPending.frames < 30)
-            return;
-        m_alphaPending.sync.reset();
+    if (!m_alphaTimer) {
+        m_alphaTimer = makeShared<CEventLoopTimer>(std::nullopt, [this](SP<CEventLoopTimer> self, void* data) { analyzeLayerAlpha(); }, nullptr);
+        g_pEventLoopManager->addTimer(m_alphaTimer);
+    }
+
+    // the earlier of what is armed and this
+    const auto DUE = std::chrono::steady_clock::now() + delay;
+    if (m_alphaTimerArmed && m_alphaTimerDue <= DUE)
+        return;
+    m_alphaTimerArmed = true;
+    m_alphaTimerDue   = DUE;
+    m_alphaTimer->updateTimeout(delay);
+}
+
+// The timer's tick: the analysis in progress gets its next strip, its fence checked or its result read; then the next
+// settled surface is started, or the timer set for when one settles.
+void CHyprOpenGLImpl::analyzeLayerAlpha() {
+    m_alphaTimerArmed = false;
+    if (!alphaBoundsEnabled())
+        return;
+
+    static constexpr auto TICK = std::chrono::milliseconds(2);
+
+    if (m_alphaPending.layer) {
         const auto LAYER = m_alphaPending.layer.lock();
-        m_alphaPending.layer.reset();
-        if (LAYER && LAYER->mapped() && LAYER->m_alphaSerial == m_alphaPending.serial) {
-            const int            W = m_alphaFB->m_size.x, H = m_alphaFB->m_size.y;
-            std::vector<uint8_t> px(sc<size_t>(W) * H * 4);
-            const auto           READ_STARTED = std::chrono::steady_clock::now();
-            {
-                auto guard = g_pHyprRenderer->bindTempFB(m_alphaFB);
-                glReadPixels(0, 0, W, H, GL_RGBA, GL_UNSIGNED_BYTE, px.data());
+        if (!LAYER || !LAYER->mapped() || LAYER->m_alphaSerial != m_alphaPending.serial) {
+            // the surface committed meanwhile: analyzed again once it settles
+            m_alphaPending.layer.reset();
+            m_alphaPending.sync.reset();
+        } else if (m_alphaPending.rowsDone < m_alphaPending.rows) {
+            if (!issueAlphaStrip(LAYER)) {
+                m_alphaPending.layer.reset();
+                m_alphaPending.sync.reset();
             }
-            if (DEBUG)
-                std::println(stderr, "alpha bounds: {} read back in {} us after {} frames", LAYER->m_namespace,
-                             std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - READ_STARTED).count(), m_alphaPending.frames);
-            int x0 = W, y0 = H, x1 = -1, y1 = -1;
-            for (int y = 0; y < H; y++) {
-                for (int x = 0; x < W; x++) {
-                    if (px[(sc<size_t>(y) * W + x) * 4] == 0)
-                        continue;
-                    x0 = std::min(x0, x);
-                    x1 = std::max(x1, x);
-                    y0 = std::min(y0, y);
-                    y1 = std::max(y1, y);
+            scheduleAlphaAnalysis(TICK);
+            return;
+        } else if (m_alphaPending.sync && m_alphaPending.sync->isValid() && !m_alphaPending.sync->fd().isReadable() && ++m_alphaPending.ticks < 500) {
+            scheduleAlphaAnalysis(TICK); // the GPU is not done; a readback now would wait for it
+            return;
+        } else {
+            readAlphaBounds(LAYER);
+            m_alphaPending.layer.reset();
+            m_alphaPending.sync.reset();
+        }
+    }
+
+    const auto                      NOW = Time::steadyNow();
+    std::optional<Time::steady_dur> next;
+    for (auto const& PMONITOR : State::monitorState()->monitors()) {
+        for (auto& level : PMONITOR->m_layerSurfaceLayers) {
+            for (auto& lsRef : level) {
+                const auto LS = lsRef.lock();
+                if (!LS || !LS->mapped() || !LS->m_alphaBoundsDirty)
+                    continue;
+                const Time::steady_dur WAIT = LS->alphaSettle() - (NOW - LS->m_alphaCommitTime);
+                if (WAIT > Time::steady_dur::zero()) {
+                    next = next ? std::min(*next, WAIT) : WAIT;
+                    continue;
+                }
+                if (startAlphaAnalysis(LS)) {
+                    scheduleAlphaAnalysis(TICK);
+                    return;
                 }
             }
-            const auto TEX = m_alphaPending.texSize;
-            if (x1 < 0)
-                LAYER->m_alphaBounds = CBox{0, 0, 0, 0};
-            else
-                LAYER->m_alphaBounds = CBox{x0 * 8.0, y0 * 8.0, std::min((x1 + 1) * 8.0, TEX.x) - x0 * 8.0, std::min((y1 + 1) * 8.0, TEX.y) - y0 * 8.0};
-            LAYER->m_alphaBoundsDirty = false;
-            if (DEBUG)
-                std::println(stderr, "alpha bounds: {} {}x{} -> {},{} {}x{}", LAYER->m_namespace, sc<int>(TEX.x), sc<int>(TEX.y), sc<int>(LAYER->m_alphaBounds->x),
-                             sc<int>(LAYER->m_alphaBounds->y), sc<int>(LAYER->m_alphaBounds->width), sc<int>(LAYER->m_alphaBounds->height));
         }
     }
 
-    // the next surface of this monitor: mapped, with alpha, large, in the simple geometry renderLayer() can clip
-    // (the whole buffer shown, scaled at most: no viewport source, no transform, no subsurfaces), unchanged for 150 ms
-    const auto NOW = Time::steadyNow();
-    for (auto& level : pMonitor->m_layerSurfaceLayers) {
-        for (auto& lsRef : level) {
-            const auto LS = lsRef.lock();
-            if (!LS || !LS->mapped() || !LS->m_alphaBoundsDirty)
+    if (next)
+        scheduleAlphaAnalysis(std::chrono::duration_cast<std::chrono::milliseconds>(*next) + std::chrono::milliseconds(1));
+}
+
+// The surface of a settled layer: mapped, with alpha, large, in the simple geometry renderLayer() can clip (the whole
+// buffer shown, scaled at most: no viewport source, no transform, no subsurfaces), not the backdrop. The first strip is
+// drawn now, the timer's ticks draw the rest.
+bool CHyprOpenGLImpl::startAlphaAnalysis(PHLLS LS) {
+    const auto SURF = LS->wlSurface() ? LS->wlSurface()->resource() : nullptr;
+    if (!SURF || !SURF->m_current.texture)
+        return false;
+    const auto TEX = SURF->m_current.texture;
+    if (TEX->m_opaque || TEX->m_size.x * TEX->m_size.y < 65536 || SURF->m_current.viewport.hasSource || SURF->m_current.transform != WL_OUTPUT_TRANSFORM_NORMAL ||
+        SURF->m_current.size.x < 1 || SURF->m_current.size.y < 1 || !SURF->m_subsurfaces.empty() || isBackdropLayer(LS)) {
+        LS->m_alphaBoundsDirty = false;
+        if (alphaBoundsDebug())
+            std::println(stderr, "alpha bounds: {} not analyzed (opaque {}, source {}, transform {}, subsurfaces {}, backdrop {})", LS->m_namespace, TEX->m_opaque,
+                         SURF->m_current.viewport.hasSource, sc<int>(SURF->m_current.transform), SURF->m_subsurfaces.size(), isBackdropLayer(LS));
+        return false;
+    }
+
+    // a strip of the surface per tick: about a millisecond of an Intel HD 5500's time
+    static constexpr double STRIP_PIXELS = 1048576.0;
+    const Vector2D          SMALL        = {std::ceil(TEX->m_size.x / 8.0), std::ceil(TEX->m_size.y / 8.0)};
+    if (!m_alphaFB)
+        m_alphaFB = g_pHyprRenderer->createFB("alpha-bounds");
+    if (!m_alphaFB->alloc(SMALL.x, SMALL.y))
+        return false;
+
+    m_alphaPending.layer        = LS;
+    m_alphaPending.serial       = LS->m_alphaSerial;
+    m_alphaPending.texSize      = TEX->m_size;
+    m_alphaPending.small        = SMALL;
+    m_alphaPending.rows         = sc<int>(SMALL.y);
+    m_alphaPending.rowsPerStrip = std::max(1, sc<int>(STRIP_PIXELS / (TEX->m_size.x * 8.0)));
+    m_alphaPending.rowsDone     = 0;
+    m_alphaPending.ticks        = 0;
+    m_alphaPending.started      = std::chrono::steady_clock::now();
+    m_alphaPending.sync.reset();
+    if (issueAlphaStrip(LS))
+        return true;
+    m_alphaPending.layer.reset();
+    return false;
+}
+
+// The next strip of the blocks; the last one makes the fence the readback waits for.
+bool CHyprOpenGLImpl::issueAlphaStrip(PHLLS LS) {
+    const auto SURF = LS->wlSurface() ? LS->wlSurface()->resource() : nullptr;
+    const auto TEX  = SURF ? SURF->m_current.texture : nullptr;
+    if (!TEX || TEX->m_size != m_alphaPending.texSize || !m_alphaFB)
+        return false;
+
+    makeEGLCurrent();
+    const auto  STARTED = std::chrono::steady_clock::now();
+    const auto& SMALL   = m_alphaPending.small;
+    const int   R0 = m_alphaPending.rowsDone, R1 = std::min(m_alphaPending.rows, R0 + m_alphaPending.rowsPerStrip);
+
+    // outside a frame there is no monitor and no current framebuffer in the render data: the projection is made here
+    const auto OLDFB  = g_pHyprRenderer->m_renderData.currentFB;
+    const auto MATRIX = Mat3x3::outputProjection(SMALL, HYPRUTILS_TRANSFORM_NORMAL)
+                            .copy()
+                            .multiply(Mat3x3::identity().projectBox(CBox{0, sc<double>(R0), SMALL.x, sc<double>(R1 - R0)}, HYPRUTILS_TRANSFORM_NORMAL, 0));
+    m_alphaFB->bind();
+
+    auto shader = useShader(getShaderVariant(SH_FRAG_ALPHAMAX));
+    shader->setUniformMatrix3fv(SHADER_PROJ, 1, GL_TRUE, MATRIX.getMatrix());
+    shader->setUniformInt(SHADER_TEX, 0);
+    shader->setUniformFloat2(SHADER_HALFPIXEL, 1.0 / TEX->m_size.x, 1.0 / TEX->m_size.y);
+
+    setActiveTexture(GL_TEXTURE0);
+    TEX->bind();
+    // sampled between four texels: the shader's 16 taps read the block's 64
+    TEX->setTexParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    TEX->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    blend(false);
+    setCapStatus(GL_SCISSOR_TEST, false); // not scissor(nullptr): that asserts a monitor
+    glBindVertexArray(shader->getUniformLocation(SHADER_SHADER_VAO));
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+    blend(true);
+
+    TEX->setTexParameter(GL_TEXTURE_MAG_FILTER, TEX->magFilter);
+    TEX->setTexParameter(GL_TEXTURE_MIN_FILTER, TEX->minFilter);
+    TEX->unbind();
+
+    if (OLDFB)
+        OLDFB->bind();
+    else
+        bindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    m_alphaPending.rowsDone = R1;
+    if (R1 >= m_alphaPending.rows) {
+        m_alphaPending.sync  = m_exts.EGL_ANDROID_native_fence_sync_ext ? CEGLSync::create() : nullptr;
+        m_alphaPending.ticks = 0;
+    }
+    glFlush(); // to the GPU now, not with the next frame
+
+    if (alphaBoundsDebug())
+        std::println(stderr, "alpha bounds: {} {}x{} rows {} to {} of {} issued in {} us", LS->m_namespace, sc<int>(TEX->m_size.x), sc<int>(TEX->m_size.y), R0, R1,
+                     m_alphaPending.rows, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - STARTED).count());
+    return true;
+}
+
+// The result: the box of the blocks with any alpha, in buffer pixels.
+void CHyprOpenGLImpl::readAlphaBounds(PHLLS LS) {
+    const int            W = m_alphaFB->m_size.x, H = m_alphaFB->m_size.y;
+    std::vector<uint8_t> px(sc<size_t>(W) * H * 4);
+    const auto           STARTED = std::chrono::steady_clock::now();
+
+    makeEGLCurrent();
+    const auto OLDFB = g_pHyprRenderer->m_renderData.currentFB;
+    m_alphaFB->bind();
+    glReadPixels(0, 0, W, H, GL_RGBA, GL_UNSIGNED_BYTE, px.data());
+    if (OLDFB)
+        OLDFB->bind();
+    else
+        bindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    int x0 = W, y0 = H, x1 = -1, y1 = -1;
+    for (int y = 0; y < H; y++) {
+        for (int x = 0; x < W; x++) {
+            if (px[(sc<size_t>(y) * W + x) * 4] == 0)
                 continue;
-            // a surface that keeps committing (the shell's bar, dock and wallpaper commit once or twice a second while the
-            // shell is busy, a toast animates for a second) is drawn whole until it has been quiet for two seconds, so it
-            // is not analyzed at every change (on the XPS three 3200x1800 analyses in the menu's opening cost it 27 ms); a
-            // quiet one after 150 ms
-            const auto SETTLE = LS->m_alphaCommitInterval < std::chrono::milliseconds(2000) ? std::chrono::milliseconds(2000) : std::chrono::milliseconds(150);
-            if (NOW - LS->m_alphaCommitTime < SETTLE)
-                continue;
-            const auto SURF = LS->wlSurface() ? LS->wlSurface()->resource() : nullptr;
-            if (!SURF || !SURF->m_current.texture)
-                continue;
-            const auto TEX = SURF->m_current.texture;
-            if (TEX->m_opaque || TEX->m_size.x * TEX->m_size.y < 65536 || SURF->m_current.viewport.hasSource || SURF->m_current.transform != WL_OUTPUT_TRANSFORM_NORMAL ||
-                SURF->m_current.size.x < 1 || SURF->m_current.size.y < 1 || !SURF->m_subsurfaces.empty()) {
-                LS->m_alphaBoundsDirty = false;
-                if (DEBUG)
-                    std::println(stderr, "alpha bounds: {} not analyzed (opaque {}, source {}, transform {}, subsurfaces {})", LS->m_namespace, TEX->m_opaque,
-                                 SURF->m_current.viewport.hasSource, sc<int>(SURF->m_current.transform), SURF->m_subsurfaces.size());
-                continue;
-            }
-
-            const Vector2D SMALL        = {std::ceil(TEX->m_size.x / 8.0), std::ceil(TEX->m_size.y / 8.0)};
-            const auto     DRAW_STARTED = std::chrono::steady_clock::now();
-            if (!m_alphaFB)
-                m_alphaFB = g_pHyprRenderer->createFB("alpha-bounds");
-            if (!m_alphaFB->alloc(SMALL.x, SMALL.y))
-                return;
-
-            {
-                auto       guard      = g_pHyprRenderer->bindTempFB(m_alphaFB);
-                const auto OLD_TYPE   = g_pHyprRenderer->m_renderData.projectionType;
-                const auto OLD_FBSIZE = g_pHyprRenderer->m_renderData.fbSize;
-                g_pHyprRenderer->setProjectionType(SMALL);
-                const auto MATRIX = g_pHyprRenderer->projectBoxToTarget(CBox{0, 0, SMALL.x, SMALL.y}, HYPRUTILS_TRANSFORM_NORMAL);
-
-                auto       shader = useShader(getShaderVariant(SH_FRAG_ALPHAMAX));
-                shader->setUniformMatrix3fv(SHADER_PROJ, 1, GL_TRUE, MATRIX.getMatrix());
-                shader->setUniformInt(SHADER_TEX, 0);
-                shader->setUniformFloat2(SHADER_HALFPIXEL, 1.0 / TEX->m_size.x, 1.0 / TEX->m_size.y);
-
-                setActiveTexture(GL_TEXTURE0);
-                TEX->bind();
-                TEX->setTexParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                TEX->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-                blend(false);
-                scissor(nullptr);
-                glBindVertexArray(shader->getUniformLocation(SHADER_SHADER_VAO));
-                glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-                glBindVertexArray(0);
-                blend(true);
-
-                TEX->setTexParameter(GL_TEXTURE_MAG_FILTER, TEX->magFilter);
-                TEX->setTexParameter(GL_TEXTURE_MIN_FILTER, TEX->minFilter);
-                TEX->unbind();
-
-                g_pHyprRenderer->m_renderData.fbSize = OLD_FBSIZE;
-                g_pHyprRenderer->setProjectionType(OLD_TYPE);
-            }
-
-            m_alphaPending.layer   = LS;
-            m_alphaPending.serial  = LS->m_alphaSerial;
-            m_alphaPending.texSize = TEX->m_size;
-            m_alphaPending.frames  = 0;
-            m_alphaPending.sync    = m_exts.EGL_ANDROID_native_fence_sync_ext ? CEGLSync::create() : nullptr;
-            if (DEBUG)
-                std::println(stderr, "alpha bounds: {} {}x{} analysis issued in {} us", LS->m_namespace, sc<int>(TEX->m_size.x), sc<int>(TEX->m_size.y),
-                             std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - DRAW_STARTED).count());
-            return;
+            x0 = std::min(x0, x);
+            x1 = std::max(x1, x);
+            y0 = std::min(y0, y);
+            y1 = std::max(y1, y);
         }
     }
+    const auto TEX = m_alphaPending.texSize;
+    if (x1 < 0)
+        LS->m_alphaBounds = CBox{0, 0, 0, 0};
+    else
+        LS->m_alphaBounds = CBox{x0 * 8.0, y0 * 8.0, std::min((x1 + 1) * 8.0, TEX.x) - x0 * 8.0, std::min((y1 + 1) * 8.0, TEX.y) - y0 * 8.0};
+    LS->m_alphaBoundsDirty = false;
+
+    if (alphaBoundsDebug())
+        std::println(stderr, "alpha bounds: {} {}x{} -> {},{} {}x{}, read back in {} us after {} ticks, {} ms after the first strip", LS->m_namespace, sc<int>(TEX.x),
+                     sc<int>(TEX.y), sc<int>(LS->m_alphaBounds->x), sc<int>(LS->m_alphaBounds->y), sc<int>(LS->m_alphaBounds->width), sc<int>(LS->m_alphaBounds->height),
+                     std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - STARTED).count(), m_alphaPending.ticks,
+                     std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - m_alphaPending.started).count());
 }
 
 void CHyprOpenGLImpl::renderOffToMain(SP<IFramebuffer> off) {

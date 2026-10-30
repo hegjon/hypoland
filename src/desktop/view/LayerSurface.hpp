@@ -84,6 +84,7 @@ namespace Desktop::View {
         uint32_t                                m_alphaSerial      = 0;
         Time::steady_tp                         m_alphaCommitTime;
         std::chrono::milliseconds               m_alphaCommitInterval{0}; // between the last two commits with content
+        std::chrono::milliseconds               alphaSettle() const;      // how long the analysis waits after a commit
         pid_t                                   getPID();
         void                                    updateSurfaceScaleTransformDetails();
 
