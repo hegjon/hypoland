@@ -74,7 +74,7 @@ class CSurfacePassElement : public IPassElement {
         return "CSurfacePassElement";
     }
 
-    virtual std::string profileLabel();
+    virtual std::string      profileLabel();
 
     virtual ePassElementType type() {
         return EK_SURFACE;

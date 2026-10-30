@@ -13,15 +13,15 @@ class CHLBufferReference;
 class IHLBuffer : public Aquamarine::IBuffer {
   public:
     virtual ~IHLBuffer();
-    virtual Aquamarine::eBufferCapability       caps()                        = 0;
-    virtual Aquamarine::eBufferType             type()                        = 0;
-    virtual void                                update(const CRegion& damage) = 0;
-    virtual bool                                isSynchronous()               = 0; // whether the updates to this buffer are synchronous, aka happen over cpu
+    virtual Aquamarine::eBufferCapability caps()                        = 0;
+    virtual Aquamarine::eBufferType       type()                        = 0;
+    virtual void                          update(const CRegion& damage) = 0;
+    virtual bool                          isSynchronous()               = 0; // whether the updates to this buffer are synchronous, aka happen over cpu
     // the client's CPU writes in a region of the buffer, for a GPU that reads memory without snooping the caches (shm zero copy)
     virtual void flushCPUWrites(const CRegion& bufferDamage) {
         ;
     }
-    virtual bool                                good()                        = 0;
+    virtual bool                                good() = 0;
     virtual void                                sendRelease();
     virtual void                                lock();
     virtual void                                unlock();

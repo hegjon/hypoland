@@ -137,7 +137,7 @@ TEST_CASE(groupNext) {
 
     NLog::log("{}Get last active foot id", Colors::YELLOW);
     try {
-        auto str           = getFromSocket("/activewindow");
+        auto str          = getFromSocket("/activewindow");
         lastActiveFootIdx = std::stoull(str.substr(7, str.find(" -> ") - 7), nullptr, 16);
     } catch (...) { FAIL_TEST("Could not extract the active window id"); }
 

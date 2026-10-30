@@ -79,20 +79,20 @@ namespace Desktop::View {
         // The box of the pixels with alpha above zero in the current buffer, in buffer pixels, found by
         // CHyprOpenGLImpl::analyzeLayerAlpha() once the surface stops committing; renderLayer() draws only that part. A
         // commit drops it. The serial tells an analysis of an older buffer from the current one.
-        std::optional<CBox>                     m_alphaBounds;
-        bool                                    m_alphaBoundsDirty = false;
-        uint32_t                                m_alphaSerial      = 0;
-        Time::steady_tp                         m_alphaCommitTime;
-        std::chrono::milliseconds               m_alphaCommitInterval{0}; // between the last two commits with content
-        std::chrono::milliseconds               alphaSettle() const;      // how long the analysis waits after a commit
-        pid_t                                   getPID();
-        void                                    updateSurfaceScaleTransformDetails();
+        std::optional<CBox>       m_alphaBounds;
+        bool                      m_alphaBoundsDirty = false;
+        uint32_t                  m_alphaSerial      = 0;
+        Time::steady_tp           m_alphaCommitTime;
+        std::chrono::milliseconds m_alphaCommitInterval{0}; // between the last two commits with content
+        std::chrono::milliseconds alphaSettle() const;      // how long the analysis waits after a commit
+        pid_t                     getPID();
+        void                      updateSurfaceScaleTransformDetails();
 
-        void                                    onDestroy();
-        void                                    onMap();
-        void                                    onUnmap();
-        void                                    onCommit();
-        MONITORID                               monitorID();
+        void                      onDestroy();
+        void                      onMap();
+        void                      onUnmap();
+        void                      onCommit();
+        MONITORID                 monitorID();
 
       private:
         bool m_mapped = false;

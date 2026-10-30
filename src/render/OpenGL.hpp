@@ -230,36 +230,36 @@ namespace Render::GL {
         void bindArrayBuffer(GLuint buffer);
         void bindFramebuffer(GLenum target, GLuint fb);
         // GL implicitly rebinds 0 on every target the deleted fb was bound to, keep the shadow in sync
-        void                                      onFramebufferDeleted(GLuint fb);
+        void                              onFramebufferDeleted(GLuint fb);
 
-        void                                      blend(bool enabled);
-        bool                                      blendEnabled() const;
+        void                              blend(bool enabled);
+        bool                              blendEnabled() const;
 
-        void                                      scissor(const CBox&, bool transform = true);
-        void                                      scissor(const pixman_box32*, bool transform = true);
-        void                                      scissor(const int x, const int y, const int w, const int h, bool transform = true);
+        void                              scissor(const CBox&, bool transform = true);
+        void                              scissor(const pixman_box32*, bool transform = true);
+        void                              scissor(const int x, const int y, const int w, const int h, bool transform = true);
 
-        void                                      destroyMonitorResources(PHLMONITORREF);
+        void                              destroyMonitorResources(PHLMONITORREF);
 
-        bool                                      saveBufferForMirror(const CBox&);
+        bool                              saveBufferForMirror(const CBox&);
 
-        void                                      applyScreenShader(const std::string& path);
+        void                              applyScreenShader(const std::string& path);
 
-        void                                      renderOffToMain(SP<IFramebuffer> off);
+        void                              renderOffToMain(SP<IFramebuffer> off);
 
-        std::vector<SDRMFormat>                   getDRMFormats();
-        std::vector<uint64_t>                     getDRMFormatModifiers(DRMFormat format);
-        EGLImageKHR                               createEGLImage(const Aquamarine::SDMABUFAttrs& attrs);
-        SP<Aquamarine::CDRMDumbAllocator>         dumbAllocatorForTextures();
+        std::vector<SDRMFormat>           getDRMFormats();
+        std::vector<uint64_t>             getDRMFormatModifiers(DRMFormat format);
+        EGLImageKHR                       createEGLImage(const Aquamarine::SDMABUFAttrs& attrs);
+        SP<Aquamarine::CDRMDumbAllocator> dumbAllocatorForTextures();
 
-        bool                                      initShaders(const std::string& path = "");
+        bool                              initShaders(const std::string& path = "");
 
-        WP<CShader>                               useShader(WP<CShader> prog);
+        WP<CShader>                       useShader(WP<CShader> prog);
 
-        bool                                      explicitSyncSupported();
-        bool                                      coalesceDamage() const; // whether damage is merged into few rectangles
-        void                                      scheduleShaderCompilerRelease();
-        void                                      scheduleHeapTrim();
+        bool                              explicitSyncSupported();
+        bool                              coalesceDamage() const; // whether damage is merged into few rectangles
+        void                              scheduleShaderCompilerRelease();
+        void                              scheduleHeapTrim();
         // HYPOLAND_ALPHA_BOUNDS: the box of a layer surface's pixels with alpha, so the transparent rest is not blended
         void                                      scheduleAlphaAnalysis(std::chrono::milliseconds delay); // from a layer's commit: a tick once it settled
         void                                      analyzeLayerAlpha();                                    // the timer's tick
@@ -273,7 +273,7 @@ namespace Render::GL {
         SP<SPreparedShaders>                      m_shaders;
 
         Hyprutils::OS::CFileDescriptor            m_gbmFD;
-        gbm_device*                               m_gbmDevice  = nullptr;
+        gbm_device*                               m_gbmDevice = nullptr;
         SP<Aquamarine::CDRMDumbAllocator>         m_dumbAllocator; // for the shm textures of CGLTexture, on demand
         Hyprutils::OS::CFileDescriptor            m_dumbFD;        // only with HYPOLAND_SHM_TEXTURE_DEVICE
         EGLContext                                m_eglContext = nullptr;
@@ -341,10 +341,10 @@ namespace Render::GL {
         };
 
       private:
-        SP<CEventLoopTimer> m_shaderCompilerReleaseTimer;
-        SP<CEventLoopTimer> m_heapTrimTimer;
+        SP<CEventLoopTimer>                   m_shaderCompilerReleaseTimer;
+        SP<CEventLoopTimer>                   m_heapTrimTimer;
         std::chrono::steady_clock::time_point m_lastShmUpload;
-        bool                m_trimHeapNow = false;
+        bool                                  m_trimHeapNow = false;
 
         // a texture removes itself when it is destroyed, the sweep when it gives its second texture back
         std::vector<CGLTexture*> m_backTextures;

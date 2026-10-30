@@ -4,7 +4,7 @@
 
 class CTimer {
   public:
-    void                   reset();
+    void reset();
     // with a time the caller already read, reading the clock is a syscall on some machines
     void                   reset(const Time::steady_tp& now);
     float                  getSeconds() const;

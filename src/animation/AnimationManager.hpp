@@ -17,7 +17,7 @@ namespace Animation {
       public:
         CHyprAnimationManager();
 
-        void         tick(const Time::steady_tp& now);
+        void tick(const Time::steady_tp& now);
         // now is the frame's clock read, shared with the render and the timer re-arm
         void         frameTick(const Time::steady_tp& now);
         void         requestTick();
