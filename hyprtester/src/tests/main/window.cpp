@@ -564,8 +564,8 @@ static void cleanupWindowStateUpdates() {
 TEST_CASE(luaWindowUpdateStateDeltas) {
     CScopeGuard cleanup(cleanupWindowStateUpdates);
     OK(recordWindowStateUpdates());
-    SPAWN_KITTY("hyprtester_window_state");
-    SPAWN_KITTY("hyprtester_window_state_other");
+    SPAWN_FOOT("hyprtester_window_state");
+    SPAWN_FOOT("hyprtester_window_state_other");
 
     OK(getFromSocket(R"(/eval do
         local state = _G.hyprtester_window_state
@@ -634,7 +634,7 @@ TEST_CASE(luaWindowUpdateStateDeltas) {
 TEST_CASE(luaWindowUpdateStateCallbackMutation) {
     CScopeGuard cleanup(cleanupWindowStateUpdates);
     OK(recordWindowStateUpdates());
-    SPAWN_KITTY("hyprtester_window_state");
+    SPAWN_FOOT("hyprtester_window_state");
 
     OK(getFromSocket(R"(/eval do
         local state = _G.hyprtester_window_state
@@ -674,7 +674,7 @@ TEST_CASE(luaWindowUpdateStateFullscreenPin) {
     CScopeGuard restoreConfig([this] { EXPECT_OK(getFromSocket("/eval hl.config({ binds = { allow_pin_fullscreen = _G.hyprtester_window_state.allow_pin_fullscreen } })")); });
     OK(getFromSocket("/eval hl.config({ binds = { allow_pin_fullscreen = true } })"));
 
-    SPAWN_KITTY("hyprtester_window_state");
+    SPAWN_FOOT("hyprtester_window_state");
     OK(getFromSocket(R"(/eval do
         local window = _G.hyprtester_window_state.window
         assert(hl.dispatch(hl.dsp.window.float({ action = 'enable', window = window })).ok)
@@ -707,7 +707,7 @@ TEST_CASE(luaWindowUpdateStateLifecycle) {
     end)"));
 
     // Initial rule-applied float/pin state is a baseline, not an update.
-    SPAWN_KITTY("hyprtester_window_state");
+    SPAWN_FOOT("hyprtester_window_state");
     OK(getFromSocket("/eval local window = _G.hyprtester_window_state.window; assert(window.floating and window.pinned)"));
     ASSERT(windowStateUpdates(), "");
 
@@ -726,7 +726,7 @@ TEST_CASE(luaWindowUpdateStateLifecycle) {
             state.open_result = hl.dispatch(hl.dsp.window.pin({ action = 'disable', window = window })).ok
         end)
     end)"));
-    SPAWN_KITTY("hyprtester_window_state");
+    SPAWN_FOOT("hyprtester_window_state");
     ASSERT(getFromSocket("/repl _G.hyprtester_window_state.open_result"), "true");
     ASSERT(windowStateUpdates(), "nil:false");
 

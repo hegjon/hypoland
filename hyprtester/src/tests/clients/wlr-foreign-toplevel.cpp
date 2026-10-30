@@ -41,7 +41,7 @@ TEST_CASE(wlrForeignToplevelMinimizeEvents) {
     OK(getFromSocket("/eval do _G.hyprtester_minimize_events = {}; _G.hyprtester_minimize_subscription = hl.on('window.minimize', function(window, state) "
                      "table.insert(_G.hyprtester_minimize_events, window.pid .. ':' .. tostring(state)) end) end"));
 
-    auto kitty = Tests::spawnKitty(APP_ID);
+    auto kitty = Tests::spawnFoot(APP_ID);
     if (!kitty)
         FAIL_TEST("Could not spawn kitty with class: {}", APP_ID);
 
