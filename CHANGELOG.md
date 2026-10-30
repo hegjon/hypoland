@@ -13,6 +13,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   part. Omarchy's shell keeps its bar's window across the whole screen, and its dock and notification column mapped
   while empty, which cost the X200 more GPU time per frame than the window under them: a full-window frame went
   from 8.4 to 3.4 ms of GPU time there (`HYPOLAND_ALPHA_BOUNDS=0` turns it off).
+  The search for those pixels runs between frames in small pieces, so the first thing done after a panel changed does not
+  wait for it: Omarchy's menu closes 2.6 ms sooner on the X200 and a notification shows 6 ms sooner.
 - Terminals and Qt programs that draw on the CPU are shown without a copy on Intel GPUs without a last-level cache too
   (GM45, Bay Trail): the compositor writes their changed cache lines back itself instead of copying the window. A Qt
   window scrolling on a Dell Chromebook 11 took 13% of a CPU, now 4%; a scrolling terminal 5% instead of 7%.
