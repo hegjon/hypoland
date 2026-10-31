@@ -1075,7 +1075,12 @@ Tools:
   change damages the window and the old surface box now, `CWindow::m_lastCommitSize`, set at the map as well); and a
   buffer magnified by a viewport left a rim of old pixels around its updates, half a magnified texel wide
   (`damageSurface()` expands by `ceil(max(scale, texel / 2 + 1))` monitor pixels now, the texel's size from the viewport
-  or buffer scale). Not a bug of Hypoland's: a window's rounding rounds each of its subsurfaces at their own corners, also
+  or buffer scale). Then two more steps, a subsurface whose buffer is turned by a quarter (`set_buffer_transform` 90) and
+  one cut out of a larger buffer and stretched (a viewport source at 30,20 60x45 of a 120x90 buffer, shown at 157x122),
+  and a fourth bug, upstream's as well: `CWLSurface::computeDamage()` turned the buffer damage and then scaled it by
+  the surface's size over the unturned buffer size, which stretched one axis and squashed the other, and it cut the
+  source out in surface units without taking its offset off; it works in the turned buffer's pixels now, as wlroots
+  does, and most updates of the turned subsurface no longer miss the screen. Not a bug of Hypoland's: a window's rounding rounds each of its subsurfaces at their own corners, also
   in the middle of the window (upstream does the same), so with rounding on the pixel checks leave the subsurfaces'
   corner squares out. A capture of its own each time, as grim takes, has the compositor repaint the whole monitor first
   (`CScreencopyFrame` without damage, and a share's first frame, `!m_sharing`, which a share counts again 0.5 s after its
@@ -1083,11 +1088,12 @@ Tools:
   modesetting, a headless output, more than one monitor) the check captures the compositor's frames without a pause on
   its own connection (`--grab screencopy`, `Sharing`): a `copy_with_damage` frame is always pending, and the pointer moves
   a pixel in its corner when nothing else draws, so every frame is an incremental one of the work buffer, which damage
-  keeps up like the screen's buffers; the pointer's corner is left out of the comparison. It runs against a nested
-  compositor too (the local build with one headless output, `hl.monitor({ output = "", disabled = true })` and `hyprctl
-  output create headless HEADLESS-1`, then `render.py --grab screencopy --no-freeze`): before the three fixes it failed
-  exactly those steps at scale 1, after them it passes at 1, 2 and 1.6, with Omarchy's gaps, borders, rounding and
-  animations as well. The EGL import of a udmabuf fails there, so zero copy is the machines' to check. Open: lianli (r600)
+  keeps up like the screen's buffers; the pointer's corner is left out of the comparison.
+  `scripts/bench/render-nested.sh [--scale S] [--config extra.lua] [--binary PATH]` runs it against a compositor of the
+  tree started inside the desktop's session with one headless output (the nested window switched off, so the desktop's
+  screen does not matter), in about two minutes: before the fixes it failed exactly the four bugs' steps at scale 1, after
+  them it passes at 1, 2 and 1.6, with Omarchy's gaps, borders, rounding and animations as well. Steps that found nothing:
+  the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller. The EGL import of a udmabuf fails there, so zero copy is the machines' to check. Open: lianli (r600)
   failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0`, but neither capture was
   trustworthy there (kmsgrab can return a buffer of the swapchain the screen is not showing, grim repaints first and came
   back black in fresh sessions); with the continuous capture it can be told now.

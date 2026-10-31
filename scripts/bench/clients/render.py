@@ -6,9 +6,10 @@
 # through what the compositor's shortcuts touch: a whole buffer, small damaged rectangles in turn (the damage merging
 # on crocus and r600, the shm textures double buffered), a new buffer further on in the memory pool with only its
 # changes damaged (as foot does, read in place or copied), subsurfaces drawn by themselves and moved (a video player's
-# or a toolkit's), a subsurface scaled by a viewport with small damage (the filter reaches past it), a popup opened and
-# closed, a mostly transparent overlay layer that changes where it was clear (the alpha bounds clip it), and a window
-# with transparent parts floating over another, moved, shrunk and closed (its fade-out). At every step:
+# or a toolkit's), subsurfaces magnified, shrunk and cut out by a viewport or turned by a quarter, with small damage
+# (the filter reaches past it, the damage is turned and cut with the buffer), a popup opened and closed, a mostly
+# transparent overlay layer that changes where it was clear (the alpha bounds clip it), and a window with transparent
+# parts floating over another, moved, shrunk and closed (its fade-out). At every step:
 #   pixels      the focused window shows exactly what it drew (an integer scale only, inside its rounding and border)
 #   repaint     the screen as the step left it is what a full repaint of the same scene shows: the clients and the shell
 #               are frozen, the screen is read, the workspace is switched away and back (the whole monitor is drawn
@@ -151,7 +152,7 @@ class Surface:
         """What the surface shows with its opaque subsurfaces of the same scale on top"""
         img = bytearray(self.want)
         for c in self.children:
-            if c.viewport or c.fmt != XRGB or c.scale != self.scale:
+            if c.viewport or c.transform or c.fmt != XRGB or c.scale != self.scale:
                 continue
             px, py = c.pos[0] * self.scale, c.pos[1] * self.scale
             for y in range(max(0, -py), min(c.h, self.h - py)):
@@ -238,16 +239,20 @@ class Subsurface(Surface):
     """A desynchronized subsurface: its commits show by themselves, its position with the parent's next commit.
     viewport: its buffer scaled to that size in logical pixels"""
 
-    def __init__(self, r, name, parent, pos, viewport=None):
+    def __init__(self, r, name, parent, pos, viewport=None, transform=0, source=None):
         super().__init__(r, name, XRGB, 1 if viewport else None)
-        self.parent, self.viewport = parent, viewport
+        self.parent, self.viewport, self.transform = parent, viewport, transform
         self.sub = self.wl.new()
         self.wl.send(r.subcompositor, 1, u32(self.sub, self.surface, parent.surface))
         self.wl.send(self.sub, 5)  # set_desync
+        if transform:
+            self.wl.send(self.surface, 7, i32(transform))  # set_buffer_transform, 1: 90 degrees
         if viewport:
             self.vp = self.wl.new()
             self.wl.send(r.viewporter, 1, u32(self.vp, self.surface))
             self.wl.send(self.vp, 2, i32(*viewport))  # set_destination
+            if source:
+                self.wl.send(self.vp, 1, i32(*(v * 256 for v in source)))  # set_source, wl_fixed
         self.move(pos)
         parent.children.append(self)
 
@@ -271,22 +276,39 @@ class Popup(Surface):
         super().__init__(r, name)
         self.serial = None
         self.placed = None
-        positioner = self.wl.new()
-        self.wl.send(r.wm, 1, u32(positioner))
-        self.wl.send(positioner, 1, i32(*size))  # set_size
-        self.wl.send(positioner, 2, i32(anchor[0], anchor[1], 1, 1))  # set_anchor_rect
-        self.wl.send(positioner, 3, u32(5))  # set_anchor top_left
-        self.wl.send(positioner, 4, u32(8))  # set_gravity bottom_right
+        self.size = size
+        positioner = self.positioner(anchor)
         self.xdg = self.wl.new(self.on_xdg)
         self.wl.send(r.wm, 2, u32(self.xdg, self.surface))
         self.popup = self.wl.new(self.on_popup)
         self.wl.send(self.xdg, 2, u32(self.popup, parent.xdg, positioner))
         self.wl.send(positioner, 0)
         self.wl.send(self.surface, 6)
+        self.ack(name)
+        self.allocate(self.placed[2:] if self.placed and self.placed[2] > 0 else size)
+
+    def positioner(self, anchor):
+        positioner = self.wl.new()
+        self.wl.send(self.r.wm, 1, u32(positioner))
+        self.wl.send(positioner, 1, i32(*self.size))  # set_size
+        self.wl.send(positioner, 2, i32(anchor[0], anchor[1], 1, 1))  # set_anchor_rect
+        self.wl.send(positioner, 3, u32(5))  # set_anchor top_left
+        self.wl.send(positioner, 4, u32(8))  # set_gravity bottom_right
+        return positioner
+
+    def ack(self, name):
         if not self.wl.wait(lambda: self.serial is not None, 5):
             raise SystemExit(f"render.py: {name} got no configure")
         self.wl.send(self.xdg, 4, u32(self.serial))
-        self.allocate(self.placed[2:] if self.placed and self.placed[2] > 0 else size)
+        self.serial = None
+
+    def reposition(self, anchor):
+        """Moves it as a menu that follows its button does (xdg_popup.reposition, xdg_wm_base 3), the buffer the same"""
+        positioner = self.positioner(anchor)
+        self.wl.send(self.popup, 2, u32(positioner, 1))
+        self.wl.send(positioner, 0)
+        self.ack(self.name)
+        self.commit([(0, 0, 1, 1)])
 
     def on_xdg(self, op, p):
         if op == 0:
@@ -323,6 +345,21 @@ class Layer(Surface):
     def on_ls(self, op, p):
         if op == 0:
             self.serial, w, h = struct.unpack_from("=3I", p)
+
+    def move(self, margin):
+        """Elsewhere on the monitor, the buffer the same"""
+        self.wl.send(self.ls, 3, i32(margin[0], 0, 0, margin[1]))
+        self.commit([(0, 0, 1, 1)])
+
+    def resize(self, size):
+        """Smaller, as the compositor configures it, with a new buffer"""
+        self.serial = None
+        self.wl.send(self.ls, 0, u32(*size))
+        self.wl.send(self.surface, 6)
+        if not self.wl.wait(lambda: self.serial is not None, 5):
+            raise SystemExit(f"render.py: {self.name} got no configure for its new size")
+        self.wl.send(self.ls, 6, u32(self.serial))
+        self.allocate(size)
 
     def destroy(self):
         self.wl.send(self.ls, 7)
@@ -475,7 +512,8 @@ class Render:
         self.wl.roundtrip()
         self.compositor = self.bind(globs, "wl_compositor", 4)
         self.shm = self.bind(globs, "wl_shm", 1)
-        self.wm = self.bind(globs, "xdg_wm_base", 1, self.on_wm)
+        self.wm = self.bind(globs, "xdg_wm_base", 3, self.on_wm)
+        self.wm_version = min(globs["xdg_wm_base"][1], 3)
         self.subcompositor = self.bind(globs, "wl_subcompositor", 1)
         self.viewporter = self.bind(globs, "wp_viewporter", 1)
         self.layer_shell = self.bind(globs, "zwlr_layer_shell_v1", 1)
@@ -721,6 +759,10 @@ class Render:
         self.settle(1.0)
         self.check_pixels("subsurface moved", a)
         self.check_repaint("subsurface moved")
+        sub.destroy()
+        self.settle(1.0)
+        self.check_pixels("subsurface closed", a)
+        self.check_repaint("subsurface closed")
         if self.viewporter:
             # buffers drawn at 4.6 times and at half their size: the filter reaches past every damaged rectangle, by
             # several pixels where a texel is magnified
@@ -729,7 +771,13 @@ class Render:
             big.allocate(None, (34, 26))
             small = Subsurface(self, "render-minified", a, (x + 170, 40), viewport=(157, 122))
             small.allocate(None, (301, 233))
-            for n, v in enumerate((big, small)):
+            # and one turned by a quarter (a camera's or a phone's video): its damage is turned with it
+            turned = Subsurface(self, "render-turned", a, (x, 180), transform=1)
+            turned.allocate((90, 140))
+            # and one cut out of a larger buffer and stretched (a video's black bars cut off)
+            cropped = Subsurface(self, "render-cropped", a, (x + 170, 180), viewport=(157, 122), source=(30, 20, 60, 45))
+            cropped.allocate(None, (120, 90))
+            for n, v in enumerate((big, small, turned, cropped)):
                 v.fill(6 + n)
                 v.commit()
             a.recommit()
@@ -738,14 +786,17 @@ class Render:
             for frame in range(12):
                 big.commit([big.rect(600 + frame, rng.randrange(big.w), rng.randrange(big.h), rng.randrange(1, 4), rng.randrange(1, 4))])
                 small.commit([small.rect(700 + frame, rng.randrange(small.w), rng.randrange(small.h), rng.randrange(2, 12), rng.randrange(2, 12))])
+                turned.commit([turned.rect(750 + frame, rng.randrange(turned.w), rng.randrange(turned.h), rng.randrange(4, 30), rng.randrange(4, 20))])
+                cropped.commit([cropped.rect(780 + frame, rng.randrange(20, 100), rng.randrange(10, 75), rng.randrange(2, 10), rng.randrange(2, 10))])
             self.settle(1.0)
             self.check_repaint("viewport rectangles")
             big.destroy()
             small.destroy()
-        sub.destroy()
-        self.settle(1.0)
-        self.check_pixels("subsurfaces closed", a)
-        self.check_repaint("subsurfaces closed")
+            turned.destroy()
+            cropped.destroy()
+            self.settle(1.0)
+            self.check_pixels("viewports closed", a)
+            self.check_repaint("viewports closed")
 
     def popup(self, a):
         """A popup over the window, opened and closed"""
@@ -759,6 +810,10 @@ class Render:
             y0 = (c["at"][1] - self.monitor["y"] + p.placed[1]) * self.scale
             self.check_image("popup", "the popup", p.want, p.w, p.h, p.stride, x0, y0)
         self.check_repaint("popup")
+        if self.wm_version >= 3:
+            p.reposition((a.w // self.scale // 3, a.h // self.scale // 2))
+            self.settle(1.2)
+            self.check_repaint("popup moved")
         p.destroy()
         self.settle(1.2)
         self.check_pixels("popup closed", a)
@@ -766,7 +821,7 @@ class Render:
 
     def layer(self):
         """An overlay layer, opaque at the top and clear below, left alone until the compositor clipped it to its pixels
-        with alpha, then drawn into where it was clear with only that damaged, then closed"""
+        with alpha, then drawn into where it was clear with only that damaged, moved, made smaller and closed"""
         if not self.layer_shell:
             print("SKIP  render layer: no zwlr_layer_shell_v1", flush=True)
             return
@@ -786,6 +841,15 @@ class Render:
         self.check_repaint("layer drawn")
         self.settle(2.6)
         self.check_repaint("layer settled")
+        # moved while clipped, then smaller with a new buffer
+        layer.move((160, 220))
+        self.settle(1.2)
+        self.check_repaint("layer moved")
+        layer.resize((260, 150))
+        layer.fill(9, clear_rows=(layer.h // 3, layer.h))
+        layer.commit()
+        self.settle(1.2)
+        self.check_repaint("layer shrunk")
         layer.destroy()
         self.settle(1.2)
         self.check_repaint("layer closed")
