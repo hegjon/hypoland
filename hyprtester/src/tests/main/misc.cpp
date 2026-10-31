@@ -161,6 +161,7 @@ TEST_CASE(misc) {
 
 TEST_CASE(processesThatDieEarlyAreReaped) {
     // Ensure that the process autostarted in the config does not
-    // become a zombie even if it terminates very quickly.
-    ASSERT(Tests::execAndGet("pgrep -f 'sleep 0'").empty(), true);
+    // become a zombie even if it terminates very quickly. Only the compositor's own children: any command line on the
+    // machine with "sleep 0" in it (a script's "sleep 0.25") matched before
+    ASSERT(Tests::execAndGet(std::format("ps -o stat=,comm= --ppid {} | awk '$1 ~ /^Z/ && $2 == \"sleep\"'", HYPRLAND_PID)).empty(), true);
 }
