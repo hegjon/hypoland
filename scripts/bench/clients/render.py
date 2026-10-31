@@ -255,15 +255,25 @@ class Render:
         while time.monotonic() < end:
             self.wl.dispatch(end - time.monotonic())
 
-    def grab(self, name):
+    def grab(self, name, how=None):
         """The screen as RGB bytes, width, height"""
         path = os.path.join(self.out, name + ".ppm")
-        if self.args.grab == "kmsgrab":
+        if (how or self.args.grab) == "kmsgrab":
             subprocess.run(["hypoland-kmsgrab", path], check=True, capture_output=True)
+            with open(path, "rb") as f:
+                data = f.read()
         else:
-            subprocess.run(["grim", "-o", self.monitor["name"], "-t", "ppm", path], check=True, capture_output=True)
-        with open(path, "rb") as f:
-            data = f.read()
+            # as the session's user, whose compositor it asks (as root the capture can come back black)
+            sock = os.path.join(os.environ["XDG_RUNTIME_DIR"], os.environ.get("WAYLAND_DISPLAY", "wayland-0"))
+            st = os.stat(sock)
+            cmd = ["grim", "-o", self.monitor["name"], "-t", "ppm", "-"]
+            if os.geteuid() == 0 and st.st_uid != 0:
+                import pwd
+
+                cmd = ["runuser", "-u", pwd.getpwuid(st.st_uid).pw_name, "--"] + cmd
+            data = subprocess.run(cmd, check=True, capture_output=True).stdout
+            with open(path, "wb") as f:
+                f.write(data)
         # P6 width height maxval, single whitespace before the pixels
         parts, off = [], 0
         while len(parts) < 4:
@@ -373,14 +383,39 @@ class Render:
             print(f"FAIL  render {step}: {bad} pixels of {win.app_id} differ from what it drew, first at {worst[0]},{worst[1]}: "
                   f"{worst[2]} shown as {worst[3]}", flush=True)
 
+    def choose_grab(self):
+        """kmsgrab reads the buffer the screen scans out; where that is not the frame the compositor shows (a legacy
+        modesetting driver whose CRTC keeps naming the buffer of the last modeset: radeon) it is compared with grim on a
+        still screen and grim is used instead"""
+        if self.args.grab != "kmsgrab":
+            return
+        pids = self.frozen()
+        for p in pids:
+            os.kill(p, signal.SIGSTOP)
+        try:
+            self.settle(0.3)
+            a = self.grab("probe-kmsgrab")[0]
+            b = self.grab("probe-grim", "grim")[0]
+        finally:
+            for p in pids:
+                os.kill(p, signal.SIGCONT)
+        for n in ("probe-kmsgrab", "probe-grim"):
+            os.remove(os.path.join(self.out, n + ".ppm"))
+        if a != b:
+            print("INFO  render: the scanned-out buffer is not the frame the compositor shows (hypoland-kmsgrab), reading the "
+                  "screen through the compositor (grim)", flush=True)
+            self.args.grab = "grim"
+
     def run(self):
         rng = random.Random(7)
         request(self.args.socket, "dismissnotify")  # the compositor's own notifications, drawn over everything
+        self.dispatch('hl.dsp.dpms({action = "on"})', "dpms on")  # a screen that is off shows nothing new
         self.workspace(self.ws)
         # the pointer into the corner, in the outer gap: a cursor drawn into the frame (no cursor plane) is not the windows'
         cx, cy = self.monitor["x"] + int(self.monitor["width"] / self.monitor["scale"]) - 1, self.monitor["y"] + int(self.monitor["height"] / self.monitor["scale"]) - 1
         self.dispatch(f"hl.dsp.cursor.move({{x = {cx}, y = {cy}}})", f"movecursor {cx} {cy}")
         self.settle(0.3)
+        self.choose_grab()
         a = Window(self, "hypoland-render-a")
         w, h = a.wait_configure()
         a.allocate((w or 640, h or 480))

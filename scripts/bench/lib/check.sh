@@ -151,11 +151,13 @@ check_render() {
     env -i PATH="$PATH" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" timeout 180 python3 -I "$CLIENTSRC/render.py" \
         --socket "$RUNTIME/hypr/$SIG/.socket.sock" --out "$CLIENTDIR/render" --grab $grab >"$out" 2>&1
     grep -q "^\(PASS\|FAIL\|SKIP\)" "$out" || fail "render checks did not run: $(tail -n 1 "$out")"
+    grep -q "reading the screen through the compositor" "$out" && grab=grim
     while read -r line; do
         case $line in
             PASS*) pass "${line#PASS  } ($grab)" ;;
             FAIL*) fail "${line#FAIL  }" ;;
             SKIP*) skip "${line#SKIP  }" ;;
+            INFO*) info "${line#INFO  }" ;;
         esac
     done <"$out"
     for line in "$CLIENTDIR"/render/*.ppm; do
