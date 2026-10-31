@@ -1062,12 +1062,35 @@ Tools:
   (scale 1.5) 9000 to 24000 pixels differed from a full repaint after the small updates: one-pixel rims around every
   updated rectangle, up to 67 steps off, since a scaled surface is filtered and the pixels next to its damage take in the
   texels inside; a surface not drawn texel for texel damages `ceil(scale)` pixels more all round now
-  (`IHyprRenderer::damageSurface()`), and both pass. The pixel checks need an integer scale and are skipped at 1.5. Where
-  `hypoland-kmsgrab` and grim disagree on a still screen the check reads through grim (`choose_grab()`), and it switches the
-  screen on first. Open: lianli (r600, legacy modesetting) fails the pixel checks with zero copy and passes them with
-  `HYPOLAND_SHM_ZEROCOPY=0`, but neither capture is trustworthy there yet (kmsgrab can return a buffer of the swapchain the
-  screen is not showing, grim came back black in fresh sessions), so whether r600 shows zero-copy windows wrong is not
-  known.
+  (`IHyprRenderer::damageSurface()`), and both pass. The pixel checks need an integer scale and are skipped at 1.5.
+  The same evening (asked for again by the user before a weekend away) more steps: a desynchronized subsurface over the first
+  window, drawn by itself in small rectangles, moved by the parent's commit and destroyed; two subsurfaces scaled by a
+  viewport (a 34x26 buffer shown at 157x122, a 301x233 one at the same size) with small damage; an xdg popup without a
+  grab, opened and closed; an overlay layer (`zwlr_layer_shell_v1`, 400x240, the top third opaque, the rest clear) left
+  alone until the alpha bounds clip it, then drawn into where it was clear with only that damaged, then closed; and the
+  dialog shrinking itself to half its size. Three bugs, all upstream's: a subsurface moved by its parent's commit and then
+  destroyed stayed on the screen (`CSubsurface::damageLastArea()` damages where it was at its own last commit, the unmap
+  now damages where it is drawn too; `damageLastArea()` computed the larger of the two sizes and used neither); a floating
+  window whose surface shrank by itself left its old area (a window's commit damaged the surface's damage only, a size
+  change damages the window and the old surface box now, `CWindow::m_lastCommitSize`, set at the map as well); and a
+  buffer magnified by a viewport left a rim of old pixels around its updates, half a magnified texel wide
+  (`damageSurface()` expands by `ceil(max(scale, texel / 2 + 1))` monitor pixels now, the texel's size from the viewport
+  or buffer scale). Not a bug of Hypoland's: a window's rounding rounds each of its subsurfaces at their own corners, also
+  in the middle of the window (upstream does the same), so with rounding on the pixel checks leave the subsurfaces'
+  corner squares out. A capture of its own each time, as grim takes, has the compositor repaint the whole monitor first
+  (`CScreencopyFrame` without damage, and a share's first frame, `!m_sharing`, which a share counts again 0.5 s after its
+  last frame), so the repaint checks saw nothing through grim. Where kmsgrab cannot read the screen (radeon's legacy
+  modesetting, a headless output, more than one monitor) the check captures the compositor's frames without a pause on
+  its own connection (`--grab screencopy`, `Sharing`): a `copy_with_damage` frame is always pending, and the pointer moves
+  a pixel in its corner when nothing else draws, so every frame is an incremental one of the work buffer, which damage
+  keeps up like the screen's buffers; the pointer's corner is left out of the comparison. It runs against a nested
+  compositor too (the local build with one headless output, `hl.monitor({ output = "", disabled = true })` and `hyprctl
+  output create headless HEADLESS-1`, then `render.py --grab screencopy --no-freeze`): before the three fixes it failed
+  exactly those steps at scale 1, after them it passes at 1, 2 and 1.6, with Omarchy's gaps, borders, rounding and
+  animations as well. The EGL import of a udmabuf fails there, so zero copy is the machines' to check. Open: lianli (r600)
+  failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0`, but neither capture was
+  trustworthy there (kmsgrab can return a buffer of the swapchain the screen is not showing, grim repaints first and came
+  back black in fresh sessions); with the continuous capture it can be told now.
 - A closing window's fade damages only where it is drawn (2026-10-31, `CWindowFadeout::damage()`): upstream's fade-out
   damaged the whole monitor on every animation step, so closing a window repainted the screen for half a second (Omarchy's
   `windowsOut` and `fadeOut`). The snapshot is still the monitor's size; the window's part of it (`m_contentBox`: its frame
