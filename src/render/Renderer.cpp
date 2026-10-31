@@ -1883,7 +1883,7 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit, std::optiona
     const auto NOW = now ? *now : Time::steadyNow();
 
     if (Animation::mgr())
-        Animation::mgr()->frameTick(NOW);
+        Animation::mgr()->frameTick(NOW, pMonitor);
 
     {
         static bool once = true;

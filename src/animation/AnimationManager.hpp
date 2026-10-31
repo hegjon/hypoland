@@ -18,8 +18,9 @@ namespace Animation {
         CHyprAnimationManager();
 
         void tick(const Time::steady_tp& now);
-        // now is the frame's clock read, shared with the render and the timer re-arm
-        void         frameTick(const Time::steady_tp& now);
+        // now is the frame's clock read, shared with the render and the timer re-arm. The values are those of the moment the
+        // frame reaches the screen, the next vblank of monitor (the one rendering, or the fastest), see curveStep()
+        void         frameTick(const Time::steady_tp& now, PHLMONITOR monitor = nullptr);
         void         requestTick();
         virtual void scheduleTick();
         void         scheduleTick(std::optional<Time::steady_tp> now);
@@ -66,6 +67,9 @@ namespace Animation {
         SP<CEventLoopTimer> m_animationTimer;
 
         float               m_lastTickTimeMs;
+
+        // how far ahead of the tick's clock read the frame it computes values for is shown
+        std::chrono::nanoseconds m_tickLead{0};
 
       private:
         bool            m_tickScheduled       = false;

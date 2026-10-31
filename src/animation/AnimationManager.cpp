@@ -123,6 +123,26 @@ static void preDamageWorkspace(PHLWORKSPACE pWorkspace, PHLMONITOR pMonitor) {
     }
 }
 
+// A bezier animation's value when the frame shows, lead after the tick: hyprutils' getCurveStep() takes the time when it
+// is called, in whole milliseconds, so a frame drawn right after an animation began (a focus change, which the next frame
+// shows at once) showed the start value, and the change came a frame later. Springs step by the time between ticks.
+static Hyprutils::Animation::CBaseAnimatedVariable::SCurveStepResult curveStep(Hyprutils::Animation::CBaseAnimatedVariable& av, std::chrono::nanoseconds lead) {
+    const auto CONFIG = av.getConfig().lock();
+    if (lead <= std::chrono::nanoseconds(0) || !av.isBeingAnimated() || av.isSpringCurve() || !CONFIG || !CONFIG->pValues || CONFIG->pValues->internalSpeed <= 0.F)
+        return av.getCurveStep();
+
+    const auto BEZIER = mgr()->getBezier(av.getBezierName());
+    if (!BEZIER)
+        return av.getCurveStep();
+
+    const float DURATIONMS = CONFIG->pValues->internalSpeed * 100.F;
+    const float SPENT      = std::clamp(av.getPercent() + std::chrono::duration<float, std::milli>(lead).count() / DURATIONMS, 0.F, 1.F);
+    if (SPENT >= 1.F)
+        return {.value = 1.F, .finished = true};
+
+    return {.value = BEZIER->getYForPoint(SPENT), .finished = false};
+}
+
 template <Animable VarType>
 static void handleUpdate(CAnimatedVariable<VarType>& av, bool warp) {
     bool animationsDisabled = warp;
@@ -140,7 +160,7 @@ static void handleUpdate(CAnimatedVariable<VarType>& av, bool warp) {
         animationsDisabled = animationsDisabled || ls->m_ruleApplicator->noanim().valueOrDefault();
     }
 
-    const auto STEP = av.getCurveStep();
+    const auto STEP = curveStep(av, mgr()->m_tickLead);
 
     if constexpr (std::same_as<VarType, CHyprColor>)
         updateColorVariable(av, STEP.value, STEP.finished || animationsDisabled);
@@ -336,7 +356,7 @@ void CHyprAnimationManager::tick(const Time::steady_tp& now) {
     tickDone();
 }
 
-void CHyprAnimationManager::frameTick(const Time::steady_tp& now) {
+void CHyprAnimationManager::frameTick(const Time::steady_tp& now, PHLMONITOR monitor) {
     onTicked();
 
     const bool MANUALTICK = m_manualTickRequested;
@@ -353,6 +373,10 @@ void CHyprAnimationManager::frameTick(const Time::steady_tp& now) {
     if (!m_lastTickValid || std::chrono::duration<float, std::milli>(now - m_lastTick).count() >= 1.0f) {
         m_lastTick      = now;
         m_lastTickValid = true;
+
+        if (!monitor && g_pHyprRenderer)
+            monitor = g_pHyprRenderer->m_mostHzMonitor.lock();
+        m_tickLead = monitor ? monitor->nextPresentation(now) - now : std::chrono::nanoseconds(0);
 
         tick(now);
         Event::bus()->m_events.tick.emit();

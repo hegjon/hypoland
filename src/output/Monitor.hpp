@@ -122,6 +122,8 @@ namespace Monitor {
 
         bool                        m_ratsScheduled = false;
         CTimer                      m_lastPresentationTimer;
+        Time::steady_tp             m_lastVblank;      // the last vblank the hardware stamped, for nextPresentation()
+        std::chrono::nanoseconds    m_vblankPeriod{0}; // and the refresh period, 0 before the first one
 
         bool                        m_isBeingLeased = false;
 
@@ -325,6 +327,7 @@ namespace Monitor {
         const Mat3x3&                                               getScaleMatrix();
 
         void                                                        debugLastPresentation(const std::string& message);
+        Time::steady_tp                                             nextPresentation(const Time::steady_tp& now);
 
         bool                                                        supportsWideColor();
         bool                                                        supportsHDR();
