@@ -8,6 +8,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Faster
 
+- Closing a window no longer repaints the whole screen while it fades out: only where the fading window is drawn. On a
+  Dell XPS 13 (3200x1800) the GPU is busy 50 instead of 73 ms over the second after a window closes.
 - Animations show their first step in the first frame. A frame reaches the screen at the next vblank, up to a refresh
   after it is drawn, but animations took their values for the moment it was drawn, in whole milliseconds, so a frame
   drawn right after something began to animate showed the start: a focus change among many windows showed the new
