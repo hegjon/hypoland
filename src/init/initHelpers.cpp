@@ -4,6 +4,7 @@
 #endif
 
 #include "initHelpers.hpp"
+#include "../helpers/env/Env.hpp"
 
 #include <atomic>
 
@@ -15,6 +16,8 @@
 #include <cerrno>
 #include <chrono>
 #include <cstring>
+#include <fcntl.h>
+#include <format>
 #include <print>
 #include <thread>
 
@@ -60,12 +63,10 @@ static bool trySchedDirect(int prio) {
 #endif
 }
 
-// The event loop's sleeps and wake-ups, for the realtime guard below
-static std::atomic<uint64_t> s_loopWakes{0};
-static std::atomic<bool>     s_loopAwake{true};
-static std::atomic<bool>     s_guardParked{false};
-
 #ifdef HAS_RTKIT
+
+// the realtime guard waits for the event loop's next round, see guardRealtime()
+static std::atomic<bool> s_guardParked{false};
 
 // Cached for the SIGXCPU handler: it must demote the RT thread specifically, but a
 // process-directed signal can be delivered to any thread.
@@ -198,29 +199,75 @@ static bool tryRtkit(pid_t tid, int prio, bool quiet = false) {
 // realtime thread ran without sleeping with it when the thread returns to user space: a kernel call that runs from below
 // the soft limit past the hard one (200 ms on Arch) gets the compositor SIGKILLed, with no SIGXCPU before it and nothing
 // in any log, and the session is gone. That happened in 3 of 8 sessions on a Dell XPS 13 one morning, and a single long
-// read through `hyprctl eval` does it every time. This thread takes realtime away from the main thread once it has been
-// awake through three of its polls, 80 to 120 ms, which stops the kernel's count also in the middle of such a call, and
-// asks rtkit for it again when the main thread has slept for a while. It sleeps on the loop's wake-ups while the
-// compositor is idle. Polling every 20 ms and dropping at 40 cost 1 to 7% more compositor CPU and dropped realtime a few
-// times a session on the X200, where the main thread is often busy for 40 to 60 ms.
+// read through `hyprctl eval` does it every time. This thread polls every 40 ms: when the event loop has not gone round
+// since the last poll, it reads the main thread's state, and when that was running at two polls in a row (80 to 120 ms
+// in one go) it takes realtime away, which stops the kernel's count also in the middle of such a call. It asks rtkit for
+// realtime again when the main thread has slept for a while, and waits on the loop's next round while the main thread
+// sleeps in the loop's epoll (not when it sleeps in a round: the same round can go on into a long call). The loop itself
+// only counts its rounds: telling the guard when the thread really slept cost a poll() per round,
+// and with it and a poll every 20 ms the compositor took 1 to 7% more CPU.
+static std::atomic<uint64_t> s_loopRounds{0};
+
+// the main thread's state letter from /proc (R running or runnable, S or D asleep), 0 when it cannot be read
+static char threadState(int fd) {
+    char       buf[512];
+    const auto N = pread(fd, buf, sizeof(buf) - 1, 0);
+    if (N <= 0)
+        return 0;
+    buf[N]            = 0;
+    const char* PAREN = strrchr(buf, ')');
+    return PAREN && PAREN[1] == ' ' ? PAREN[2] : 0;
+}
+
+// whether the main thread sleeps in the event loop's epoll, between rounds, and not somewhere in a round (a GPU fence)
+static bool inLoopPoll(int fd) {
+    char       buf[128];
+    const auto N = pread(fd, buf, sizeof(buf) - 1, 0);
+    if (N <= 0)
+        return false;
+    buf[N]          = 0;
+    const long CALL = strtol(buf, nullptr, 10);
+#ifdef SYS_epoll_wait
+    if (CALL == SYS_epoll_wait)
+        return true;
+#endif
+#ifdef SYS_epoll_pwait2
+    if (CALL == SYS_epoll_pwait2)
+        return true;
+#endif
+    return CALL == SYS_epoll_pwait;
+}
+
 static void guardRealtime(int prio) {
     pthread_setname_np(pthread_self(), "rtguard");
 
+    const int STATFD    = open(std::format("/proc/self/task/{}/stat", mainThreadTid).c_str(), O_RDONLY | O_CLOEXEC);
+    const int SYSCALLFD = open(std::format("/proc/self/task/{}/syscall", mainThreadTid).c_str(), O_RDONLY | O_CLOEXEC);
+    if (STATFD < 0 || SYSCALLFD < 0)
+        return;
+
     constexpr auto POLL       = std::chrono::milliseconds(40);
-    uint64_t       lastWakes  = s_loopWakes.load();
-    int            busyPolls  = 0; // the main thread awake since the last poll, without going to sleep in between
-    int            idlePolls  = 0; // asleep, without waking up in between
+    uint64_t       lastRounds = s_loopRounds.load();
+    int            busyPolls  = 0; // running in the same round of the loop at polls in a row
+    int            idlePolls  = 0; // asleep in the loop's epoll in the same round
     int            demoted    = 0; // polls since realtime was lost
     int            retryPolls = 50;
 
     for (;;) {
         std::this_thread::sleep_for(POLL);
 
-        const uint64_t WAKES = s_loopWakes.load();
-        const bool     AWAKE = s_loopAwake.load();
-        busyPolls            = AWAKE && WAKES == lastWakes ? busyPolls + 1 : 0;
-        idlePolls            = !AWAKE && WAKES == lastWakes ? idlePolls + 1 : 0;
-        lastWakes            = WAKES;
+        const uint64_t ROUNDS = s_loopRounds.load(std::memory_order_relaxed);
+        if (ROUNDS != lastRounds) {
+            lastRounds = ROUNDS;
+            busyPolls = idlePolls = 0;
+        } else if (threadState(STATFD) == 'R') {
+            busyPolls++;
+            idlePolls = 0;
+        } else {
+            // asleep: the kernel's count starts over. Between rounds the guard can wait for the next one
+            busyPolls = 0;
+            idlePolls = inLoopPoll(SYSCALLFD) ? idlePolls + 1 : 0;
+        }
 
         if (s_realtime && busyPolls >= 2) {
             if (dropRealtime())
@@ -246,12 +293,12 @@ static void guardRealtime(int prio) {
             continue;
         }
 
-        // asleep through two polls: wait for its next wake-up instead of polling (an idle session wakes a few times a second)
-        if (idlePolls >= 2) {
+        // asleep in the loop's epoll: wait for its next round instead of polling (an idle session wakes a few times a second)
+        if (idlePolls >= 1) {
             s_guardParked = true;
-            s_loopWakes.wait(WAKES);
+            s_loopRounds.wait(ROUNDS);
             s_guardParked = false;
-            lastWakes     = s_loopWakes.load();
+            lastRounds    = s_loopRounds.load();
             idlePolls     = 0;
         }
     }
@@ -259,15 +306,14 @@ static void guardRealtime(int prio) {
 
 #endif
 
-void NInit::loopAsleep() {
-    s_loopAwake.store(false, std::memory_order_relaxed);
-}
-
-void NInit::loopAwake() {
-    s_loopWakes.fetch_add(1, std::memory_order_relaxed);
-    s_loopAwake.store(true, std::memory_order_relaxed);
-    if (s_guardParked.load(std::memory_order_relaxed))
-        s_loopWakes.notify_one();
+void NInit::loopRound() {
+#ifdef HAS_RTKIT
+    // sequentially consistent against the guard's store of s_guardParked and its wait, or a round could go unnoticed by a
+    // parked guard (an atomic add is a full barrier on x86 anyway)
+    s_loopRounds.fetch_add(1);
+    if (s_guardParked.load())
+        s_loopRounds.notify_one();
+#endif
 }
 
 // Puts the main thread on SCHED_RR so a busy session cannot starve the compositor of CPU.
@@ -290,7 +336,9 @@ void NInit::gainRealTime() {
     if (!gained && (gained = tryRtkit(gettid(), minPrio))) {
         Log::logger->log(Log::DEBUG, "Gained realtime scheduling via rtkit");
         s_realtime = true;
-        std::thread(guardRealtime, minPrio).detach();
+        // HYPOLAND_NO_RT_GUARD=1: realtime without the guard, for measuring what the guard costs
+        if (!Env::envEnabled("HYPOLAND_NO_RT_GUARD"))
+            std::thread(guardRealtime, minPrio).detach();
     }
 #endif
 
