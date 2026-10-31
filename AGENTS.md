@@ -186,8 +186,8 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   in every build since r761, open), the terminal closing on the Mac mini (8 against 4 ms) and the Chromebook, kitty's
   frames on the Chromebook (15 against 22 fps), the Galaxy Book's workspace switch and menu as before. Hyprland 0.57.0
   died five times without a core dump, killed by a signal (start-hyprland's `Couldn't waitpid for hyprland: No child
-  processes` is how its wait loop reports that), Hypoland once (the X200, at the end of `dev`); `/root/sigtrace/` on
-  every machine has a perf trace of the signals sent on the morning of 2026-10-31, to find the sender.
+  processes` is how its wait loop reports that), Hypoland once (the X200, at the end of `dev`), and three Hypoland sessions
+  of the XPS the next morning: the kernel's realtime watchdog, see "Realtime and its guard" under Tools.
 
 ## Hard constraints
 
@@ -996,8 +996,52 @@ Tools:
   for timer ticks), from the last vblank the hardware stamped and the refresh period; springs, VRR and tearing keep the
   tick's own time. 6 to 8 fresh sessions each: a focus change among 10 / 20 / 40 windows XPS 10.2 / 16.8 / 18.0 -> 2.1 /
   2.5 / 2.8 ms, T550 14.4 / 14.4 / 13.4 -> 1.8 / 2.1 / 2.7, Galaxy Book 5.1 / 3.6 / 3.4 -> 2.4 / 2.1 / 2.0;
-  `launch.opened` 31, 19 and 8 ms sooner; CPU and the other latencies the same within their spread (the XPS's menu
-  opening 317 -> 328 ms, its blocks 296 to 322 against 318 to 338, the T550's and Galaxy Book's unchanged).
+  `launch.opened` 31, 19 and 8 ms sooner; CPU and the other latencies the same within their spread. The XPS's menu
+  opened 317 -> 328 ms in that A/B (blocks 296 to 322 against 318 to 338), but not because of the lead: the same build with
+  the lead switched off (a diagnostic `HYPOLAND_NO_ANIM_LEAD`, never on master) opens it in 325 against 331 ms with it on
+  (6 fresh sessions each, 306 to 343 against 301 to 343), while a focus change among 10 / 20 windows stays 16.2 / 17.5 ->
+  2.1 / 2.4 ms; the XPS's menu is bimodal per session, 300 to 320 or 325 to 345 ms, in every build of that day.
+- Realtime and its guard (2026-10-31). Since upstream #15465 (July 2026, in the fork base and in 0.57.0) the compositor
+  puts its main thread on SCHED_RR through rtkit (`NInit::gainRealTime()`; `HYPRLAND_NO_RT=1` keeps it off), which rtkit
+  grants only under RLIMIT_RTTIME, set to 150 ms soft and 200 ms hard (the most Arch's rtkit allows). The kernel adds up
+  the time a realtime thread runs without sleeping and compares it with the limits only when the thread returns to user
+  space (the posix CPU timers run as task work): an overrun in user space gets SIGXCPU at the soft limit, and upstream's
+  handler drops realtime (`Realtime budget exceeded (SIGXCPU)` in the journal, seven times on the XPS in the night), but a
+  single kernel call that runs from below the soft limit past the hard one gets SIGKILL with no SIGXCPU before it and
+  nothing in any log, and start-hypoland starts a new compositor with every window gone. That was the deaths of the 0.57.0
+  baseline night and three Hypoland sessions on the XPS the next morning (r877, in `workspace-switch`, `menu` and
+  `resize`), found with `perf record -e signal:signal_generate` on every machine (`/root/sigtrace/`: `sig=9
+  code=SI_KERNEL` raised by the compositor's own main thread). `test-results/rt-20261031/rttest.py` shows both cases
+  under rtkit's limits (a spin gets SIGXCPU, a 3 GB read from /dev/zero SIGKILL), and `hyprctl eval 'local f =
+  io.open("/dev/zero", "rb"); return #f:read(2^31)'` kills a compositor that rtkit made realtime every time, nested or
+  on a machine. What the XPS's long call was is not known: it did not come back in 11 more sessions of r877 and r878 that
+  afternoon, the XPS had no compaction stalls, and the main thread's longest stretches in the workloads were 32 ms there
+  (a scheduler trace of its sleeps and wake-ups, `stretch.py`); closing the 40 windows of `many-windows` at once is the
+  longest everywhere (Galaxy Book 146 to 162 ms, a SIGXCPU in most sessions; T550 77 ms), as is the end of a session.
+  Realtime is worth keeping (r878 with and without `HYPRLAND_NO_RT=1`, 6 to 8 fresh sessions each on six machines,
+  `test-results/rt-20261031/rtab-summary.txt`): without it the Chromebook shows a workspace switch in 5.75 instead of
+  2.85 ms, with 40 windows 17.5 instead of 4.45, a focus change among 40 windows in 16.5 instead of 9.7, a resize step in
+  4.4 instead of 2.2 and a closing terminal in 21.4 instead of 15.1; the other machines switch 5 to 25% slower, lianli
+  closes a terminal in 4.4 instead of 3.7, and the compositor's CPU is 1 to 11% higher without it (`dev` on the T550 3.76
+  against 3.36%). So a guard thread (`guardRealtime()` in `src/init/initHelpers.cpp`) polls every 40 ms while the main
+  thread is awake, takes realtime away once it has been awake through three polls (80 to 120 ms; the kernel stops counting
+  at once, also in the middle of a kernel call), and asks rtkit for it again from its own thread when the main thread has
+  slept through three polls, 2 s after the drop at the earliest, backing off to a minute when rtkit says no (`Realtime:
+  ...` lines in the journal). For that the event loop is `wl_display_run()` written out (`CEventLoopManager::enterLoop()`):
+  it polls the loop's fd itself first, so a wake-up is counted only when nothing was ready and the thread really slept; the
+  guard waits on those wake-ups once the main thread has slept through two polls, so an idle session wakes it only when
+  the compositor wakes. The long read is survived every time, nested and on the Galaxy Book, back on realtime 2 to 3 s
+  later; hyprtester 176/176. A first version polled every 20 ms and dropped at 40 ms: 1 to 7% more compositor CPU on six
+  machines (lianli `workspace-switch` 2.21 -> 2.31%, the Mac mini's `dev` 3.38 -> 3.53) and a few drops per session on the
+  X200 (the end of `many-windows` among them), each 2 s without realtime.
+- A closing window's fade damages only where it is drawn (2026-10-31, `CWindowFadeout::damage()`): upstream's fade-out
+  damaged the whole monitor on every animation step, so closing a window repainted the screen for half a second (Omarchy's
+  `windowsOut` and `fadeOut`). The snapshot is still the monitor's size; the window's part of it (`m_contentBox`: its frame
+  with decorations and popups and its surface tree's extents) is mapped through the fade's scale and position, and the
+  frame damages where it was drawn last and where it is drawn now; blur and a dim around the window keep the whole
+  monitor. Nested screenshots before, 40 and 100 ms into and after a fade match master outside the window, the frame
+  after the fade matches a full repaint. Seen while testing it, upstream's too: a foot window that closes fades as its
+  border alone, foot drops its buffer before the toplevel.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
