@@ -92,9 +92,12 @@ CRegion CWLSurface::computeDamage(const std::optional<CBox>& box) const {
     if (BUFSIZE.x <= 0 || BUFSIZE.y <= 0)
         return {};
 
-    const auto SCALEDSRCSIZE =
-        m_resource->m_current.viewport.hasSource ? m_resource->m_current.viewport.source.size() * m_resource->m_current.scale : m_resource->m_current.bufferSize;
-    if (SCALEDSRCSIZE.x <= 0 || SCALEDSRCSIZE.y <= 0)
+    // the buffer as the surface shows it: turned by its transform, and the part of it the viewport's source picks, in those
+    // pixels (the source is in surface coordinates before the buffer scale)
+    auto&      STATE  = m_resource->m_current;
+    const auto TURNED = STATE.transform % 2 == 1 ? Vector2D{BUFSIZE.y, BUFSIZE.x} : BUFSIZE;
+    const CBox SOURCE = STATE.viewport.hasSource ? CBox{STATE.viewport.source}.scale(STATE.scale) : CBox{{}, TURNED};
+    if (SOURCE.width <= 0 || SOURCE.height <= 0)
         return {};
 
     const auto SURFSIZE = m_resource->m_current.size;
@@ -119,17 +122,23 @@ CRegion CWLSurface::computeDamage(const std::optional<CBox>& box) const {
 
     const auto CORRECTVEC = correctSmallVecBuf();
 
-    CRegion    damage = m_resource->m_current.accumulateBufferDamage();
-    damage.transform(Math::wlTransformToHyprutils(m_resource->m_current.transform), BUFSIZE.x, BUFSIZE.y);
+    // Buffer pixels to the surface's: turned, the source cut out and stretched over the whole buffer, then scaled to the
+    // surface. The sizes after the turn are the turned buffer's: a buffer turned by a quarter had its damage stretched
+    // along one axis and squashed along the other, and a source's offset was not taken off (render checks: the updates
+    // of a turned subsurface did not reach the screen)
+    CRegion damage = STATE.accumulateBufferDamage();
+    damage.transform(Math::wlTransformToHyprutils(STATE.transform), BUFSIZE.x, BUFSIZE.y);
 
-    if (m_resource->m_current.viewport.hasSource)
-        damage.intersect(m_resource->m_current.viewport.source);
+    if (STATE.viewport.hasSource) {
+        damage.intersect(SOURCE);
+        damage.translate(-SOURCE.pos());
+    }
 
-    damage.scale({BUFSIZE.x / SCALEDSRCSIZE.x, BUFSIZE.y / SCALEDSRCSIZE.y});
+    damage.scale(TURNED / SOURCE.size());
     damage.translate(CORRECTVEC);
 
     // go from buffer coords in the damage to hl logical
-    damage.scale(SURFSIZE / BUFSIZE);
+    damage.scale(SURFSIZE / TURNED);
 
     if (boxSize)
         damage.intersect(CBox{{}, boxSize.value()});

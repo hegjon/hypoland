@@ -140,6 +140,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - A buffer a client shows magnified (a small video scaled up through a viewport) left a rim of old colour around every
   small update: the filtered pixels around an update reach half a magnified texel, several pixels, and only one or two
   were redrawn.
+- Small updates of a buffer a client shows turned by a quarter (a phone's or a camera's picture) or cut out of a larger
+  buffer (a video player that leaves off black bars) were redrawn in the wrong place, so most of them did not reach the
+  screen until something else redrew it.
 - On the Galaxy Book (freedreno) the edges in a window's contents were drawn a colour step off, and next to a small
   update the old colour could stay mixed in. Windows drawn at their own size now take the nearest pixel of their buffer
   instead of a filtered one, which is exact on every GPU and the cheaper fetch.
