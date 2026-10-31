@@ -720,23 +720,29 @@ Tools:
   Hyprland 0.57.0). `startup` (`clients/startup.py`, root, not in the default list: it restarts SDDM, and the rest of
   the list then runs in the new session; alone with `--rounds` for several starts) follows a fresh session from the
   start of the compositor process: `startup.ipc_ms` until IPC answers, `first_frame_ms` until its first page flip,
-  `wallpaper_ms` and `bar_ms` until the shell's layers are there, `cpu_ms` (the compositor with its ended threads) and
-  `session_cpu_ms` (uwsm's `wayland-wm@` service: the compositor, the shell, Xwayland) 20 s after the start, and
-  `mem.startup.*` then; `exec_ms` is the restart until the process, the same for any compositor. `launch`
-  (`clients/launch.py`, root) opens Omarchy's terminal with SUPER+RETURN on an empty workspace (5 to 9) and closes it
-  with SUPER+W, eight times after one that is not counted: `latency.launch.open_ms` / `close_ms` until the middle of the
-  screen first changes, `opened_ms` / `closed_ms` until it stays (animation over, terminal drawn); opening is mostly the
-  terminal's own start. `many-windows` puts 10, 20 and 40 foot windows, each printing five lines a second, in an even
-  floating grid (5x2, 5x4, 8x5: dwindle would leave the last ones a few pixels wide) and measures each count like a
-  workload (`cpu.many-windows-<n>.*` with `ms_per_frame`, `mem.many-windows-<n>.*`) and its focus and workspace switch
-  latency, with the printing paused (a printed line changed the switch's region first: -0.9 ms on the Galaxy Book).
-  First run, T550, master de57aacad (the 0.57 port), one round: IPC 416 ms, first frame 294 ms, wallpaper 1.8 s, bar 1.8
-  s, compositor 410 ms and session 19.4 s of CPU in the first 20 s (the shell and Omarchy's login scripts), 43.2 MiB
-  Pss; Omarchy's terminal (foot there) opens in 140 ms, drawn at 282, closes in 5.5; with 10 / 20 / 40 windows the
-  compositor takes 3.1 / 8.0 / 13.3% (1.15 / 1.39 / 2.22 ms a frame), Pss 44.6 / 46.1 / 48.5 MiB, a focus move 10 / 9 /
-  9 ms. Galaxy Book: IPC 261 ms, first frame 199, bar 0.6 s, the terminal 121 / 350 / 13 ms, 40 windows 5.4% (1.0 ms a
-  frame at 120 Hz); Mac mini: IPC 407, first frame 307, bar 2.1 s, 40 windows 14.6% (2.44 ms). `bench.sh --compare`
-  treats `startup.*_ms` like latencies with a noise floor of 30 ms.
+  `wallpaper_ms` and `bar_ms` until the shell's layers are there, `desktop_ms` until the startup cover Omarchy r7438
+  keeps over the screen (an overlay layer named like the wallpaper) is gone, `cpu_ms` (the compositor with its ended
+  threads) and `session_cpu_ms` (uwsm's `wayland-wm@` service: the compositor, the shell, Xwayland) 20 s after the
+  start, and `mem.startup.*` then; `exec_ms` is SDDM's start until the process, the same for any compositor. The session
+  is ended the way abnight.sh does it (SDDM stopped, the old compositor gone, the session targets stopped): a plain
+  restart under Hyprland 0.57.0 left SDDM's greeter, its session not ending in time and the new login failing to take
+  the VT. The compositor followed is the process that holds the instance lock, stock 0.57.0 starts a short-lived one of
+  the same name first. `launch` (`clients/launch.py`, root) opens Omarchy's terminal with SUPER+RETURN on an empty
+  workspace (5 to 9) and closes it with SUPER+W, eight times after one that is not counted: `latency.launch.open_ms` /
+  `close_ms` until the middle of the screen first changes, `opened_ms` / `closed_ms` until it stays (animation over,
+  terminal drawn); opening is mostly the terminal's own start. `many-windows` puts 10, 20 and 40 foot windows, each
+  printing five lines a second, in an even floating grid (5x2, 5x4, 8x5: dwindle would leave the last ones a few pixels
+  wide) and measures each count like a workload (`cpu.many-windows-<n>.*` with `ms_per_frame`, `mem.many-windows-<n>.*`)
+  and its focus and workspace switch latency, with the printing paused (a printed line changed the switch's region
+  first: -0.9 ms on the Galaxy Book). First run, T550, master de57aacad (the 0.57 port), one round: IPC 416 ms, first
+  frame 294 ms, bar 1.8 s, compositor 410 ms and session 19.4 s of CPU in the first 20 s (the shell and Omarchy's login
+  scripts), 43.2 MiB Pss; Omarchy's terminal (foot there) opens in 140 ms, drawn at 282, closes in 5.5; with 10 / 20 /
+  40 windows the compositor takes 3.1 / 8.0 / 13.3% (1.15 / 1.39 / 2.22 ms a frame), Pss 44.6 / 46.1 / 48.5 MiB, a focus
+  move 10 / 9 / 9 ms. Galaxy Book, Hypoland r871 against Hyprland 0.57.0-2 (2026-10-31, the median of 2 fresh sessions
+  each): IPC 262 / 425 ms, first frame 197 / 223, bar 606 / 781, desktop 2366 / 2541, compositor CPU in the first 20 s
+  350 / 920 ms with 227 / 1423 page flips, Pss then 44.9 / 151 MiB, the terminal 117 / 123 ms to open, 345 / 378 drawn;
+  40 windows 5.4% (1.0 ms a frame at 120 Hz); Mac mini: IPC 407, first frame 307, bar 2.1 s, 40 windows 14.6% (2.44 ms).
+  `bench.sh --compare` treats `startup.*_ms` like latencies with a noise floor of 30 ms.
 - `./bench.sh --energy <label>` measures energy instead of speed (added 2026-09-28, after omacom/ttfx#46): the
   power the machine draws under each workload, net of an idle baseline taken before and after it (`power.*.net_W`,
   `energy.*.net_J`, with the drift of the baseline as `pm_W`), the idle session itself (`power.baseline.W`) and
