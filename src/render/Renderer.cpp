@@ -2561,7 +2561,18 @@ void IHyprRenderer::damageSurface(SP<CWLSurfaceResource> pSurface, double x, dou
 
     const auto EXTENTS = damageBox.getExtents();
 
-    CRegion    damageBoxForEach;
+    // a texel's size in logical pixels: a viewport can magnify the buffer many times
+    double texelSize = 1.0;
+    {
+        const auto& ST  = pSurface->m_current;
+        Vector2D    SRC = ST.viewport.hasSource ? ST.viewport.source.size() * ST.scale : ST.bufferSize;
+        if (ST.transform % 2 == 1)
+            SRC = {SRC.y, SRC.x};
+        if (SRC.x > 0 && SRC.y > 0)
+            texelSize = std::max(ST.size.x / SRC.x, ST.size.y / SRC.y) * scale;
+    }
+
+    CRegion damageBoxForEach;
 
     for (auto const& m : State::monitorState()->monitors()) {
         if (!m->m_output)
@@ -2572,13 +2583,14 @@ void IHyprRenderer::damageSurface(SP<CWLSurfaceResource> pSurface, double x, dou
         damageBoxForEach.set(damageBox);
         damageBoxForEach.translate({-m->m_position.x, -m->m_position.y}).scale(m->m_scale);
 
-        // A surface that is not drawn texel for texel is filtered: a pixel up to a texel outside the damage takes in texels
-        // inside it, and at a fractional scale the box ends inside a pixel. Those pixels went stale (render checks at scale
-        // 1.5: a rim of old colour around every small update, up to 67 steps off)
+        // A surface that is not drawn texel for texel is filtered: a pixel up to half a texel outside the damage takes in
+        // texels inside it, and at a fractional scale the box ends inside a pixel. Those pixels went stale (render checks at
+        // scale 1.5: a rim of old colour around every small update, up to 67 steps off; the same around the updates of a
+        // buffer magnified 4.6 times by a viewport, where half a texel is more than two pixels)
         const bool TEXELFORTEXEL = m->m_scale == std::floor(m->m_scale) && pSurface->m_current.scale == m->m_scale && !pSurface->m_current.viewport.hasSource &&
             !pSurface->m_current.viewport.hasDestination;
         if (!TEXELFORTEXEL)
-            damageBoxForEach.expand(std::ceil(m->m_scale));
+            damageBoxForEach.expand(std::ceil(std::max<double>(m->m_scale, 0.5 * texelSize * m->m_scale + 1.0)));
 
         m->addDamage(damageBoxForEach);
     }

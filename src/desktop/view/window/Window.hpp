@@ -165,7 +165,10 @@ namespace Desktop::View {
         WindowState m_state = WINDOW_STATE_NONE;
 
         // for recovering relative cursor position
-        Vector2D      m_relativeCursorCoordsOnLastWarp = Vector2D(-1, -1);
+        Vector2D m_relativeCursorCoordsOnLastWarp = Vector2D(-1, -1);
+
+        // the surface's size at its last commit drawn, see commitWindow()
+        Vector2D      m_lastCommitSize;
 
         PHLWORKSPACE  m_workspace;
         PHLMONITORREF m_monitor, m_prevMonitor;

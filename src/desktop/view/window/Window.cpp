@@ -1150,6 +1150,7 @@ void CWindow::mapWindow() {
     m_workspace     = PWORKSPACE;
     m_isMapped      = true;
     m_presentation->setAnimatingIn(true);
+    m_lastCommitSize    = wlSurface() && wlSurface()->resource() ? wlSurface()->resource()->m_current.size : Vector2D{};
     const auto METADATA = m_backend->metadata();
     const auto TRAITS   = m_backend->traits();
     m_metadata->initializeOnFirstMap(METADATA.title, METADATA.appID);
@@ -1763,6 +1764,17 @@ void CWindow::commitWindow(bool initialCommit) {
 
     // damageSurface consumes damage, so snapshot it for the tearing check below
     const bool HADDAMAGE = !wlSurface()->resource()->m_current.damage.empty() || !wlSurface()->resource()->m_current.bufferDamage.empty();
+
+    // a surface that changed its size by itself leaves pixels its damage does not cover: a floating dialog that shrank
+    // stayed on the screen where it was larger (render checks)
+    const auto SIZE = wlSurface()->resource()->m_current.size;
+    if (SIZE != m_lastCommitSize) {
+        if (m_lastCommitSize.x > 0 && m_lastCommitSize.y > 0) {
+            g_pHyprRenderer->damageWindow(m_self.lock());
+            g_pHyprRenderer->damageBox(CBox{m_realPosition->goal(), m_lastCommitSize / m_backend->surfaceScale()}.expand(1));
+        }
+        m_lastCommitSize = SIZE;
+    }
 
     g_pHyprRenderer->damageSurface(wlSurface()->resource(), m_realPosition->goal().x, m_realPosition->goal().y, 1.0 / m_backend->surfaceScale());
 

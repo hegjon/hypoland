@@ -289,6 +289,10 @@ void CSubsurface::onMap() {
 
 void CSubsurface::onUnmap() {
     damageLastArea();
+    // where it is drawn now: a move the parent's commit applied after the subsurface's own last commit is not in the
+    // last area, and the subsurface stayed on the screen there (render checks: a subsurface moved, then destroyed)
+    if (m_subsurface && m_wlSurface && m_wlSurface->resource())
+        g_pHyprRenderer->damageBox(CBox{coordsGlobal(), m_wlSurface->resource()->m_current.size}.expand(4));
 
     m_hasLastRecheckGeometry = false;
 
@@ -310,7 +314,7 @@ void CSubsurface::damageLastArea() {
         } :
         m_lastSize;
 
-    CBox           box{COORDS, m_lastSize};
+    CBox           box{COORDS, MAX_DAMAGE_SIZE};
     box.expand(4);
     g_pHyprRenderer->damageBox(box);
 }

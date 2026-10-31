@@ -132,6 +132,14 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - At a fractional scale (1.5 on a ThinkPad T550 and a T460s) every small update of a window left a thin rim of its old
   colour around it: a scaled window is filtered, so the pixels just outside the update change too, but they were not
   redrawn. A scaled window's damage now reaches a pixel or two further.
+- A subsurface (the video of a player, a toolkit's embedded view) that moved within its window and was then closed stayed
+  on the screen where it had been, until something else redrew that place: closing it redrew where it was at its own
+  last update, not where its window had moved it since.
+- A floating window that made itself smaller, as a dialog that hides a part, left its old size on the screen around the
+  new one until something else redrew that place.
+- A buffer a client shows magnified (a small video scaled up through a viewport) left a rim of old colour around every
+  small update: the filtered pixels around an update reach half a magnified texel, several pixels, and only one or two
+  were redrawn.
 - On the Galaxy Book (freedreno) the edges in a window's contents were drawn a colour step off, and next to a small
   update the old colour could stay mixed in. Windows drawn at their own size now take the nearest pixel of their buffer
   instead of a filtered one, which is exact on every GPU and the cheaper fetch.
