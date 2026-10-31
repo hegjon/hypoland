@@ -1058,7 +1058,16 @@ Tools:
   sampled with the linear filter, and freedreno puts the texel centers a hair off, so a sliver of the neighbours mixed in
   and a pixel next to a damaged area kept the mix with what its neighbour showed before; a surface drawn texel for texel
   (its box in pixels the texture's size, the whole texture, no buffer transform, no render modifier) takes the nearest
-  texel now (`IElementRenderer::drawSurface()`), which Intel and AMD showed the same way already.
+  texel now (`IElementRenderer::drawSurface()`), which Intel and AMD showed the same way already. On the T550 and the T460s
+  (scale 1.5) 9000 to 24000 pixels differed from a full repaint after the small updates: one-pixel rims around every
+  updated rectangle, up to 67 steps off, since a scaled surface is filtered and the pixels next to its damage take in the
+  texels inside; a surface not drawn texel for texel damages `ceil(scale)` pixels more all round now
+  (`IHyprRenderer::damageSurface()`), and both pass. The pixel checks need an integer scale and are skipped at 1.5. Where
+  `hypoland-kmsgrab` and grim disagree on a still screen the check reads through grim (`choose_grab()`), and it switches the
+  screen on first. Open: lianli (r600, legacy modesetting) fails the pixel checks with zero copy and passes them with
+  `HYPOLAND_SHM_ZEROCOPY=0`, but neither capture is trustworthy there yet (kmsgrab can return a buffer of the swapchain the
+  screen is not showing, grim came back black in fresh sessions), so whether r600 shows zero-copy windows wrong is not
+  known.
 - A closing window's fade damages only where it is drawn (2026-10-31, `CWindowFadeout::damage()`): upstream's fade-out
   damaged the whole monitor on every animation step, so closing a window repainted the screen for half a second (Omarchy's
   `windowsOut` and `fadeOut`). The snapshot is still the monitor's size; the window's part of it (`m_contentBox`: its frame

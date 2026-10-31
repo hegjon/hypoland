@@ -129,6 +129,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   clients whose memory can be shared with the GPU) could stay off the screen until something else redrew that place. The
   compositor took the update's damage to write the client's caches back and left none for the redraw. Found by the new
   render checks, which drew 96 small rectangles of which the X200 showed about 20.
+- At a fractional scale (1.5 on a ThinkPad T550 and a T460s) every small update of a window left a thin rim of its old
+  colour around it: a scaled window is filtered, so the pixels just outside the update change too, but they were not
+  redrawn. A scaled window's damage now reaches a pixel or two further.
 - On the Galaxy Book (freedreno) the edges in a window's contents were drawn a colour step off, and next to a small
   update the old colour could stay mixed in. Windows drawn at their own size now take the nearest pixel of their buffer
   instead of a filtered one, which is exact on every GPU and the cheaper fetch.
