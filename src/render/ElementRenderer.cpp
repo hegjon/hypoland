@@ -277,6 +277,14 @@ void IElementRenderer::drawSurface(WP<CSurfacePassElement> element, const CRegio
 
     calculateUVForSurface(m_data.pWindow, m_data.surface, m_data.pMonitor->m_self.lock(), m_data.mainSurface, windowBox.size(), PROJSIZEUNSCALED, MISALIGNEDFSV1);
 
+    // A surface drawn texel for texel takes the nearest texel. Filtered linearly, a GPU that puts the texel centers a hair
+    // off mixes a sliver of the neighbours in: on freedreno every edge in a window's content showed a colour step off, and a
+    // pixel next to a damaged area kept the mix with what its neighbour showed before (clients/render.py of the bench).
+    // The nearest texel is also the cheaper fetch on old GPUs
+    if (!m_renderData.useNearestNeighbor && m_renderData.primarySurfaceUVTopLeft == Vector2D(-1, -1) && m_data.surface->m_current.transform == WL_OUTPUT_TRANSFORM_NORMAL &&
+        windowBox.size() == TEXTURE->m_size && (!m_renderData.renderModif.enabled || m_renderData.renderModif.modifs.empty()))
+        m_renderData.useNearestNeighbor = true;
+
     auto    cancelRender = false;
     CRegion clipRegion;
 
