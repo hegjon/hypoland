@@ -42,6 +42,7 @@ class CWLSHMBuffer : public IHLBuffer {
     virtual bool                                   isSynchronous();
     virtual void                                   flushCPUWrites(const CRegion& bufferDamage);
     virtual bool                                   needsCPUFlush();
+    virtual bool                                   onAttach(bool copyPreferred);
     virtual Aquamarine::SSHMAttrs                  shm();
     virtual Aquamarine::SDMABUFAttrs               dmabuf();
     virtual std::tuple<uint8_t*, uint32_t, size_t> beginDataPtr(uint32_t flags);
@@ -61,7 +62,9 @@ class CWLSHMBuffer : public IHLBuffer {
 
     bool                           tryZeroCopy();
 
-    bool                           m_zeroCopy = false; // the texture samples the client's memory through a udmabuf, see Shm.cpp
+    bool                           m_zeroCopy        = false; // the texture samples the client's memory through a udmabuf, see Shm.cpp
+    bool                           m_zeroCopyPending = false; // allowed, decided at an attach, see onAttach()
+    uint32_t                       m_attaches        = 0;
     Aquamarine::SDMABUFAttrs       m_dmabufAttrs;
     Hyprutils::OS::CFileDescriptor m_dmabufFd;
 };
