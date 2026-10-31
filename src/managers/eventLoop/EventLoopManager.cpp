@@ -9,7 +9,6 @@
 #include <limits>
 #include <ranges>
 
-#include <poll.h>
 #include <sys/timerfd.h>
 #include <ctime>
 
@@ -136,20 +135,11 @@ void CEventLoopManager::enterLoop() {
     if (g_pCompositor->m_aqBackend->hasSession())
         g_pCompositor->m_aqBackend->session->dispatchPendingEventsAsync();
 
-    // wl_display_run(), with the realtime guard told when the thread sleeps (NInit::gainRealTime()): the loop's fd is
-    // polled here first, so a wake-up is only counted when nothing was ready and the thread really slept
-    const int FD = wl_event_loop_get_fd(m_wayland.loop);
+    // wl_display_run(), counting the rounds for the realtime guard (NInit::gainRealTime())
     while (!g_pCompositor->m_isShuttingDown) {
         wl_display_flush_clients(m_wayland.display);
-
-        pollfd pfd = {.fd = FD, .events = POLLIN, .revents = 0};
-        if (poll(&pfd, 1, 0) == 0) {
-            NInit::loopAsleep();
-            poll(&pfd, 1, -1);
-            NInit::loopAwake();
-        }
-
-        wl_event_loop_dispatch(m_wayland.loop, 0);
+        NInit::loopRound();
+        wl_event_loop_dispatch(m_wayland.loop, -1);
     }
 
     Log::logger->log(Log::DEBUG, "Kicked off the event loop! :(");
