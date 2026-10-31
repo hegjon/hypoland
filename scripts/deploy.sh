@@ -2,8 +2,9 @@
 # Builds the Arch package from the working tree and installs it on test machines (see
 # ~/Work/infrastructure/MACHINES.md): copies it into the pacman cache there, so the versions before it stay for going
 # back, installs it with pacman, restarts SDDM (which logs in again) and checks the new session with
-# `scripts/bench/measure.sh --mode check`, sent there by scripts/bench/target.sh. Logs in as root@<host>. The hosts
-# are deployed in parallel, each into its own log.
+# `scripts/bench/measure.sh --mode check`, sent there by scripts/bench/target.sh. A passing check ends with one more
+# restart, which the checked compositor has to leave without a core dump. Logs in as root@<host>. The hosts are
+# deployed in parallel, each into its own log.
 #
 # Usage: scripts/deploy.sh [options] host...
 #
@@ -89,8 +90,19 @@ commit_pkgver() { # hosts that got the package
 
 # ---- one host, its output goes into its log
 
+new_session() { # host: restarts SDDM, which logs in again, and waits until a new compositor holds the lock of its instance
+    local h=$1 old
+    old=$("${SSH[@]}" "root@$h" "pgrep -n -x hypoland")
+    "${SSH[@]}" "root@$h" "systemctl restart sddm"
+    "${SSH[@]}" "root@$h" "for i in \$(seq 1 60); do
+            P=\$(pgrep -n -x hypoland)
+            [ -n \"\$P\" ] && [ \"\$P\" != '$old' ] && grep -qx \"\$P\" /run/user/*/hypr/*/hyprland.lock 2>/dev/null && exit 0
+            sleep 1
+        done; exit 1"
+}
+
 deploy() { # host
-    local h=$1 arch old p out dir
+    local h=$1 arch old p out dir since
     local cached=()
     if ! "${SSH[@]}" "root@$h" true; then
         echo "FAIL  ssh root@$h"
@@ -118,14 +130,7 @@ deploy() { # host
     fi
 
     if [ "$RESTART" = 1 ]; then
-        # SDDM logs in again, the new compositor writes its pid into the lock file of its instance
-        old=$("${SSH[@]}" "root@$h" "pgrep -n -x hypoland")
-        "${SSH[@]}" "root@$h" "systemctl restart sddm"
-        if "${SSH[@]}" "root@$h" "for i in \$(seq 1 60); do
-                P=\$(pgrep -n -x hypoland)
-                [ -n \"\$P\" ] && [ \"\$P\" != '$old' ] && grep -qx \"\$P\" /run/user/*/hypr/*/hyprland.lock 2>/dev/null && exit 0
-                sleep 1
-            done; exit 1"; then
+        if new_session "$h"; then
             echo "PASS  new session after restarting SDDM"
         else
             echo "FAIL  no new compositor within 60 s of restarting SDDM"
@@ -142,7 +147,26 @@ deploy() { # host
         scp -q "root@$h:$dir/*.png" "$OUT/$h/" 2>/dev/null
         "${SSH[@]}" "root@$h" "rm -rf '$dir'"
     fi
-    grep -q "^RESULT: PASS" <<<"$out"
+    grep -q "^RESULT: PASS" <<<"$out" || return 1
+
+    # the checked compositor has to exit cleanly as well: a crash at the end of a session is seen by nobody (lianli
+    # dumped core at most session ends from 2026-10-30, a layer freed during the shutdown), so end it with one more
+    # restart and look for its core dump
+    [ "$RESTART" = 1 ] || return 0
+    old=$("${SSH[@]}" "root@$h" "pgrep -n -x hypoland")
+    since=$("${SSH[@]}" "root@$h" "date +%s")
+    if ! new_session "$h"; then
+        echo "FAIL  no new compositor within 60 s of restarting SDDM after the checks"
+        return 1
+    fi
+    # systemd-coredump takes a few seconds to write the core
+    p=$("${SSH[@]}" "root@$h" "sleep 5; coredumpctl list --no-legend --no-pager --since @$since $old 2>/dev/null | awk '{print \$8}'")
+    if [ -z "$p" ]; then
+        echo "PASS  the checked compositor exited without a core dump"
+    else
+        echo "FAIL  the checked compositor dumped core on exit ($p, coredumpctl info $old as root)"
+        return 1
+    fi
 }
 
 declare -A PIDS
