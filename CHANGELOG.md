@@ -94,6 +94,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Added
 
+- Render checks in the session check of `hypoland-bench`: windows of the check's own, drawn pixel by pixel, through
+  whole buffers, small updates, new buffers, a transparent dialog, a move and a close; every step has to show exactly
+  what was drawn and match a full repaint of the same scene, read from the buffer the screen scans out.
 - Configs written for Hyprland 0.57.0 load without errors: the `layers` category, `decoration:blur:proportional`,
   `input:swallow_focus_click`, `input:tablet:enabled`, `binds:client_requested_fs_uses_layout_handler`,
   `render:async_commit` (accepted, not available), `binds:workspace_back_and_forth` and `scrolling:follow_focus` with
@@ -122,6 +125,13 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- Small updates of a window drawn straight from its memory (zero copy: foot, Qt's software windows and other shm
+  clients whose memory can be shared with the GPU) could stay off the screen until something else redrew that place. The
+  compositor took the update's damage to write the client's caches back and left none for the redraw. Found by the new
+  render checks, which drew 96 small rectangles of which the X200 showed about 20.
+- On the Galaxy Book (freedreno) the edges in a window's contents were drawn a colour step off, and next to a small
+  update the old colour could stay mixed in. Windows drawn at their own size now take the nearest pixel of their buffer
+  instead of a filtered one, which is exact on every GPU and the cheaper fetch.
 - The compositor could be killed in the middle of a session without a trace, and the session started over with every
   window gone. It runs with realtime priority, which rtkit grants only with a limit on how long it may run without a
   pause, and the kernel stops a thread that passes the limit inside a single long system call (in a graphics driver, for
