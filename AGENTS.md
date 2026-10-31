@@ -172,6 +172,22 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   investigated) and the Galaxy Book (21.5 -> 25.6), the Galaxy Book's workspace switch and menu by about a point,
   its GTK 4 client (Vulkan) at 3.5 to 20% against a steady 3.5% with the compositor the same, the X200's `resize` at
   twice the frames, and a focus change 0.3 to 1 ms slower on the crocus machines.
+- The baseline against Hyprland 0.57.0 is `docs/baseline/20261030-all-machines-r871-vs-hyprland-0.57.0/` (the night of
+  2026-10-30 to 31, made the same way): Hypoland r871 (master 9189141d0, the 0.57.0 port with the zero-copy flush fix)
+  against Hyprland 0.57.0-2 on the same eight machines (not the T490), 10 to 12 fresh sessions of each, every workload
+  with `launch` and `many-windows` (not `startup`), `raw.txt` with every block's values. Hyprland 0.57.0 runs with
+  `quirks:skip_non_kms_dmabuf_formats = false`: its default broke the T550's session under Omarchy r7438 (no wallpaper,
+  no EGL config with alpha). Hypoland costs less compositor CPU in nearly every workload (shm windows a fifth to a tenth
+  of Hyprland's with zero copy: `terminal-scroll` T550 11.9 -> 2.9%, XPS 22.5 -> 3.1), 40 to 44 MiB Pss at the start
+  against 113 to 116 (149 on the Galaxy Book), 46 to 54 at the end against 114 to 154, has Omarchy's terminal open and
+  drawn 34 to 150 ms sooner, and shows more frames on the X200 in most workloads (`resize` and the sprites 60 against
+  30). Behind it that night: a focus change among many windows and many windows' CPU on the X200 (both fixed the next
+  morning, see the animation tick and `HYPOLAND_SHM_ZEROCOPY` under Tools), a toast on the T550 and the T460s (bimodal
+  in every build since r761, open), the terminal closing on the Mac mini (8 against 4 ms) and the Chromebook, kitty's
+  frames on the Chromebook (15 against 22 fps), the Galaxy Book's workspace switch and menu as before. Hyprland 0.57.0
+  died five times without a core dump, killed by a signal (start-hyprland's `Couldn't waitpid for hyprland: No child
+  processes` is how its wait loop reports that), Hypoland once (the X200, at the end of `dev`); `/root/sigtrace/` on
+  every machine has a perf trace of the signals sent on the morning of 2026-10-31, to find the sender.
 
 ## Hard constraints
 
@@ -658,6 +674,10 @@ Tools:
     check showed the clients 3 to 6 points higher: the check's leftovers in that session, not the build. Found with
     `profile.sh` (kernel `do_anonymous_page` under
     `CGLTexture::update`) and gdb with Arch's debuginfod for the Mesa frames.
+    Since 2026-10-31 a destroyed surface schedules the same trim (`~CWLSurfaceResource()`): zero copy never uploads, so
+    what closed windows had freed stayed in the heap (at the end of a run 14.3 -> 12.8 MiB on the T460s, 14.6 -> 13.1 on
+    lianli, anonymous Pss 1.5 MiB lower; a nested session that opens and closes 40 foot windows twice ends below its
+    start, so what the machines keep comes from the session's other work).
   - - The copy itself is the compositor's time under shm windows: profiles of 2026-10-28
     (`test-results/profile-20261028-*`) have Mesa's `linear_to_ytiled_faster` at 64 to 81% of the samples in
     `terminal-scroll`, `gtk3-scroll` and the sprites on iris (T550, XPS), libc's memcpy into Mesa's staging texture at
@@ -830,6 +850,20 @@ Tools:
   10.7, Mac mini 26.1 -> 13.9, lianli 17.6 -> 12.1 (`redrawn` 2 to 10 ms sooner); GTK 3, frames and Pss the same, GPU
   memory at the end of a run 20 MB lower on the XPS. Deploy checks pass with it on the XPS,
   T460s, Mac mini, lianli and T550; two scanout captures of a scrolling foot differ, so nothing is stale.
+  Since 2026-10-31 the decision is made at a buffer's attach, per surface (`CWLSHMBuffer::onAttach()`,
+  `CWLSurfaceResource::m_shmFresh`): foot scrolls by attaching a new `wl_buffer` further on in its pool for every line,
+  so a printing terminal made a udmabuf and an EGL import per commit (6967 in two minutes of `many-windows` on the Galaxy
+  Book with zero copy forced), which under many small windows cost more than copying them. A surface whose last eight
+  attaches were mostly new buffers gets those below 1 MiB (256 kB on radeon, where a copy is a staging texture and a
+  blit) copied; a copied buffer is sampled in place from a later attach once the surface reuses its buffers, never the
+  other way (going back to copies uploads the whole buffer: a per-buffer rule, zero copy only from a buffer's second
+  attach, lost for that reason, Chromebook `terminal-scroll` 5.4 -> 11.2%). Per frame with 10 / 20 / 40 windows of
+  `many-windows` (5 to 8 fresh sessions each): X200 2.47 / 3.36 / 5.42 -> 1.44 / 1.99 / 3.22 ms (Hyprland 0.57.0: 1.91
+  / 2.30 / 3.44), Chromebook 2.58 / 3.66 / 5.92 -> 1.96 / 2.88 / 4.82, Mac mini 1.10 / 1.54 / 2.52 -> 0.99 / 1.29 / 2.02,
+  T460s 1.04 / 1.40 / 2.03 -> 0.98 / 1.34 / 1.81, lianli 2.46 -> 2.25 with 40; the rest of the benchmark and memory the
+  same, a focus change among the windows 0.2 to 0.35 ms later. The write-back of GM45 and Bay Trail was not the cost:
+  without it (`force`) the Chromebook paid the same and the X200 0.2 to 0.8 of its 1.3 to 2.2 ms. Measurements and
+  scripts: `test-results/morning-20261031/`.
 - `HYPOLAND_ALPHA_BOUNDS` (2026-10-29, asked for as "can omarchy-shell be drawn differently"): a layer surface with an alpha
   channel is blended over everything under it, also where its pixels are fully transparent, and Omarchy's shell
   (Quickshell: four layer surfaces per output, ARGB8888 dmabufs from Qt's GL swapchain, never an opaque region,
@@ -949,6 +983,19 @@ Tools:
   each): the focus change 3.9 -> 3.35 ms (Hyprland 0.56.2: 3.6), 3.95 -> 3.4 in `workspace-switch`, 6.15 -> 5.4 under
   `dev`; compositor CPU `dev` 4.88 -> 4.53%, `workspace-switch` 2.50 -> 2.32, the session under `dev` 18.6 -> 17.4;
   Pss at the end of a run 45.4 -> 44.0 MB; `dev.type_ms` 2.9 -> 3.6 is the one figure that went the other way there.
+- Animations take their values for the next vblank (2026-10-31, `CMonitor::nextPresentation()`, `curveStep()` in
+  `AnimationManager.cpp`): hyprutils' `getCurveStep()` reads the clock itself, in whole milliseconds, when the frame is
+  drawn, so a frame drawn right after an animation began showed its start value. The baseline against Hyprland 0.57.0 had
+  a focus change among many windows a frame late (T550 3.4 -> 13.7 ms): a perf timeline on the Galaxy Book
+  (`test-results/morning-20261031/galaxybook-zctrace/`, `zcan.py`) had every measured step equal one of the compositor's
+  commits, the first when it came 2.5 ms or later after the key, the next one when it came sooner, since Omarchy's border
+  fades with easeOutQuint over 539 ms. Zero copy made the first frame come sooner, which made it look like a zero-copy
+  delay. The tick now computes a bezier animation's value for the next vblank of the monitor that renders (the fastest
+  for timer ticks), from the last vblank the hardware stamped and the refresh period; springs, VRR and tearing keep the
+  tick's own time. 6 to 8 fresh sessions each: a focus change among 10 / 20 / 40 windows XPS 10.2 / 16.8 / 18.0 -> 2.1 /
+  2.5 / 2.8 ms, T550 14.4 / 14.4 / 13.4 -> 1.8 / 2.1 / 2.7, Galaxy Book 5.1 / 3.6 / 3.4 -> 2.4 / 2.1 / 2.0;
+  `launch.opened` 31, 19 and 8 ms sooner; CPU and the other latencies the same within their spread (the XPS's menu
+  opening 317 -> 328 ms, its blocks 296 to 322 against 318 to 338, the T550's and Galaxy Book's unchanged).
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 

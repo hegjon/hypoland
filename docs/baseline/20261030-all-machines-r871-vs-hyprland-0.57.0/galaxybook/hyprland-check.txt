@@ -1,0 +1,39 @@
+machine: galaxybook, 7.3.0-3-omarchy, 12 cores, 15419 MiB
+compositor: /usr/bin/Hyprland, pid 1660162, user a, instance 0aa6745f705f2c4b0a5004eb019ef76e5bbdb426_1793395942_1439583076
+clocksource: arch_sys_counter
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.57.0 built from branch v0.57.0 at commit 0aa6745f705f2c4b0a5004eb019ef76e5bbdb426 clean
+INFO  
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output eDP-1: 2880x1800@120.00100
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+PASS  the screen shows the window (85% of the scanned-out buffer is the test color)
+PASS  test window drawn (85% of the screen is the test color)
+PASS  Chromium draws its page (83% of the screen is the test color, after 5 s)
+PASS  GTK 3 window drawn (88% of the screen is the test color, after 5 s)
+PASS  GTK 3 window at 116 fps (renderer cairo)
+PASS  GTK 4 window drawn (88% of the screen is the test color, after 5 s)
+PASS  GTK 4 window at 116 fps (renderer vulkan)
+PASS  GTK 3 (Xwayland) window drawn (89% of the screen is the test color, after 6 s)
+PASS  GTK 3 (Xwayland) window at 58 fps (renderer cairo)
+PASS  Qt Quick window drawn (88% of the screen is the test color, after 5 s)
+PASS  Qt Quick window at 118 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (88% of the screen is the test color, after 5 s)
+PASS  Qt Quick (software) window at 87 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (91% of the screen is the test color, after 5 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 120 fps
+PASS  X11 client through Xwayland (glxgears) at 119 fps
+INFO  compositor memory: Rss: 212 MiB, Pss: 168 MiB, Anonymous: 132 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+PASS  no core dumps
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.gJy5q7 on galaxybook
+RESULT: PASS

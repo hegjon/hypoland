@@ -1,0 +1,39 @@
+machine: t460s, 7.2.8-10-omarchy, 4 cores, 19843 MiB
+compositor: /usr/bin/Hyprland, pid 360628, user a, instance 0aa6745f705f2c4b0a5004eb019ef76e5bbdb426_1793395933_2034271448
+clocksource: tsc
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.57.0 built from branch v0.57.0 at commit 0aa6745f705f2c4b0a5004eb019ef76e5bbdb426 clean
+INFO  
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output eDP-1: 1920x1080@60.02000
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+PASS  the screen shows the window (82% of the scanned-out buffer is the test color)
+PASS  test window drawn (82% of the screen is the test color)
+PASS  Chromium draws its page (79% of the screen is the test color, after 1 s)
+PASS  GTK 3 window drawn (85% of the screen is the test color, after 2 s)
+PASS  GTK 3 window at 48 fps (renderer cairo)
+PASS  GTK 4 window drawn (85% of the screen is the test color, after 1 s)
+PASS  GTK 4 window at 59 fps (renderer vulkan)
+PASS  GTK 3 (Xwayland) window drawn (86% of the screen is the test color, after 1 s)
+PASS  GTK 3 (Xwayland) window at 60 fps (renderer cairo)
+PASS  Qt Quick window drawn (85% of the screen is the test color, after 1 s)
+PASS  Qt Quick window at 60 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (86% of the screen is the test color, after 1 s)
+PASS  Qt Quick (software) window at 60 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (87% of the screen is the test color, after 1 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 60 fps
+PASS  X11 client through Xwayland (glxgears) at 60 fps
+INFO  compositor memory: Rss: 156 MiB, Pss: 118 MiB, Anonymous: 84 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+PASS  no core dumps
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.SDkt3v on t460s
+RESULT: PASS

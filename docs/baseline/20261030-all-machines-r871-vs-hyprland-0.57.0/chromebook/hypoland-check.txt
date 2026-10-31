@@ -1,0 +1,39 @@
+machine: chromebook, 7.2.8-10-omarchy, 2 cores, 3815 MiB
+compositor: /usr/bin/hypoland, pid 522838, user a, instance 9189141d08550407146e643c642d3473a95e9295_1793394952_674733883
+clocksource: tsc
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.56.0 built from branch  at commit 9189141d08550407146e643c642d3473a95e9295 clean
+INFO  Hypoland 0.2.0, based on Hyprland 0.56.0
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output eDP-1: 1366x768@59.97300
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+PASS  the screen shows the window (84% of the scanned-out buffer is the test color)
+PASS  test window drawn (84% of the screen is the test color)
+PASS  Chromium draws its page (80% of the screen is the test color, after 2 s)
+PASS  GTK 3 window drawn (86% of the screen is the test color, after 1 s)
+PASS  GTK 3 window at 56 fps (renderer cairo)
+PASS  GTK 4 window drawn (86% of the screen is the test color, after 1 s)
+PASS  GTK 4 window at 58 fps (renderer vulkan)
+PASS  GTK 3 (Xwayland) window drawn (85% of the screen is the test color, after 2 s)
+PASS  GTK 3 (Xwayland) window at 56 fps (renderer cairo)
+PASS  Qt Quick window drawn (85% of the screen is the test color, after 2 s)
+PASS  Qt Quick window at 60 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (86% of the screen is the test color, after 1 s)
+PASS  Qt Quick (software) window at 60 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (86% of the screen is the test color, after 1 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 60 fps
+PASS  X11 client through Xwayland (glxgears) at 60 fps
+INFO  compositor memory: Rss: 78 MiB, Pss: 44 MiB, Anonymous: 21 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+PASS  no core dumps
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.faKrL6 on chromebook
+RESULT: PASS
