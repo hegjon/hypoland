@@ -2575,16 +2575,20 @@ void CHyprOpenGLImpl::scheduleShaderCompilerRelease() {
 // Mesa uploads a shm window into an idle tiled texture through a temporary of the window's size that it mallocs and
 // frees per upload (crocus from Gen 5, iris). glibc keeps that memory (CCompositor::setMallocThreshold()), so the
 // kernel does not fault and clear it in again for every frame; it is given back once no upload has come for a while.
+// A destroyed surface schedules the trim as well: what a closed window, menu or popup freed stays in the heap too,
+// and clients whose buffers are sampled in place (zero copy) never upload. 40 foot windows opened and closed left
+// 4 MiB of free heap behind for good (2026-10-31).
 static constexpr auto HEAP_TRIM_DELAY = std::chrono::seconds(5);
 
 void                  CHyprOpenGLImpl::scheduleHeapTrim() {
-    m_lastShmUpload = std::chrono::steady_clock::now();
+    m_lastHeapChurn = std::chrono::steady_clock::now();
 
     if (!m_heapTrimTimer || !m_heapTrimTimer->armed())
         armHeapTrim(HEAP_TRIM_DELAY);
 }
 
-// The trim comes once the uploads have stopped for HEAP_TRIM_DELAY, or at the delay given when m_trimHeapNow is set
+// The trim comes once uploads and destroyed surfaces have stopped for HEAP_TRIM_DELAY, or at the delay given when
+// m_trimHeapNow is set
 void CHyprOpenGLImpl::armHeapTrim(std::chrono::milliseconds delay) {
     if (!g_pEventLoopManager)
         return;
@@ -2594,7 +2598,7 @@ void CHyprOpenGLImpl::armHeapTrim(std::chrono::milliseconds delay) {
             std::nullopt,
             [this](SP<CEventLoopTimer> self, void* data) {
                 if (!m_trimHeapNow) {
-                    const auto IDLE = std::chrono::steady_clock::now() - m_lastShmUpload;
+                    const auto IDLE = std::chrono::steady_clock::now() - m_lastHeapChurn;
                     if (IDLE < HEAP_TRIM_DELAY) {
                         self->updateTimeout(std::chrono::duration_cast<std::chrono::milliseconds>(HEAP_TRIM_DELAY - IDLE));
                         return;
