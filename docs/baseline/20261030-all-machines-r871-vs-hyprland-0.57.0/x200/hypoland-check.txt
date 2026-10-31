@@ -1,0 +1,39 @@
+machine: x200, 7.2.8-10-omarchy, 2 cores, 5809 MiB
+compositor: /usr/bin/hypoland, pid 80536, user a, instance 9189141d08550407146e643c642d3473a95e9295_1793394928_135059423
+clocksource: hpet
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.56.0 built from branch  at commit 9189141d08550407146e643c642d3473a95e9295 clean
+INFO  Hypoland 0.2.0, based on Hyprland 0.56.0
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output LVDS-1: 1280x800@60.00200
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+PASS  the screen shows the window (85% of the scanned-out buffer is the test color)
+PASS  test window drawn (85% of the screen is the test color)
+PASS  Chromium draws its page (81% of the screen is the test color, after 1 s)
+PASS  GTK 3 window drawn (86% of the screen is the test color, after 1 s)
+PASS  GTK 3 window at 59 fps (renderer cairo)
+PASS  GTK 4 window drawn (85% of the screen is the test color, after 1 s)
+PASS  GTK 4 window at 59 fps (renderer cairo)
+PASS  GTK 3 (Xwayland) window drawn (85% of the screen is the test color, after 1 s)
+PASS  GTK 3 (Xwayland) window at 53 fps (renderer cairo)
+PASS  Qt Quick window drawn (85% of the screen is the test color, after 1 s)
+PASS  Qt Quick window at 57 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (86% of the screen is the test color, after 1 s)
+PASS  Qt Quick (software) window at 60 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (86% of the screen is the test color, after 0 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 60 fps
+PASS  X11 client through Xwayland (glxgears) at 60 fps
+INFO  compositor memory: Rss: 79 MiB, Pss: 45 MiB, Anonymous: 20 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+PASS  no core dumps
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.XjWpPk on x200
+RESULT: PASS

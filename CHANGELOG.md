@@ -8,6 +8,22 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Faster
 
+- Animations show their first step in the first frame. A frame reaches the screen at the next vblank, up to a refresh
+  after it is drawn, but animations took their values for the moment it was drawn, in whole milliseconds, so a frame
+  drawn right after something began to animate showed the start: a focus change among many windows showed the new
+  border colour a frame later whenever the compositor answered within about 2 ms. Values are now taken for the vblank
+  the frame is shown at. A focus change among 10 to 40 floating terminals shows in 1.8 to 2.7 ms instead of 13 to 14 on
+  a ThinkPad T550 and 2.1 to 2.8 instead of 10 to 18 on a Dell XPS 13, and Omarchy's terminal has opened 19 and 31 ms
+  sooner there.
+- Many small terminals that print cost much less CPU on the X200. foot scrolls by showing a new buffer further on in its
+  memory for every line, and the compositor set every new buffer up to be read in place, which costs more than copying
+  a small window. A small window that keeps sending new buffers is copied now; a large one, or one that reuses its
+  buffers, is still read in place. With 10, 20 and 40 terminals printing, the compositor takes 1.4, 2.0 and 3.2 ms a
+  frame instead of 2.5, 3.4 and 5.4 on the X200 (stock Hyprland 0.57.0: 1.9, 2.3 and 3.4), a fifth less on a Dell
+  Chromebook 11 and a Mac mini 2014 with 40.
+- Closed windows give their memory back: the heap was only trimmed after uploads, which windows read in place never
+  make. It is trimmed a few seconds after the last closed window now, 1.5 MB less memory at the end of a benchmark run.
+
 - A focus change under Omarchy's input method no longer compiles and writes out the keyboard layout again. fcitx5
   grabs the keyboard and recreates its virtual keyboard with the keymap it got back on every focus change, and the
   compositor compiled that 100 kB of text, wrote it twice in two formats into four shared-memory files, copied it once
@@ -104,6 +120,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- A shell panel the compositor leaves out because it is fully transparent (Omarchy's empty notification column, its
+  hidden dock) got no frame callbacks while it was left out, so a client that asked for one without drawing anything new
+  waited for its next change.
 - Old characters flashed up in terminals on the X200 and other Intel GPUs without a last-level cache (GM45, Bay Trail)
   while a line was rewritten in place, as in progress bars. The compositor shows such windows straight from the
   client's memory and writes the changed lines out of the CPU caches first, but only those of the frame itself; foot

@@ -1,0 +1,1 @@
+no compositor is running (looked for hypoland, Hypoland, Hyprland)
