@@ -6,6 +6,7 @@
 #include "../types/WLBuffer.hpp"
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <ranges>
 #include "Subcompositor.hpp"
 #include "../Viewporter.hpp"
@@ -126,6 +127,14 @@ CWLSurfaceResource::CWLSurfaceResource(SP<CWlSurface> resource_) : m_resource(re
         auto buf = buffer ? CWLBufferResource::fromResource(buffer) : nullptr;
 
         if (buf && buf->m_buffer) {
+            const bool FIRST = buf->m_buffer->onAttach(m_shmFreshMost);
+            m_shmFresh       = sc<uint8_t>((m_shmFresh << 1) | (FIRST ? 1 : 0));
+            // with some hysteresis: foot's new buffer per line, a client's two in turn
+            if (std::popcount(m_shmFresh) >= 6)
+                m_shmFreshMost = true;
+            else if (std::popcount(m_shmFresh) <= 1)
+                m_shmFreshMost = false;
+
             m_pending.buffer     = CHLBufferReference(buf->m_buffer.lock());
             m_pending.texture    = buf->m_buffer->m_texture;
             m_pending.size       = buf->m_buffer->size;

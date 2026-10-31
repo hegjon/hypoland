@@ -138,7 +138,9 @@ class CWLSurfaceResource {
     std::optional<int>                 m_lastScale     = std::nullopt;
     std::vector<pixman_box32_t>        m_pendingDamageBoxes; // damage requests of the pending state, made into its regions on commit
     std::vector<pixman_box32_t>        m_pendingBufferDamageBoxes;
-    UP<CCPUFlushTracker>               m_cpuFlush; // only for a surface whose buffers were written back from the caches
+    UP<CCPUFlushTracker>               m_cpuFlush;             // only for a surface whose buffers were written back from the caches
+    uint8_t                            m_shmFresh     = 0;     // the last eight attaches, a bit set for a buffer's first one
+    bool                               m_shmFreshMost = false; // most of them were (shm zero copy, CWLSHMBuffer::onAttach())
 
     void                               destroy();
     void                               flushCPUWrites();

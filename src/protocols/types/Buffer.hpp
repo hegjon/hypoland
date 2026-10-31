@@ -25,6 +25,11 @@ class IHLBuffer : public Aquamarine::IBuffer {
     virtual bool needsCPUFlush() {
         return false;
     }
+    // attached to a surface; copyPreferred when the surface keeps attaching new buffers (shm zero copy, CWLSHMBuffer).
+    // Returns whether this was the buffer's first attach
+    virtual bool onAttach(bool copyPreferred) {
+        return false;
+    }
     virtual bool                                good() = 0;
     virtual void                                sendRelease();
     virtual void                                lock();

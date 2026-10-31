@@ -37,8 +37,9 @@ using namespace Hyprutils::OS;
 // still far cheaper than a copy (Chromebook
 // terminal-scroll 7.2 -> 5.5% of a CPU, Qt's software scroll 12.9 -> 4.1, 2026-10-29). "force" takes every driver
 // without a flush, "flush" every driver with one.
-static bool s_flushWrites = false;
-static bool zeroCopyAllowed() {
+static bool   s_flushWrites = false;
+static size_t s_copyMax     = 1 << 20; // see CWLSHMBuffer::onAttach()
+static bool   zeroCopyAllowed() {
     static int allowed = -1;
     if (allowed >= 0)
         return allowed;
@@ -77,9 +78,12 @@ static bool zeroCopyAllowed() {
             why += " without an LLC";
 #endif
         }
-    } else if (DRIVER == "r600" || DRIVER == "radeonsi")
+    } else if (DRIVER == "r600" || DRIVER == "radeonsi") {
         allowed = 1;
-    else
+        // a copy goes through a staging texture and a blit there: windows of 460 and 920 kB cost 4 and 13% more copied
+        // than sampled in place on lianli, those of 230 kB 8% less (many-windows, 2026-10-31)
+        s_copyMax = 256 << 10;
+    } else
         why += ", not known to read CPU writes coherently";
     std::println(stderr, "shm zero copy: {} ({})", allowed ? "on" : "off", why);
     return allowed;
@@ -118,7 +122,27 @@ CWLSHMBuffer::CWLSHMBuffer(WP<CWLSHMPoolResource> pool_, uint32_t id, int32_t of
         PROTO::shm->destroyResource(this);
     });
 
-    m_zeroCopy = tryZeroCopy();
+    m_zeroCopyPending = zeroCopyAllowed();
+}
+
+// Sampling a buffer in place costs a udmabuf and an EGL import when it is first used, copying it costs its damage at every
+// commit. foot scrolls by attaching a new wl_buffer further on in its pool for every line, so a terminal that prints makes
+// a new buffer per commit: under many small windows the imports cost more than the copies (40 foot windows printing five
+// lines a second each, compositor CPU per frame copy -> zero copy: T550 1.9 -> 2.25 ms, Mac mini 2.2 -> 2.6, Chromebook
+// 4.9 -> 5.9, 2026-10-31), where a large one is still cheaper sampled in place (XPS 10 windows of 2.3 MB 1.2 -> 1.0, a
+// full-screen terminal far more). The surface says when its buffers keep coming new (CWLSurfaceResource::m_shmFresh); a
+// buffer below 1 MiB (256 kB on radeon) is copied then, and sampled in place from a later attach when the surface reuses
+// its buffers again.
+// Never the other way: a surface going back to copies uploads its whole buffer once.
+bool CWLSHMBuffer::onAttach(bool copyPreferred) {
+    const bool FIRST = m_attaches++ == 0;
+
+    if (m_zeroCopyPending && !(copyPreferred && sc<size_t>(m_stride) * sc<size_t>(size.y) < s_copyMax)) {
+        m_zeroCopyPending = false;
+        m_zeroCopy        = tryZeroCopy();
+    }
+
+    return FIRST;
 }
 
 CWLSHMBuffer::~CWLSHMBuffer() {
