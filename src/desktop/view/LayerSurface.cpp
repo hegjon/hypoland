@@ -248,6 +248,10 @@ void CLayerSurface::onMap() {
 void CLayerSurface::onUnmap() {
     Log::logger->log(Log::DEBUG, "LayerSurface {:x} unmapped", rc<uintptr_t>(m_layerSurface.get()));
 
+    // what follows can drop the last other reference: at shutdown the layer state is cleared before the clients go, and
+    // a layer still mapped then was freed half way through this (lianli, the shell's layers at every session end)
+    const auto SELF = m_self.lock();
+
     IPC::Socket2::sock()->postEvent({.event = "closelayer", .data = m_layerSurface->m_layerNamespace});
     Event::bus()->m_events.layer.closed.emit(m_self.lock());
 

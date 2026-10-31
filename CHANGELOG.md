@@ -120,6 +120,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- The compositor crashed when the session ended while the shell's layers were still on the screen: shutting down
+  forgets every layer before its client is gone, and a layer then freed itself in the middle of its own unmap. On an
+  A8-6600K desktop with an AMD Radeon HD 8570D the session's end crashed 7 times in 8 before, none in 8 after. Nothing
+  showed it, the session was ending anyway, but each left a core dump and skipped the rest of the shutdown.
 - A shell panel the compositor leaves out because it is fully transparent (Omarchy's empty notification column, its
   hidden dock) got no frame callbacks while it was left out, so a client that asked for one without drawing anything new
   waited for its next change.
