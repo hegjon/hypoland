@@ -21,20 +21,29 @@ bool SSurfaceState::consumeBufferDamage() const {
     return buffer && !buffer->isSynchronous();
 }
 
+// the surface damage of the state in buffer coordinates
+CRegion SSurfaceState::surfaceDamageInBuffer() {
+    CRegion surfaceDamage = damage;
+    if (viewport.hasDestination) {
+        Vector2D scale = sourceSize() / viewport.destination;
+        surfaceDamage.scale(scale);
+    }
+
+    if (viewport.hasSource)
+        surfaceDamage.translate(viewport.source.pos());
+
+    Vector2D trc = transform % 2 == 1 ? Vector2D{bufferSize.y, bufferSize.x} : bufferSize;
+
+    return surfaceDamage.scale(scale).transform(Math::wlTransformToHyprutils(Math::invertTransform(transform)), trc.x, trc.y);
+}
+
+CRegion SSurfaceState::pendingBufferDamage() {
+    return damage.empty() ? bufferDamage : surfaceDamageInBuffer().add(bufferDamage);
+}
+
 CRegion SSurfaceState::accumulateBufferDamage() {
     if (!damage.empty()) {
-        CRegion surfaceDamage = damage;
-        if (viewport.hasDestination) {
-            Vector2D scale = sourceSize() / viewport.destination;
-            surfaceDamage.scale(scale);
-        }
-
-        if (viewport.hasSource)
-            surfaceDamage.translate(viewport.source.pos());
-
-        Vector2D trc = transform % 2 == 1 ? Vector2D{bufferSize.y, bufferSize.x} : bufferSize;
-
-        bufferDamage = surfaceDamage.scale(scale).transform(Math::wlTransformToHyprutils(Math::invertTransform(transform)), trc.x, trc.y).add(bufferDamage);
+        bufferDamage = surfaceDamageInBuffer().add(bufferDamage);
         damage.clear();
     }
 
