@@ -1040,7 +1040,9 @@ Tools:
   with decorations and popups and its surface tree's extents) is mapped through the fade's scale and position, and the
   frame damages where it was drawn last and where it is drawn now; blur and a dim around the window keep the whole
   monitor. Nested screenshots before, 40 and 100 ms into and after a fade match master outside the window, the frame
-  after the fade matches a full repaint. Seen while testing it, upstream's too: a foot window that closes fades as its
+  after the fade matches a full repaint. XPS (3200x1800), 3 fresh sessions each, a floating 640x400 foot over two tiled
+  ones closed 10 times (`test-results/rt-20261031/fadebench.sh`, the second after each close): the GPU busy 733 / 724 /
+  725 -> 507 / 491 / 503 ms (i915 PMU), the compositor's CPU 160 to 220 -> 130 to 170 ms, the same page flips. Seen while testing it, upstream's too: a foot window that closes fades as its
   border alone, foot drops its buffer before the toplevel.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
