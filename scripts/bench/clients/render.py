@@ -384,26 +384,22 @@ class Render:
                   f"{worst[2]} shown as {worst[3]}", flush=True)
 
     def choose_grab(self):
-        """kmsgrab reads the buffer the screen scans out; where that is not the frame the compositor shows (a legacy
-        modesetting driver whose CRTC keeps naming the buffer of the last modeset: radeon) it is compared with grim on a
-        still screen and grim is used instead"""
+        """kmsgrab reads the buffer the screen scans out, except where the CRTC goes on naming the buffer of the last
+        modeset after page flips (radeon's legacy modesetting: lianli showed frames from before the window opened); grim
+        is used there. grim is not the screen everywhere else: a capture draws through the work buffer, whose frame can
+        differ from the one scanned out by a step where a layer is clipped (Galaxy Book)"""
         if self.args.grab != "kmsgrab":
             return
-        pids = self.frozen()
-        for p in pids:
-            os.kill(p, signal.SIGSTOP)
-        try:
-            self.settle(0.3)
-            a = self.grab("probe-kmsgrab")[0]
-            b = self.grab("probe-grim", "grim")[0]
-        finally:
-            for p in pids:
-                os.kill(p, signal.SIGCONT)
-        for n in ("probe-kmsgrab", "probe-grim"):
-            os.remove(os.path.join(self.out, n + ".ppm"))
-        if a != b:
-            print("INFO  render: the scanned-out buffer is not the frame the compositor shows (hypoland-kmsgrab), reading the "
-                  "screen through the compositor (grim)", flush=True)
+        drivers = set()
+        for card in os.listdir("/sys/class/drm"):
+            if card.startswith("card") and "-" not in card:
+                try:
+                    drivers.add(os.path.basename(os.path.realpath(f"/sys/class/drm/{card}/device/driver")))
+                except OSError:
+                    pass
+        if "radeon" in drivers:
+            print("INFO  render: radeon's legacy modesetting does not tell which buffer the screen shows, reading the screen "
+                  "through the compositor (grim)", flush=True)
             self.args.grab = "grim"
 
     def run(self):
