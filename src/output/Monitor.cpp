@@ -161,6 +161,11 @@ void CMonitor::onConnect(bool noRule) {
 
         PROTO::presentation->onPresented(m_self.lock(), ts, event.refresh, event.seq, flags);
 
+        if (flags & Aquamarine::IOutput::AQ_OUTPUT_PRESENT_HW_CLOCK) {
+            m_lastVblank   = Time::fromTimespec(&ts);
+            m_vblankPeriod = std::chrono::nanoseconds(event.refresh);
+        }
+
         if (m_zoomAnimFrameCounter < 5) {
             m_zoomAnimFrameCounter++;
 
@@ -2413,6 +2418,18 @@ void CMonitor::commitDPMSState(bool state) {
 
     if (state)
         g_pHyprRenderer->damageMonitor(m_self.lock());
+}
+
+// When a frame committed at the earliest 1 ms after now reaches the screen: the next vblank. Now itself before the first
+// vblank the hardware stamped and with VRR or tearing, where the screen does not refresh at a fixed rate
+Time::steady_tp CMonitor::nextPresentation(const Time::steady_tp& now) {
+    if (m_vblankPeriod < std::chrono::milliseconds(2) || m_vblankPeriod > std::chrono::milliseconds(100) || m_vrrActive || m_tearingState.activelyTearing)
+        return now;
+
+    // the vblanks after the last one keep the period; a commit later than about 1 ms before one misses it
+    const auto SINCE = now + std::chrono::milliseconds(1) - m_lastVblank;
+    const auto NEXT  = m_lastVblank + (SINCE < std::chrono::nanoseconds(0) ? 1 : SINCE / m_vblankPeriod + 1) * m_vblankPeriod;
+    return std::clamp(NEXT, now, now + m_vblankPeriod + std::chrono::milliseconds(1));
 }
 
 void CMonitor::debugLastPresentation(const std::string& message) {
