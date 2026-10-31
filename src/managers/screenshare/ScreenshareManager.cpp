@@ -24,11 +24,21 @@ void CScreenshareManager::onOutputCommit(PHLMONITOR monitor) {
         return; // nothing to share
     }
 
+    // A frame of a monitor is taken from its mirror framebuffer, which the frames drawn straight into the screen's buffers
+    // leave behind (CHyprOpenGLImpl::canRenderDirectly()). A commit that drew no new frame for it, as a cursor moved on
+    // legacy modesetting is, leaves the frame pending until the frame the capture scheduled has brought the mirror up to
+    // date: on radeon a screenshot showed the screen of the capture before, minutes old
+    const auto RESOURCES   = monitor->resources();
+    const bool MIRRORSTALE = RESOURCES && !RESOURCES->pendingMirrorFBDamage().empty();
+
     std::ranges::for_each(m_pendingFrames, [&](WP<CScreenshareFrame>& frame) {
         if (frame.expired() || !frame->m_shared || frame->done())
             return;
 
         if (frame->m_session->monitor() != monitor)
+            return;
+
+        if (MIRRORSTALE && (frame->m_session->m_type == SHARE_MONITOR || frame->m_session->m_type == SHARE_REGION))
             return;
 
         if (frame->m_session->m_type == SHARE_WINDOW) {

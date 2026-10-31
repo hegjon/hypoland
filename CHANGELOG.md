@@ -143,6 +143,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - Small updates of a buffer a client shows turned by a quarter (a phone's or a camera's picture) or cut out of a larger
   buffer (a video player that leaves off black bars) were redrawn in the wrong place, so most of them did not reach the
   screen until something else redrew it.
+- A screenshot could show the screen as it was at the screenshot before, on an A8-6600K desktop with a Radeon HD 8570D
+  (the `radeon` driver), where a moved pointer is a screen update of its own: the capture was completed by that update
+  from the copy the previous capture had left, before the frame drawn for it. Captures of a monitor now wait for that
+  frame.
 - On the Galaxy Book (freedreno) the edges in a window's contents were drawn a colour step off, and next to a small
   update the old colour could stay mixed in. Windows drawn at their own size now take the nearest pixel of their buffer
   instead of a filtered one, which is exact on every GPU and the cheaper fetch.
