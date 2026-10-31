@@ -343,7 +343,7 @@ namespace Render::GL {
       private:
         SP<CEventLoopTimer>                   m_shaderCompilerReleaseTimer;
         SP<CEventLoopTimer>                   m_heapTrimTimer;
-        std::chrono::steady_clock::time_point m_lastShmUpload;
+        std::chrono::steady_clock::time_point m_lastHeapChurn; // the last shm upload or destroyed surface, see scheduleHeapTrim()
         bool                                  m_trimHeapNow = false;
 
         // a texture removes itself when it is destroyed, the sweep when it gives its second texture back

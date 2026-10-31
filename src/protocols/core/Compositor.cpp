@@ -14,6 +14,7 @@
 #include "../DRMSyncobj.hpp"
 #include "../types/DMABuffer.hpp"
 #include "../../render/Renderer.hpp"
+#include "../../render/OpenGL.hpp"
 #include "config/ConfigValue.hpp"
 #include "../../managers/eventLoop/EventLoopManager.hpp"
 #include "../../state/MonitorState.hpp"
@@ -316,6 +317,10 @@ CWLSurfaceResource::CWLSurfaceResource(SP<CWlSurface> resource_) : m_resource(re
 CWLSurfaceResource::~CWLSurfaceResource() {
     discardPresentationFeedbacks();
     m_events.destroy.emit();
+
+    // what the surface's window, popup or layer freed goes back to the kernel a few seconds after the last one closed
+    if (Render::GL::g_pHyprOpenGL)
+        Render::GL::g_pHyprOpenGL->scheduleHeapTrim();
 }
 
 void CWLSurfaceResource::discardPresentationFeedbacks() {
