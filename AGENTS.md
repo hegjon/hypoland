@@ -269,7 +269,7 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    scans out (`hypoland-kmsgrab`, root and one monitor), a GPU client, an X11 client through Xwayland, Chromium,
    GTK 3 (also through Xwayland), GTK 4, Qt Quick and Qt Quick software windows (drawn, and getting at least
    20 fps, see the toolkit workloads below), a Tk window through Xwayland with a menu and a dialog (see `tk-canvas`
-   below), GL and shader errors in the compositor's log, crash reports and core dumps. A machine without a monitor gets a headless output for the checks. A passing check ends
+   below), the render checks (below), GL and shader errors in the compositor's log, crash reports and core dumps. A machine without a monitor gets a headless output for the checks. A passing check ends
    with one more SDDM restart, and the checked compositor must not dump core on its way out (since 2026-10-31: lianli's
    compositor had crashed at most session ends from 2026-10-30, unseen). It prints PASS / FAIL per machine;
    logs and screenshots are in
@@ -1023,17 +1023,42 @@ Tools:
   2.85 ms, with 40 windows 17.5 instead of 4.45, a focus change among 40 windows in 16.5 instead of 9.7, a resize step in
   4.4 instead of 2.2 and a closing terminal in 21.4 instead of 15.1; the other machines switch 5 to 25% slower, lianli
   closes a terminal in 4.4 instead of 3.7, and the compositor's CPU is 1 to 11% higher without it (`dev` on the T550 3.76
-  against 3.36%). So a guard thread (`guardRealtime()` in `src/init/initHelpers.cpp`) polls every 40 ms while the main
-  thread is awake, takes realtime away once it has been awake through three polls (80 to 120 ms; the kernel stops counting
-  at once, also in the middle of a kernel call), and asks rtkit for it again from its own thread when the main thread has
-  slept through three polls, 2 s after the drop at the earliest, backing off to a minute when rtkit says no (`Realtime:
-  ...` lines in the journal). For that the event loop is `wl_display_run()` written out (`CEventLoopManager::enterLoop()`):
-  it polls the loop's fd itself first, so a wake-up is counted only when nothing was ready and the thread really slept; the
-  guard waits on those wake-ups once the main thread has slept through two polls, so an idle session wakes it only when
-  the compositor wakes. The long read is survived every time, nested and on the Galaxy Book, back on realtime 2 to 3 s
-  later; hyprtester 176/176. A first version polled every 20 ms and dropped at 40 ms: 1 to 7% more compositor CPU on six
-  machines (lianli `workspace-switch` 2.21 -> 2.31%, the Mac mini's `dev` 3.38 -> 3.53) and a few drops per session on the
-  X200 (the end of `many-windows` among them), each 2 s without realtime.
+  against 3.36%). So a guard thread (`guardRealtime()` in `src/init/initHelpers.cpp`) polls every 40 ms: when the event
+  loop has not gone round since its last poll it reads the main thread's state (`/proc/self/task/<tid>/stat`), takes
+  realtime away when that was running at two polls in a row (80 to 120 ms in one go; the kernel stops counting at once,
+  also in the middle of a kernel call), and asks rtkit for it again from its own thread when the main thread has slept in
+  the loop's epoll through three polls, 2 s after the drop at the earliest, backing off to a minute when rtkit says no
+  (`Realtime: ...` lines in the journal). The event loop is `wl_display_run()` written out (`CEventLoopManager::enterLoop()`)
+  and counts its rounds with one atomic; the guard waits for the next round while the main thread sleeps in the loop's
+  epoll (`/proc/self/task/<tid>/syscall`), not while it sleeps inside a round (a GPU fence), which the same round can
+  follow with a long call. `HYPOLAND_NO_RT_GUARD=1` keeps realtime and leaves the guard out, for measuring it. The long
+  read is survived every time, nested and on the Galaxy Book, back on realtime 2 to 3 s later; hyprtester 176/176. At idle
+  on the X200 the guard wakes 6 times a second (the main thread 3.7). Two versions before: polling every 20 ms and dropping
+  at 40 ms cost 1 to 7% more compositor CPU on six machines (lianli `workspace-switch` 2.21 -> 2.31%, the Mac mini's `dev`
+  3.38 -> 3.53) and dropped realtime a few times a session on the X200 (the end of `many-windows` among them); 40 / 80 ms
+  with the loop telling the guard when it slept (a `poll()` more per round) still cost 2 to 5% in `workspace-switch` and
+  doubled the tiny `idle-windows` (0.02 -> 0.04% on the T550; `test-results/rt-20261031/guard40-summary.txt`).
+- Render checks (2026-10-31, asked for by the user as small tests that rendering is correct; `scripts/bench/clients/render.py`,
+  run by the session check, `check_render()`): two shm windows of the check's own, drawn in 7x7 blocks it knows pixel by
+  pixel, on an empty workspace: a whole buffer, 24 frames of four small damaged rectangles, 12 new buffers further on in
+  the pool with only a band damaged (as foot's new buffer per line), and a dialog of the first (`set_parent`, it floats
+  from the start) with a half transparent band, moved and closed. At every step the focused window has to show exactly
+  what it drew (an integer scale only; over the other window its transparent band to within a step of premultiplied
+  alpha), and the screen has to be what a full repaint of the same scene shows: the shell is frozen (SIGSTOP), the screen
+  read from the scanned-out buffer (`hypoland-kmsgrab`, grim where it cannot), the workspace switched away and back, and
+  read again. The pointer is parked in the monitor's corner and the compositor's own notifications dismissed first.
+  `--selftest` commits a change without its damage, which the checks have to catch (they do, 4096 pixels). The first
+  runs found two bugs: on the X200 a zero-copy window's small updates did not reach the screen until something else
+  redrew the place (245000 pixels stale after 24 frames of rectangles; the same with `HYPOLAND_SHM_ZEROCOPY=force`, none
+  with `=0`): `CWLSurfaceResource::flushCPUWrites()` took the commit's buffer damage (`accumulateBufferDamage()` clears
+  what it returns for a buffer that is not synchronous), so the window's damage of the monitors after the commit
+  (`CWLSurface::computeDamage()`) found none; it reads it now (`SSurfaceState::pendingBufferDamage()`), since the zero
+  copy of 2026-10-29 it had done so for every zero-copy shm buffer. And on the Galaxy Book (freedreno) every edge in a
+  window's content was a step off and 433 pixels next to damaged rectangles differed from a full repaint: surfaces are
+  sampled with the linear filter, and freedreno puts the texel centers a hair off, so a sliver of the neighbours mixed in
+  and a pixel next to a damaged area kept the mix with what its neighbour showed before; a surface drawn texel for texel
+  (its box in pixels the texture's size, the whole texture, no buffer transform, no render modifier) takes the nearest
+  texel now (`IElementRenderer::drawSurface()`), which Intel and AMD showed the same way already.
 - A closing window's fade damages only where it is drawn (2026-10-31, `CWindowFadeout::damage()`): upstream's fade-out
   damaged the whole monitor on every animation step, so closing a window repainted the screen for half a second (Omarchy's
   `windowsOut` and `fadeOut`). The snapshot is still the monitor's size; the window's part of it (`m_contentBox`: its frame
