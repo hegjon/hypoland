@@ -38,17 +38,6 @@ static bool shouldBlurWindow(PHLWINDOW window) {
     return true;
 }
 
-static void damageFadeoutMonitor(PHLMONITORREF monitor) {
-    if (const auto MONITOR = monitor.lock(); MONITOR)
-        g_pHyprRenderer->damageMonitor(MONITOR);
-}
-
-template <typename T>
-static void damageWeakFadeout(WP<T> fadeout) {
-    if (const auto FADEOUT = fadeout.lock(); FADEOUT)
-        damageFadeoutMonitor(FADEOUT->monitor());
-}
-
 SP<CWindowFadeout> CWindowFadeout::create(PHLWINDOW window, SP<Render::IFramebuffer> snapshot, float sourceAlpha) {
     static auto PBLURXRAY = CConfigValue<Config::INTEGER>("decoration:blur:xray");
 
@@ -78,16 +67,32 @@ SP<CWindowFadeout> CWindowFadeout::create(PHLWINDOW window, SP<Render::IFramebuf
     if (*PDIMAROUND && window->m_ruleApplicator->dimAround().valueOrDefault())
         fadeout->m_effects.dimAroundAlpha = *PDIMAROUND;
 
+    // A fade damages only where it draws the window, not the whole monitor on every step: closing a window repainted the
+    // screen for half a second. What the snapshot holds of it is its frame with the decorations and popups and its
+    // surface tree, which can reach out of the frame
+    if (!fadeout->m_blur && fadeout->m_effects.dimAroundAlpha <= 0.F) {
+        CRegion content = window->getFullWindowBoundingBox();
+        if (const auto SURFACE = window->wlSurface(); SURFACE && SURFACE->resource()) {
+            const auto ORIGIN = window->position(Desktop::View::IGeometric::GEOMETRIC_CURRENT) - (window->backend().isX11() ? Vector2D{} : window->backend().geometry().box.pos());
+            content.add(SURFACE->resource()->extends().translate(ORIGIN));
+        }
+        fadeout->m_contentBox = content.getExtents().translate(-MONITOR->m_position).scale(MONITOR->m_scale).expand(2);
+    }
+
     const auto ANIMCTX = window->presentation().animateOut();
 
     Animation::mgr()->createAnimation(ANIMCTX.pos.from, fadeout->m_realPosition, Config::animationTree()->getAnimationPropertyConfig("windowsOut"), AVARDAMAGE_NONE);
     Animation::mgr()->createAnimation(ANIMCTX.size.from, fadeout->m_realSize, Config::animationTree()->getAnimationPropertyConfig("windowsOut"), AVARDAMAGE_NONE);
     Animation::mgr()->createAnimation(sourceAlpha, fadeout->m_alpha, Config::animationTree()->getAnimationPropertyConfig("fadeOut"), AVARDAMAGE_NONE);
 
-    const WP<CWindowFadeout> WEAK = fadeout;
-    fadeout->m_realPosition->setUpdateCallback([WEAK](auto) { damageWeakFadeout(WEAK); });
-    fadeout->m_realSize->setUpdateCallback([WEAK](auto) { damageWeakFadeout(WEAK); });
-    fadeout->m_alpha->setUpdateCallback([WEAK](auto) { damageWeakFadeout(WEAK); });
+    const WP<CWindowFadeout> WEAK   = fadeout;
+    const auto               DAMAGE = [WEAK](auto) {
+        if (const auto FADEOUT = WEAK.lock(); FADEOUT)
+            FADEOUT->damage();
+    };
+    fadeout->m_realPosition->setUpdateCallback(DAMAGE);
+    fadeout->m_realSize->setUpdateCallback(DAMAGE);
+    fadeout->m_alpha->setUpdateCallback(DAMAGE);
 
     fadeout->m_realPosition->setValueAndWarp(ANIMCTX.pos.from);
     fadeout->m_realSize->setValueAndWarp(ANIMCTX.size.from);
@@ -127,6 +132,33 @@ CBox CWindowFadeout::renderBox() const {
     return {((m_realPosition->value().x - MONITOR->m_position.x) * MONITOR->m_scale) - ((m_sourcePos.x * MONITOR->m_scale) * SCALE.x),
             ((m_realPosition->value().y - MONITOR->m_position.y) * MONITOR->m_scale) - ((m_sourcePos.y * MONITOR->m_scale) * SCALE.y), MONITOR->m_transformedSize.x * SCALE.x,
             MONITOR->m_transformedSize.y * SCALE.y};
+}
+
+// the snapshot is the monitor, renderBox() places and scales it, and the window is m_contentBox in it
+CBox CWindowFadeout::drawnBox() const {
+    const auto BOX = renderBox();
+    if (m_contentBox.empty() || BOX.empty())
+        return {};
+
+    const Vector2D SCALE = {m_realSize->value().x / m_sourceSize.x, m_realSize->value().y / m_sourceSize.y};
+    return CBox{BOX.x + m_contentBox.x * SCALE.x, BOX.y + m_contentBox.y * SCALE.y, m_contentBox.w * SCALE.x, m_contentBox.h * SCALE.y}.expand(1).round();
+}
+
+void CWindowFadeout::damage() {
+    const auto MONITOR = m_monitor.lock();
+    if (!MONITOR)
+        return;
+
+    const auto BOX = drawnBox();
+    if (BOX.empty()) {
+        g_pHyprRenderer->damageMonitor(MONITOR);
+        return;
+    }
+
+    if (!m_lastDamage.empty())
+        MONITOR->addDamage(m_lastDamage);
+    MONITOR->addDamage(BOX);
+    m_lastDamage = BOX;
 }
 
 float CWindowFadeout::alpha() const {
