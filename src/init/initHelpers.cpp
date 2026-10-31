@@ -5,13 +5,18 @@
 
 #include "initHelpers.hpp"
 
+#include <atomic>
+
 #ifdef HAS_RTKIT
+#include <pthread.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <algorithm>
 #include <cerrno>
 #include <chrono>
 #include <cstring>
+#include <print>
+#include <thread>
 
 #include <sdbus-c++/sdbus-c++.h>
 #include <hyprutils/memory/Casts.hpp>
@@ -55,11 +60,30 @@ static bool trySchedDirect(int prio) {
 #endif
 }
 
+// The event loop's sleeps and wake-ups, for the realtime guard below
+static std::atomic<uint64_t> s_loopWakes{0};
+static std::atomic<bool>     s_loopAwake{true};
+static std::atomic<bool>     s_guardParked{false};
+
 #ifdef HAS_RTKIT
 
 // Cached for the SIGXCPU handler: it must demote the RT thread specifically, but a
 // process-directed signal can be delivered to any thread.
 static pid_t mainThreadTid = 0;
+
+// whether the main thread runs on SCHED_RR now, for the realtime guard
+static std::atomic<bool> s_realtime{false};
+
+// realtime was granted with SCHED_RESET_ON_FORK set (on both paths), keep it as clearing it
+// needs CAP_SYS_NICE and the kernel rejects the whole call with EPERM otherwise.
+// Async-signal-safe, the SIGXCPU handler calls it.
+static bool dropRealtime() {
+    const struct sched_param param = {.sched_priority = 0};
+    if (syscall(SYS_sched_setscheduler, mainThreadTid, SCHED_OTHER | SCHED_RESET_ON_FORK, &param) != 0)
+        return false;
+    s_realtime = false;
+    return true;
+}
 
 // Demotes the main thread back to SCHED_OTHER instead of letting the process die. With a finite
 // RLIMIT_RTTIME, an RT thread that overruns the soft limit without making a blocking syscall gets
@@ -69,10 +93,7 @@ static pid_t mainThreadTid = 0;
 static void handleSigxcpu(int /* signo */) {
     const int savedErrno = errno;
 
-    // realtime was granted with SCHED_RESET_ON_FORK set (on both paths), keep it as clearing it
-    // needs CAP_SYS_NICE and the kernel rejects the whole call with EPERM otherwise.
-    const struct sched_param param = {.sched_priority = 0};
-    if (syscall(SYS_sched_setscheduler, mainThreadTid, SCHED_OTHER | SCHED_RESET_ON_FORK, &param) == 0) {
+    if (dropRealtime()) {
         constexpr char MSG[] = "Realtime budget exceeded (SIGXCPU), dropping realtime scheduling\n";
         std::ignore          = write(STDERR_FILENO, MSG, sizeof(MSG) - 1);
     } else {
@@ -111,7 +132,8 @@ constexpr auto        RTKIT_DBUS_TIMEOUT = std::chrono::seconds(2); // D-Bus def
 // (granted to active sessions only). It addresses threads by kernel tid (gettid), not pthread_t,
 // and grants SCHED_RR with SCHED_RESET_ON_FORK set, so fork children reset to SCHED_OTHER
 // kernel-side.
-static bool tryRtkit(int prio) {
+// quiet when the realtime guard asks again from its own thread, the logger is the main thread's
+static bool tryRtkit(pid_t tid, int prio, bool quiet = false) {
     try {
         auto connection = sdbus::createSystemBusConnection();
         auto proxy      = sdbus::createProxy(*connection, sdbus::ServiceName{RTKIT_SERVICE}, sdbus::ObjectPath{RTKIT_OBJECT});
@@ -129,7 +151,8 @@ static bool tryRtkit(int prio) {
 
         const auto maxUs = maxVar.get<int64_t>();
         if (maxUs <= 0) {
-            Log::logger->log(Log::DEBUG, "rtkit: no usable RTTimeUSecMax, not requesting realtime");
+            if (!quiet)
+                Log::logger->log(Log::DEBUG, "rtkit: no usable RTTimeUSecMax, not requesting realtime");
             return false;
         }
 
@@ -140,7 +163,8 @@ static bool tryRtkit(int prio) {
         // too.
         rlimit current = {};
         if (getrlimit(RLIMIT_RTTIME, &current)) {
-            Log::logger->log(Log::WARN, "rtkit: failed to get RLIMIT_RTTIME: {}", strerror(errno));
+            if (!quiet)
+                Log::logger->log(Log::WARN, "rtkit: failed to get RLIMIT_RTTIME: {}", strerror(errno));
             return false;
         }
 
@@ -152,23 +176,99 @@ static bool tryRtkit(int prio) {
         const rlimit newLimit = {.rlim_cur = std::min(hard / 4 * 3, current.rlim_cur), .rlim_max = hard};
 
         if (setrlimit(RLIMIT_RTTIME, &newLimit)) {
-            Log::logger->log(Log::WARN, "rtkit: failed to set RLIMIT_RTTIME: {}", strerror(errno));
+            if (!quiet)
+                Log::logger->log(Log::WARN, "rtkit: failed to set RLIMIT_RTTIME: {}", strerror(errno));
             return false;
         }
 
         // fails with a polkit denial for sessions that aren't active locally (e.g. ssh),
         // which is fine because realtime is best-effort. the armed RLIMIT_RTTIME must stay,
         // hard limits cannot be raised back.
-        proxy->callMethod("MakeThreadRealtime").onInterface(RTKIT_INTERFACE).withTimeout(RTKIT_DBUS_TIMEOUT).withArguments(sc<uint64_t>(gettid()), sc<uint32_t>(prio));
+        proxy->callMethod("MakeThreadRealtime").onInterface(RTKIT_INTERFACE).withTimeout(RTKIT_DBUS_TIMEOUT).withArguments(sc<uint64_t>(tid), sc<uint32_t>(prio));
 
         return true;
     } catch (const sdbus::Error& e) {
-        Log::logger->log(Log::DEBUG, "rtkit: {}", e.what());
+        if (!quiet)
+            Log::logger->log(Log::DEBUG, "rtkit: {}", e.what());
         return false;
     }
 }
 
+// The realtime guard (2026-10-31). rtkit grants realtime only under RLIMIT_RTTIME, and the kernel compares the time a
+// realtime thread ran without sleeping with it when the thread returns to user space: a kernel call that runs from below
+// the soft limit past the hard one (200 ms on Arch) gets the compositor SIGKILLed, with no SIGXCPU before it and nothing
+// in any log, and the session is gone. That happened in 3 of 8 sessions on a Dell XPS 13 one morning, and a single long
+// read through `hyprctl eval` does it every time. This thread takes realtime away from the main thread once it has been
+// awake through three of its polls, 80 to 120 ms, which stops the kernel's count also in the middle of such a call, and
+// asks rtkit for it again when the main thread has slept for a while. It sleeps on the loop's wake-ups while the
+// compositor is idle. Polling every 20 ms and dropping at 40 cost 1 to 7% more compositor CPU and dropped realtime a few
+// times a session on the X200, where the main thread is often busy for 40 to 60 ms.
+static void guardRealtime(int prio) {
+    pthread_setname_np(pthread_self(), "rtguard");
+
+    constexpr auto POLL       = std::chrono::milliseconds(40);
+    uint64_t       lastWakes  = s_loopWakes.load();
+    int            busyPolls  = 0; // the main thread awake since the last poll, without going to sleep in between
+    int            idlePolls  = 0; // asleep, without waking up in between
+    int            demoted    = 0; // polls since realtime was lost
+    int            retryPolls = 50;
+
+    for (;;) {
+        std::this_thread::sleep_for(POLL);
+
+        const uint64_t WAKES = s_loopWakes.load();
+        const bool     AWAKE = s_loopAwake.load();
+        busyPolls            = AWAKE && WAKES == lastWakes ? busyPolls + 1 : 0;
+        idlePolls            = !AWAKE && WAKES == lastWakes ? idlePolls + 1 : 0;
+        lastWakes            = WAKES;
+
+        if (s_realtime && busyPolls >= 2) {
+            if (dropRealtime())
+                std::println(stderr, "Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling");
+            busyPolls = 0;
+        }
+
+        if (!s_realtime) {
+            // back to realtime once the main thread has slept through a few polls, at most every retryPolls polls
+            if (++demoted >= retryPolls && idlePolls >= 3) {
+                demoted = 0;
+                if (tryRtkit(mainThreadTid, prio, true)) {
+                    s_realtime = true;
+                    retryPolls = 50;
+                    std::println(stderr, "Realtime: realtime scheduling again");
+                } else
+                    retryPolls = std::min(retryPolls * 2, 1500); // rtkit said no: 2 s, 4 s, ... up to a minute
+            } else if (idlePolls >= 25) {
+                // nothing to watch until the next attempt
+                std::this_thread::sleep_for(POLL * std::max(retryPolls - demoted, 0));
+                demoted = retryPolls;
+            }
+            continue;
+        }
+
+        // asleep through two polls: wait for its next wake-up instead of polling (an idle session wakes a few times a second)
+        if (idlePolls >= 2) {
+            s_guardParked = true;
+            s_loopWakes.wait(WAKES);
+            s_guardParked = false;
+            lastWakes     = s_loopWakes.load();
+            idlePolls     = 0;
+        }
+    }
+}
+
 #endif
+
+void NInit::loopAsleep() {
+    s_loopAwake.store(false, std::memory_order_relaxed);
+}
+
+void NInit::loopAwake() {
+    s_loopWakes.fetch_add(1, std::memory_order_relaxed);
+    s_loopAwake.store(true, std::memory_order_relaxed);
+    if (s_guardParked.load(std::memory_order_relaxed))
+        s_loopWakes.notify_one();
+}
 
 // Puts the main thread on SCHED_RR so a busy session cannot starve the compositor of CPU.
 // Going realtime directly needs privilege and is tried first, rtkit is the standard
@@ -187,8 +287,11 @@ void NInit::gainRealTime() {
         Log::logger->log(Log::DEBUG, "Gained realtime scheduling directly");
 
 #ifdef HAS_RTKIT
-    if (!gained && (gained = tryRtkit(minPrio)))
+    if (!gained && (gained = tryRtkit(gettid(), minPrio))) {
         Log::logger->log(Log::DEBUG, "Gained realtime scheduling via rtkit");
+        s_realtime = true;
+        std::thread(guardRealtime, minPrio).detach();
+    }
 #endif
 
     if (!gained) {
