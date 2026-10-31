@@ -2572,6 +2572,14 @@ void IHyprRenderer::damageSurface(SP<CWLSurfaceResource> pSurface, double x, dou
         damageBoxForEach.set(damageBox);
         damageBoxForEach.translate({-m->m_position.x, -m->m_position.y}).scale(m->m_scale);
 
+        // A surface that is not drawn texel for texel is filtered: a pixel up to a texel outside the damage takes in texels
+        // inside it, and at a fractional scale the box ends inside a pixel. Those pixels went stale (render checks at scale
+        // 1.5: a rim of old colour around every small update, up to 67 steps off)
+        const bool TEXELFORTEXEL = m->m_scale == std::floor(m->m_scale) && pSurface->m_current.scale == m->m_scale && !pSurface->m_current.viewport.hasSource &&
+            !pSurface->m_current.viewport.hasDestination;
+        if (!TEXELFORTEXEL)
+            damageBoxForEach.expand(std::ceil(m->m_scale));
+
         m->addDamage(damageBoxForEach);
     }
 
