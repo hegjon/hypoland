@@ -22,6 +22,7 @@ import json
 import mmap
 import os
 import random
+import shutil
 import signal
 import socket
 import struct
@@ -649,7 +650,7 @@ class Render:
         print(f"FAIL  render {step}: {n} pixels differ from a full repaint, in {box[0]},{box[1]} to {box[2]},{box[3]} "
               f"(screens in {self.out})", flush=True)
 
-    def check_pixels(self, step, win, under=None):
+    def check_pixels(self, step, win, under=None, how=None):
         """The focused window shows exactly what it drew (its subsurfaces included), inside its rounding and border.
         Over the window under, its transparent pixels show that one through as premultiplied alpha blends it, to a step"""
         if not self.exact:
@@ -667,16 +668,16 @@ class Render:
             cu = self.client(under.app_id)
             under = (under.composed(), under.stride, (cu["at"][0] - self.monitor["x"]) * s, (cu["at"][1] - self.monitor["y"]) * s)
         self.check_image(step, win.app_id, win.composed(), win.w, win.h, win.stride, x0, y0, (self.rounding + 2) * s, under,
-                         win.corners((self.rounding + 2) * s))
+                         win.corners((self.rounding + 2) * s), how)
 
-    def check_image(self, step, what, want, w, h, stride, x0, y0, inset=0, under=None, skip=()):
+    def check_image(self, step, what, want, w, h, stride, x0, y0, inset=0, under=None, skip=(), how=None):
         """The screen shows want (B G R A rows of w x h pixels) at x0, y0 in its pixels, inside inset and outside the
         boxes skip. Opaque pixels exactly; others over under (its pixels, stride and position) as premultiplied alpha
         blends them, to a step"""
         if not self.exact:
             print(f"SKIP  render {step}: pixels need an integer scale ({self.monitor['scale']})", flush=True)
             return
-        screen, sw, sh = self.grab(f"{step}-pixels")
+        screen, sw, sh = self.grab(f"{step}-pixels", how)
         bad, worst = 0, None
         for y in range(inset, h - inset):
             sy = y0 + y
@@ -876,6 +877,17 @@ class Render:
         self.settle(1.2)
         self.check_pixels("whole", a)
         self.check_repaint("whole")
+
+        # screenshots as a user takes them (grim, a capture of its own each): the second, after the window drew anew and
+        # the pointer moved, shows the new picture. On radeon a cursor moved by itself is a commit, which completed a
+        # capture with the frame the capture before had left (the screen of the session check's test window)
+        if shutil.which("grim"):
+            self.check_pixels("screenshot", a, how="grim")
+            a.fill(13)
+            a.commit()
+            self.dispatch(f"hl.dsp.cursor.move({{x = {cx - 2}, y = {cy}}})", f"movecursor {cx - 2} {cy}")
+            self.settle(0.3)
+            self.check_pixels("screenshot again", a, how="grim")
 
         # small rectangles, a few per frame, as a terminal or a toolkit redraws
         for frame in range(24):
