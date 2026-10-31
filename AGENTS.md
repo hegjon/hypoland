@@ -1093,7 +1093,8 @@ Tools:
   tree started inside the desktop's session with one headless output (the nested window switched off, so the desktop's
   screen does not matter), in about two minutes: before the fixes it failed exactly the four bugs' steps at scale 1, after
   them it passes at 1, 2 and 1.6, with Omarchy's gaps, borders, rounding and animations as well. Steps that found nothing:
-  the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller. The EGL import of a udmabuf fails there, so zero copy is the machines' to check. Open: lianli (r600)
+  the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller, the first
+  window fullscreen and back (it has to be fullscreen at the monitor's logical size, or the step fails). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. Open: lianli (r600)
   failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0`, but neither capture was
   trustworthy there (kmsgrab can return a buffer of the swapchain the screen is not showing, grim repaints first and came
   back black in fresh sessions); with the continuous capture it can be told now.

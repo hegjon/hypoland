@@ -9,7 +9,8 @@
 # or a toolkit's), subsurfaces magnified, shrunk and cut out by a viewport or turned by a quarter, with small damage
 # (the filter reaches past it, the damage is turned and cut with the buffer), a popup opened and closed, a mostly
 # transparent overlay layer that changes where it was clear (the alpha bounds clip it), and a window with transparent
-# parts floating over another, moved, shrunk and closed (its fade-out). At every step:
+# parts floating over another, moved, shrunk and closed (its fade-out), and the first window fullscreen and back. At
+# every step:
 #   pixels      the focused window shows exactly what it drew (an integer scale only, inside its rounding and border)
 #   repaint     the screen as the step left it is what a full repaint of the same scene shows: the clients and the shell
 #               are frozen, the screen is read, the workspace is switched away and back (the whole monitor is drawn
@@ -930,6 +931,23 @@ class Render:
         b.destroy()
         self.settle(1.5)
         self.check_repaint("closed")
+
+        # fullscreen and back: the window draws at the screen's size and at its own again, the screen changes hands twice
+        self.dispatch('hl.dsp.window.fullscreen({action = "set"})', "fullscreen 0")
+        a.follow(11)
+        self.settle(1.2)
+        c = self.client(a.app_id) or {}
+        logical = (round(self.monitor["width"] / self.monitor["scale"]), round(self.monitor["height"] / self.monitor["scale"]))
+        if not c.get("fullscreen") or (a.w // self.scale, a.h // self.scale) != logical:
+            self.failed += 1
+            print(f"FAIL  render fullscreen: the window did not go fullscreen (state {c.get('fullscreen')}, {a.w}x{a.h})", flush=True)
+        self.check_pixels("fullscreen", a)
+        self.check_repaint("fullscreen")
+        self.dispatch('hl.dsp.window.fullscreen({action = "unset"})', "fullscreen 0")
+        a.follow(12)
+        self.settle(1.2)
+        self.check_pixels("fullscreen left", a)
+        self.check_repaint("fullscreen left")
 
         a.destroy()
         self.settle(0.5)
