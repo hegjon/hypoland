@@ -120,6 +120,15 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- The compositor could be killed in the middle of a session without a trace, and the session started over with every
+  window gone. It runs with realtime priority, which rtkit grants only with a limit on how long it may run without a
+  pause, and the kernel stops a thread that passes the limit inside a single long system call (in a graphics driver, for
+  instance) with SIGKILL before the compositor can give the priority back. A Dell XPS 13 lost 3 of 8 sessions of the
+  benchmark that way one morning, and reading 2 GB through `hyprctl eval` did it every time. A thread of its own now
+  takes the priority away once the compositor has been busy for 40 ms without a pause, which also stops the kernel's
+  count in the middle of such a call, and asks for it again when the compositor rests. The priority itself stays: without
+  it a Dell Chromebook 11 shows a workspace switch in 5.8 instead of 2.9 ms, a focus change among 40 windows in 16.5
+  instead of 9.7 and a closing window in 21 instead of 15, and the other machines switch 5 to 25% slower.
 - The compositor crashed when the session ended while the shell's layers were still on the screen: shutting down
   forgets every layer before its client is gone, and a layer then freed itself in the middle of its own unmap. On an
   A8-6600K desktop with an AMD Radeon HD 8570D the session's end crashed 7 times in 8 before, none in 8 after. Nothing
