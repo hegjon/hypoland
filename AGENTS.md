@@ -269,7 +269,9 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    scans out (`hypoland-kmsgrab`, root and one monitor), a GPU client, an X11 client through Xwayland, Chromium,
    GTK 3 (also through Xwayland), GTK 4, Qt Quick and Qt Quick software windows (drawn, and getting at least
    20 fps, see the toolkit workloads below), a Tk window through Xwayland with a menu and a dialog (see `tk-canvas`
-   below), GL and shader errors in the compositor's log, crash reports and core dumps. A machine without a monitor gets a headless output for the checks. It prints PASS / FAIL per machine;
+   below), GL and shader errors in the compositor's log, crash reports and core dumps. A machine without a monitor gets a headless output for the checks. A passing check ends
+   with one more SDDM restart, and the checked compositor must not dump core on its way out (since 2026-10-31: lianli's
+   compositor had crashed at most session ends from 2026-10-30, unseen). It prints PASS / FAIL per machine;
    logs and screenshots are in
    `test-results/deploy-*`. `--no-install` only checks the running session (the aarch64 Galaxy Book builds its own
    package, see `~/Work/infrastructure/MACHINES.md`). Prefer it over improvising SSH commands. A deploy replaces the
