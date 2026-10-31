@@ -132,6 +132,37 @@ check_window() {
     stop_clients
 }
 
+# The screen shows what it should (clients/render.py, root, added 2026-10-31): two shm windows of its own, drawn in
+# blocks it knows pixel by pixel, through a whole buffer, small damaged rectangles, new buffers further on in the pool,
+# a window with a transparent band floating over the other, moved and closed. At every step the focused window has to
+# show exactly what it drew (an integer scale only), and the screen has to be what a full repaint of the same scene
+# shows (the shell frozen, the workspace switched away and back): a pixel left stale or drawn wrong by the damage
+# tracking, the merged uploads, the clipped layers or a read in place fails it. The screen is read from the scanned-out
+# buffer where hypoland-kmsgrab can, through the compositor (grim) where it cannot. Screens that differ are kept
+check_render() {
+    local grab=kmsgrab line out=$CLIENTDIR/render.txt
+    if [ $ROOT = 0 ]; then
+        skip "render checks (they freeze the shell and read the screen, root only)"
+        return
+    fi
+    if [ -n "$HEADLESS" ] || ! command -v hypoland-kmsgrab >/dev/null || [ "$(H monitors | grep -c '^Monitor')" != 1 ]; then
+        grab=grim
+    fi
+    env -i PATH="$PATH" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" timeout 180 python3 -I "$CLIENTSRC/render.py" \
+        --socket "$RUNTIME/hypr/$SIG/.socket.sock" --out "$CLIENTDIR/render" --grab $grab >"$out" 2>&1
+    grep -q "^\(PASS\|FAIL\|SKIP\)" "$out" || fail "render checks did not run: $(tail -n 1 "$out")"
+    while read -r line; do
+        case $line in
+            PASS*) pass "${line#PASS  } ($grab)" ;;
+            FAIL*) fail "${line#FAIL  }" ;;
+            SKIP*) skip "${line#SKIP  }" ;;
+        esac
+    done <"$out"
+    for line in "$CLIENTDIR"/render/*.ppm; do
+        [ -e "$line" ] && magick "$line" "$OUT/render-$(basename "${line%.ppm}" | tr ' ' '-').png" 2>/dev/null
+    done
+}
+
 check_chromium() {
     local before page="data:text/html,<body style='background:%23ff00ff'>"
     if [ -n "$(missing chromium)" ]; then
@@ -384,6 +415,7 @@ checks() {
     check_config
     check_output || return
     check_window
+    check_render
     check_chromium
     check_toolkits
     check_tk
