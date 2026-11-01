@@ -689,6 +689,11 @@ class Render:
             print(f"SKIP  render {step}: pixels need an integer scale ({self.monitor['scale']})", flush=True)
             return
         screen, sw, sh = self.grab(f"{step}-pixels", how)
+        if (how or self.args.grab) == "screencopy" and self.sharing:
+            # the pointer's corner, where Sharing moves it to keep frames coming: a cursor Omarchy fades out left a
+            # step in the corner of a fullscreen window (lianli, 2026-11-01)
+            n = Sharing.CORNER * max(self.scale, 1)
+            skip = tuple(skip) + ((sw - n - x0, sh - n - y0, n, n),)
         bad, worst = 0, None
         lo, hi = max(inset, -x0), min(w - inset, sw - x0)  # the columns on the screen
         for y in range(inset, h - inset):
@@ -702,6 +707,8 @@ class Render:
                 for x in range(lo, hi):
                     b, g, r, a = row[x * 4 : x * 4 + 4]
                     if a != 255 and self.blur:
+                        continue
+                    if any(bx <= x < bx + bw and by <= y < by + bh for bx, by, bw, bh in skip):
                         continue
                     if a == 255:
                         exp = (r, g, b)
