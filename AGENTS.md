@@ -199,8 +199,14 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   `toasttrace.sh`, `toastgpu.py`): under Hypoland the shell commits its first toast frame 5 ms after the D-Bus message
   with its GPU work still running, and the compositor submits a frame with it 5 ms later, whose GPU work then waits for
   the shell's, misses the next vblank and flips at the one after; under Hyprland the shell renders only after the frame
-  callbacks of the frame before (at 12.5 ms), and the compositor picks it up at a vblank. Open: which of the frame
-  scheduling differences decides it.
+  callbacks of the frame before (at 12.5 ms), and the compositor picks it up at a vblank. Read with the GPU requests
+  (`toastgpu.py`): Hypoland's frame 5 ms after the shell's commit is not the toast's (one of the shell's commits that
+  waits for no fence applied at once and was drawn as soon as nothing was pending), it takes the swapchain's one pending
+  flip, finishes on the GPU behind the shell's work after the next vblank, and the toast's own frame, ready at 23 ms,
+  waits for that flip at the vblank after (34 ms); Hyprland draws at vblanks only, so its first frame after the shell's
+  buffer is ready has the toast. So it is drawing as soon as damage comes, which shows a single surface's update sooner
+  everywhere else, against a client whose commits arrive in parts, one waiting for its GPU work. Open; the fence fix of
+  2026-11-01 did not change it (36 ms, 3 fresh sessions).
 
 ## Hard constraints
 
