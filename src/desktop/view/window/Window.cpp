@@ -128,9 +128,15 @@ void CWindow::initialize() {
     Event::bus()->m_events.window.create.emit(SELF);
 }
 
+// the picture a closing window fades out from
+static SP<Render::IFramebuffer> unmapSnapshot(PHLWINDOW window) {
+    return g_pHyprRenderer->shouldRenderWindow(window) && !window->m_ruleApplicator->noAnim().valueOrDefault() ? g_pHyprRenderer->makeSnapshotFB(window) : nullptr;
+}
+
 void CWindow::attachBackendListeners() {
     m_backendListeners.map               = m_backend->m_events.map.listen([this] { mapWindow(); });
     m_backendListeners.unmap             = m_backend->m_events.unmap.listen([this] { unmapWindow(); });
+    m_backendListeners.unmapSoon         = m_backend->m_events.unmapSoon.listen([this] { m_unmapSnapshot = unmapSnapshot(m_self.lock()); });
     m_backendListeners.commit            = m_backend->m_events.commit.listen([this](bool initial) { commitWindow(initial); });
     m_backendListeners.destroy           = m_backend->m_events.destroy.listen([this] { destroyWindow(); });
     m_backendListeners.surfaceChanged    = m_backend->m_events.surfaceChanged.listen([this](const auto& surface) { onSurfaceChanged(surface); });
@@ -1610,12 +1616,11 @@ void CWindow::unmapWindow() {
             Fullscreen::controller()->setFullscreenMode(m_self.lock(), Fullscreen::FSMODE_NONE, Fullscreen::FSMODE_NONE);
     }
 
-    // Allow the renderer to catch the last frame.
-    const auto SNAPSHOT =
-        g_pHyprRenderer->shouldRenderWindow(m_self.lock()) && !m_ruleApplicator->noAnim().valueOrDefault() ? g_pHyprRenderer->makeSnapshotFB(m_self.lock()) : nullptr;
+    // Allow the renderer to catch the last frame, unless it was caught before the commit that unmapped
+    const auto SNAPSHOT = m_unmapSnapshot ? std::exchange(m_unmapSnapshot, nullptr) : unmapSnapshot(m_self.lock());
 
-    bool      wasLastWindow = WAS_FOCUSED;
-    PHLWINDOW nextInGroup   = RESTORED_SWALLOW_WINDOW ? RESTORED_SWALLOW_WINDOW : [this] -> PHLWINDOW {
+    bool       wasLastWindow = WAS_FOCUSED;
+    PHLWINDOW  nextInGroup   = RESTORED_SWALLOW_WINDOW ? RESTORED_SWALLOW_WINDOW : [this] -> PHLWINDOW {
         if (!m_grouping->group())
             return nullptr;
 
@@ -1729,6 +1734,9 @@ void CWindow::unmapWindow() {
 void CWindow::commitWindow(bool initialCommit) {
     if (!m_backend->valid())
         return;
+
+    // a commit that did not unmap after all (a state the surface dropped)
+    m_unmapSnapshot.reset();
 
     if (initialCommit) {
         // try to calculate static rules already for any floats

@@ -132,6 +132,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- A window that closes by first dropping its picture, as foot (Omarchy's terminal) does, faded out as its border alone.
+  It fades out with its contents now. Upstream's behaviour as well.
 - On Intel graphics from the GMA 4500 to Haswell and Bay Trail, after a window drawn straight from its memory (a
   terminal such as foot) or a screenshot, every frame went to the screen without the display waiting for it to be
   drawn, and the GPU got no extra clock for it: kitty scrolled on a Bay Trail Chromebook at 15 instead of 23 frames

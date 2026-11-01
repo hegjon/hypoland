@@ -136,6 +136,7 @@ namespace Desktop::View {
         struct {
             CSignalT<>                       map;
             CSignalT<>                       unmap;
+            CSignalT<>                       unmapSoon; // the state about to be applied unmaps: the surface still shows its last buffer
             CSignalT<bool>                   commit;
             CSignalT<>                       destroy;
             CSignalT<SP<CWLSurfaceResource>> surfaceChanged;

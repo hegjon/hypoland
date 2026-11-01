@@ -1163,7 +1163,12 @@ Tools:
   after the fade matches a full repaint. XPS (3200x1800), 3 fresh sessions each, a floating 640x400 foot over two tiled
   ones closed 10 times (`test-results/rt-20261031/fadebench.sh`, the second after each close): the GPU busy 733 / 724 /
   725 -> 507 / 491 / 503 ms (i915 PMU), the compositor's CPU 160 to 220 -> 130 to 170 ms, the same page flips. Seen while testing it, upstream's too: a foot window that closes fades as its
-  border alone, foot drops its buffer before the toplevel.
+  border alone, foot drops its buffer before the toplevel. Since 2026-11-01 a window whose surface is about to apply a
+  state without a buffer (the unmap of such a client) takes its snapshot at the surface's precommit, while the last buffer
+  is still current (`CWaylandBackend` emits `unmapSoon`, `CWindow::m_unmapSnapshot`, dropped at the next commit when the
+  state was not applied after all): foot's contents fade out with it (a nested compositor with a 0.5 s fade, grim every
+  40 ms: r919 shows the border alone from the first frame, now the magenta window fades; `fadetest.sh` in
+  `test-results/fade-20261101/`).
   The snapshot a close fades out from (`makeSnapshotFB()`) was a new framebuffer of the monitor's size per close, and on
   i915 Mesa has a new buffer's pages allocated and cleared at once (`DRM_IOCTL_I915_GEM_SET_DOMAIN` in `crocus_bo_alloc`,
   9 MB at 1920x1200): uprobes on the snapshot and `CWindow::unmapWindow()` on the Mac mini had the snapshot at 3.3 ms of a

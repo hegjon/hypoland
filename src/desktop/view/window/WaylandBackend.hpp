@@ -75,6 +75,7 @@ namespace Desktop::View {
             CHyprSignalListener map;
             CHyprSignalListener unmap;
             CHyprSignalListener commit;
+            CHyprSignalListener precommit;
             CHyprSignalListener destroy;
             CHyprSignalListener ack;
             CHyprSignalListener metadata;

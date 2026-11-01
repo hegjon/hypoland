@@ -121,20 +121,20 @@ CWaylandBackend::CWaylandBackend(SP<CXDGSurfaceResource> resource) : m_resource(
     updateMetadata(false);
     updateTraits(false);
 
-    m_listeners.map     = resource->m_events.map.listen([this] {
+    m_listeners.map    = resource->m_events.map.listen([this] {
         m_mapped = true;
         updateGeometry(true);
         updateGeometryHints();
         updateTraits(true);
         m_events.map.emit();
     });
-    m_listeners.unmap   = resource->m_events.unmap.listen([this] {
+    m_listeners.unmap  = resource->m_events.unmap.listen([this] {
         m_mapped = false;
         m_events.unmap.emit();
         m_initialCommit = true;
         m_pendingReportedSize.reset();
     });
-    m_listeners.commit  = resource->m_events.commit.listen([this] {
+    m_listeners.commit = resource->m_events.commit.listen([this] {
         const bool INITIAL = m_initialCommit;
 
         updateGeometry(true);
@@ -148,6 +148,13 @@ CWaylandBackend::CWaylandBackend(SP<CXDGSurfaceResource> resource) : m_resource(
         m_events.commit.emit(INITIAL);
         m_initialCommit = false;
     });
+    // A client that drops its buffer to unmap (foot) leaves nothing but the border to fade out once that state applies:
+    // the window takes its snapshot before it
+    if (const auto SURFACE = resource->m_surface.lock())
+        m_listeners.precommit = SURFACE->m_events.precommit.listen([this, surface = resource->m_surface] {
+            if (m_mapped && surface && surface->m_pending.updated.bits.buffer && !surface->m_pending.buffer)
+                m_events.unmapSoon.emit();
+        });
     m_listeners.destroy = resource->m_events.destroy.listen([this] {
         updateGeometry(false);
         updateGeometryHints();

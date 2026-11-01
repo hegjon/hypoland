@@ -32,6 +32,10 @@ namespace Layout {
     class CWindowTarget;
 }
 
+namespace Render {
+    class IFramebuffer;
+}
+
 namespace Desktop {
     enum eFocusReason : uint8_t;
 }
@@ -297,9 +301,11 @@ namespace Desktop::View {
         UP<CWindowEffectsController> m_effects;
         UP<CWindowStateEventTracker> m_stateTracker;
         SP<Layout::CWindowTarget>    m_target;
+        SP<Render::IFramebuffer>     m_unmapSnapshot; // taken before a commit that unmaps by dropping the buffer, see unmapWindow()
         struct {
             CHyprSignalListener map;
             CHyprSignalListener unmap;
+            CHyprSignalListener unmapSoon;
             CHyprSignalListener commit;
             CHyprSignalListener destroy;
             CHyprSignalListener surfaceChanged;
