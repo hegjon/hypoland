@@ -8,6 +8,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Faster
 
+- A closing window disappears from the screen sooner: Omarchy's terminal closes in 3.4 instead of 7.8 ms on a Mac mini
+  (Haswell), 4.2 instead of 9.9 on the X200 and 9.8 instead of 14.9 on a Bay Trail Chromebook. The picture it fades out
+  from went into a new buffer of the screen's size every time, which the kernel first had to allocate and clear (9 MB
+  at 1920x1200); a buffer a fade left behind is taken again now.
 - Closing a window no longer repaints the whole screen while it fades out: only where the fading window is drawn. On a
   Dell XPS 13 (3200x1800) the GPU is busy 50 instead of 73 ms over the second after a window closes.
 - Animations show their first step in the first frame. A frame reaches the screen at the next vblank, up to a refresh

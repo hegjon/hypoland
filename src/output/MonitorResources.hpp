@@ -17,6 +17,7 @@ namespace Monitor {
 
         SP<Render::IFramebuffer> getUnusedWorkBuffer();
         SP<Render::IFramebuffer> getUnusedWorkBuffer(const Vector2D& size);
+        SP<Render::IFramebuffer> getUnusedSnapshotFB();
         void                     forEachUnusedFB(std::function<void(SP<Render::IFramebuffer>)> callback, bool includeNamed = false);
         bool                     hasMirrorFB() const;
         bool                     shouldKeepMirrorFB() const;
@@ -56,6 +57,7 @@ namespace Monitor {
 
         std::vector<SResource>              m_workBuffers;
         std::vector<SResource>              m_sizedWorkBuffers;
+        std::vector<SResource>              m_snapshotBuffers;
         SP<CEventLoopTimer>                 m_cleanupTimer;
 
         friend class CMonitor;

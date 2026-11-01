@@ -1130,6 +1130,15 @@ Tools:
   ones closed 10 times (`test-results/rt-20261031/fadebench.sh`, the second after each close): the GPU busy 733 / 724 /
   725 -> 507 / 491 / 503 ms (i915 PMU), the compositor's CPU 160 to 220 -> 130 to 170 ms, the same page flips. Seen while testing it, upstream's too: a foot window that closes fades as its
   border alone, foot drops its buffer before the toplevel.
+  The snapshot a close fades out from (`makeSnapshotFB()`) was a new framebuffer of the monitor's size per close, and on
+  i915 Mesa has a new buffer's pages allocated and cleared at once (`DRM_IOCTL_I915_GEM_SET_DOMAIN` in `crocus_bo_alloc`,
+  9 MB at 1920x1200): uprobes on the snapshot and `CWindow::unmapWindow()` on the Mac mini had the snapshot at 3.3 ms of a
+  3.7 ms unmap, almost all of it that ioctl (`snaptrace.sh`, `snapan.py` and both traces in `test-results/pool-20261101/`).
+  Since 2026-11-01 the monitor keeps them (`CMonitorResources::getUnusedSnapshotFB()`, like the work buffers: one a fade
+  left is taken again, freed 5 s after its last use): snapshot 0.14 ms, and Omarchy's terminal closes (`launch.close_ms`,
+  r909 against the pool, 4 fresh sessions each) on the Mac mini in 3.35 instead of 7.75 ms, the X200 4.15 / 9.9, the
+  Chromebook 9.8 / 14.85, every block; the rest of `launch` and `menu` the same (`test-results/pool-20261101/`). Hyprland
+  0.57.0 closed it in 7.7 ms on the Mac mini and 13.7 on the Chromebook in the night of 2026-10-31.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 

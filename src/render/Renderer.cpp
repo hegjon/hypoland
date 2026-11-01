@@ -2928,6 +2928,17 @@ void IHyprRenderer::addWindowToRenderUnfocused(PHLWINDOW window) {
         m_renderUnfocusedTimer->updateTimeout(std::chrono::milliseconds(1000 / *PFPS));
 }
 
+// a snapshot to fade out from: the monitor's size with alpha, one a fade left if there is one (CMonitorResources::getUnusedSnapshotFB())
+static SP<IFramebuffer> snapshotFB(PHLMONITOR monitor, const char* name) {
+    auto fb = monitor->resources()->getUnusedSnapshotFB();
+    if (!fb) {
+        fb = g_pHyprRenderer->createFB(name);
+        fb->alloc(monitor->m_transformedSize.x, monitor->m_transformedSize.y, DRM_FORMAT_ABGR8888);
+    }
+    fb->setImageDescription(monitor->workBufferImageDescription());
+    return fb;
+}
+
 SP<IFramebuffer> IHyprRenderer::makeSnapshotFB(PHLWINDOW pWindow) {
     // we trust the window is valid.
     const auto PMONITOR = pWindow->m_monitor.lock();
@@ -2946,10 +2957,7 @@ SP<IFramebuffer> IHyprRenderer::makeSnapshotFB(PHLWINDOW pWindow) {
     // this is temporary, doesn't mess with the actual damage
     CRegion    fakeDamage{0, 0, sc<int>(PMONITOR->m_transformedSize.x), sc<int>(PMONITOR->m_transformedSize.y)};
 
-    const auto PFRAMEBUFFER = createFB("window snapshot");
-
-    PFRAMEBUFFER->alloc(PMONITOR->m_transformedSize.x, PMONITOR->m_transformedSize.y, DRM_FORMAT_ABGR8888);
-    PFRAMEBUFFER->setImageDescription(PMONITOR->workBufferImageDescription());
+    const auto PFRAMEBUFFER = snapshotFB(PMONITOR, "window snapshot");
 
     beginFullFakeRender(PMONITOR, fakeDamage, PFRAMEBUFFER);
 
@@ -2986,10 +2994,7 @@ SP<IFramebuffer> IHyprRenderer::makeSnapshotFB(PHLLS pLayer) {
     // this is temporary, doesn't mess with the actual damage
     CRegion    fakeDamage{0, 0, sc<int>(PMONITOR->m_transformedSize.x), sc<int>(PMONITOR->m_transformedSize.y)};
 
-    const auto PFRAMEBUFFER = createFB("layer snapshot");
-
-    PFRAMEBUFFER->alloc(PMONITOR->m_transformedSize.x, PMONITOR->m_transformedSize.y, DRM_FORMAT_ABGR8888);
-    PFRAMEBUFFER->setImageDescription(PMONITOR->workBufferImageDescription());
+    const auto PFRAMEBUFFER = snapshotFB(PMONITOR, "layer snapshot");
 
     beginFullFakeRender(PMONITOR, fakeDamage, PFRAMEBUFFER);
 
@@ -3027,10 +3032,7 @@ SP<IFramebuffer> IHyprRenderer::makeSnapshotFB(WP<Desktop::View::CPopup> popup) 
 
     CRegion    fakeDamage{0, 0, PMONITOR->m_transformedSize.x, PMONITOR->m_transformedSize.y};
 
-    const auto PFRAMEBUFFER = createFB("popup shapshot");
-
-    PFRAMEBUFFER->alloc(PMONITOR->m_transformedSize.x, PMONITOR->m_transformedSize.y, DRM_FORMAT_ABGR8888);
-    PFRAMEBUFFER->setImageDescription(PMONITOR->workBufferImageDescription());
+    const auto PFRAMEBUFFER = snapshotFB(PMONITOR, "popup shapshot");
 
     beginFullFakeRender(PMONITOR, fakeDamage, PFRAMEBUFFER);
 

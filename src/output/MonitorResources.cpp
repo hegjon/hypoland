@@ -47,8 +47,9 @@ void CMonitorResources::releaseUnusedWorkBuffers() {
 
     std::erase_if(m_workBuffers, UNUSED);
     std::erase_if(m_sizedWorkBuffers, UNUSED);
+    std::erase_if(m_snapshotBuffers, UNUSED);
 
-    if (!m_workBuffers.empty() || !m_sizedWorkBuffers.empty())
+    if (!m_workBuffers.empty() || !m_sizedWorkBuffers.empty() || !m_snapshotBuffers.empty())
         m_cleanupTimer->updateTimeout(std::chrono::seconds(MAX_UNUSED_SECONDS + 1));
 }
 
@@ -143,6 +144,29 @@ SP<Render::IFramebuffer> CMonitorResources::getUnusedWorkBuffer(const Vector2D& 
         return nullptr;
 
     found->buffer->setImageDescription(m_imageDescription);
+    found->lastUsed.reset();
+    scheduleCleanup();
+    return found->buffer;
+}
+
+// The snapshots that closing windows, layers and popups fade out from (IHyprRenderer::makeSnapshotFB()), of the monitor's
+// size and with alpha. A new one per close cost the Mac mini 3.3 ms of the close in the kernel: Mesa has the pages of a
+// new buffer allocated and cleared at once, 9 MB at 1920x1200 (2026-11-01, uprobes on the snapshot). One that a fade left
+// is taken again, and freed 5 s after its last use like the work buffers
+SP<Render::IFramebuffer> CMonitorResources::getUnusedSnapshotFB() {
+    auto found = std::ranges::find_if(m_snapshotBuffers, [](const auto& res) { return res.buffer.strongRef() < 2; });
+    if (found == m_snapshotBuffers.end()) {
+        if (m_snapshotBuffers.size() >= MAX_WORK_BUFFERS)
+            return nullptr;
+
+        auto fb = g_pHyprRenderer->createFB(std::format("Monitor {} snapshot", m_monitor->m_name));
+        if (!fb->alloc(m_size.x, m_size.y, DRM_FORMAT_ABGR8888))
+            return nullptr;
+
+        m_snapshotBuffers.emplace_back(fb);
+        found = m_snapshotBuffers.end() - 1;
+    }
+
     found->lastUsed.reset();
     scheduleCleanup();
     return found->buffer;
