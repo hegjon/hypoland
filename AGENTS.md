@@ -1151,6 +1151,10 @@ Tools:
   hair off put one of the two triangles of each copy a step off: grim's screenshot failed the pixel checks, and the screen
   kept the copy's pixels outside later damage (`rectangles` failed after the screenshot step). Those copies take the
   nearest texel when they are texel for texel (`CHyprOpenGLImpl` at the end of a frame, `CScreenshareFrame::renderMonitor()`).
+  That left the work buffer's texture on the nearest texel (a texture keeps its filters), and the blur set only the
+  minification filter of what it samples while its upsample magnifies: after a screenshot the blur would have come
+  out blocky (found by a review the same day, not seen on a machine). The blur sets both filters now, and the screen
+  shader's pass keeps the filter it had.
   The last 29 pixels there, a step off in columns next to the small updates of the subsurface turned by a quarter, came
   from the same filter: a turned buffer is texel for texel at its turned size, but only unturned ones took the nearest
   texel; they all do since 2026-11-01 (`IElementRenderer::drawSurface()`), and the Galaxy Book passes all 71 checks.

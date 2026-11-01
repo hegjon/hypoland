@@ -105,7 +105,10 @@ SP<CGLFramebuffer> CDualKawaseBlurProvider::blurGL(SP<CGLFramebuffer> source, fl
         auto currentTex = source->getTexture();
 
         currentTex->bind();
+        // both filters: an upsample pass magnifies, and a copy texel for texel can have left a work buffer's texture on
+        // the nearest texel (CHyprOpenGLImpl::end(), the backdrop copy), which made the blur blocky
         currentTex->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        currentTex->setTexParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         auto shader = m_impl.useShader(m_impl.getShaderVariant(SH_FRAG_BLURPREPARE));
 
@@ -139,6 +142,7 @@ SP<CGLFramebuffer> CDualKawaseBlurProvider::blurGL(SP<CGLFramebuffer> source, fl
 
         currentTex->bind();
         currentTex->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        currentTex->setTexParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         shader->setUniformMatrix3fv(SHADER_PROJ, 1, GL_TRUE, glMatrix.getMatrix());
         shader->setUniformFloat(SHADER_RADIUS, *PBLURSIZE * strength);
@@ -201,12 +205,14 @@ SP<CGLFramebuffer> CDualKawaseBlurProvider::blurGL(SP<CGLFramebuffer> source, fl
 
         currentTex->bind();
         currentTex->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        currentTex->setTexParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         if (REQUIRES_PREPARED_INPUT) {
             m_impl.setActiveTexture(GL_TEXTURE1);
             auto preparedTex = PPREPAREDFB->getTexture();
             preparedTex->bind();
             preparedTex->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            preparedTex->setTexParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             m_impl.setActiveTexture(GL_TEXTURE0);
         }
 

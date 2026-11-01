@@ -852,6 +852,8 @@ void CHyprOpenGLImpl::end() {
             // Filtered linearly, freedreno puts the texel centers a hair off: one of the two triangles of a frame that went
             // through the work buffer came out up to two steps off, on the screen and in captures, and stayed so outside later
             // damage (the Galaxy Book after a grim screenshot, clients/render.py of the bench, 2026-11-01)
+            // The screen shader's pass below keeps the filter it had.
+            const bool FILTERNEAREST = g_pHyprRenderer->m_renderData.useNearestNeighbor;
             if (monbox == CBox{{}, m_renderData.pMonitor->m_transformedSize})
                 g_pHyprRenderer->m_renderData.useNearestNeighbor = true;
 
@@ -880,8 +882,10 @@ void CHyprOpenGLImpl::end() {
                         g_pHyprRenderer->setProjectionType(RPT_MONITOR);
                         g_pHyprRenderer->m_renderData.transformDamage = false;
                         m_applyFinalShader                            = true;
+                        const bool COPYNEAREST                        = std::exchange(g_pHyprRenderer->m_renderData.useNearestNeighbor, FILTERNEAREST);
                         renderTexture(finalTexture, finalBox, {.finalOutput = true});
-                        m_applyFinalShader = false;
+                        g_pHyprRenderer->m_renderData.useNearestNeighbor = COPYNEAREST;
+                        m_applyFinalShader                               = false;
                     }
 
                     finalTexture = postProcessFB->getTexture();
