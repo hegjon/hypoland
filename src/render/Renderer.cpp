@@ -2527,6 +2527,19 @@ void IHyprRenderer::arrangeLayersForMonitor(const MONITORID& monitor) {
     g_layoutManager->invalidateMonitorGeometries(PMONITOR);
 }
 
+// CRegion::expand() unions the grown rectangles into the region one at a time, the square of their number: with Qt's 60
+// moving squares at scale 2 it took 39% of the compositor's time on the XPS (2026-11-01). They are made into a region at
+// once instead, as wl_surface damage is (flushDamage() in Compositor.cpp)
+static void expandRegion(CRegion& region, int by) {
+    std::vector<pixman_box32_t> boxes;
+    region.forEachRect([&](const pixman_box32_t& r) { boxes.push_back({r.x1 - by, r.y1 - by, r.x2 + by, r.y2 + by}); });
+
+    pixman_region32_t grown;
+    pixman_region32_init_rects(&grown, boxes.data(), sc<int>(boxes.size()));
+    pixman_region32_copy(region.pixman(), &grown);
+    pixman_region32_fini(&grown);
+}
+
 void IHyprRenderer::damageSurface(SP<CWLSurfaceResource> pSurface, double x, double y, double scale) {
     if (!pSurface)
         return; // wut?
@@ -2562,15 +2575,16 @@ void IHyprRenderer::damageSurface(SP<CWLSurfaceResource> pSurface, double x, dou
     const auto EXTENTS = damageBox.getExtents();
 
     // a texel's size in logical pixels: a viewport can magnify the buffer many times
-    double texelSize = 1.0;
+    Vector2D texel = {1.0, 1.0};
     {
         const auto& ST  = pSurface->m_current;
         Vector2D    SRC = ST.viewport.hasSource ? ST.viewport.source.size() * ST.scale : ST.bufferSize;
         if (ST.transform % 2 == 1)
             SRC = {SRC.y, SRC.x};
         if (SRC.x > 0 && SRC.y > 0)
-            texelSize = std::max(ST.size.x / SRC.x, ST.size.y / SRC.y) * scale;
+            texel = Vector2D{ST.size.x / SRC.x, ST.size.y / SRC.y} * scale;
     }
+    const double texelSize = std::max(texel.x, texel.y);
 
     CRegion damageBoxForEach;
 
@@ -2587,10 +2601,12 @@ void IHyprRenderer::damageSurface(SP<CWLSurfaceResource> pSurface, double x, dou
         // texels inside it, and at a fractional scale the box ends inside a pixel. Those pixels went stale (render checks at
         // scale 1.5: a rim of old colour around every small update, up to 67 steps off; the same around the updates of a
         // buffer magnified 4.6 times by a viewport, where half a texel is more than two pixels)
-        const bool TEXELFORTEXEL = m->m_scale == std::floor(m->m_scale) && pSurface->m_current.scale == m->m_scale && !pSurface->m_current.viewport.hasSource &&
-            !pSurface->m_current.viewport.hasDestination;
+        // A viewport that shows the buffer at its size is texel for texel too: Qt sets one on every window, whose small
+        // updates were all grown (2026-11-01)
+        const bool TEXELFORTEXEL = m->m_scale == std::floor(m->m_scale) && !pSurface->m_current.viewport.hasSource && std::abs(texel.x * m->m_scale - 1.0) < 1e-6 &&
+            std::abs(texel.y * m->m_scale - 1.0) < 1e-6;
         if (!TEXELFORTEXEL)
-            damageBoxForEach.expand(std::ceil(std::max<double>(m->m_scale, 0.5 * texelSize * m->m_scale + 1.0)));
+            expandRegion(damageBoxForEach, sc<int>(std::ceil(std::max<double>(m->m_scale, 0.5 * texelSize * m->m_scale + 1.0))));
 
         m->addDamage(damageBoxForEach);
     }

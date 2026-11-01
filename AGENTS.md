@@ -1068,6 +1068,14 @@ Tools:
   updated rectangle, up to 67 steps off, since a scaled surface is filtered and the pixels next to its damage take in the
   texels inside; a surface not drawn texel for texel damages `ceil(scale)` pixels more all round now
   (`IHyprRenderer::damageSurface()`), and both pass. The pixel checks need an integer scale and are skipped at 1.5.
+  Since 2026-11-01 a surface counts as texel for texel by its texel's size on the monitor (one pixel, an integer scale,
+  no viewport source), not by having no viewport: Qt sets a viewport destination on every window, and the XPS (scale
+  2) grew every small update of Qt's windows, with `CRegion::expand()`, which unions the grown rectangles one at a
+  time, the square of their number: 39% of the compositor's time under `qt-software-sprites` (a profile with the debug
+  package). The growth that remains makes the region in one go (`expandRegion()`, `pixman_region32_init_rects`). XPS,
+  3 fresh sessions each: the sprites 14.3 -> 8.0% (2.38 -> 1.33 ms a frame), `qt-software-scroll` 4.15 -> 3.9,
+  `terminal-scroll` 3.2 -> 3.0, GTK 3 the same; the T460s (1.5, grown as before) the same
+  (`test-results/damage-20261101/`). Nested render checks pass at 1, 2 and 1.6, `--selftest` fails.
   The same evening (asked for again by the user before a weekend away) more steps: a desynchronized subsurface over the first
   window, drawn by itself in small rectangles, moved by the parent's commit and destroyed; two subsurfaces scaled by a
   viewport (a 34x26 buffer shown at 157x122, a 301x233 one at the same size) with small damage; an xdg popup without a

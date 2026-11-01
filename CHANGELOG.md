@@ -8,6 +8,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Faster
 
+- Qt programs that draw in software cost the compositor far less on a screen at scale 2: their small updates were
+  grown by a pixel all round as if they were scaled, through a region operation whose cost grows with the square of
+  the number of updated rectangles. Sixty moving squares cost 8.0 instead of 14.3% of a CPU on a Dell XPS 13.
 - A closing window disappears from the screen sooner: Omarchy's terminal closes in 3.4 instead of 7.8 ms on a Mac mini
   (Haswell), 4.2 instead of 9.9 on the X200 and 9.8 instead of 14.9 on a Bay Trail Chromebook. The picture it fades out
   from went into a new buffer of the screen's size every time, which the kernel first had to allocate and clear (9 MB
