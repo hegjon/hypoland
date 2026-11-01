@@ -165,3 +165,27 @@ TEST_CASE(processesThatDieEarlyAreReaped) {
     // machine with "sleep 0" in it (a script's "sleep 0.25") matched before
     ASSERT(Tests::execAndGet(std::format("ps -o stat=,comm= --ppid {} | awk '$1 ~ /^Z/ && $2 == \"sleep\"'", HYPRLAND_PID)).empty(), true);
 }
+
+TEST_CASE(xwaylandComesBackAfterItDies) {
+    // an Xwayland that dies takes its windows along, and the next X11 client starts another one; with the compositor
+    // holding copies of Xwayland's ends of its sockets neither happened
+    getFromSocket("/dispatch hl.dsp.exec_cmd('xeyes')");
+    Tests::waitUntilWindowsN(1);
+    ASSERT(Tests::windowCount(), 1);
+
+    const auto XWAYLAND = Tests::execAndGet(std::format("pgrep -P {} -x Xwayland | head -1", HYPRLAND_PID));
+    ASSERT(XWAYLAND.empty(), false);
+    Tests::execAndGet(std::format("kill -KILL {}", XWAYLAND));
+
+    Tests::waitUntilWindowsN(0);
+    ASSERT(Tests::windowCount(), 0);
+
+    getFromSocket("/dispatch hl.dsp.exec_cmd('xeyes')");
+    Tests::waitUntilWindowsN(1);
+    ASSERT(Tests::windowCount(), 1);
+    EXPECT_CONTAINS(getFromSocket("/clients"), "xwayland: 1");
+    EXPECT(Tests::execAndGet(std::format("pgrep -P {} -x Xwayland | head -1", HYPRLAND_PID)) != XWAYLAND, true);
+
+    Tests::killAllWindows();
+    ASSERT(Tests::windowCount(), 0);
+}

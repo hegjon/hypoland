@@ -2,6 +2,7 @@
 
 #include <array>
 #include <hyprutils/os/FileDescriptor.hpp>
+#include <wayland-server-core.h>
 #include "../helpers/signal/Signal.hpp"
 
 struct wl_event_source;
@@ -41,6 +42,7 @@ class CXWaylandServer {
     Hyprutils::OS::CFileDescriptor                m_pipeFd;
     std::array<Hyprutils::OS::CFileDescriptor, 2> m_xwmFDs;
     std::array<Hyprutils::OS::CFileDescriptor, 2> m_waylandFDs;
+    wl_listener                                   m_clientDestroy = {};
 
     friend class CXWM;
 };

@@ -125,6 +125,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- X11 programs work again after Xwayland dies: its windows go away and the next X11 program starts a new Xwayland.
+  Before, the dead windows stayed on the screen, X11 programs got no answer until the next login, and the compositor
+  could hang for good once it had written more to the dead Xwayland than the connection holds, as stock Hyprland 0.57.0
+  did on the X200 after a GPU hang took Xwayland down. Upstream's bug as well.
 - Small updates of a window drawn straight from its memory (zero copy: foot, Qt's software windows and other shm
   clients whose memory can be shared with the GPU) could stay off the screen until something else redrew that place. The
   compositor took the update's damage to write the client's caches back and left none for the redraw. Found by the new

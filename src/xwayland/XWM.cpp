@@ -407,7 +407,8 @@ void CXWM::handleClientMessage(xcb_client_message_event_t* e) {
         }
 
         auto id       = e->data.data32[0];
-        auto resource = wl_client_get_object(g_pXWayland->m_server->m_xwaylandClient, id);
+        auto client   = g_pXWayland->m_server->m_xwaylandClient;
+        auto resource = client ? wl_client_get_object(client, id) : nullptr;
         if (resource) {
             auto surf = CWLSurfaceResource::fromResource(resource);
             associate(XSURF, surf);

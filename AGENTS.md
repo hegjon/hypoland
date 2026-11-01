@@ -241,9 +241,13 @@ session it still starts a few seconds after login: fcitx5's XIM / xcb addons con
 `xprop -root` because xdg-utils does not know `XDG_CURRENT_DESKTOP=Hyprland`. The benchmark's X11 workloads and
 checks wait until it answers (`xwayland_up()` in `scripts/bench/lib/workloads.sh`, `xprop -root`, 2 s more after a
 fresh start), so its start is never in a measurement (stock Hyprland starts it with the compositor); one that does
-not answer within 20 s makes the workload invalid and the check fail. After Xwayland dies, Hypoland does not start
-another (killed with SIGKILL on the T550 on 2026-10-26; it ignored SIGTERM): X11 clients get no answer until the
-next session. Upstream at the fork base has no restart either. The lazy start could listen on the socket again.
+not answer within 20 s makes the workload invalid and the check fail. After Xwayland dies, its windows go and the next
+X11 client starts another one (since 2026-11-01, hyprtester's `xwaylandComesBackAfterItDies`). Until then the compositor
+kept its copies of Xwayland's ends of the two socket pairs after the fork, so neither connection ended: the X11 windows
+stayed, the window manager's restart on the hangup (`CXWM::onEvent()`) never ran, X11 clients got no answer until the
+next session (the T550 on 2026-10-26, Xwayland killed with SIGKILL), and the window manager's writes, ANR pings among
+them, went into a socket nobody read until `xcb_flush()` blocked the compositor for good: stock Hyprland 0.57.0 on the
+X200 on 2026-11-01, after Xwayland aborted on a GPU hang in glamor (`Server.cpp` in upstream main is the same).
 Done so far: hyprpm is removed and hyprcursor is off by default. The plugin system is removed (2026-09-27): plugins
 must be built against the exact Hyprland source they load into and most draw with GLES3 era renderer code, so
 keeping up was not worth it. `hl.plugin.load()` warns once and does nothing, `hl.get_loaded_plugins()` is empty,

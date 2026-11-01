@@ -253,8 +253,14 @@ bool CXWaylandServer::tryOpenSockets() {
     return true;
 }
 
+static void xwaylandClientDestroyed(wl_listener* listener, void* data) {
+    if (g_pXWayland && g_pXWayland->m_server)
+        g_pXWayland->m_server->m_xwaylandClient = nullptr;
+}
+
 CXWaylandServer::CXWaylandServer() {
-    ;
+    wl_list_init(&m_clientDestroy.link);
+    m_clientDestroy.notify = ::xwaylandClientDestroyed;
 }
 
 CXWaylandServer::~CXWaylandServer() {
@@ -289,11 +295,15 @@ void CXWaylandServer::die() {
 
     if (m_pipeSource)
         wl_event_source_remove(m_pipeSource);
+    m_pipeSource = nullptr;
 
     // possible crash. Better to leak a bit.
     //if (xwaylandClient)
     //    wl_client_destroy(xwaylandClient);
 
+    if (m_xwaylandClient)
+        wl_list_remove(&m_clientDestroy.link);
+    wl_list_init(&m_clientDestroy.link);
     m_xwaylandClient = nullptr;
 }
 
@@ -388,6 +398,9 @@ bool CXWaylandServer::start() {
 
     m_waylandFDs[0].take(); // wl_client owns this fd now
 
+    // libwayland destroys the client when Xwayland's end of the socket closes
+    wl_client_add_destroy_listener(m_xwaylandClient, &m_clientDestroy);
+
     int notify[2] = {-1, -1};
     if (pipe(notify) < 0) {
         Log::logger->log(Log::ERR, "pipe failed");
@@ -415,6 +428,12 @@ bool CXWaylandServer::start() {
         runXWayland(notifyFds[1]);
         _exit(0);
     }
+
+    // Xwayland's ends of the two connections are its own: with copies open here neither connection ends when Xwayland
+    // dies, so its windows stayed, no new Xwayland started, and the window manager's writes filled the socket until
+    // xcb_flush() blocked the compositor for good (stock Hyprland 0.57.0 on the X200, 2026-11-01)
+    m_waylandFDs[1].reset();
+    m_xwmFDs[1].reset();
 
     return true;
 }
