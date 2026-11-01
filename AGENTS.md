@@ -1093,10 +1093,15 @@ Tools:
   its own connection (`--grab screencopy`, `Sharing`): a `copy_with_damage` frame is always pending, and the pointer moves
   a pixel in its corner when nothing else draws, so every frame is an incremental one of the work buffer, which damage
   keeps up like the screen's buffers; the pointer's corner is left out of the comparison.
-  `scripts/bench/render-nested.sh [--scale S] [--config extra.lua] [--binary PATH]` runs it against a compositor of the
-  tree started inside the desktop's session with one headless output (the nested window switched off, so the desktop's
-  screen does not matter), in about two minutes: before the fixes it failed exactly the four bugs' steps at scale 1, after
-  them it passes at 1, 2 and 1.6, with Omarchy's gaps, borders, rounding and animations as well. Steps that found nothing:
+  `scripts/bench/render-nested.sh [--scale S] [--transform T] [--config extra.lua] [--binary PATH]` runs it against a
+  compositor of the tree started inside the desktop's session with one headless output (the nested window switched off,
+  so the desktop's screen does not matter), in about two minutes: before the fixes it failed exactly the four bugs' steps
+  at scale 1, after them it passes at 1, 2 and 1.6, with Omarchy's gaps, borders, rounding and animations as well. It
+  passes as well on turned outputs (2026-11-01: transforms 1, 2, 3, 5 and 7, the frames through the work buffer, at scales
+  1, 2 and 1.6) and with the blur of Omarchy's Glassy theme (`default/hypr/glass.lua`: size 4, 2 passes, noise; the
+  dialog's half transparent band shows the blur there, so its translucent pixels are left out); `--selftest` fails 7 steps
+  on both, so neither repaints everything. Compositor frames come in the monitor's own coordinates, turned; a capture of
+  the scanned-out buffer of a turned monitor would not be, and the pixel checks are skipped for it. Steps that found nothing:
   the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller, the first
   window fullscreen and back (it has to be fullscreen at the monitor's logical size, or the step fails). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. Open: lianli (r600)
   failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0`, but neither capture was

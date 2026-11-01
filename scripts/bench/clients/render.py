@@ -380,7 +380,7 @@ class Sharing:
     def __init__(self, r):
         self.r, self.wl = r, r.wl
         self.sc = Screencopy(r.wl, r.monitor["name"])
-        self.box = (0, 0, int(r.monitor["width"] / r.monitor["scale"]), int(r.monitor["height"] / r.monitor["scale"]))
+        self.box = (0, 0, *r.logical)
         self.frame = None
         self.info = None
         self.flags = 0
@@ -441,8 +441,8 @@ class Sharing:
             elif time.monotonic() - self.nudged > 0.15:
                 m = self.r.monitor
                 self.side ^= 1
-                cx = m["x"] + int(m["width"] / m["scale"]) - 1 - self.side
-                cy = m["y"] + int(m["height"] / m["scale"]) - 1
+                cx = m["x"] + self.r.logical[0] - 1 - self.side
+                cy = m["y"] + self.r.logical[1] - 1
                 self.r.dispatch(f"hl.dsp.cursor.move({{x = {cx}, y = {cy}}})", f"movecursor {cx} {cy}")
                 self.nudged = time.monotonic()
         finally:
@@ -490,7 +490,13 @@ class Render:
         self.monitor = next(m for m in monitors if m["focused"])
         s = self.monitor["scale"]
         self.scale = int(s) if abs(s - round(s)) < 0.01 else 1
-        self.exact = abs(s - round(s)) < 0.01
+        # the monitor's size in its own coordinates: a turned monitor's mode is the panel's, across
+        size = (self.monitor["width"] / s, self.monitor["height"] / s)
+        self.size = size[::-1] if self.monitor["transform"] % 2 else size
+        self.logical = (int(self.size[0]), int(self.size[1]))
+        # pixels are compared where window and buffer pixels line up, in a frame of the monitor's own coordinates: the
+        # compositor turns the frames it hands out, the scanned-out buffer of a turned monitor comes across
+        self.exact = abs(s - round(s)) < 0.01 and (self.monitor["transform"] == 0 or args.grab == "screencopy")
         self.home = self.monitor["activeWorkspace"]["id"]
         used = {c["workspace"]["id"] for c in hyprctl(args.socket, "j/clients")}
         self.ws = next(w for w in (8, 9, 10, 7, 6) if w not in used and w != self.home)
@@ -500,6 +506,11 @@ class Render:
             self.rounding = int(opt.get("int", 0))
         except (ValueError, KeyError, TypeError, json.JSONDecodeError):
             self.rounding = 10
+        try:  # translucent pixels show the blur of what is under them (Omarchy's Glassy theme), not the window under
+            opt = hyprctl(args.socket, "j/getoption decoration:blur:enabled")
+            self.blur = bool(opt.get("bool", opt.get("int", 0)))
+        except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+            self.blur = False
         self.wl = Wayland()
         globs = {}
 
@@ -679,34 +690,40 @@ class Render:
             return
         screen, sw, sh = self.grab(f"{step}-pixels", how)
         bad, worst = 0, None
+        lo, hi = max(inset, -x0), min(w - inset, sw - x0)  # the columns on the screen
         for y in range(inset, h - inset):
             sy = y0 + y
-            if not 0 <= sy < sh:
+            if not 0 <= sy < sh or lo >= hi:
                 continue
             row = want[y * stride : y * stride + w * 4]
-            got = screen[(sy * sw + x0 + inset) * 3 : (sy * sw + x0 + w - inset) * 3]
+            got = screen[(sy * sw + x0 + lo) * 3 : (sy * sw + x0 + hi) * 3]
             if under and row[3::4] != b"\xff" * w:
                 uwant, ustride, ux, uy = under
-                for x in range(inset, w - inset):
+                for x in range(lo, hi):
                     b, g, r, a = row[x * 4 : x * 4 + 4]
+                    if a != 255 and self.blur:
+                        continue
                     if a == 255:
                         exp = (r, g, b)
                     else:
-                        o = (sy - uy) * ustride + (x0 + x - ux) * 4
+                        ox, oy = x0 + x - ux, sy - uy
+                        if not (0 <= ox < ustride // 4 and 0 <= oy < len(uwant) // ustride):
+                            continue  # past the window under: what shows there is not known
+                        o = oy * ustride + ox * 4
                         db, dg, dr = uwant[o : o + 3]
                         exp = tuple(min(255, round(v + d * (255 - a) / 255)) for v, d in ((r, dr), (g, dg), (b, db)))
-                    shown = tuple(got[(x - inset) * 3 : (x - inset) * 3 + 3])
+                    shown = tuple(got[(x - lo) * 3 : (x - lo) * 3 + 3])
                     if max(abs(e - g2) for e, g2 in zip(exp, shown)) > (0 if a == 255 else 1):
                         bad += 1
                         worst = worst or (x, y, exp, shown)
                 continue
             rgb = bytearray(w * 3)
             rgb[0::3], rgb[1::3], rgb[2::3] = row[2::4], row[1::4], row[0::4]
-            exp = bytes(rgb[inset * 3 : (w - inset) * 3])
+            exp = bytes(rgb[lo * 3 : hi * 3])
             if got != exp:
                 for i in range(0, len(exp), 3):
                     if got[i : i + 3] != exp[i : i + 3]:
-                        x = inset + i // 3
+                        x = lo + i // 3
                         if any(bx <= x < bx + bw and by <= y < by + bh for bx, by, bw, bh in skip):
                             continue
                         bad += 1
@@ -862,7 +879,7 @@ class Render:
         self.dispatch('hl.dsp.dpms({action = "on"})', "dpms on")  # a screen that is off shows nothing new
         self.workspace(self.ws)
         # the pointer into the corner, in the outer gap: a cursor drawn into the frame (no cursor plane) is not the windows'
-        cx, cy = self.monitor["x"] + int(self.monitor["width"] / self.monitor["scale"]) - 1, self.monitor["y"] + int(self.monitor["height"] / self.monitor["scale"]) - 1
+        cx, cy = self.monitor["x"] + self.logical[0] - 1, self.monitor["y"] + self.logical[1] - 1
         self.dispatch(f"hl.dsp.cursor.move({{x = {cx}, y = {cy}}})", f"movecursor {cx} {cy}")
         self.settle(0.3)
         self.choose_grab()
@@ -949,8 +966,7 @@ class Render:
         a.follow(11)
         self.settle(1.2)
         c = self.client(a.app_id) or {}
-        logical = (round(self.monitor["width"] / self.monitor["scale"]), round(self.monitor["height"] / self.monitor["scale"]))
-        if not c.get("fullscreen") or (a.w // self.scale, a.h // self.scale) != logical:
+        if not c.get("fullscreen") or (a.w // self.scale, a.h // self.scale) != (round(self.size[0]), round(self.size[1])):
             self.failed += 1
             print(f"FAIL  render fullscreen: the window did not go fullscreen (state {c.get('fullscreen')}, {a.w}x{a.h})", flush=True)
         self.check_pixels("fullscreen", a)
