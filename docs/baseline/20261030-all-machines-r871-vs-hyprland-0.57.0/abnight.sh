@@ -136,9 +136,16 @@ while :; do
         fi
         rm -rf /tmp/abnight-measure
         # ABNIGHT_WORKLOADS limits the workloads, for a quick check of the whole thing
-        bash "$D/bench/measure.sh" --rounds 1 --out /tmp/abnight-measure ${ABNIGHT_WORKLOADS:+--workloads "$ABNIGHT_WORKLOADS"} \
+        # a block takes 15 to 18 minutes; one that hangs has a hung compositor (stock Hyprland 0.57.0 on the X200 on
+        # 2026-11-01, blocked on a dead Xwayland), which SDDM cannot stop either: it is killed and the night goes on
+        timeout -k 30 2400 bash "$D/bench/measure.sh" --rounds 1 --out /tmp/abnight-measure ${ABNIGHT_WORKLOADS:+--workloads "$ABNIGHT_WORKLOADS"} \
             "${env[@]}" >"$OUT/$v-$r.txt" 2>&1
+        rc=$?
         log "$v round $r: $(grep -c '^@' "$OUT/$v-$r.txt") values$(grep -q '^@ [0-9]* invalid' "$OUT/$v-$r.txt" && echo ', some invalid')"
+        if [ $rc = 124 ] || [ $rc = 137 ]; then
+            log "$v round $r took 40 minutes, killing its compositor"
+            pkill -9 -x "$([ "$v" = hypoland ] && echo hypoland || echo Hyprland)"
+        fi
         # ABNIGHT_CHECK=1: the session checks of a deploy as well, once for each compositor, in the first round
         if [ -n "${ABNIGHT_CHECK:-}" ] && [ $r = 1 ]; then
             bash "$D/bench/measure.sh" --mode check "${env[@]}" >"$OUT/$v-check.txt" 2>&1
