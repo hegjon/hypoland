@@ -2527,19 +2527,6 @@ void IHyprRenderer::arrangeLayersForMonitor(const MONITORID& monitor) {
     g_layoutManager->invalidateMonitorGeometries(PMONITOR);
 }
 
-// CRegion::expand() unions the grown rectangles into the region one at a time, the square of their number: with Qt's 60
-// moving squares at scale 2 it took 39% of the compositor's time on the XPS (2026-11-01). They are made into a region at
-// once instead, as wl_surface damage is (flushDamage() in Compositor.cpp)
-static void expandRegion(CRegion& region, int by) {
-    std::vector<pixman_box32_t> boxes;
-    region.forEachRect([&](const pixman_box32_t& r) { boxes.push_back({r.x1 - by, r.y1 - by, r.x2 + by, r.y2 + by}); });
-
-    pixman_region32_t grown;
-    pixman_region32_init_rects(&grown, boxes.data(), sc<int>(boxes.size()));
-    pixman_region32_copy(region.pixman(), &grown);
-    pixman_region32_fini(&grown);
-}
-
 void IHyprRenderer::damageSurface(SP<CWLSurfaceResource> pSurface, double x, double y, double scale) {
     if (!pSurface)
         return; // wut?
@@ -2606,7 +2593,8 @@ void IHyprRenderer::damageSurface(SP<CWLSurfaceResource> pSurface, double x, dou
         const bool TEXELFORTEXEL = m->m_scale == std::floor(m->m_scale) && !pSurface->m_current.viewport.hasSource && std::abs(texel.x * m->m_scale - 1.0) < 1e-6 &&
             std::abs(texel.y * m->m_scale - 1.0) < 1e-6;
         if (!TEXELFORTEXEL)
-            expandRegion(damageBoxForEach, sc<int>(std::ceil(std::max<double>(m->m_scale, 0.5 * texelSize * m->m_scale + 1.0))));
+            // grown at once: CRegion::expand() took 39% of the compositor's time on the XPS under Qt's 60 moving squares
+            damageBoxForEach = Math::expandRegion(damageBoxForEach, sc<int>(std::ceil(std::max<double>(m->m_scale, 0.5 * texelSize * m->m_scale + 1.0))));
 
         m->addDamage(damageBoxForEach);
     }

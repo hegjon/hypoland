@@ -22,4 +22,8 @@ namespace Math {
     // covers the region. Drawing or uploading a region costs a call per rectangle, which costs more than the extra
     // pixels once a region falls apart into many small rectangles.
     CRegion coalesceRegion(const CRegion& region, size_t maxRects);
+
+    // The region with every rectangle grown by `by` pixels on each side: what CRegion::expand() gives, made at once
+    // instead of unioning the grown rectangles one at a time, whose cost grows with the square of their number
+    CRegion expandRegion(const CRegion& region, int by);
 }

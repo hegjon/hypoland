@@ -122,3 +122,16 @@ CRegion Math::coalesceRegion(const CRegion& region, size_t maxRects) {
 
     return result;
 }
+
+CRegion Math::expandRegion(const CRegion& region, int by) {
+    std::vector<pixman_box32_t> boxes;
+    boxes.reserve(sc<size_t>(pixman_region32_n_rects(region.pixman())));
+    region.forEachRect([&](const auto& RECT) { boxes.push_back({RECT.x1 - by, RECT.y1 - by, RECT.x2 + by, RECT.y2 + by}); });
+
+    CRegion           result;
+    pixman_region32_t grown;
+    pixman_region32_init_rects(&grown, boxes.data(), sc<int>(boxes.size()));
+    pixman_region32_copy(result.pixman(), &grown);
+    pixman_region32_fini(&grown);
+    return result;
+}
