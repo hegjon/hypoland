@@ -831,6 +831,10 @@ void CHyprOpenGLImpl::end() {
             g_pHyprRenderer->m_renderData.damage          = CRegion{0, 0, TARGET_SIZE.x, TARGET_SIZE.y};
             setViewport(0, 0, TARGET_SIZE.x, TARGET_SIZE.y);
 
+            // texel for texel takes the nearest texel, see below
+            if (TEXTURE->m_size == TARGET_SIZE)
+                g_pHyprRenderer->m_renderData.useNearestNeighbor = true;
+
             blend(false);
             renderTexturePrimitive(TEXTURE, CBox{{}, TARGET_SIZE});
             blend(true);
@@ -842,6 +846,13 @@ void CHyprOpenGLImpl::end() {
             m_renderData.pMonitor->m_zoomController.applyZoomTransform(monbox, m_renderData);
 
             if UNLIKELY (g_pHyprRenderer->m_renderData.mouseZoomFactor != 1.F && g_pHyprRenderer->m_renderData.mouseZoomUseMouse && *PZOOMDISABLEAA)
+                g_pHyprRenderer->m_renderData.useNearestNeighbor = true;
+
+            // Without zoom the copies below (into the mirror and to the screen) are texel for texel and take the nearest texel.
+            // Filtered linearly, freedreno puts the texel centers a hair off: one of the two triangles of a frame that went
+            // through the work buffer came out up to two steps off, on the screen and in captures, and stayed so outside later
+            // damage (the Galaxy Book after a grim screenshot, clients/render.py of the bench, 2026-11-01)
+            if (monbox == CBox{{}, m_renderData.pMonitor->m_transformedSize})
                 g_pHyprRenderer->m_renderData.useNearestNeighbor = true;
 
             // copy the damaged areas into the mirror buffer

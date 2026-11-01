@@ -201,8 +201,13 @@ void CScreenshareFrame::renderMonitor() {
     // render monitor texture
     CBox       monbox = CBox{{}, PMONITOR->m_transformedSize}.translate(-m_session->m_captureBox.pos());
 
+    // the mirror is copied texel for texel and takes the nearest texel: filtered linearly, freedreno mixed a sliver of the
+    // neighbours into one of the copy's two triangles (screenshots a step off on the Galaxy Book, clients/render.py of the
+    // bench, 2026-11-01)
     const auto OLD                                    = g_pHyprRenderer->m_renderData.renderModif.enabled;
+    const auto OLDNEAREST                             = g_pHyprRenderer->m_renderData.useNearestNeighbor;
     g_pHyprRenderer->m_renderData.renderModif.enabled = false;
+    g_pHyprRenderer->m_renderData.useNearestNeighbor  = TEXTURE->m_size == monbox.size() && monbox.x == std::round(monbox.x) && monbox.y == std::round(monbox.y);
     g_pHyprRenderer->startRenderPass();
     g_pHyprRenderer->draw(
         CTexPassElement::SRenderData{
@@ -211,6 +216,7 @@ void CScreenshareFrame::renderMonitor() {
         },
         {0, 0, m_bufferSize.x, m_bufferSize.y});
     g_pHyprRenderer->m_renderData.renderModif.enabled = OLD;
+    g_pHyprRenderer->m_renderData.useNearestNeighbor  = OLDNEAREST;
 
     // render black boxes for noscreenshare
     auto hidePopups = [&](Vector2D popupBaseOffset) {

@@ -125,6 +125,14 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- On a Radeon with the `radeon` driver (an A8-6600K desktop) a window drawn straight from its memory (zero copy) whose
+  width is not a multiple of 64 pixels could vanish from the screen, after a workspace switch for good: the kernel
+  refuses to read such a buffer and drops everything drawn in that frame with it (`texture pitch 1896 invalid must be
+  aligned with 64` in the kernel log). Such buffers are copied there now. Found by the render checks.
+- On the Galaxy Book (freedreno) a screenshot, and the screen for a while after one, could be a colour step off in one
+  half of the picture, cut along the diagonal: the copies of a frame onto the screen and into the screenshot were
+  filtered, and that GPU puts the pixel centres a hair off. Copies at the same size now take the nearest pixel, which is
+  exact on every GPU.
 - X11 programs work again after Xwayland dies: its windows go away and the next X11 program starts a new Xwayland.
   Before, the dead windows stayed on the screen, X11 programs got no answer until the next login, and the compositor
   could hang for good once it had written more to the dead Xwayland than the connection holds, as stock Hyprland 0.57.0

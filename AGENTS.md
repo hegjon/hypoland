@@ -817,7 +817,8 @@ Tools:
   elsewhere, Chromium and Xwayland use GPU buffers on the test machines; clients close the pool fd after
   mapping, so read the seals from the compositor's `/proc/<pid>/fd` (`F_GET_SEALS`). On by default where GPU reads snoop
   the CPU caches, since the compositor cannot flush another process's writes: i915 with an LLC (`I915_PARAM_HAS_LLC`:
-  iris, crocus from Sandy Bridge, not GM45 or Bay Trail) and r600; `0` switches it off, `force` ignores the gate.
+  iris, crocus from Sandy Bridge, not GM45 or Bay Trail) and r600 (there only for rows of a multiple of 64 pixels, see the
+  render checks below); `0` switches it off, `force` ignores the gate.
   Since 2026-10-29 evening it is on without an LLC as well (GM45, Bay Trail): there the GPU reads memory and the compositor
   writes the client's damaged cache lines back itself at every commit (`CWLSHMBuffer::flushCPUWrites()`, `clflush`
   per 64 bytes of each damaged row, x86 only; `force` is zero copy without the flush and the screen shows specks of
@@ -1103,10 +1104,22 @@ Tools:
   on both, so neither repaints everything. Compositor frames come in the monitor's own coordinates, turned; a capture of
   the scanned-out buffer of a turned monitor would not be, and the pixel checks are skipped for it. Steps that found nothing:
   the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller, the first
-  window fullscreen and back (it has to be fullscreen at the monitor's logical size, or the step fails). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. Open: lianli (r600)
-  failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0`, but neither capture was
-  trustworthy there (kmsgrab can return a buffer of the swapchain the screen is not showing, grim repaints first and came
-  back black in fresh sessions); with the continuous capture it can be told now.
+  window fullscreen and back (it has to be fullscreen at the monitor's logical size, or the step fails). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
+  failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0` (2026-10-31 and 11-01): the radeon
+  kernel driver refuses a command stream that samples a linear texture whose rows are not a multiple of 64 pixels
+  (`evergreen_surface_check_linear_aligned: texture pitch 1896 invalid must be aligned with 64`, then `Invalid command
+  stream!` in the kernel log) and drops the frame's draws with it, and Mesa imports such a udmabuf without complaint, so
+  the check's window (1896 pixels wide) vanished after the first workspace switch and stayed off the screen, also through
+  grim, until it attached a new buffer. foot and the night's workloads did not hit it (none in the kernel log of the
+  night of 2026-10-31); the render checks had about 5900 command streams refused since 2026-10-31. Since 2026-11-01 radeon samples in place only
+  buffers whose rows are a multiple of 256 bytes and that start 256 bytes aligned (`CWLSHMBuffer::tryZeroCopy()`); the
+  rest are copied into the dumb buffers, whose rows the kernel aligns. lianli passes all 72 checks with zero copy on.
+  On the Galaxy Book (freedreno) the copies of a frame that went through the work buffer (to the screen, into the mirror
+  and from the mirror into a screen capture) were filtered linearly at the same size, and freedreno's texel centers a
+  hair off put one of the two triangles of each copy a step off: grim's screenshot failed the pixel checks, and the screen
+  kept the copy's pixels outside later damage (`rectangles` failed after the screenshot step). Those copies take the
+  nearest texel when they are texel for texel (`CHyprOpenGLImpl` at the end of a frame, `CScreenshareFrame::renderMonitor()`).
+  Left on the Galaxy Book: 29 pixels a step off at columns next to the viewport subsurfaces after their small updates.
 - A closing window's fade damages only where it is drawn (2026-10-31, `CWindowFadeout::damage()`): upstream's fade-out
   damaged the whole monitor on every animation step, so closing a window repainted the screen for half a second (Omarchy's
   `windowsOut` and `fadeOut`). The snapshot is still the monitor's size; the window's part of it (`m_contentBox`: its frame
