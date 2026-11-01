@@ -966,7 +966,12 @@ Tools:
   unchanged), while on the XPS the clip makes the step faster (1.3 against 1.6 ms) and spread its `redrawn` only through
   i915's frequency scaling (tight and better, 27 to 31 against 32 to 42 ms, with the clock pinned). For telling such costs
   apart `HYPOLAND_ALPHA_BOUNDS=noclip` analyzes but draws every layer whole and `=noskip` clips but draws a layer whose buffer
-  has no alpha whole instead of skipping it. The night also showed the GTK 4 cost of the zero copy under `HYPOLAND_SHM_ZEROCOPY`
+  has no alpha whole instead of skipping it. The Mac mini's `resize` (master r914, 2026-11-01, 2 to 4 fresh sessions each,
+  `test-results/ab-20261101/`): with the alpha bounds `redrawn` 27.5 ms and a resize step's 90th percentile 10 ms, without
+  them 23.8 / 3.4, with `noclip` 24.6 / 4.2, with `noskip` 27 / 8.7, at a GPU busy 10% against 42%; and the same with the
+  GPU's minimum clock pinned at its maximum (28.1 / 10 against 24.0 / 4.8, GPU busy 1% against 32%). So not i915's
+  frequency scaling and not the skipped layers but the bar's clipped draw itself; open, it needs a frame timeline as
+  the toast's (`test-results/toast-20261101/`). The night also showed the GTK 4 cost of the zero copy under `HYPOLAND_SHM_ZEROCOPY`
   above, and the Chromebook's `workspace-switch` 0.7 points of CPU higher with the alpha bounds (6.3 -> 7.1%, every block,
   the same with the timer build; its GPU time 22 -> 13%), not looked into.
 - A focus change under fcitx5 (2026-10-30, the user: "a focus change shown is worse is a regression on Hypoland"): the
