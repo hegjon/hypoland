@@ -188,6 +188,19 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   died five times without a core dump, killed by a signal (start-hyprland's `Couldn't waitpid for hyprland: No child
   processes` is how its wait loop reports that), Hypoland once (the X200, at the end of `dev`), and three Hypoland sessions
   of the XPS the next morning: the kernel's realtime watchdog, see "Realtime and its guard" under Tools.
+  The night of 2026-10-31 to 11-01 repeated it with r896 (the morning's fixes) on nine machines, samsung-i5 included, 25 to
+  31 blocks of each (`test-results/night-20261031/`, `table.txt`; not a baseline directory): the same picture, and stock
+  Hyprland 0.57.0 hung on the X200 twice, blocked on a dead Xwayland (see the Xwayland paragraph further down; its blocks
+  21 and 28 are left out). Behind Hyprland 0.57.0 that night: the terminal closing on the crocus machines (fixed the next
+  day by the snapshot buffers, see the fade under Tools), the Galaxy Book's workspace switch and menu as before, and a
+  toast, by half a frame on samsung-i5 (Ivy Bridge, every block: 35.5 against 29 ms) and the T550 (28 against 21). Not
+  the alpha bounds, the work buffer, zero copy, realtime or its guard (each switched off on samsung-i5, 3 fresh sessions
+  each). A timeline of the shell's socket calls, the compositor's and the GPU requests (`test-results/toast-20261101/`,
+  `toasttrace.sh`, `toastgpu.py`): under Hypoland the shell commits its first toast frame 5 ms after the D-Bus message
+  with its GPU work still running, and the compositor submits a frame with it 5 ms later, whose GPU work then waits for
+  the shell's, misses the next vblank and flips at the one after; under Hyprland the shell renders only after the frame
+  callbacks of the frame before (at 12.5 ms), and the compositor picks it up at a vblank. Open: which of the frame
+  scheduling differences decides it.
 
 ## Hard constraints
 
