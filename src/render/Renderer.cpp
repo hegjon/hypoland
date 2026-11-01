@@ -2586,7 +2586,7 @@ void IHyprRenderer::damageSurface(SP<CWLSurfaceResource> pSurface, double x, dou
     }
     const double texelSize = std::max(texel.x, texel.y);
 
-    CRegion damageBoxForEach;
+    CRegion      damageBoxForEach;
 
     for (auto const& m : State::monitorState()->monitors()) {
         if (!m->m_output)

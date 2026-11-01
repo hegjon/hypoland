@@ -199,7 +199,7 @@ void CScreenshareFrame::renderMonitor() {
     g_pHyprRenderer->setViewport(0, 0, m_bufferSize.x, m_bufferSize.y);
 
     // render monitor texture
-    CBox       monbox = CBox{{}, PMONITOR->m_transformedSize}.translate(-m_session->m_captureBox.pos());
+    CBox monbox = CBox{{}, PMONITOR->m_transformedSize}.translate(-m_session->m_captureBox.pos());
 
     // the mirror is copied texel for texel and takes the nearest texel: filtered linearly, freedreno mixed a sliver of the
     // neighbours into one of the copy's two triangles (screenshots a step off on the Galaxy Book, clients/render.py of the
