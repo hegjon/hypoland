@@ -280,9 +280,11 @@ void IElementRenderer::drawSurface(WP<CSurfacePassElement> element, const CRegio
     // A surface drawn texel for texel takes the nearest texel. Filtered linearly, a GPU that puts the texel centers a hair
     // off mixes a sliver of the neighbours in: on freedreno every edge in a window's content showed a colour step off, and a
     // pixel next to a damaged area kept the mix with what its neighbour showed before (clients/render.py of the bench).
-    // The nearest texel is also the cheaper fetch on old GPUs
-    if (!m_renderData.useNearestNeighbor && m_renderData.primarySurfaceUVTopLeft == Vector2D(-1, -1) && m_data.surface->m_current.transform == WL_OUTPUT_TRANSFORM_NORMAL &&
-        windowBox.size() == TEXTURE->m_size && (!m_renderData.renderModif.enabled || m_renderData.renderModif.modifs.empty()))
+    // The nearest texel is also the cheaper fetch on old GPUs. A buffer turned by a quarter is texel for texel as well, at
+    // its turned size (the Galaxy Book's pixels next to the small updates of one, 2026-11-01)
+    const auto TEXSIZE = m_data.surface->m_current.transform % 2 == 1 ? Vector2D{TEXTURE->m_size.y, TEXTURE->m_size.x} : TEXTURE->m_size;
+    if (!m_renderData.useNearestNeighbor && m_renderData.primarySurfaceUVTopLeft == Vector2D(-1, -1) && windowBox.size() == TEXSIZE &&
+        (!m_renderData.renderModif.enabled || m_renderData.renderModif.modifs.empty()))
         m_renderData.useNearestNeighbor = true;
 
     auto    cancelRender = false;

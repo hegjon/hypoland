@@ -1127,7 +1127,9 @@ Tools:
   hair off put one of the two triangles of each copy a step off: grim's screenshot failed the pixel checks, and the screen
   kept the copy's pixels outside later damage (`rectangles` failed after the screenshot step). Those copies take the
   nearest texel when they are texel for texel (`CHyprOpenGLImpl` at the end of a frame, `CScreenshareFrame::renderMonitor()`).
-  Left on the Galaxy Book: 29 pixels a step off at columns next to the viewport subsurfaces after their small updates.
+  The last 29 pixels there, a step off in columns next to the small updates of the subsurface turned by a quarter, came
+  from the same filter: a turned buffer is texel for texel at its turned size, but only unturned ones took the nearest
+  texel; they all do since 2026-11-01 (`IElementRenderer::drawSurface()`), and the Galaxy Book passes all 71 checks.
 - A closing window's fade damages only where it is drawn (2026-10-31, `CWindowFadeout::damage()`): upstream's fade-out
   damaged the whole monitor on every animation step, so closing a window repainted the screen for half a second (Omarchy's
   `windowsOut` and `fadeOut`). The snapshot is still the monitor's size; the window's part of it (`m_contentBox`: its frame

@@ -139,7 +139,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - On the Galaxy Book (freedreno) a screenshot, and the screen for a while after one, could be a colour step off in one
   half of the picture, cut along the diagonal: the copies of a frame onto the screen and into the screenshot were
   filtered, and that GPU puts the pixel centres a hair off. Copies at the same size now take the nearest pixel, which is
-  exact on every GPU.
+  exact on every GPU. The same for a picture a program shows turned by a quarter (a phone's or a camera's): next to its
+  small updates a pixel could stay a step off there.
 - X11 programs work again after Xwayland dies: its windows go away and the next X11 program starts a new Xwayland.
   Before, the dead windows stayed on the screen, X11 programs got no answer until the next login, and the compositor
   could hang for good once it had written more to the dead Xwayland than the connection holds, as stock Hyprland 0.57.0
