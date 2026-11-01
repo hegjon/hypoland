@@ -148,6 +148,17 @@ void CHyprGLRenderer::endRender(const std::function<void()>& renderingDoneCallba
             glFlush(); // mark an implicit sync point
 
         PMONITOR->m_usedAsyncBuffers.clear(); // release all buffer refs and hope implicit sync works
+
+        // The fence of a frame before stays in the output's state until something resets it, and aquamarine commits any
+        // fence it holds: on crocus, which fences only some frames (needsRenderFence()), every frame after one with a zero
+        // copy window or a screen capture went to KMS with that long signalled fence, so i915 did not wait for its
+        // rendering before the flip and gave the GPU no boost for it (kitty on the Chromebook at 15 instead of 23 fps
+        // after a scrolling foot, its GPU kept at its lowest clock, 2026-11-01)
+        if (m_renderMode == RENDER_MODE_NORMAL) {
+            PMONITOR->m_inFence.reset();
+            PMONITOR->m_output->state->resetExplicitFences();
+        }
+
         if (renderingDoneCallback)
             renderingDoneCallback();
 

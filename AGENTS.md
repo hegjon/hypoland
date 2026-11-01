@@ -1282,7 +1282,17 @@ Overnight run 2026-09-28 (journal in `test-results/overnight/journal.md`), measu
   is still made for explicit sync clients, screen sharing, multi GPU and other drivers. It was skipped on all of
   i915 until 2026-10-23: iris (Broadwell and later) submits `glFlush()` on Mesa's driver thread, so the commit could
   overtake the batch and the XPS (3200x1800) showed half drawn frames; `GALLIUM_THREAD=0` hid it. The driver name
-  comes from `EGL_MESA_query_driver` (`CHyprOpenGLImpl::m_eglDriverName`).
+  comes from `EGL_MESA_query_driver` (`CHyprOpenGLImpl::m_eglDriverName`). Until 2026-11-01 a frame without a fence
+  left the fence of the last frame that had one in the output's state, and aquamarine sets `IN_FENCE_FD` whenever the
+  state holds one (`Atomic.cpp`, not only when that commit set it), so on crocus every frame after a zero copy window
+  (since 2026-10-29) or a screen capture (since the fence was skipped there) went to KMS with that long signalled fence:
+  i915 takes an explicit fence instead of the buffer's implicit one, so it did not wait for the frame's rendering before
+  the flip, and the GPU got no boost from the commit worker's wait. On the Chromebook the GPU then stayed at its
+  lowest clock under kitty after `terminal-scroll` (foot, zero copy), 15 instead of 23 fps at 76% busy, in every block
+  of the night of 2026-10-31 (the third workload of a block is `terminal-scroll`); the commit worker's waits on
+  `i915_request_wait_begin`, 22 a second with kitty alone, were none. The implicit path resets the explicit fences
+  of a normal frame now (`CHyprGLRenderer::endRender()`); kitty after foot 22.6 fps at 27%. Upstream always fences
+  where explicit sync works, so it never mixes the two. Scripts: `test-results/fence-20261101/`.
 - aquamarine keeps the mode of the CRTC (`SDRMConnector::atomic.currentMode`) instead of reading it on every commit.
   A frame with one 60 fps client is 13 ioctls now, 9 of them are Mesa's buffer cache (`GEM_MADVISE`, `GEM_BUSY`).
 - Not merged, by decision of the user (2026-09-28): the build changes. They are the commits `13ee9d36` and

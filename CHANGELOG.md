@@ -132,6 +132,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- On Intel graphics from the GMA 4500 to Haswell and Bay Trail, after a window drawn straight from its memory (a
+  terminal such as foot) or a screenshot, every frame went to the screen without the display waiting for it to be
+  drawn, and the GPU got no extra clock for it: kitty scrolled on a Bay Trail Chromebook at 15 instead of 23 frames
+  a second with the GPU stuck at its lowest clock. A frame without a fence of its own no longer carries the fence
+  of an earlier one.
 - On a Radeon with the `radeon` driver (an A8-6600K desktop) a window drawn straight from its memory (zero copy) whose
   width is not a multiple of 64 pixels could vanish from the screen, after a workspace switch for good: the kernel
   refuses to read such a buffer and drops everything drawn in that frame with it (`texture pitch 1896 invalid must be
