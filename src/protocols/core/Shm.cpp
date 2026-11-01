@@ -38,6 +38,7 @@ using namespace Hyprutils::OS;
 // terminal-scroll 7.2 -> 5.5% of a CPU, Qt's software scroll 12.9 -> 4.1, 2026-10-29). "force" takes every driver
 // without a flush, "flush" every driver with one.
 static bool   s_flushWrites = false;
+static bool   s_alignRows   = false;   // radeon: see CWLSHMBuffer::tryZeroCopy()
 static size_t s_copyMax     = 1 << 20; // see CWLSHMBuffer::onAttach()
 static bool   zeroCopyAllowed() {
     static int allowed = -1;
@@ -79,7 +80,8 @@ static bool   zeroCopyAllowed() {
 #endif
         }
     } else if (DRIVER == "r600" || DRIVER == "radeonsi") {
-        allowed = 1;
+        allowed     = 1;
+        s_alignRows = true;
         // a copy goes through a staging texture and a blit there: windows of 460 and 920 kB cost 4 and 13% more copied
         // than sampled in place on lianli, those of 230 kB 8% less (many-windows, 2026-10-31)
         s_copyMax = 256 << 10;
@@ -205,6 +207,14 @@ bool CWLSHMBuffer::tryZeroCopy() {
 
     const auto DRMFMT = NFormatUtils::shmToDRM(m_fmt);
     if (DRMFMT != DRM_FORMAT_ARGB8888 && DRMFMT != DRM_FORMAT_XRGB8888)
+        return false;
+
+    // radeon's command stream checker refuses a linear texture whose rows are not a multiple of 64 pixels or whose start
+    // is not 256 bytes aligned ("texture pitch 1896 invalid must be aligned with 64", evergreen_surface_check_linear_aligned()),
+    // and with it the draws of the frame: Mesa imports such a buffer without a word, and on lianli a window 1896 pixels wide
+    // vanished from the screen after a workspace switch and did not come back (clients/render.py of the bench, 2026-11-01).
+    // The kernel aligns the rows of its dumb buffers, so such a buffer is copied
+    if (s_alignRows && (m_stride % 256 != 0 || m_offset % 256 != 0))
         return false;
 
     // a udmabuf needs a memfd that cannot shrink under it: foot, Chromium, GTK 4 and Qt seal their pools so, GTK 3 does not
