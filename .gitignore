@@ -56,3 +56,4 @@ hyprtester/pointer-scroll.txt
 /keyboard-modifiers.txt
 packaging/arch/release-notes-*.md
 packaging/arch/makepkg-*.log
+packaging/arch/.last-build

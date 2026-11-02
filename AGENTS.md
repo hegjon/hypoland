@@ -60,8 +60,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
 - `master` is pushed to `origin`, is the default branch on GitHub and is the only branch there. The 34 branches
   the fork had before (copies of upstream branches, `main`, `gles2-legacy-renderer`) were deleted on 2026-09-27;
   their names and commits are listed in `docs/baseline/removed-branches.txt`.
-  Commit and push only when the user asks. The one exception: `scripts/deploy.sh` commits the pkgver makepkg wrote
-  into `packaging/arch/PKGBUILD` after it installed the package somewhere (decided by the user on 2026-10-27).
+  Commit and push only when the user asks. From 2026-10-27 to 11-02 `scripts/deploy.sh` committed the pkgver makepkg
+  wrote into `packaging/arch/PKGBUILD` after every deploy; before 0.3.0 the user had those commits dropped from the
+  history (the history since v0.2.0 rewritten and force-pushed on 2026-11-02) and the deploy stopped making them.
 - The web page hypoland.org is `web/`, served by a Cloudflare Pages project connected to this repository. Cloudflare
   deploys it from `master` by itself (no build command, output directory `web`, watch path `web/*`); there is no
   workflow for it. It was on GitHub Pages until 2026-10-10.
@@ -309,11 +310,10 @@ Prefer compile-time flags (e.g. `-DNO_ANIMATIONS`) so removed code isn't built.
    logs and screenshots are in
    `test-results/deploy-*`. `--no-install` only checks the running session (the aarch64 Galaxy Book builds its own
    package, see `~/Work/infrastructure/MACHINES.md`). Prefer it over improvising SSH commands. A deploy replaces the
-   Hypoland the machine runs, so say which build went where (`pacman -Q hypoland`). When the package was installed
-   on at least one machine, the deploy commits the pkgver makepkg wrote into the PKGBUILD (`PKGBUILD: pkgver
-   <version>, deployed to <hosts>`, the pkgver line is the only change it takes), so every deploy is a commit and
-   the next one builds one count higher even without other changes. Not with `--no-build` and not on a detached
-   HEAD (a wip worktree).
+   Hypoland the machine runs, so say which build went where (`pacman -Q hypoland`). makepkg writes the version it
+   built into the PKGBUILD; the deploy puts the committed pkgver line back afterwards and notes the packages it built
+   in `packaging/arch/.last-build`, which `--no-build` installs. The version counts the commits, so builds of one commit
+   share it: build uncommitted work from a wip commit in a git worktree to give it a version of its own.
 2. A compositor started over SSH can't take the display. The machines run the installed package through SDDM;
    `ssh root@<host> systemctl restart sddm` gives a new session. Do not reboot for recovery, see the pitfalls below.
 3. Over SSH, with `XDG_RUNTIME_DIR=/run/user/<uid>` set:

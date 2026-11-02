@@ -18,10 +18,10 @@
 #
 # Writes test-results/deploy-<time>/<host>.log and the screenshots of the checks into <host>/ next to it.
 #
-# makepkg writes the version it built into packaging/arch/PKGBUILD. When the package was installed on at least one
-# machine, that pkgver is committed (`PKGBUILD: pkgver <version>, deployed to <hosts>`, decided by the user on
-# 2026-10-27), so the commits say which build the machines got. The version counts the commits before it, so the
-# next deploy builds one count higher even without other changes. Not with --no-build, not on a detached HEAD.
+# makepkg writes the version it built into packaging/arch/PKGBUILD; the line goes back to the committed one after the
+# build, so a deploy leaves no change in the tree, and the packages it made are noted in packaging/arch/.last-build for
+# --no-build. The version counts the commits, so two builds of one commit share it (pacman reinstalls). From 2026-10-27
+# to 11-02 the pkgver was committed after every deploy; the user dropped those commits from the history before 0.3.0.
 
 set -u
 cd "$(dirname "$(readlink -f "$0")")/.." || exit 1
@@ -51,6 +51,7 @@ SSH=(ssh "${SSH_OPTS[@]}")
 # ---- build
 
 PACKAGES=()
+LAST=packaging/arch/.last-build # the packages the last build made (gitignored)
 if [ $INSTALL = 1 ]; then
     if [ $BUILD = 1 ]; then
         echo "building the package..."
@@ -61,32 +62,19 @@ if [ $INSTALL = 1 ]; then
             echo "build failed, see $OUT/makepkg.log"
             exit 1
         fi
+        (cd packaging/arch && makepkg --packagelist) >"$LAST"
+        # the committed pkgver line back, other edits of the PKGBUILD stay
+        committed=$(git show HEAD:packaging/arch/PKGBUILD 2>/dev/null | sed -n 's/^pkgver=//p')
+        [ -n "$committed" ] && sed -i "s/^pkgver=.*/pkgver=$committed/" packaging/arch/PKGBUILD
     fi
-    mapfile -t PACKAGES < <(cd packaging/arch && makepkg --packagelist | grep -v -- "-debug-")
-    [ $DEBUG = 1 ] && mapfile -t -O 1 PACKAGES < <(cd packaging/arch && makepkg --packagelist | grep -- "-debug-")
+    [ -s "$LAST" ] || (cd packaging/arch && makepkg --packagelist) >"$LAST"
+    mapfile -t PACKAGES < <(grep -v -- "-debug-" "$LAST")
+    [ $DEBUG = 1 ] && mapfile -t -O 1 PACKAGES < <(grep -- "-debug-" "$LAST")
     for p in "${PACKAGES[@]}"; do
         [ -f "$p" ] || { echo "$p is missing, build it first (leave out --no-build)"; exit 1; }
     done
     echo "packages: $(basename -a "${PACKAGES[@]}" | tr '\n' ' ')"
 fi
-
-commit_pkgver() { # hosts that got the package
-    local ver other
-    git symbolic-ref -q HEAD >/dev/null || { echo "detached HEAD, the pkgver is not committed"; return 0; }
-    git diff --quiet HEAD -- packaging/arch/PKGBUILD && return 0
-    # only the pkgver line may differ, so an edit of the PKGBUILD never ends up in this commit
-    other=$(git diff HEAD -- packaging/arch/PKGBUILD | grep -E '^[-+]' | grep -vE '^(---|\+\+\+) ' | grep -vcE '^[-+]pkgver=')
-    if [ "$other" != 0 ]; then
-        echo "the PKGBUILD has other changes, the pkgver is not committed"
-        return 0
-    fi
-    ver=$(sed -n 's/^pkgver=//p' packaging/arch/PKGBUILD)
-    if git commit -q -m "PKGBUILD: pkgver $ver, deployed to $*" -- packaging/arch/PKGBUILD; then
-        echo "committed: PKGBUILD: pkgver $ver, deployed to $*"
-    else
-        echo "committing the pkgver failed"
-    fi
-}
 
 # ---- one host, its output goes into its log
 
@@ -187,12 +175,5 @@ for h in "${HOSTS[@]}"; do
     fi
     grep -E "^(FAIL|SKIP)" "$OUT/$h.log"
 done
-if [ $BUILD = 1 ]; then
-    DEPLOYED=()
-    for h in "${HOSTS[@]}"; do
-        grep -q "^PASS  installed" "$OUT/$h.log" && DEPLOYED+=("$h")
-    done
-    [ ${#DEPLOYED[@]} -gt 0 ] && commit_pkgver "${DEPLOYED[@]}"
-fi
 echo "logs: $OUT"
 exit $FAILED
