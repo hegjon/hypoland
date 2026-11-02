@@ -1141,7 +1141,8 @@ Tools:
   effect, about 13 minutes). The shadows and the titlebars found a bug of the fade-out (a closing window's fade below).
   Compositor frames come in the monitor's own coordinates, turned; a capture of the scanned-out buffer of a turned monitor
   would not be, and the pixel checks are skipped for it. Steps that found nothing:
-  the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller, the dialog
+  the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller, a popup of
+  the layer while it is clipped (2026-11-02, as Omarchy's bar opens a menu; shown whole past the clip and the layer), the dialog
   resized by the compositor (2026-11-02, with the windows animation) and given a longer title (its titlebar redrawn), a
   window group (2026-11-02: the group bar, a second window into it, the tabs switched, the shown one closed, ungrouped), a
   floating window in a special workspace (2026-11-02, Omarchy's scratchpad: shown over the dimmed workspace, small updates

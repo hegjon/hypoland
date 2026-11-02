@@ -272,9 +272,10 @@ class Subsurface(Surface):
 
 
 class Popup(Surface):
-    """An xdg popup of a window without a grab, its top left corner at anchor (logical pixels of the window)"""
+    """An xdg popup of a window without a grab, its top left corner at anchor (logical pixels of the window), or of a
+    layer surface (parent None, layer the Layer) as a bar opens its menus"""
 
-    def __init__(self, r, name, parent, anchor, size):
+    def __init__(self, r, name, parent, anchor, size, layer=None):
         super().__init__(r, name)
         self.serial = None
         self.placed = None
@@ -283,7 +284,9 @@ class Popup(Surface):
         self.xdg = self.wl.new(self.on_xdg)
         self.wl.send(r.wm, 2, u32(self.xdg, self.surface))
         self.popup = self.wl.new(self.on_popup)
-        self.wl.send(self.xdg, 2, u32(self.popup, parent.xdg, positioner))
+        self.wl.send(self.xdg, 2, u32(self.popup, parent.xdg if parent else 0, positioner))
+        if layer:
+            self.wl.send(layer.ls, 5, u32(self.popup))  # zwlr_layer_surface_v1.get_popup, before the popup's first commit
         self.wl.send(positioner, 0)
         self.wl.send(self.surface, 6)
         self.ack(name)
@@ -879,6 +882,19 @@ class Render:
         self.check_repaint("layer drawn")
         self.settle(2.6)
         self.check_repaint("layer settled")
+        # a popup of the layer while the layer is clipped to its pixels, as Omarchy's bar (a window across the screen)
+        # opens a menu: shown whole, also where it reaches past the layer, then closed
+        p = Popup(self, "render-layer-popup", None, (40, layer.h // self.scale - 60), (160, 100), layer=layer)
+        p.fill(10)
+        p.commit()
+        self.settle(1.2)
+        if box and p.placed:
+            x0, y0 = (box[0] + p.placed[0]) * self.scale, (box[1] + p.placed[1]) * self.scale
+            self.check_image("layer popup", "the layer's popup", p.want, p.w, p.h, p.stride, x0, y0)
+        self.check_repaint("layer popup")
+        p.destroy()
+        self.settle(1.2)
+        self.check_repaint("layer popup closed")
         # moved while clipped, then smaller with a new buffer
         layer.move((160, 220))
         self.settle(1.2)
