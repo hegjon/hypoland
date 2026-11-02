@@ -1126,7 +1126,7 @@ Tools:
   its own connection (`--grab screencopy`, `Sharing`): a `copy_with_damage` frame is always pending, and the pointer moves
   a pixel in its corner when nothing else draws, so every frame is an incremental one of the work buffer, which damage
   keeps up like the screen's buffers; the pointer's corner is left out of the comparison.
-  `scripts/bench/render-nested.sh [--scale S] [--transform T] [--config extra.lua] [--binary PATH]` runs it against a
+  `scripts/bench/render-nested.sh [--scale S] [--transform T] [--config extra.lua]... [--binary PATH]` runs it against a
   compositor of the tree started inside the desktop's session with one headless output (the nested window switched off,
   so the desktop's screen does not matter), in about two minutes: before the fixes it failed exactly the four bugs' steps
   at scale 1, after them it passes at 1, 2 and 1.6, with gaps, borders, rounding and animations as well. It
@@ -1147,8 +1147,8 @@ Tools:
   window group (2026-11-02: the group bar, a second window into it, the tabs switched, the shown one closed, ungrouped), a
   floating window in a special workspace (2026-11-02, Omarchy's scratchpad: shown over the dimmed workspace, small updates
   there, hidden; while it is shown the full repaint is the special workspace hidden and shown again, since Omarchy hides it
-  on a workspace switch), the first
-  window fullscreen and back (it has to be fullscreen at the monitor's logical size, or the step fails). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
+  on a workspace switch), the first window fullscreen and back (it has to be fullscreen at the monitor's logical size, or
+  the step fails). With them the full matrix passes, 64 checks a case (2026-11-02). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
   failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0` (2026-10-31 and 11-01): the radeon
   kernel driver refuses a command stream that samples a linear texture whose rows are not a multiple of 64 pixels
   (`evergreen_surface_check_linear_aligned: texture pitch 1896 invalid must be aligned with 64`, then `Invalid command
