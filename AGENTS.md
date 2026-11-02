@@ -210,7 +210,7 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   2026-11-01 did not change it (36 ms, 3 fresh sessions), nor did the GPU's lowest clock pinned at its highest for both
   compositors (2026-11-02, 13 fresh sessions each, `test-results/toast-20261102/`: samsung-i5 35.5 against 29.5 ms, the
   T550 28.8 against 19.3), so it is not stock's capture waking the GPU up either.
-  An experiment against it, `HYPOLAND_FENCE_HOLD`, is under Tools.
+  An experiment against it, `HYPOLAND_FENCE_HOLD` (taken out again), is under Tools.
   The night of 2026-11-01 to 02 repeated it with r919 (the fixes of 11-01) on eight machines, 28 to 33 blocks of each
   (`test-results/night-20261101/`, `table.txt`; the Galaxy Book hung at 01:22, see `MACHINES.md`): Hypoland less compositor
   CPU per frame in every workload on every machine, 39.6 to 42.1 MiB Pss at the start against 112 to 116. Stock Hyprland
@@ -813,7 +813,8 @@ Tools:
   instructions and cycles and works on the charger. Tested with fake meters only so far (`--power-supply`,
   `--powercap`); the 0.3 W noise floor of `--compare` for power is a guess until real runs.
 - `HYPOLAND_NO_DIRECT_RENDER=1` makes every frame go through the work buffer, for comparing the two paths.
-- `HYPOLAND_FENCE_HOLD=<ms>` (2026-11-02, an experiment, off by default) holds a frame while a client's commit on the
+- `HYPOLAND_FENCE_HOLD=<ms>` (2026-11-02, an experiment, off by default; taken out again before 0.3.0, the code is
+  commit b5222a9ee, its four source files to check out from there) held a frame while a client's commit on the
   monitor waits for the GPU to finish its buffer (`CMonitorFrameScheduler::holdForClients()`): such a frame queues on the
   GPU behind that client's work anyway, misses the vblank it was drawn for and holds the one flip that can be pending, so
   the frame with the client's update waits a refresh for it (the toast above). Held, the frame is drawn when the buffers
@@ -829,7 +830,7 @@ Tools:
   busy 100 -> 90%: a frame held until the client's buffer is done no longer overlaps that work on the GPU), and the toast
   is bimodal per session in that run (Mac mini 13 to 14 ms in 3 blocks, 28 to 31 in 5, against 31 to 33); a resize step
   on the T460s 2.8 -> 1.4 ms, the rest within the spread. Both runs pooled, 16 sessions each, the toast: Mac mini 32.6 ->
-  21.7 ms, T550 28.8 -> 25.0, T460s 21.5 -> 24.0. So it stays off: it trades a toast's frame for a focus change's.
+  21.7 ms, T550 28.8 -> 25.0, T460s 21.5 -> 24.0. So it was not kept: it trades a toast's frame for a focus change's.
 - `HYPOLAND_NO_COALESCE=1` uploads and draws the damage rectangles as the client sent them instead of merging them on
   crocus and r600 (`CHyprOpenGLImpl::coalesceDamage()`), `HYPOLAND_SINGLE_TEXTURE=1` updates the shown shm texture in
   place as upstream does instead of the idle second one (`CGLTexture::update()`), both for comparing the paths on a

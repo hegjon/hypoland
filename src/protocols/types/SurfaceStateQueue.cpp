@@ -2,8 +2,6 @@
 #include "../core/Compositor.hpp"
 #include "../PresentationTime.hpp"
 #include "SurfaceState.hpp"
-#include "../../output/Monitor.hpp"
-#include "../../output/MonitorFrameScheduler.hpp"
 
 CSurfaceStateQueue::CSurfaceStateQueue(WP<CWLSurfaceResource> surf) : m_surface(std::move(surf)) {}
 
@@ -64,25 +62,6 @@ void CSurfaceStateQueue::unlockFence(const WP<SSurfaceState>& state) {
     }
 
     tryProcess();
-
-    // a monitor may hold its frame for this buffer (CMonitorFrameScheduler::holdForClients())
-    if (const auto SURF = m_surface.lock()) {
-        for (const auto& m : SURF->m_enteredOutputs) {
-            if (const auto MON = m.lock(); MON && MON->m_frameScheduler)
-                MON->m_frameScheduler->onClientFence();
-        }
-    }
-}
-
-void CSurfaceStateQueue::fenceWaits(std::vector<WP<SSurfaceState>>& out) const {
-    for (const auto& s : m_queue) {
-        if (s->lockMask & LOCK_REASON_FENCE)
-            out.emplace_back(s);
-    }
-}
-
-bool CSurfaceStateQueue::waitsForFence(const WP<SSurfaceState>& state) {
-    return state && (state->lockMask & LOCK_REASON_FENCE);
 }
 
 void CSurfaceStateQueue::unlockFirst(eLockReason reason) {
