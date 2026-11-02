@@ -638,17 +638,21 @@ class Render:
             pids.update(int(p) for p in subprocess.run(["pgrep", "-x", name], capture_output=True, text=True).stdout.split())
         return pids
 
-    def check_repaint(self, step):
-        """The screen now and after a full repaint of the same scene are the same"""
+    def check_repaint(self, step, repaint=None):
+        """The screen now and after a full repaint of the same scene are the same. repaint makes the full repaint, a
+        workspace switch away and back by default"""
         pids = self.frozen() if self.args.freeze else set()
         for p in pids:
             os.kill(p, signal.SIGSTOP)
         try:
             self.settle(0.3)
             a, w, h = self.grab(f"{step}-incremental")
-            self.workspace(self.away)
-            self.settle(0.4)
-            self.workspace(self.ws)
+            if repaint:
+                repaint()
+            else:
+                self.workspace(self.away)
+                self.settle(0.4)
+                self.workspace(self.ws)
             self.settle(1.2)
             b, _, _ = self.grab(f"{step}-repainted")
         finally:
@@ -1034,6 +1038,52 @@ class Render:
         self.settle(1.2)
         self.check_pixels("ungrouped", a)
         self.check_repaint("ungrouped")
+
+        # Omarchy's scratchpad (SUPER+S): a window put away into a special workspace, which then slides in over the
+        # workspace with the dim behind it, is drawn into in small places there, and slides out again. While it is shown
+        # the full repaint is the special workspace hidden and shown again: a workspace switch can hide it (Omarchy sets
+        # hide_special_on_workspace_change)
+        d = Window(self, "hypoland-render-d", parent=a)  # floating, so the dimmed workspace shows around it
+        w, h = d.wait_configure()
+        d.allocate((w if w and w < 600 else 400, h if h and h < 600 else 300))
+        d.fill(17)
+        d.commit()
+        d.follow(17)
+        a.follow(16)
+        self.settle(1.0)
+        daddr = (self.client(d.app_id) or {}).get("address")
+        if daddr:
+            self.dispatch(f'hl.dsp.window.move({{workspace = "special:hypoland-render", follow = false, window = "address:{daddr}"}})',
+                          f"movetoworkspacesilent special:hypoland-render,address:{daddr}")
+            a.follow(16)
+            self.settle(1.2)
+            self.check_pixels("scratchpad stored", a)
+            self.check_repaint("scratchpad stored")
+
+            def toggle():
+                self.dispatch('hl.dsp.workspace.toggle_special("hypoland-render")', "togglespecialworkspace hypoland-render")
+
+            def again():
+                toggle()
+                self.settle(1.0)
+                toggle()
+
+            toggle()
+            d.follow(17)
+            self.settle(1.2)
+            self.check_pixels("scratchpad", d)
+            self.check_repaint("scratchpad", again)
+            for frame in range(12):
+                d.commit([d.rect(200 + frame * 4 + k, rng.randrange(d.w), rng.randrange(d.h), rng.randrange(8, 120), rng.randrange(8, 80)) for k in range(4)])
+            self.settle(1.0)
+            self.check_pixels("scratchpad rectangles", d)
+            self.check_repaint("scratchpad rectangles", again)
+            toggle()
+            self.settle(1.2)
+            self.check_pixels("scratchpad hidden", a)
+            self.check_repaint("scratchpad hidden")
+        d.destroy()
+        self.settle(0.5)
 
         # fullscreen and back: the window draws at the screen's size and at its own again, the screen changes hands twice
         self.dispatch('hl.dsp.window.fullscreen({action = "set"})', "fullscreen 0")

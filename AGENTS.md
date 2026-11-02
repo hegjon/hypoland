@@ -1143,7 +1143,10 @@ Tools:
   would not be, and the pixel checks are skipped for it. Steps that found nothing:
   the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller, the dialog
   resized by the compositor (2026-11-02, with the windows animation) and given a longer title (its titlebar redrawn), a
-  window group (2026-11-02: the group bar, a second window into it, the tabs switched, the shown one closed, ungrouped), the first
+  window group (2026-11-02: the group bar, a second window into it, the tabs switched, the shown one closed, ungrouped), a
+  floating window in a special workspace (2026-11-02, Omarchy's scratchpad: shown over the dimmed workspace, small updates
+  there, hidden; while it is shown the full repaint is the special workspace hidden and shown again, since Omarchy hides it
+  on a workspace switch), the first
   window fullscreen and back (it has to be fullscreen at the monitor's logical size, or the step fails). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
   failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0` (2026-10-31 and 11-01): the radeon
   kernel driver refuses a command stream that samples a linear texture whose rows are not a multiple of 64 pixels
