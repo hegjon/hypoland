@@ -1141,7 +1141,8 @@ Tools:
   effect, about 13 minutes). The shadows and the titlebars found a bug of the fade-out (a closing window's fade below).
   Compositor frames come in the monitor's own coordinates, turned; a capture of the scanned-out buffer of a turned monitor
   would not be, and the pixel checks are skipped for it. Steps that found nothing:
-  the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller, the first
+  the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller, a window
+  group (2026-11-02: the group bar, a second window into it, the tabs switched, the shown one closed, ungrouped), the first
   window fullscreen and back (it has to be fullscreen at the monitor's logical size, or the step fails). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
   failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0` (2026-10-31 and 11-01): the radeon
   kernel driver refuses a command stream that samples a linear texture whose rows are not a multiple of 64 pixels
