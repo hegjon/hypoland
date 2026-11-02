@@ -1,9 +1,10 @@
 #!/bin/bash
 # render-matrix.sh [--binary PATH] [--out DIR] [--quick] : render-nested.sh over the scales, turns and effects Hypoland
 # keeps (configs in render-configs/: base.lua is gaps, borders, rounding and animations, the others add blur, shadows,
-# dimmed and translucent unfocused windows and titlebars to it), one nested compositor after the other, about two minutes
-# each. --quick runs scale 1 without effects and the base with each effect once. Prints a line per case and the failed
-# checks, exits 1 when any case failed. Not a GM45: the machines' deploy check is the final judge.
+# dimmed and translucent unfocused windows and titlebars to it; omarchy.lua is Omarchy's own look on its own), one nested
+# compositor after the other, about two minutes each. --quick runs scale 1 without effects, the base with each effect
+# and Omarchy's look once. Prints a line per case and the failed checks, exits 1 when any case failed. Not a GM45: the
+# machines' deploy check is the final judge (llvmpipe draws a box at a half pixel on other rows than iris does).
 HERE=$(dirname "$(readlink -f "$0")")
 C=$HERE/render-configs
 BINARY=() OUT= QUICK=
@@ -25,6 +26,7 @@ CASES=(
     "shadows|--config $C/base.lua --config $C/shadows.lua"
     "dim|--config $C/base.lua --config $C/dim.lua"
     "titlebars|--config $C/base.lua --config $C/titlebars.lua"
+    "omarchy|--config $C/omarchy.lua"
 )
 [ -n "$QUICK" ] || CASES+=(
     "scale-2|--scale 2"
@@ -34,6 +36,8 @@ CASES=(
     "turned-90|--transform 1 --config $C/base.lua"
     "turned-90-scale-2|--transform 1 --scale 2"
     "flipped-270|--transform 7 --scale 1.6"
+    "base-scale-1.5|--scale 1.5 --config $C/base.lua"
+    "omarchy-scale-1.5|--scale 1.5 --config $C/omarchy.lua"
 )
 FAILED=0
 for c in "${CASES[@]}"; do
