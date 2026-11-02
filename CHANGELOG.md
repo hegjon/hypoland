@@ -125,6 +125,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Changed
 
+- Hypoland reports Hyprland 0.57.0 as the version it is based on: the first line of `hyprctl version`, its JSON
+  `version`, `hl.version()` and the package's `provides=hyprland=` say 0.57.0 instead of 0.56.0, so tools and configs
+  that check for 0.57.0 take its options, which Hypoland reads (see Added). The port is not complete: 0.57.0's
+  workspace refactor and aquamarine 0.15 are not in yet, `docs/port-0.57.0.md` lists every commit of it with its
+  decision.
 - `start-hypoland` no longer accepts `--no-nixgl` and `--force-nixgl`, the options of Hyprland's `start-hyprland`
   for Nix, which Hypoland removed. Like any option it does not know, they are ignored.
 
