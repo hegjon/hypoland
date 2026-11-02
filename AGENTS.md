@@ -79,10 +79,10 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   0.15), `binds:workspace_back_and_forth` and `scrolling:follow_focus` as 0/1/2 with the old booleans still accepted,
   `hl.get_devices()`, `hl.dsp.reload_config()`, the `no_glow` rule, a workspace's `addressable_name`, a monitor's `mode`
   and `hardware_details`, and the events `window.update_state`, `window.minimize`, `workspace.created_early` and
-  `config.unload`. `docs/port-0.57.0.md` on the branch lists every upstream commit with its decision (cherry-pick, by
+  `config.unload`. `docs/port-0.57.0.md` lists every upstream commit with its decision (cherry-pick, by
   hand, ignore, later): about 110 wait behind the workspace refactor (e9e2f64cc, 163 files), which with aquamarine 0.15
-  is the real remaining port. The 2026-10-27 baseline and the lab page compare against Hyprland 0.56.2; the user wants
-  0.3.0 compared with 0.57.0. A config is tested headless as hyprtester starts the compositor
+  is the real remaining port. The 2026-10-27 baseline compares against Hyprland 0.56.2, the 2026-10-30 one and the lab
+  page (since 2026-11-02) against 0.57.0; the user wants 0.3.0 itself compared with 0.57.0 after its release. A config is tested headless as hyprtester starts the compositor
   (`HYPRLAND_HEADLESS_ONLY=1 ./build/hypoland --config <file>`, then `hyprctl configerrors`).
 - `CHANGELOG.md` lists Hypoland's changes per release. Add user-visible changes and measured speedups to
   "Unreleased" with the commit that makes them, and move them under the version when releasing.

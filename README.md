@@ -31,6 +31,8 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
   `start-hypoland` (or `hypoland`).
 - Color management, HDR and motion blur are removed. Their config options stay registered and are ignored,
   so existing configs keep loading.
+- `bitdepth = 10` in a monitor rule is ignored with a warning and the monitor stays at 8 bit: OpenGL ES 2.0 has no
+  10-bit framebuffer format.
 - The blur variants ripple, water, fluid_jar, prism and acrylic are removed, selecting one gives the normal
   dual Kawase blur.
 - Screen shaders (`decoration:screen_shader`) must be written in GLSL ES 1.00. Shaders written for Hyprland
@@ -64,6 +66,18 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
 - `cursor:enable_hyprcursor` is off, XCursor themes are used.
 - `quirks:skip_non_kms_dmabuf_formats` is off. Gen4 display planes have no formats with alpha, so with the
   Hyprland default no client gets an EGL config with alpha and transparent surfaces turn black.
+
+### Switches
+
+Hypoland draws some things differently from Hyprland to save CPU and GPU time. Each can be switched off in the
+compositor's environment, for comparing or when something looks wrong: under uwsm, as Omarchy starts it, with a line
+such as `export HYPOLAND_ALPHA_BOUNDS=0` in `~/.config/uwsm/env`, then log in again.
+
+- `HYPOLAND_ALPHA_BOUNDS=0`: layers with an alpha channel (panels, docks, notification columns) are drawn whole
+  instead of only the part with visible pixels.
+- `HYPOLAND_SHM_TEXTURE=0`: windows drawn on the CPU (shm: terminals such as foot, GTK 3, Qt Widgets) are uploaded
+  through Mesa as in Hyprland, instead of into linear buffers the compositor fills itself.
+- `HYPOLAND_SHM_ZEROCOPY=0`: such windows are copied instead of shown straight from the program's memory.
 
 ## Compatibility
 

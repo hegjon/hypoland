@@ -78,6 +78,20 @@ OPTIONS
 **--locked-cmd** *COMMAND*
     Launches a locker on startup via the provided command.
 
+ENVIRONMENT
+===========
+
+**HYPOLAND_ALPHA_BOUNDS=0**
+    Draw layers with an alpha channel (panels, docks, notification columns) whole instead of only the part
+    with visible pixels.
+
+**HYPOLAND_SHM_TEXTURE=0**
+    Upload windows drawn on the CPU (shm) through Mesa instead of into linear buffers the compositor fills
+    itself.
+
+**HYPOLAND_SHM_ZEROCOPY=0**
+    Copy windows drawn on the CPU instead of showing them straight from the program's memory.
+
 BUGS
 ====
 

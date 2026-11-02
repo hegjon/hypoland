@@ -222,6 +222,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 - The web page shows the comparison with stock Hyprland 0.56.2, lists the GPUs Hypoland is tested on besides the
   X200, says that older GLES 3 hardware or little memory can be a reason for Hypoland too, and links the releases.
+- The README and `hypoland(1)` list the environment variables that switch Hypoland's own drawing paths off
+  (`HYPOLAND_ALPHA_BOUNDS`, `HYPOLAND_SHM_TEXTURE`, `HYPOLAND_SHM_ZEROCOPY`), and the README says that `bitdepth = 10`
+  is ignored.
 
 ## 0.2.0 - 2026-10-21
 
