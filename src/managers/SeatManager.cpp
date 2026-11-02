@@ -303,7 +303,10 @@ void CSeatManager::setPointerFocus(SP<CWLSurfaceResource> surf, const Vector2D& 
         return;
     }
 
-    if (!g_pInputManager->anyHidHasCap(HID_INPUT_CAPABILITY_POINTER)) {
+    // only giving focus needs a pointer: refusing to clear it without one (a machine without a mouse after a virtual pointer
+    // went away) kept the focus and the destroy listener of a surface that was gone, and the surface's destructor emits
+    // destroy again, which reached this listener after the input manager at the end of a session
+    if (surf && !g_pInputManager->anyHidHasCap(HID_INPUT_CAPABILITY_POINTER)) {
         Log::logger->log(Log::ERR, "BUG THIS: setPointerFocus without a valid pointer input");
         return;
     }

@@ -135,6 +135,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- On a machine without a mouse the compositor could crash at the end of a session (an A8-6600K desktop, after the
+  benchmark's virtual pointer had come and gone). With no pointer the seat refused to clear the pointer focus when the
+  focused window closed, and kept listening to its surface, which the last frame drawn still held; that surface was
+  let go only when the renderer shut down, after the input manager, and the seat ran into it. The focus is cleared
+  without a pointer now, and the last frame lets its surfaces go before anything shuts down. Upstream's bug as well.
 - At a fractional scale (1.5 on a ThinkPad T550 and a T460s) grouping a window could leave a line of the group bar on the
   screen until something else drew there, and a window with a titlebar sliding into place the same: both bars were put
   on whole logical pixels while the window slid between them, up to half a pixel outside what was redrawn, and a box at

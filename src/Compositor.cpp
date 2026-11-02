@@ -597,6 +597,11 @@ void CCompositor::cleanup() {
     Desktop::fadingOutState()->clear();
     Desktop::otherViewState()->clear();
 
+    // the last frame's pass keeps its surfaces alive until the next frame: dropped only with the renderer below, a surface
+    // was destroyed after the input manager, and the seat's destroy listener ran into it
+    if (g_pHyprRenderer)
+        g_pHyprRenderer->m_renderPass.clear();
+
     for (auto const& m : State::monitorState()->monitors()) {
         g_pHyprOpenGL->destroyMonitorResources(m);
     }
