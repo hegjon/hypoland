@@ -199,7 +199,7 @@ void CHyprGroupBarDecoration::draw(PHLMONITOR pMonitor, float const& a) {
         rect = {ASSIGNEDBOX.x + xoff - pMonitor->m_position.x + FLOATING_OFFSET.x,
                 ASSIGNEDBOX.y + ASSIGNEDBOX.h - floor(yoff) - ONEBARHEIGHT - pMonitor->m_position.y + FLOATING_OFFSET.y, m_barWidth,
                 (*PGRADIENTS || *PRENDERTITLES ? *PHEIGHT : 0)};
-        rect.scale(pMonitor->m_scale);
+        rect.scale(pMonitor->m_scale).round();
 
         if (!rect.empty()) {
             if (*PGRADIENTS) {
@@ -550,7 +550,10 @@ CBox CHyprGroupBarDecoration::assignedBoxGlobal() {
     if (PWORKSPACE && !(m_window->m_state & Desktop::View::WINDOW_STATE_PINNED))
         box.translate(PWORKSPACE->m_renderOffset->value());
 
-    return box.round();
+    // not rounded here: rounded in logical pixels, the bar of a window sliding at a fractional scale was drawn up to half a
+    // logical pixel outside the window's damage and left a row behind (a T550 and a T460s at 1.5, the render checks'
+    // grouped step). draw() rounds in the monitor's pixels, as the border does
+    return box;
 }
 
 bool CHyprGroupBarDecoration::visible() {

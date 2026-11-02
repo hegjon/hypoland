@@ -173,7 +173,8 @@ CBox CHyprTitleBarDecoration::assignedBoxGlobal() {
     if (WINDOW->m_workspace && !(WINDOW->m_state & Desktop::View::WINDOW_STATE_PINNED))
         box.translate(WINDOW->m_workspace->m_renderOffset->value());
 
-    return box.round();
+    // not rounded here but in the monitor's pixels when drawn, as the border is: see CHyprGroupBarDecoration
+    return box;
 }
 
 void CHyprTitleBarDecoration::damageEntire() {
