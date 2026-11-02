@@ -1148,7 +1148,13 @@ Tools:
   floating window in a special workspace (2026-11-02, Omarchy's scratchpad: shown over the dimmed workspace, small updates
   there, hidden; while it is shown the full repaint is the special workspace hidden and shown again, since Omarchy hides it
   on a workspace switch), the first window fullscreen and back (it has to be fullscreen at the monitor's logical size, or
-  the step fails). With them the full matrix passes, 64 checks a case (2026-11-02). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
+  the step fails). And an opaque region (2026-11-02, `wl_surface.set_opaque_region`): the dialog drawn opaque and saying
+  so, then a band of it cleared and the region shrunk to the parts around it, only the band damaged. It found a fifth bug,
+  upstream's: `CWindowPresentation::opaque()` compared the extents of the opaque region with the buffer's size, so a region
+  with a hole counted as opaque at scale 1, and the window was drawn without blending where nothing rounds it (Omarchy's
+  square corners) and without blur, its clear band black (in a full repaint too); at scale 2 no region counted. The region
+  has to cover the surface's box now, both in surface coordinates. With them the full matrix passes, 68 checks a case
+  (2026-11-02). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
   failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0` (2026-10-31 and 11-01): the radeon
   kernel driver refuses a command stream that samples a linear texture whose rows are not a multiple of 64 pixels
   (`evergreen_surface_check_linear_aligned: texture pitch 1896 invalid must be aligned with 64`, then `Invalid command

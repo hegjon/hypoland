@@ -235,9 +235,11 @@ bool CWindowPresentation::opaque() const {
     if (m_window.backend().isX11())
         return solitaryResource->m_current.texture->m_opaque;
 
-    // TODO: this is wrong
-    const auto EXTENTS = solitaryResource->m_current.opaque.getExtents();
-    if (EXTENTS.w >= solitaryResource->m_current.bufferSize.x && EXTENTS.h >= solitaryResource->m_current.bufferSize.y)
+    // the opaque region has to cover the whole surface, both in surface coordinates. Its extents were compared with the
+    // buffer's size: a region with a hole (a band left clear) counted as opaque at scale 1, and the window was drawn
+    // without blending (no rounding, Omarchy's) and without blur, its clear band black; at scale 2 no region did
+    const auto& STATE = solitaryResource->m_current;
+    if (CRegion{CBox{{}, STATE.size}}.subtract(STATE.opaque).empty())
         return true;
 
     return solitaryResource->m_current.texture->m_opaque;

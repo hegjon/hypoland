@@ -132,6 +132,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- A window that marks only part of itself as opaque, its opaque region with a hole where it is see-through, showed that
+  part black at scale 1 with square corners (Omarchy's), and without blur: the compositor took a window as opaque when
+  the outline of its opaque region covered it, and drew it without blending. It has to cover the whole window now, in
+  the window's own coordinates (at scale 2 none had). Upstream's bug as well. Found by the render checks.
 - A window that closes by first dropping its picture, as foot (Omarchy's terminal) does, faded out as its border alone.
   It fades out with its contents now. Upstream's behaviour as well.
 - On Intel graphics from the GMA 4500 to Haswell and Bay Trail, after a window drawn straight from its memory (a
