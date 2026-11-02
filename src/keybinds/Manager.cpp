@@ -340,6 +340,9 @@ bool CKeybindManager::onAxisEvent(const IPointer::SAxisEvent& event, SP<IPointer
         },
         nullptr);
 
+    if (!RESULT.passEvent)
+        shadowBinds();
+
     return RESULT.passEvent;
 }
 
@@ -770,6 +773,9 @@ void CKeybindManager::shadowBinds(const std::optional<SResolvedKey>& excluded, c
         const bool MATCH_RELEASE = bind->hasFlag(BIND_FLAG_RELEASE) && bind->chordSize() <= 1;
 
         for (const auto& input : m_inputState.pressed()) {
+            if (input.key.event)
+                continue;
+
             const auto device = input.device.lock();
             if (!device)
                 continue;
