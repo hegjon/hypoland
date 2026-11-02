@@ -175,7 +175,9 @@ if [ -n "$ARM_HOST" ] && [ "$SKIP_BUILD" = 0 ]; then
     # makepkg dirties the PKGBUILD there and a dirty checked-out branch refuses the push
     ssh -o BatchMode=yes "$ARM_HOST" 'cd ~/hypoland && git checkout -q -- packaging/arch/PKGBUILD && git checkout -q --detach' ||
         die "could not prepare ~/hypoland on $ARM_HOST"
-    git push -q "$ARM_HOST:hypoland" "refs/tags/$TAG" master || die "could not push $TAG to $ARM_HOST"
+    # atomic, so a refused master cannot leave the tag behind there; master forced, since the machine's copy is only for
+    # building and a dry run leaves its master at the release commit it removes here
+    git push -q --atomic "$ARM_HOST:hypoland" "refs/tags/$TAG" "+master:refs/heads/master" || die "could not push $TAG to $ARM_HOST"
     ARM_TAG_PUSHED=1
     ssh -o BatchMode=yes "$ARM_HOST" "cd ~/hypoland && git checkout -q --detach refs/tags/$TAG && git submodule update --init >/dev/null &&
         cd packaging/arch && rm -f hypoland-$NEW-1-aarch64.pkg.tar.* hypoland-bench-$NEW-1-aarch64.pkg.tar.* &&
