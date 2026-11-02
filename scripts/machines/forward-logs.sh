@@ -100,7 +100,9 @@ ExecStart=/usr/local/sbin/netconsole-desktop
 WantedBy=multi-user.target
 EOF
             mkdir -p /etc/NetworkManager/dispatcher.d
-            printf '#!/bin/sh\ncase \"\$2\" in up | down | dhcp4-change) exec /usr/local/sbin/netconsole-desktop ;; esac\n' \
+            # an interface going down also restarts the journal upload: its connection kept the address that went away and
+            # waited out the TCP retries, about 15 minutes (the Galaxy Book unplugged on 2026-10-31); it resumes at its cursor
+            printf '#!/bin/sh\n[ \"\$2\" = down ] && systemctl try-restart systemd-journal-upload\ncase \"\$2\" in up | down | dhcp4-change) exec /usr/local/sbin/netconsole-desktop ;; esac\n' \
                 >/etc/NetworkManager/dispatcher.d/90-netconsole-desktop
             chmod 755 /etc/NetworkManager/dispatcher.d/90-netconsole-desktop
             # every kernel message to the consoles (Omarchy boots quiet, with 0), so netconsole sends them all
