@@ -984,6 +984,10 @@ class Render:
                 print(f"FAIL  render resized: the window was not resized ({b.w}x{b.h})", flush=True)
             self.check_pixels("resized", b, under=a)
             self.check_repaint("resized")
+        # a new title while shown: a titlebar (render-configs/titlebars.lua) draws its text again
+        self.wl.send(b.top, 2, string("hypoland-render-b with a longer title"))
+        self.settle(1.0)
+        self.check_repaint("retitled")
         # smaller by itself, as a dialog that drops a part: the space it leaves shows the window under again
         b.allocate((b.w // self.scale // 2, b.h // self.scale // 2))
         b.fill(3)
