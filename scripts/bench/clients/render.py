@@ -508,9 +508,17 @@ class Render:
             self.rounding = 10
         try:  # translucent pixels show the blur of what is under them (Omarchy's Glassy theme), not the window under
             opt = hyprctl(args.socket, "j/getoption decoration:blur:enabled")
-            self.blur = bool(opt.get("bool", opt.get("int", 0)))
+            self.under_unknown = bool(opt.get("bool", opt.get("int", 0)))
         except (ValueError, KeyError, TypeError, json.JSONDecodeError):
-            self.blur = False
+            self.under_unknown = False
+        try:  # nor the window under as it drew itself when unfocused windows are dimmed or translucent (an opacity of
+            # 0.98 or more is drawn as 1)
+            dim = hyprctl(args.socket, "j/getoption decoration:dim_inactive")
+            opacity = hyprctl(args.socket, "j/getoption decoration:inactive_opacity")
+            if dim.get("bool", dim.get("int", 0)) or float(opacity.get("float", 1)) < 0.98:
+                self.under_unknown = True
+        except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+            pass
         self.wl = Wayland()
         globs = {}
 
@@ -706,7 +714,7 @@ class Render:
                 uwant, ustride, ux, uy = under
                 for x in range(lo, hi):
                     b, g, r, a = row[x * 4 : x * 4 + 4]
-                    if a != 255 and self.blur:
+                    if a != 255 and self.under_unknown:
                         continue
                     if any(bx <= x < bx + bw and by <= y < by + bh for bx, by, bw, bh in skip):
                         continue

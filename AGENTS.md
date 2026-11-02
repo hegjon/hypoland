@@ -1129,12 +1129,18 @@ Tools:
   `scripts/bench/render-nested.sh [--scale S] [--transform T] [--config extra.lua] [--binary PATH]` runs it against a
   compositor of the tree started inside the desktop's session with one headless output (the nested window switched off,
   so the desktop's screen does not matter), in about two minutes: before the fixes it failed exactly the four bugs' steps
-  at scale 1, after them it passes at 1, 2 and 1.6, with Omarchy's gaps, borders, rounding and animations as well. It
+  at scale 1, after them it passes at 1, 2 and 1.6, with gaps, borders, rounding and animations as well. It
   passes as well on turned outputs (2026-11-01: transforms 1, 2, 3, 5 and 7, the frames through the work buffer, at scales
   1, 2 and 1.6) and with the blur of Omarchy's Glassy theme (`default/hypr/glass.lua`: size 4, 2 passes, noise; the
   dialog's half transparent band shows the blur there, so its translucent pixels are left out); `--selftest` fails 7 steps
-  on both, so neither repaints everything. Compositor frames come in the monitor's own coordinates, turned; a capture of
-  the scanned-out buffer of a turned monitor would not be, and the pixel checks are skipped for it. Steps that found nothing:
+  on both, so neither repaints everything. The configs are in `scripts/bench/render-configs/` since 2026-11-02 (`base.lua`:
+  gaps, borders, rounding 8 and Hyprland 0.57.0's example animations; `glassy.lua`, `shadows.lua` with a range of 20,
+  `dim.lua` with `dim_inactive` and an inactive opacity of 0.8, where translucent pixels are left out as under blur, and
+  `titlebars.lua` as Omarchy sets them up), `--config` can come more than once, and `scripts/bench/render-matrix.sh`
+  runs the nested checks over the effects, scales 1, 2 and 1.6 and turned outputs in one go (`--quick`: scale 1 with each
+  effect, about 13 minutes). The shadows and the titlebars found a bug of the fade-out (a closing window's fade below).
+  Compositor frames come in the monitor's own coordinates, turned; a capture of the scanned-out buffer of a turned monitor
+  would not be, and the pixel checks are skipped for it. Steps that found nothing:
   the popup repositioned (`xdg_popup.reposition`), the layer moved by its margin while clipped and made smaller, the first
   window fullscreen and back (it has to be fullscreen at the monitor's logical size, or the step fails). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
   failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0` (2026-10-31 and 11-01): the radeon

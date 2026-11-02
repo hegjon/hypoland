@@ -4,15 +4,16 @@
 # headless output of 1280x800 at scale S (1 by default), turned by the output transform T (0 by default, 1 is 90
 # degrees), and the nested window switched off, so the desktop's screen does not matter.
 # The screen is captured without a pause (render.py --grab screencopy), so stale pixels show as they would on a real
-# screen. FILE is Lua added to the config (Omarchy's gaps, rounding and animations, for instance). Takes a few minutes;
+# screen. FILE is Lua added to the config, and --config can come more than once (render-configs/ has gaps, rounding and
+# animations, blur, shadows, dimming and titlebars; render-matrix.sh runs them all). Takes a few minutes;
 # prints the checks and exits like render.py. Not a GM45: the machines' deploy check is the final judge.
-SCALE=1 TRANSFORM=0 EXTRA= OUT=
+SCALE=1 TRANSFORM=0 EXTRA=() OUT=
 BIN=$(dirname "$(readlink -f "$0")")/../../build/hypoland
 while [ $# -gt 0 ]; do
     case $1 in
         --scale) SCALE=$2; shift 2 ;;
         --transform) TRANSFORM=$2; shift 2 ;;
-        --config) EXTRA=$2; shift 2 ;;
+        --config) EXTRA+=("$2"); shift 2 ;;
         --binary) BIN=$2; shift 2 ;;
         --out) OUT=$2; shift 2 ;;
         *) break ;;
@@ -27,7 +28,7 @@ mkdir -p "$OUT"
 {
     echo "hl.monitor({ output = \"HEADLESS-1\", mode = \"1280x800@60\", position = \"0x0\", scale = \"$SCALE\", transform = $TRANSFORM })"
     echo 'hl.monitor({ output = "", disabled = true })'
-    [ -n "$EXTRA" ] && cat "$EXTRA"
+    [ ${#EXTRA[@]} = 0 ] || cat "${EXTRA[@]}"
 } >"$OUT/config.lua"
 HYPRLAND_NO_CRASHREPORTER=1 "$BIN" --config "$OUT/config.lua" >"$OUT/compositor.log" 2>&1 &
 PID=$!
