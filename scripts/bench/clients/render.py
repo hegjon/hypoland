@@ -145,6 +145,18 @@ class Surface:
         self.wl.send(self.surface, 6)
         self.wl.wait(lambda: done, 2)
 
+    def opaque(self, rects):
+        """wl_surface.set_opaque_region with rects in surface coordinates (None: none), for the next commit"""
+        if rects is None:
+            self.wl.send(self.surface, 4, u32(0))
+            return
+        region = self.wl.new()
+        self.wl.send(self.r.compositor, 1, u32(region))  # wl_compositor.create_region
+        for x, y, w, h in rects:
+            self.wl.send(region, 1, i32(x, y, w, h))  # wl_region.add
+        self.wl.send(self.surface, 4, u32(region))
+        self.wl.send(region, 0)
+
     def recommit(self):
         """A commit without a buffer or damage: applies the subsurfaces' positions"""
         self.wl.send(self.surface, 6)
@@ -1008,6 +1020,24 @@ class Render:
         self.wl.send(b.top, 2, string("hypoland-render-b with a longer title"))
         self.settle(1.0)
         self.check_repaint("retitled")
+        # an opaque region (wl_surface.set_opaque_region), under which the compositor leaves out what is behind the window:
+        # the dialog drawn opaque and saying so, then a band of it cleared and the region shrunk to the rest, with only
+        # the band damaged: the window under has to show through the band again
+        W, H = b.w // self.scale, b.h // self.scale
+        b.fill(5)
+        b.opaque([(0, 0, W, H)])
+        b.commit()
+        self.settle(1.0)
+        self.check_pixels("opaque region", b, under=a)
+        self.check_repaint("opaque region")
+        top, bottom = H // 3, H // 2
+        b.fill(5, clear_rows=(top * self.scale, bottom * self.scale))
+        b.opaque([(0, 0, W, top), (0, bottom, W, H - bottom)])
+        b.commit([(0, top * self.scale, b.w, (bottom - top) * self.scale)])
+        self.settle(1.0)
+        self.check_pixels("opaque region shrunk", b, under=a)
+        self.check_repaint("opaque region shrunk")
+        b.opaque(None)
         # smaller by itself, as a dialog that drops a part: the space it leaves shows the window under again
         b.allocate((b.w // self.scale // 2, b.h // self.scale // 2))
         b.fill(3)
