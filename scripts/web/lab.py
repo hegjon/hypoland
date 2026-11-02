@@ -39,7 +39,7 @@ RETIRED = "An HP EliteBook 8560p (2011, Radeon HD 6470M, r600) was in the lab fr
 # key in values.txt, label, unit, whether lower is better, scale
 METRICS = [
     ("cpu.gpu-client.percent", "GPU client at 60 fps", "%", True, 1),
-    ("cpu.terminal-scroll.percent", "terminal scrolling fast", "%", True, 1),
+    ("cpu.terminal-scroll.percent", "foot terminal scrolling fast", "%", True, 1),
     ("cpu.shm-fullwindow.percent", "Chromium in a full window", "%", True, 1),
     ("cpu.workspace-switch.percent", "workspace switching", "%", True, 1),
     ("mem.start.Pss_kB", "memory (PSS), 60 s after the start", "MiB", True, 1 / 1024),
