@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # Writes web/lab.html, the page about the test machines: the hardware table (the facts below), and every machine's
-# numbers against stock Hyprland from the regression baseline (docs/baseline/20261027-all-machines-r761-vs-hyprland-0.56.2,
-# values.txt and raw.txt per machine and compositor), so no number on the page is typed by hand. Run it again after a
-# new baseline, from anywhere: scripts/web/lab.py
+# numbers against stock Hyprland from the regression baseline (docs/baseline/20261030-all-machines-r871-vs-hyprland-0.57.0,
+# values.txt and raw.txt per machine and compositor; the 0.56.2 one of 2026-10-27 before 2026-11-02), so no number on
+# the page is typed by hand. Run it again after a new baseline, from anywhere: scripts/web/lab.py
 import html, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BASELINE = "docs/baseline/20261027-all-machines-r761-vs-hyprland-0.56.2"
+BASELINE = "docs/baseline/20261030-all-machines-r871-vs-hyprland-0.57.0"
+HYPRLAND = "0.57.0"
 OUT = os.path.join(ROOT, "web", "lab.html")
 
 # alias, machine, year, CPU, GPU, Mesa driver and GLES level, screen, RAM, what it stands for; baseline: has a column
@@ -153,23 +154,23 @@ page = f"""<!DOCTYPE html>
   </section>
 
   <section class="win full" id="numbers" aria-labelledby="t-numbers">
-    <h2 class="title" id="t-numbers">bench: Hypoland against Hyprland 0.56.2, per machine</h2>
+    <h2 class="title" id="t-numbers">bench: Hypoland against Hyprland {HYPRLAND}, per machine</h2>
     <div class="body">
       <div class="scroll"><table>
-        <thead><tr><th>Hypoland / Hyprland 0.56.2</th>{heads}</tr></thead>
+        <thead><tr><th>Hypoland / Hyprland {HYPRLAND}</th>{heads}</tr></thead>
         <tbody>
 {chr(10).join(rows_num)}
         </tbody>
       </table></div>
       <p class="note">
         Compositor CPU in percent of one core, medians of {smin} to {smax} fresh sessions of each compositor per machine,
-        alternating through the night of 2026-10-27 (Hypoland r761). Green where Hypoland is at least 5% better, red
-        where it is at least 5% worse. On the X200, Hyprland ran with Omarchy's GLES&nbsp;3 override
-        (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), since it does not start there
-        otherwise. The frames are the compositor's own page flips; the Galaxy Book's screen runs at 120 Hz. Hyprland
-        drives the Mac mini's and the Galaxy Book's small moving windows cheaper (not shown); the memory holds the
-        shell's shared pages too. Later builds improved on these numbers: terminals and Qt windows are shown without a
-        copy and panels are drawn only where they have pixels since 2026-10-29.
+        alternating through the night of 2026-10-30 to 31 (Hypoland r871 against Hyprland {HYPRLAND}-2). Green where
+        Hypoland is at least 5% better, red where it is at least 5% worse. On the X200, Hyprland ran with Omarchy's
+        GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), since it does
+        not start there otherwise. Hyprland ran with <code>quirks:skip_non_kms_dmabuf_formats = false</code>,
+        Hypoland's default: with its own default the T550's session came up without a wallpaper and GL clients that ask
+        for alpha got no config. The frames are the compositor's own page flips; the Galaxy Book's screen runs at
+        120&nbsp;Hz. The memory holds the shell's shared pages too.
         <a href="https://github.com/hegjon/hypoland/tree/master/{BASELINE}">Raw data, every session's values and the scripts</a>.
       </p>
     </div>
