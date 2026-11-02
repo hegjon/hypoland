@@ -29,7 +29,11 @@ MACHINES = [
          driver="r600, GLES 3.1", screen="1920x1200", ram="8 GB", role="The AMD machine: the r600 driver with legacy modesetting.", baseline=True),
     dict(alias="galaxybook", name="Samsung Galaxy Book4 Edge 14\"", year=2024, cpu="Snapdragon X Elite, 12 cores, aarch64", gpu="Qualcomm Adreno X1-85",
          driver="freedreno, GLES 3.2", screen="2880x1800 at scale 2, 120 Hz", ram="16 GB", role="The aarch64 machine, with its own package build; 120 Hz.", baseline=True),
+    dict(alias="samsung-i5", name="Samsung Series 7 Ultra (NP730U3E)", year=2013, cpu="Core i5-3337U, 4 threads", gpu="Intel HD Graphics 4000 (Ivy Bridge)",
+         driver="crocus, GLES 3.0", screen="1920x1080", ram="4 GB", role="Joined on 2026-10-31, Ivy Bridge: the crocus generation between Bay Trail and Haswell; no baseline yet.", baseline=False),
 ]
+# both tables list the machines by year, the oldest first (sorted is stable: same-year machines keep the order above)
+MACHINES.sort(key=lambda m: m["year"])
 RETIRED = "An HP EliteBook 8560p (2011, Radeon HD 6470M, r600) was in the lab from 2026-10-22 until its GPU failed on 2026-10-27."
 
 # key in values.txt, label, unit, whether lower is better, scale
