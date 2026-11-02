@@ -966,6 +966,24 @@ class Render:
                           f"movewindowpixel exact {self.monitor['x'] + 237} {self.monitor['y'] + 173},address:{addr}")
         self.settle(1.2)
         self.check_repaint("moved")
+        # resized by the compositor (with the windows animation): the window draws at its new size, the area it leaves
+        # shows what is under it again
+        if addr:
+            before = (b.w, b.h)
+            self.dispatch(f'hl.dsp.window.resize({{x = 360, y = 260, window = "address:{addr}"}})', f"resizewindowpixel exact 360 260,address:{addr}")
+            self.settle(0.4)
+            if b.serial is not None:
+                size = b.wait_configure()
+                if size[0] and size[1]:
+                    b.allocate(size)
+                    b.fill(4, alpha_rows=(b.h // 3, b.h // 2))
+                    b.commit()
+            self.settle(1.2)
+            if (b.w, b.h) == before:
+                self.failed += 1
+                print(f"FAIL  render resized: the window was not resized ({b.w}x{b.h})", flush=True)
+            self.check_pixels("resized", b, under=a)
+            self.check_repaint("resized")
         # smaller by itself, as a dialog that drops a part: the space it leaves shows the window under again
         b.allocate((b.w // self.scale // 2, b.h // self.scale // 2))
         b.fill(3)
