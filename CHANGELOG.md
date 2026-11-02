@@ -132,6 +132,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- At a fractional scale (1.5 on a ThinkPad T550 and a T460s) grouping a window could leave a line of the group bar on the
+  screen until something else drew there, and a window with a titlebar sliding into place the same: both bars were put
+  on whole logical pixels while the window slid between them, up to half a pixel outside what was redrawn, and a box at
+  a half pixel lost the row it is drawn on from its redraw. They are placed on the screen's pixels as the border is, and
+  a redraw covers every pixel a box touches. Upstream's bug as well. Found by the render checks on the machines.
 - A window that marks only part of itself as opaque, its opaque region with a hole where it is see-through, showed that
   part black at scale 1 with square corners (Omarchy's), and without blur: the compositor took a window as opaque when
   the outline of its opaque region covered it, and drew it without blending. It has to cover the whole window now, in

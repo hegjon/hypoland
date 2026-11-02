@@ -206,7 +206,18 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   waits for that flip at the vblank after (34 ms); Hyprland draws at vblanks only, so its first frame after the shell's
   buffer is ready has the toast. So it is drawing as soon as damage comes, which shows a single surface's update sooner
   everywhere else, against a client whose commits arrive in parts, one waiting for its GPU work. Open; the fence fix of
-  2026-11-01 did not change it (36 ms, 3 fresh sessions).
+  2026-11-01 did not change it (36 ms, 3 fresh sessions), nor did the GPU's lowest clock pinned at its highest for both
+  compositors (2026-11-02, 13 fresh sessions each, `test-results/toast-20261102/`: samsung-i5 35.5 against 29.5 ms, the
+  T550 28.8 against 19.3), so it is not stock's capture waking the GPU up either.
+  The night of 2026-11-01 to 02 repeated it with r919 (the fixes of 11-01) on eight machines, 28 to 33 blocks of each
+  (`test-results/night-20261101/`, `table.txt`; the Galaxy Book hung at 01:22, see `MACHINES.md`): Hypoland less compositor
+  CPU per frame in every workload on every machine, 39.6 to 42.1 MiB Pss at the start against 112 to 116. Stock Hyprland
+  0.57.0 died in 13 blocks (the XPS 7, in `resize` and `launch`, the Chromebook 2, the T550 1, the X200 3 in
+  `gtk3-x11-scroll`), Hypoland in none; those blocks are left out (`<host>.skip`). Against r896: the Qt software sprites at
+  half the CPU or less (X200 24.2 -> 9.6%, Chromebook 27.3 -> 12.6), Omarchy's terminal closing in a third to two thirds of
+  the time (XPS 10.2 -> 3.2 ms, X200 9.9 -> 4.7), kitty on the Chromebook at 22.5 instead of 15.6 fps. Behind stock: the
+  toast above (T550, samsung-i5, lianli, the Chromebook, the T460s), the Chromebook's focus change under `dev` (5.1 against
+  8.1 ms, the night before too), the Mac mini's resize redraw (the alpha bounds) and the XPS's menu (bimodal).
 
 ## Hard constraints
 
@@ -1154,7 +1165,14 @@ Tools:
   with a hole counted as opaque at scale 1, and the window was drawn without blending where nothing rounds it (Omarchy's
   square corners) and without blur, its clear band black (in a full repaint too); at scale 2 no region counted. The region
   has to cover the surface's box now, both in surface coordinates. With them the full matrix passes, 68 checks a case
-  (2026-11-02). The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
+  (2026-11-02). The same morning the deploy check on the T550 and the T460s (1920x1080 at 1.5, Omarchy's group bar) failed
+  `grouped` with a row of the group bar left on the screen, which nested runs never show (llvmpipe breaks a tie on a pixel
+  centre on the other side than iris): upstream's group bar and the titlebars rounded their box in logical pixels, so while
+  a window slid at a fractional scale the bar was drawn up to half a logical pixel outside the window's damage (at logical
+  35, pixel 52.5, with the window at 35.4), and `damageBox()` / `damageWindow()` rounded a box at a half pixel to start a
+  row after the one iris draws it on. Both decorations keep the fractional box and round in the monitor's pixels as the
+  border does, and box damage takes every pixel a box touches (`Math::coveredPixels()`). `render-configs/omarchy.lua` is
+  Omarchy's own look (square corners, its group bar and animations); the matrix runs it at 1 and 1.5 and the base at 1.5. The EGL import of a udmabuf fails there, so zero copy is the machines' to check. lianli (r600)
   failed the pixel checks with zero copy and passed them with `HYPOLAND_SHM_ZEROCOPY=0` (2026-10-31 and 11-01): the radeon
   kernel driver refuses a command stream that samples a linear texture whose rows are not a multiple of 64 pixels
   (`evergreen_surface_check_linear_aligned: texture pitch 1896 invalid must be aligned with 64`, then `Invalid command
