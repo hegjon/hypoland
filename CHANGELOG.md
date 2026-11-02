@@ -32,7 +32,6 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   Chromebook 11 and a Mac mini 2014 with 40.
 - Closed windows give their memory back: the heap was only trimmed after uploads, which windows read in place never
   make. It is trimmed a few seconds after the last closed window now, 1.5 MB less memory at the end of a benchmark run.
-
 - A focus change under Omarchy's input method no longer compiles and writes out the keyboard layout again. fcitx5
   grabs the keyboard and recreates its virtual keyboard with the keymap it got back on every focus change, and the
   compositor compiled that 100 kB of text, wrote it twice in two formats into four shared-memory files, copied it once
@@ -115,7 +114,6 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   the soak runs (`hypoland-soak`, `hypoland-soak-ab`, `hypoland-energy-meter`) and `hypoland-kmsgrab`, so the test
   machines carry them at the version of the compositor instead of copies in home directories. The workloads'
   clients are optional dependencies; a workload whose client is missing is skipped, as before.
-
 - Titlebars for Omarchy's floating workspaces. Omarchy draws them with a plugin of its own, which Hypoland cannot
   load, so they are built in with the plugin's interface: the `plugin:hyprbars:*` options, `hl.plugin.hyprbars.add_button()`
   and the `hyprbars:*` window rule effects. Omarchy's config turns them on as it does with the plugin: the app's name or
