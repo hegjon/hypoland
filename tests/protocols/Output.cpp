@@ -1,4 +1,7 @@
 #include <protocols/core/Output.hpp>
+#include <protocols/core/Compositor.hpp>
+#include <protocols/PresentationTime.hpp>
+#include <protocols/SessionLock.hpp>
 #include <Compositor.hpp>
 #include <animation/AnimationManager.hpp>
 #include <config/ConfigValue.hpp>
@@ -13,13 +16,26 @@
 
 #include <gtest/gtest.h>
 #include <hyprutils/os/FileDescriptor.hpp>
+#include <hyprutils/utils/ScopeGuard.hpp>
 
 #include <array>
+#include <cerrno>
+#include <cstring>
+#include <initializer_list>
 #include <memory>
 #include <utility>
+#include <vector>
 #include <sys/socket.h>
 
 using namespace Hyprutils::OS;
+
+struct SOutputTestEvent {
+    uint32_t              objectID = 0;
+    uint32_t              opcode   = 0;
+    std::vector<uint32_t> payload;
+
+    bool                  operator==(const SOutputTestEvent&) const = default;
+};
 
 class COutputTestOutput : public Aquamarine::IOutput {
   public:
@@ -54,6 +70,7 @@ class COutputTest : public ::testing::Test {
     SP<CWLOutputProtocol>                                      makeProtocol(PHLMONITOR monitor);
     void                                                       removeAndExpireMonitor();
     void                                                       bindOutput();
+    void                                                       readOutputEvents(std::vector<SOutputTestEvent>& events);
     void                                                       releaseOutput();
     void                                                       disconnectClient();
 
@@ -67,6 +84,7 @@ class COutputTest : public ::testing::Test {
   private:
     bool                                 m_installedGlobals = false;
     UP<CCompositor>                      m_previousCompositor;
+    UP<CWLCompositorProtocol>            m_previousCompositorProtocol;
     UP<CEventLoopManager>                m_previousEventLoop;
     UP<Render::IHyprRenderer>            m_previousRenderer;
     UP<Event::CEventBus>                 m_previousEventBus;
@@ -93,14 +111,15 @@ void COutputTest::SetUp() {
     ASSERT_NE(m_client, nullptr);
     serverSocket.take(); // wl_client owns the socket now.
 
-    m_previousCompositor = std::move(g_pCompositor);
-    m_previousEventLoop  = std::move(g_pEventLoopManager);
-    m_previousRenderer   = std::move(g_pHyprRenderer);
-    m_previousEventBus   = std::move(Event::bus());
-    m_previousConfig     = std::move(Config::mgr());
-    m_previousWatcher    = std::move(Config::watcher());
-    m_previousAnimations = std::move(Animation::mgr());
-    m_previousTree       = std::move(Config::animationTree());
+    m_previousCompositor         = std::move(g_pCompositor);
+    m_previousCompositorProtocol = std::move(PROTO::compositor);
+    m_previousEventLoop          = std::move(g_pEventLoopManager);
+    m_previousRenderer           = std::move(g_pHyprRenderer);
+    m_previousEventBus           = std::move(Event::bus());
+    m_previousConfig             = std::move(Config::mgr());
+    m_previousWatcher            = std::move(Config::watcher());
+    m_previousAnimations         = std::move(Animation::mgr());
+    m_previousTree               = std::move(Config::animationTree());
     m_previousOutputs.swap(PROTO::outputs);
     m_previousDefunctOutputs.swap(PROTO::defunctOutputs);
     m_installedGlobals = true;
@@ -117,6 +136,8 @@ void COutputTest::SetUp() {
     CConfigValueBase::flushCaches();
     Animation::mgr()        = makeUnique<Animation::CHyprAnimationManager>();
     Config::animationTree() = makeUnique<Config::CAnimationTreeController>();
+    PROTO::compositor       = makeUnique<CWLCompositorProtocol>(&wl_compositor_interface, 6, "wl_compositor");
+    ASSERT_NE(PROTO::compositor->getGlobal(), nullptr);
 
     m_monitor  = makeMonitor();
     m_protocol = makeProtocol(m_monitor);
@@ -135,6 +156,7 @@ void COutputTest::TearDown() {
     m_protocol.reset();
     PROTO::outputs.clear();
     PROTO::defunctOutputs.clear();
+    PROTO::compositor.reset();
     m_monitor.reset();
     Animation::mgr().reset();
     Config::animationTree().reset();
@@ -145,6 +167,7 @@ void COutputTest::TearDown() {
 
     PROTO::outputs.swap(m_previousOutputs);
     PROTO::defunctOutputs.swap(m_previousDefunctOutputs);
+    PROTO::compositor       = std::move(m_previousCompositorProtocol);
     Animation::mgr()        = std::move(m_previousAnimations);
     Config::animationTree() = std::move(m_previousTree);
     Config::mgr()           = std::move(m_previousConfig);
@@ -189,6 +212,41 @@ void COutputTest::bindOutput() {
     EXPECT_EQ(m_resource->m_owner.lock(), m_protocol);
     EXPECT_TRUE(m_protocol->hasBoundResources());
     EXPECT_EQ(m_protocol->outputResourcesFrom(m_client).size(), 1U);
+}
+
+void COutputTest::readOutputEvents(std::vector<SOutputTestEvent>& events) {
+    events.clear();
+    wl_client_flush(m_client);
+    std::vector<uint8_t>      bytes;
+    std::array<uint8_t, 1024> chunk = {};
+    while (true) {
+        const auto count = recv(m_socket.get(), chunk.data(), chunk.size(), MSG_DONTWAIT);
+        if (count < 0 && errno == EINTR)
+            continue;
+        if (count < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
+            break;
+        ASSERT_GT(count, 0);
+        bytes.insert(bytes.end(), chunk.begin(), chunk.begin() + count);
+    }
+
+    for (size_t offset = 0; offset < bytes.size();) {
+        std::array<uint32_t, 2> header = {};
+        ASSERT_GE(bytes.size() - offset, sizeof(header));
+        std::memcpy(header.data(), bytes.data() + offset, sizeof(header));
+        const auto size = header[1] >> 16;
+        ASSERT_GE(size, sizeof(header));
+        ASSERT_EQ(size % sizeof(uint32_t), 0U);
+        ASSERT_LE(size, bytes.size() - offset);
+        SOutputTestEvent event{
+            .objectID = header[0],
+            .opcode   = header[1] & 0xFFFFU,
+            .payload  = std::vector<uint32_t>((size - sizeof(header)) / sizeof(uint32_t)),
+        };
+        if (!event.payload.empty())
+            std::memcpy(event.payload.data(), bytes.data() + offset + sizeof(header), size - sizeof(header));
+        events.emplace_back(std::move(event));
+        offset += size;
+    }
 }
 
 void COutputTest::releaseOutput() {
@@ -255,4 +313,56 @@ TEST_F(COutputTest, DrainingDefunctOutputPreservesSameNameReplacement) {
     ASSERT_TRUE(PROTO::outputs.contains(m_monitor->m_name));
     EXPECT_EQ(PROTO::outputs.at(m_monitor->m_name), replacement);
     EXPECT_FALSE(replacement->isDefunct());
+}
+
+TEST_F(COutputTest, LockSurfaceRequestedAfterMonitorRemovalIsInertAndDestroyable) {
+    auto                                previousLock         = std::move(PROTO::sessionLock);
+    auto                                previousPresentation = std::move(PROTO::presentation);
+    const Hyprutils::Utils::CScopeGuard restoreProtocols{[&] {
+        wl_display_destroy_clients(m_display.get());
+        m_client            = nullptr;
+        PROTO::sessionLock  = std::move(previousLock);
+        PROTO::presentation = std::move(previousPresentation);
+    }};
+    PROTO::sessionLock  = makeUnique<CSessionLockProtocol>(&ext_session_lock_manager_v1_interface, 1, "ext_session_lock_manager_v1");
+    PROTO::presentation = makeUnique<CPresentationProtocol>(&wp_presentation_interface, 2, "wp_presentation");
+
+    CHyprSignalListener newSurface;
+    auto                newLock = PROTO::sessionLock->m_events.newLock.listen(
+        [&](const auto& lock) { newSurface = lock->m_events.newLockSurface.listen([](const auto&) { ADD_FAILURE() << "Removed output must not get an active lock surface"; }); });
+    const auto sendRequest = [&](std::initializer_list<uint32_t> request) {
+        const auto size = request.size() * sizeof(uint32_t);
+        ASSERT_EQ(send(m_socket.get(), request.begin(), size, MSG_NOSIGNAL), sc<ssize_t>(size));
+        ASSERT_EQ(wl_event_loop_dispatch(wl_display_get_event_loop(m_display.get()), 0), 0);
+    };
+
+    ASSERT_NO_FATAL_FAILURE(bindOutput());
+    std::vector<SOutputTestEvent> events;
+    ASSERT_NO_FATAL_FAILURE(readOutputEvents(events));
+    PROTO::compositor->bindManager(m_client, nullptr, 6, 3);
+    ASSERT_NO_FATAL_FAILURE(sendRequest({3U, 12U << 16, 4U})); // wl_compositor.create_surface(4)
+    PROTO::sessionLock->bindManager(m_client, nullptr, 1, 5);
+    ASSERT_NE(wl_client_get_object(m_client, 5), nullptr);
+    ASSERT_NO_FATAL_FAILURE(sendRequest({5U, (12U << 16) | 1U, 6U})); // ext_session_lock_manager_v1.lock(6)
+    ASSERT_NE(wl_client_get_object(m_client, 4), nullptr);
+    ASSERT_NE(wl_client_get_object(m_client, 6), nullptr);
+
+    ASSERT_NO_FATAL_FAILURE(removeAndExpireMonitor());
+    // get_lock_surface(7, surface 4, output 2) races with output removal.
+    ASSERT_NO_FATAL_FAILURE(sendRequest({6U, (20U << 16) | 1U, 7U, 4U, 2U}));
+    const auto resource = wl_client_get_object(m_client, 7);
+    ASSERT_NE(resource, nullptr);
+    EXPECT_STREQ(wl_resource_get_class(resource), "ext_session_lock_surface_v1");
+    EXPECT_EQ(wl_resource_get_version(resource), 1);
+    ASSERT_NO_FATAL_FAILURE(readOutputEvents(events));
+    EXPECT_TRUE(events.empty()); // No configure for the removed output.
+
+    ASSERT_NO_FATAL_FAILURE(sendRequest({7U, 8U << 16})); // ext_session_lock_surface_v1.destroy
+    ASSERT_EQ(wl_client_get_object(m_client, 7), nullptr);
+    ASSERT_NO_FATAL_FAILURE(sendRequest({1U, 12U << 16, 8U})); // wl_display.sync(8)
+    ASSERT_NO_FATAL_FAILURE(readOutputEvents(events));
+    std::erase_if(events, [](const auto& event) { return event.objectID == 1 && event.opcode == WL_DISPLAY_DELETE_ID; });
+    ASSERT_EQ(events.size(), 1U);
+    EXPECT_EQ(events.front().objectID, 8U);
+    EXPECT_EQ(events.front().opcode, WL_CALLBACK_DONE);
 }
