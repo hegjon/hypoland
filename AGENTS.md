@@ -1179,6 +1179,11 @@ Tools:
   state was not applied after all): foot's contents fade out with it (a nested compositor with a 0.5 s fade, grim every
   40 ms: r919 shows the border alone from the first frame, now the magenta window fades; `fadetest.sh` in
   `test-results/fade-20261101/`).
+  Until 2026-11-02 the window's box was measured when the fade was made, after the window's close event, which drops its
+  decorations from the decoration positioner: the box had only the border, and a closing window left its titlebar, its
+  shadow or a group bar on the screen until something else drew there (r885 to r926; on Omarchy's floating workspaces,
+  which have titlebars). It is measured at the start of `CWindow::unmapWindow()` now (`CWindowFadeout::contentBoxOf()`).
+  Found by the render checks with `render-configs/titlebars.lua` and `shadows.lua` (above).
   The snapshot a close fades out from (`makeSnapshotFB()`) was a new framebuffer of the monitor's size per close, and on
   i915 Mesa has a new buffer's pages allocated and cleared at once (`DRM_IOCTL_I915_GEM_SET_DOMAIN` in `crocus_bo_alloc`,
   9 MB at 1920x1200): uprobes on the snapshot and `CWindow::unmapWindow()` on the Mac mini had the snapshot at 3.3 ms of a

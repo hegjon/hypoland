@@ -5,7 +5,13 @@
 namespace Desktop {
     class CWindowFadeout final : public IFadeout {
       public:
-        static SP<CWindowFadeout>     create(PHLWINDOW window, SP<Render::IFramebuffer> snapshot, float sourceAlpha);
+        static SP<CWindowFadeout> create(PHLWINDOW window, SP<Render::IFramebuffer> snapshot, float sourceAlpha, const CBox& contentBox);
+
+        // what a snapshot of the window holds of it, in layout coordinates: its frame with the decorations and popups and
+        // its surface tree, which can reach out of the frame. Taken before the window's close event, which drops its
+        // decorations from the positioner: after it the box had only the border, and a titlebar or a shadow stayed on the
+        // screen when the window closed
+        static CBox                   contentBoxOf(PHLWINDOW window);
 
         virtual PHLMONITORREF         monitor() const override;
         virtual eFadeoutPlane         plane() const override;

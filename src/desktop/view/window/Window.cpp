@@ -1595,6 +1595,10 @@ void CWindow::unmapWindow() {
 
     const auto PMONITOR = m_monitor.lock();
 
+    // what the fade-out's snapshot will hold of the window, while its decorations still have their places: the close
+    // event below drops them from the decoration positioner
+    const auto SNAPSHOTBOX = CWindowFadeout::contentBoxOf(m_self.lock());
+
     m_stateTracker->stop();
     m_events.unmap.emit();
     IPC::Socket2::sock()->postEvent({"closewindow", std::format("{:x}", m_self.lock())});
@@ -1718,7 +1722,7 @@ void CWindow::unmapWindow() {
     m_realSize->setConfig(Config::animationTree()->getAnimationPropertyConfig("windowsOut"));
     m_presentation->alpha(WINDOW_ALPHA_FADE)->setConfig(Config::animationTree()->getAnimationPropertyConfig("fadeOut"));
 
-    Desktop::fadingOutState()->add(CWindowFadeout::create(m_self.lock(), SNAPSHOT, FADEOUTALPHA));
+    Desktop::fadingOutState()->add(CWindowFadeout::create(m_self.lock(), SNAPSHOT, FADEOUTALPHA, SNAPSHOTBOX));
 
     // recheck idle inhibitors
     g_pInputManager->recheckIdleInhibitorStatus();

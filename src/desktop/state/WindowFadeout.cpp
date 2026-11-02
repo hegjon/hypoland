@@ -38,7 +38,20 @@ static bool shouldBlurWindow(PHLWINDOW window) {
     return true;
 }
 
-SP<CWindowFadeout> CWindowFadeout::create(PHLWINDOW window, SP<Render::IFramebuffer> snapshot, float sourceAlpha) {
+CBox CWindowFadeout::contentBoxOf(PHLWINDOW window) {
+    if (!window)
+        return {};
+
+    CRegion content = window->getFullWindowBoundingBox();
+    if (const auto SURFACE = window->wlSurface(); SURFACE && SURFACE->resource()) {
+        const auto ORIGIN = window->position(Desktop::View::IGeometric::GEOMETRIC_CURRENT) - (window->backend().isX11() ? Vector2D{} : window->backend().geometry().box.pos());
+        content.add(SURFACE->resource()->extends().translate(ORIGIN));
+    }
+
+    return content.getExtents();
+}
+
+SP<CWindowFadeout> CWindowFadeout::create(PHLWINDOW window, SP<Render::IFramebuffer> snapshot, float sourceAlpha, const CBox& contentBox) {
     static auto PBLURXRAY = CConfigValue<Config::INTEGER>("decoration:blur:xray");
 
     if (!window || !snapshot)
@@ -68,16 +81,9 @@ SP<CWindowFadeout> CWindowFadeout::create(PHLWINDOW window, SP<Render::IFramebuf
         fadeout->m_effects.dimAroundAlpha = *PDIMAROUND;
 
     // A fade damages only where it draws the window, not the whole monitor on every step: closing a window repainted the
-    // screen for half a second. What the snapshot holds of it is its frame with the decorations and popups and its
-    // surface tree, which can reach out of the frame
-    if (!fadeout->m_blur && fadeout->m_effects.dimAroundAlpha <= 0.F) {
-        CRegion content = window->getFullWindowBoundingBox();
-        if (const auto SURFACE = window->wlSurface(); SURFACE && SURFACE->resource()) {
-            const auto ORIGIN = window->position(Desktop::View::IGeometric::GEOMETRIC_CURRENT) - (window->backend().isX11() ? Vector2D{} : window->backend().geometry().box.pos());
-            content.add(SURFACE->resource()->extends().translate(ORIGIN));
-        }
-        fadeout->m_contentBox = content.getExtents().translate(-MONITOR->m_position).scale(MONITOR->m_scale).expand(2);
-    }
+    // screen for half a second. What the snapshot holds of it is contentBox (contentBoxOf())
+    if (!fadeout->m_blur && fadeout->m_effects.dimAroundAlpha <= 0.F && !contentBox.empty())
+        fadeout->m_contentBox = CBox{contentBox}.translate(-MONITOR->m_position).scale(MONITOR->m_scale).expand(2);
 
     const auto ANIMCTX = window->presentation().animateOut();
 
