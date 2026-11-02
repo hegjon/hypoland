@@ -402,8 +402,11 @@ w_capture() { # screencopy, recording, the screen share path
     sleep 3
     local _
     for _ in 1 2 3 4 5; do timeout 15 grim "$OUT/clients/grim.png" || log "EVENT grim failed"; sleep 2; done
-    timeout -s INT 12 wf-recorder -f "$OUT/clients/rec.mp4" >/dev/null 2>&1
-    [ -s "$OUT/clients/rec.mp4" ] || log "EVENT wf-recorder wrote nothing"
+    # skipped where it is not installed, as the other workloads' programs are (the T490's soak logged it every cycle)
+    if command -v wf-recorder >/dev/null; then
+        timeout -s INT 12 wf-recorder -f "$OUT/clients/rec.mp4" >/dev/null 2>&1
+        [ -s "$OUT/clients/rec.mp4" ] || log "EVENT wf-recorder wrote nothing"
+    fi
     rm -f "$OUT/clients/rec.mp4" "$OUT/clients/grim.png"
     stop_clients
 }
