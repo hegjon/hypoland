@@ -6,7 +6,7 @@ was done with it on 2026-10-30, merged into master that evening. On master, the 
 Hypoland's own code, and one fixup (`IKeyboard::isVirtual()` is const). "Later" marks commits whose conflicts sit in
 code the workspace refactor (e9e2f64cc) rewrote; they wait for that port. "Ignore" marks CI, docs, reverts, and code
 Hypoland removed (the scene composition renderer, colour management, FP16 buffers, the test plugin, Nix). The dry-run
-cherry-pick that classified the conflicts ran against master f967f8cff, so a commit marked clean may still conflict once
+cherry-pick that classified the conflicts ran against master 581ed3210, so a commit marked clean may still conflict once
 others are in, and the other way round.
 
 | commit | decision | subject |

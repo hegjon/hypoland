@@ -8,8 +8,8 @@ where it stands against Hyprland 0.56.2.
 ## Setup
 
 - Hypoland: `hypoland 0.2.0.r761.gcef04782e-1`, the Arch package built from the branch `bench-package` at
-  `cef04782e`. Its compositor is the code of master `233be977b`: the branch adds only the `hypoland-bench` package,
-  and master's commits after that base at the time (`5c4a2f007`, `999785e13`) change hyprtester only. The Galaxy
+  `020025404`. Its compositor is the code of master `46ccda03f`: the branch adds only the `hypoland-bench` package,
+  and master's commits after that base at the time (`f0285acb1`, `f08155f51`) change hyprtester only. The Galaxy
   Book built its own package on the machine from the branch's next commit, `r762.g7acef3d`, the same code.
   `hypoland-bench` of the same version was installed alongside; the run itself used a copy of `scripts/bench`.
 - Hyprland: the Arch packages `hyprland 0.56.2-4` and `omarchy-hyprland-titlebars 0.2.2-2` (the aarch64 ones on

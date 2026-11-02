@@ -161,7 +161,7 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   25-64% less compositor CPU under load on the X200, 10-55% on the T550, and about 60% less Pss on both, with
   the same frames.
 - The regression baseline is `docs/baseline/20261027-all-machines-r761-vs-hyprland-0.56.2/` (the night of 2026-10-27
-  to 28): every workload on all eight machines, Hypoland r761 (the compositor code of master 233be977b) against
+  to 28): every workload on all eight machines, Hypoland r761 (the compositor code of master 46ccda03f) against
   Hyprland 0.56.2-4, 37 to 41 fresh sessions of each per machine in alternating blocks (`abnight.sh` there, the runner
   the A/B nights use), medians with min and max per machine and compositor, every block's values, the table and the
   scripts. Its README says how to compare a build against it. Hypoland's compositor costs less in nearly every
@@ -173,7 +173,7 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   its GTK 4 client (Vulkan) at 3.5 to 20% against a steady 3.5% with the compositor the same, the X200's `resize` at
   twice the frames, and a focus change 0.3 to 1 ms slower on the crocus machines.
 - The baseline against Hyprland 0.57.0 is `docs/baseline/20261030-all-machines-r871-vs-hyprland-0.57.0/` (the night of
-  2026-10-30 to 31, made the same way): Hypoland r871 (master 9189141d0, the 0.57.0 port with the zero-copy flush fix)
+  2026-10-30 to 31, made the same way): Hypoland r871 (master a3911009c, the 0.57.0 port with the zero-copy flush fix)
   against Hyprland 0.57.0-2 on the same eight machines (not the T490), 10 to 12 fresh sessions of each, every workload
   with `launch` and `many-windows` (not `startup`), `raw.txt` with every block's values. Hyprland 0.57.0 runs with
   `quirks:skip_non_kms_dmabuf_formats = false`: its default broke the T550's session under Omarchy r7438 (no wallpaper,
@@ -790,7 +790,7 @@ Tools:
   printing five lines a second, in an even floating grid (5x2, 5x4, 8x5: dwindle would leave the last ones a few pixels
   wide) and measures each count like a workload (`cpu.many-windows-<n>.*` with `ms_per_frame`, `mem.many-windows-<n>.*`)
   and its focus and workspace switch latency, with the printing paused (a printed line changed the switch's region
-  first: -0.9 ms on the Galaxy Book). First run, T550, master de57aacad (the 0.57 port), one round: IPC 416 ms, first
+  first: -0.9 ms on the Galaxy Book). First run, T550, master 0c18b6755 (the 0.57 port), one round: IPC 416 ms, first
   frame 294 ms, bar 1.8 s, compositor 410 ms and session 19.4 s of CPU in the first 20 s (the shell and Omarchy's login
   scripts), 43.2 MiB Pss; Omarchy's terminal (foot there) opens in 140 ms, drawn at 282, closes in 5.5; with 10 / 20 /
   40 windows the compositor takes 3.1 / 8.0 / 13.3% (1.15 / 1.39 / 2.22 ms a frame), Pss 44.6 / 46.1 / 48.5 MiB, a focus

@@ -8,10 +8,10 @@ nights before, `../20261027-all-machines-r761-vs-hyprland-0.56.2/`, made the sam
 
 ## Setup
 
-- Hypoland: `hypoland 0.2.0.r871.g9189141d0-1`, the Arch package built from master `9189141d0`: the partial port of
-  Hyprland 0.57.0 (`de57aacad`, it reads 0.57.0 configs without errors) and the zero-copy flush fix of that evening
-  (`23261a25c`). The Galaxy Book built its own package on the machine from the same commit
-  (`0.2.0.r871.g9189141-1`). The run used a copy of `scripts/bench` at `e1e69b926`, which added the `launch` and
+- Hypoland: `hypoland 0.2.0.r871.g9189141d0-1`, the Arch package built from master `a3911009c`: the partial port of
+  Hyprland 0.57.0 (`0c18b6755`, it reads 0.57.0 configs without errors) and the zero-copy flush fix of that evening
+  (`e95deb27d`). The Galaxy Book built its own package on the machine from the same commit
+  (`0.2.0.r871.g9189141-1`). The run used a copy of `scripts/bench` at `5891da54c`, which added the `launch` and
   `many-windows` workloads to the default list.
 - Hyprland: the Arch packages `hyprland 0.57.0-2` and `omarchy-hyprland-titlebars 0.3.0-2` from Omarchy's repository
   (the aarch64 ones on the Galaxy Book), installed from each machine's pacman cache for every Hyprland block.
@@ -170,7 +170,7 @@ Medians of 10 to 12 blocks; where the blocks of the two do not overlap it says s
   when it came sooner. Omarchy's border fades with easeOutQuint over 539 ms, and hyprutils' `getCurveStep()` takes the
   time in whole milliseconds when the frame is drawn, so a frame drawn within a millisecond or two of the focus change
   shows the old colour and the change comes with the next frame. Zero copy makes the first frame come sooner (foot's
-  commits after the focus change need no copy). Fixed the next morning (2573c7db2): animations take their values for
+  commits after the focus change need no copy). Fixed the next morning (ef0a1fdbd): animations take their values for
   the vblank the frame is shown at; 6 to 8 fresh sessions each, a focus change among 10 / 20 / 40 windows XPS 10.2 / 16.8
   / 18.0 -> 2.1 / 2.5 / 2.8 ms, T550 14.4 / 14.4 / 13.4 -> 1.8 / 2.1 / 2.7, Galaxy Book 5.1 / 3.6 / 3.4 -> 2.4 / 2.1 /
   2.0, ahead of Hyprland 0.57.0 on all three. The T550 also shows 20 windows at 42 instead of 56 frames a
@@ -184,7 +184,7 @@ Medians of 10 to 12 blocks; where the blocks of the two do not overlap it says s
   5.9 and 2.5 / 3.6 / 5.9 (one to three fresh sessions each). foot scrolls by attaching a new `wl_buffer` further on in
   its pool for every line, and each new buffer was a udmabuf and an EGL import (6967 in two minutes of `many-windows`
   on the Galaxy Book with zero copy forced). The iris and Haswell machines pay it too, less: with 40 windows T550 1.9 ->
-  2.25 ms, Mac mini 2.2 -> 2.6, XPS 2.1 -> 2.4 copied against in place. Fixed the next morning (e83a3f5ab): a small
+  2.25 ms, Mac mini 2.2 -> 2.6, XPS 2.1 -> 2.4 copied against in place. Fixed the next morning (8d3973dd0): a small
   surface that keeps attaching new buffers is copied (below 1 MiB, 256 kB on radeon), 5 to 8 fresh sessions each, per
   frame with 10 / 20 / 40 windows X200 2.47 / 3.36 / 5.42 -> 1.44 / 1.99 / 3.22 ms (now below Hyprland 0.57.0's 1.91 /
   2.30 / 3.44), Chromebook 2.58 / 3.66 / 5.92 -> 1.96 / 2.88 / 4.82, Mac mini 2.52 -> 2.02 and T460s 2.03 -> 1.81 with
@@ -249,6 +249,6 @@ workloads plus `launch` and `many-windows`):
 - Both compositors read the same Omarchy config, but Hypoland draws some of it differently: windows with an opacity
   of 0.98 or more are opaque (Omarchy's 0.985 active opacity is not blended), the shell's transparent layer areas are
   clipped (`HYPOLAND_ALPHA_BOUNDS`), and transparent huge pages are off for the compositor.
-- `startup` is not in it (see Setup); hypoland-7d's fixed `startup.py` (72add42a1) measured it the next morning on the
+- `startup` is not in it (see Setup); hypoland-7d's fixed `startup.py` (474373c8c) measured it the next morning on the
   Galaxy Book, two fresh sessions each, Hyprland 0.57.0 -> Hypoland: IPC 425 -> 262 ms, first frame 223 -> 197, bar 781
   -> 606, desktop 2541 -> 2366, compositor CPU in the first 20 s 920 -> 350 ms, Pss 151 -> 44.9 MiB.

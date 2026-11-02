@@ -5,12 +5,12 @@ the switch off (Mesa's tiled textures, the default until then) against on (`HYPO
 GBM buffer as the texture's storage, the damaged rows copied by the compositor), 30 to 33 fresh sessions of each per
 machine, alternating through the night. It showed the gains on every machine and two costs, which the version merged
 the next morning removes (dumb buffers of the compositor's own device instead of a GBM device, no sync calls around the
-copy: master 44331bd5c, measured in AGENTS.md under Tools). The data here is the GBM version's, not what master ships.
+copy: master 743a21f22, measured in AGENTS.md under Tools). The data here is the GBM version's, not what master ships.
 
 ## Setup
 
-- The package `hypoland 0.2.0.r781.gabc3769a2-1` (branch `wip/shm-rowcopy` at `abc3769a2`: master `71c84ac4e`, the
-  GBM-backed textures of `344631755`, plus the row copy) with `hypoland-bench` of the same version; the Galaxy Book
+- The package `hypoland 0.2.0.r781.gabc3769a2-1` (branch `wip/shm-rowcopy` at `abc3769a2`: master `be7f8f85f`, the
+  GBM-backed textures of `cf5bcfa89`, plus the row copy) with `hypoland-bench` of the same version; the Galaxy Book
   built its own `r781.gabc3769-1` on the machine. Both variants are the same package: `off` has no variable in
   `~a/.config/uwsm/env`, `on` has `export HYPOLAND_SHM_TEXTURE=linear` there, verified in the compositor's environment
   at the start of every block.
