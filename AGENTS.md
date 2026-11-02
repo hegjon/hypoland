@@ -822,7 +822,14 @@ Tools:
   `HYPOLAND_FENCE_HOLD_DEBUG=1` prints every hold to stderr (T550, a notifications run: 38 holds, 3.9 ms median, all ended
   by the buffers). The toast with 17 ms, 8 fresh sessions each, off -> on: Mac mini 32.6 -> 16.9 ms (every block lower),
   T550 29.6 -> 22.4, T460s 21.5 -> 24.0 (overlapping); the compositor's CPU the same, 1 to 3% fewer frames on the screen.
-  The other workloads with it are measured in the A/B of 2026-11-02 (`test-results/hold-20261102/`).
+  The other workloads, 8 fresh sessions each on the T550, the T460s, the Mac mini and the Chromebook (13 workloads,
+  `test-results/hold-20261102/hold2/`; the toast alone is `hold1/`): a focus change under the `dev` load comes later with
+  it (T550 3.0 -> 5.5 ms, T460s 3.3 -> 4.9, Chromebook 7.5 -> 9.3: the frame with the new border waits for the log
+  terminal's buffer), the Chromebook's video window shows 24.0 instead of 26.6 frames a second in every block (its GPU
+  busy 100 -> 90%: a frame held until the client's buffer is done no longer overlaps that work on the GPU), and the toast
+  is bimodal per session in that run (Mac mini 13 to 14 ms in 3 blocks, 28 to 31 in 5, against 31 to 33); a resize step
+  on the T460s 2.8 -> 1.4 ms, the rest within the spread. Both runs pooled, 16 sessions each, the toast: Mac mini 32.6 ->
+  21.7 ms, T550 28.8 -> 25.0, T460s 21.5 -> 24.0. So it stays off: it trades a toast's frame for a focus change's.
 - `HYPOLAND_NO_COALESCE=1` uploads and draws the damage rectangles as the client sent them instead of merging them on
   crocus and r600 (`CHyprOpenGLImpl::coalesceDamage()`), `HYPOLAND_SINGLE_TEXTURE=1` updates the shown shm texture in
   place as upstream does instead of the idle second one (`CGLTexture::update()`), both for comparing the paths on a
