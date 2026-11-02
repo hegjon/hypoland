@@ -2617,8 +2617,7 @@ void IHyprRenderer::damageWindow(PHLWINDOW pWindow, bool forceFull) {
     for (auto const& m : State::monitorState()->monitors()) {
         if (forceFull || shouldRenderWindow(pWindow, m)) { // only damage if window is rendered on monitor
             CBox fixedDamageBox = {windowBox.x - m->m_position.x, windowBox.y - m->m_position.y, windowBox.width, windowBox.height};
-            fixedDamageBox.scale(m->m_scale).round();
-            m->addDamage(fixedDamageBox);
+            m->addDamage(Math::coveredPixels(fixedDamageBox.scale(m->m_scale)));
         }
     }
 
@@ -2647,8 +2646,9 @@ void IHyprRenderer::damageBox(const CBox& box, bool skipFrameSchedule) {
             continue; // don't damage mirrors traditionally
 
         if (!skipFrameSchedule) {
-            CBox damageBox = box.copy().translate(-m->m_position).scale(m->m_scale).round();
-            m->addDamage(damageBox);
+            // every pixel the box can be drawn on: rounded, a box at a half pixel lost a row that some GPUs draw it on, and
+            // the group bar's top row stayed on the screen of a T460s (scale 1.5) after the bar had slid further
+            m->addDamage(Math::coveredPixels(box.copy().translate(-m->m_position).scale(m->m_scale)));
         }
     }
 

@@ -6,6 +6,7 @@
 #include <array>
 #include <algorithm>
 #include <vector>
+#include <cmath>
 
 using namespace Math;
 
@@ -134,4 +135,9 @@ CRegion Math::expandRegion(const CRegion& region, int by) {
     pixman_region32_copy(result.pixman(), &grown);
     pixman_region32_fini(&grown);
     return result;
+}
+
+CBox Math::coveredPixels(const CBox& box) {
+    const double X = std::floor(box.x), Y = std::floor(box.y);
+    return {X, Y, std::ceil(box.x + box.w) - X, std::ceil(box.y + box.h) - Y};
 }

@@ -26,4 +26,9 @@ namespace Math {
     // The region with every rectangle grown by `by` pixels on each side: what CRegion::expand() gives, made at once
     // instead of unioning the grown rectangles one at a time, whose cost grows with the square of their number
     CRegion expandRegion(const CRegion& region, int by);
+
+    // Every pixel a box in pixels can touch when it is drawn: its start rounded down, its end up. A box at a half pixel
+    // (a logical position at a fractional scale) is drawn with the row or column whose centre lies on its edge, on one
+    // side or the other depending on the GPU, which CBox::round() can drop from its damage
+    CBox coveredPixels(const CBox& box);
 }
