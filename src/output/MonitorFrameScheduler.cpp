@@ -3,12 +3,102 @@
 #include "../Compositor.hpp"
 #include "../render/Renderer.hpp"
 #include "../managers/eventLoop/EventLoopManager.hpp"
+#include "../managers/eventLoop/EventLoopTimer.hpp"
+#include "../protocols/core/Compositor.hpp"
+#include "../protocols/types/SurfaceStateQueue.hpp"
+#include "../helpers/env/Env.hpp"
+
+#include <algorithm>
+#include <print>
 
 using namespace Render::GL;
 using namespace Monitor;
 
 CMonitorFrameScheduler::CMonitorFrameScheduler(PHLMONITOR m) : m_monitor(m) {
     ;
+}
+
+CMonitorFrameScheduler::~CMonitorFrameScheduler() {
+    if (m_holdTimer && g_pEventLoopManager)
+        g_pEventLoopManager->removeTimer(m_holdTimer);
+}
+
+// An experiment, HYPOLAND_FENCE_HOLD=<ms>: a frame is held while a client's commit on this monitor waits for the GPU
+// to finish its buffer. Drawn then, the frame queues on the GPU behind that client's work anyway, misses the vblank it
+// was drawn for and keeps the one flip that can be pending, so the frame with the client's update waits a refresh for
+// it: Omarchy's shell commits a toast with its GPU work running and another surface at once, which was drawn at once,
+// and the toast's frame flipped a refresh later than under stock Hyprland. Held, the frame is drawn when the buffers it
+// waited for are ready, or after <ms>. HYPOLAND_FENCE_HOLD_DEBUG=1 prints every hold
+static Time::steady_dur fenceHoldTime() {
+    static const auto HOLD = [] {
+        int ms = 0;
+        try {
+            ms = std::stoi(Env::get("HYPOLAND_FENCE_HOLD").value_or("0"));
+        } catch (...) { ms = 0; }
+        return std::chrono::duration_cast<Time::steady_dur>(std::chrono::milliseconds(std::max(ms, 0)));
+    }();
+    return HOLD;
+}
+
+bool CMonitorFrameScheduler::holdForClients(PHLMONITOR monitor, const Time::steady_tp& now) {
+    static const bool DEBUG = Env::envEnabled("HYPOLAND_FENCE_HOLD_DEBUG");
+    const auto        HOLD  = fenceHoldTime();
+    if (HOLD.count() <= 0)
+        return false;
+
+    if (!m_holdEnd) {
+        // a frame without damage (the cursor moved on its plane) has nothing a client's buffer would add
+        if (!monitor->m_damage.hasChanged())
+            return false;
+
+        // the states on this monitor that wait for their buffers now; later ones do not extend the hold, so a client that
+        // always has a frame on the GPU does not hold every frame for the whole time
+        m_heldFor.clear();
+        PROTO::compositor->forEachSurface([this, &monitor](SP<CWLSurfaceResource> surf) {
+            if (!surf || std::ranges::none_of(surf->m_enteredOutputs, [&monitor](const auto& m) { return m.lock() == monitor; }))
+                return;
+            surf->m_stateQueue.fenceWaits(m_heldFor);
+        });
+        if (m_heldFor.empty())
+            return false;
+
+        m_holdStart = now;
+        m_holdEnd   = now + HOLD;
+        if (!m_holdTimer) {
+            m_holdTimer = makeShared<CEventLoopTimer>(
+                std::nullopt,
+                [self = m_self](SP<CEventLoopTimer>, void*) {
+                    if (const auto MON = self ? self->m_monitor.lock() : nullptr)
+                        MON->scheduleFrame();
+                },
+                nullptr);
+            g_pEventLoopManager->addTimer(m_holdTimer);
+        }
+        m_holdTimer->updateTimeout(HOLD, now);
+        return true;
+    }
+
+    std::erase_if(m_heldFor, [](const auto& s) { return !CSurfaceStateQueue::waitsForFence(s); });
+    if (!m_heldFor.empty() && now < *m_holdEnd)
+        return true;
+
+    if (DEBUG)
+        std::println(stderr, "fence hold {}: {:.2f} ms, {}", monitor->m_name, std::chrono::duration<double, std::milli>(now - *m_holdStart).count(),
+                     m_heldFor.empty() ? "buffers ready" : "timed out");
+
+    m_heldFor.clear();
+    m_holdStart.reset();
+    m_holdEnd.reset();
+    m_holdTimer->updateTimeout(std::nullopt);
+    return false;
+}
+
+void CMonitorFrameScheduler::onClientFence() {
+    if (!m_holdEnd)
+        return;
+
+    if (const auto MON = m_monitor.lock())
+        MON->scheduleFrame();
 }
 
 bool CMonitorFrameScheduler::newSchedulingEnabled() {
@@ -102,6 +192,8 @@ void CMonitorFrameScheduler::onFrame() {
     if (!newSchedulingEnabled()) {
         // one clock read for the frame: the timer, the animation tick and the render share it
         const auto NOW = Time::steadyNow();
+        if (holdForClients(PMONITOR, NOW))
+            return;
         PMONITOR->m_lastPresentationTimer.reset(NOW);
         g_pHyprRenderer->renderMonitor(PMONITOR, true, NOW);
         return;
