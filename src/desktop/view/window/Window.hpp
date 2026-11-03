@@ -216,6 +216,7 @@ namespace Desktop::View {
         MONITORID                  monitorID();
         bool                       onSpecialWorkspace();
         void                       activate(bool force = false);
+        void                       markUrgent();
         bool                       clampWindowSize(const std::optional<Vector2D> minSize, const std::optional<Vector2D> maxSize);
         float                      getScrollMouse();
         float                      getScrollTouchpad();
