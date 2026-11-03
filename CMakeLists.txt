@@ -124,8 +124,8 @@ find_package(OpenGL REQUIRED COMPONENTS ${GLES_VERSION})
 
 set(HYPRLANG_MINIMUM_VERSION 0.6.7)
 set(HYPRCURSOR_MINIMUM_VERSION 0.1.7)
-set(HYPRUTILS_MINIMUM_VERSION 0.14.0)
-set(HYPRGRAPHICS_MINIMUM_VERSION 0.5.1)
+set(HYPRUTILS_MINIMUM_VERSION 0.14.3)
+set(HYPRGRAPHICS_MINIMUM_VERSION 0.6.0)
 
 include(cmake/aquamarine.cmake)
 pkg_check_modules(hyprlang_dep REQUIRED IMPORTED_TARGET hyprlang>=${HYPRLANG_MINIMUM_VERSION})
@@ -488,14 +488,9 @@ else()
   target_link_libraries(hyprland_lib PUBLIC OpenGL::EGL OpenGL::GLES2 Threads::Threads)
 endif()
 
-pkg_check_modules(hyprland_protocols_dep hyprland-protocols>=0.7.0)
-if(hyprland_protocols_dep_FOUND)
-  pkg_get_variable(HYPRLAND_PROTOCOLS hyprland-protocols pkgdatadir)
-  message(STATUS "hyprland-protocols dependency set to ${HYPRLAND_PROTOCOLS}")
-else()
-  set(HYPRLAND_PROTOCOLS "subprojects/hyprland-protocols")
-  message(STATUS "hyprland-protocols subproject set to ${HYPRLAND_PROTOCOLS}")
-endif()
+pkg_check_modules(hyprland_protocols_dep REQUIRED hyprland-protocols>=0.8.0)
+pkg_get_variable(HYPRLAND_PROTOCOLS hyprland-protocols pkgdatadir)
+message(STATUS "hyprland-protocols dependency set to ${HYPRLAND_PROTOCOLS}")
 
 protocolnew("${HYPRLAND_PROTOCOLS}/protocols" "hyprland-global-shortcuts-v1"
             true)

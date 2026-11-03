@@ -130,6 +130,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   that check for 0.57.0 take its options, which Hypoland reads (see Added). The port is not complete: 0.57.0's
   workspace refactor and aquamarine 0.15 are not in yet, `docs/port-0.57.0.md` lists every commit of it with its
   decision.
+- Built against the libraries of Hyprland 0.57.0 as Arch ships it: the package needs hyprgraphics 0.6.0 (a new
+  soname, so a Hypoland built before it does not start once hyprgraphics is updated) and hyprutils 0.14.3, and the
+  Hyprland protocols are those of hyprland-protocols 0.8.0, which the build takes from the system as Hyprland 0.57.0
+  does instead of a git submodule.
 - `start-hypoland` no longer accepts `--no-nixgl` and `--force-nixgl`, the options of Hyprland's `start-hyprland`
   for Nix, which Hypoland removed. Like any option it does not know, they are ignored.
 

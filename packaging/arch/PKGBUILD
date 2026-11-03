@@ -23,9 +23,9 @@ depends=(
   glib2
   glibc
   hyprcursor
-  hyprgraphics
+  'hyprgraphics>=0.6.0'
   hyprlang
-  hyprutils
+  'hyprutils>=0.14.3'
   hyprwire
   lcms2
   libcanberra
@@ -66,12 +66,12 @@ depends=(
   xcb-util-wm
   xorg-xwayland
 )
-# hyprland-protocols is a git submodule
 makedepends=(
   binutils
   cmake
   git
   hwdata
+  'hyprland-protocols>=0.8.0'
   hyprwayland-scanner
   xorgproto
 )

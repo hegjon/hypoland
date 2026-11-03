@@ -134,9 +134,13 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
     to sRGB in `applyMonitorRuleSoft()`. ICC profiles still apply their VCGT gamma ramps through KMS.
 - The config is Lua in this Hyprland version (`~/.config/hypr/hyprland.lua`, Omarchy uses it). With a Lua config
   `hyprctl keyword` answers `unknown request`; use `hyprctl eval "hl.config({...})"`.
-- Both machines have identical hypr* library versions (hyprutils 0.14.2, hyprlang 0.6.8, hyprcursor 0.1.13,
-  hyprgraphics 0.5.1), so a desktop build links cleanly on the X200. Keep them in sync. The system aquamarine
-  is not used.
+- The desktop and the machines have the same hypr* library versions, those of Arch's Hyprland 0.57.0 (hyprutils
+  0.14.3, hyprlang 0.6.8, hyprcursor 0.1.13, hyprgraphics 0.6.0, hyprwire 0.3.1, and hyprland-protocols 0.8.0 to
+  build, a package as in 0.57.0 since 2026-11-03, the submodule before), so a desktop build links cleanly on every
+  machine. Keep them in sync: hyprgraphics 0.6.0 (2026-11-03) changed its soname (`libhyprgraphics.so.4` -> `.so.5`),
+  and a Hypoland built before it does not start after an Omarchy update brings it, nor one built after it on a machine
+  without it. The PKGBUILD and CMake require hyprgraphics 0.6.0, hyprutils 0.14.3 and hyprland-protocols 0.8.0 at least.
+  The system aquamarine is not used.
 - Removed on 2026-09-28: Tracy (submodule and the `USE_TRACY` build options), glaze (the only real use was in
   `start-hypoland`) and Nix support (`flake.nix`, `nix/`, the Nix workflows, nixGL in `start-hypoland`, the `nix`
   flag of `hyprctl version`). The `--no-nixgl` and `--force-nixgl` options of `start-hypoland` were removed on

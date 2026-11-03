@@ -28,6 +28,7 @@ runs:
           hyprcursor \
           hyprgraphics \
           hyprlang \
+          hyprland-protocols \
           hyprutils \
           hyprwayland-scanner \
           hyprwire \
