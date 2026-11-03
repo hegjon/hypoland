@@ -221,6 +221,19 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   the time (XPS 10.2 -> 3.2 ms, X200 9.9 -> 4.7), kitty on the Chromebook at 22.5 instead of 15.6 fps. Behind stock: the
   toast above (T550, samsung-i5, lianli, the Chromebook, the T460s), the Chromebook's focus change under `dev` (5.1 against
   8.1 ms, the night before too), the Mac mini's resize redraw (the alpha bounds) and the XPS's menu (bimodal).
+  Before 0.3.0 (2026-11-02 evening to 11-03 morning, `test-results/ab-20261102-rc/` and `test-results/night-20261102-rc/`,
+  `summary.txt` in each): r919 against the release candidate in alternating fresh sessions on seven machines, 8 to 10 blocks
+  of each, then the candidate against Hyprland 0.57.0 on six, 15 to 16 blocks of each, and a 13-hour soak on the T490. No
+  regression: against r919 only `launch.closed_ms` changed (85 to 142 ms instead of 3 to 9, foot's contents fade out since
+  84d62b4ad instead of vanishing; against stock, which drops them at once, it is not comparable) and the Galaxy Book's
+  `launch.close_ms` (8.7 -> 11.0 ms, the closing snapshot draws the whole window now; stock 11.4); against stock the same
+  places as with r919 (the toast, the Chromebook's `dev` focus). Hypoland passed every session check, stock failed 2 to
+  55, the Chromebook's two being the viewport rim and the opaque region with a hole fixed here; stock died in five
+  blocks, Hypoland in none. A crash at the end of a session on lianli (no mouse) was found and fixed that evening
+  (b0bd1941a: without a pointer device the seat refused to clear a closed window's pointer focus and kept listening to
+  its surface, which the last frame's render pass held until the renderer went, after the input manager; upstream's
+  too), and none came back in 36 session ends; the soak held its Pss within 0.6 MB over its last eleven hours. The X200
+  and the Mac mini could not be reached that night, the Galaxy Book's UFS storage stopped at 06:33 (rpmh timeouts).
 
 ## Hard constraints
 
