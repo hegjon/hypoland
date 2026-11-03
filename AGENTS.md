@@ -233,7 +233,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   (b0bd1941a: without a pointer device the seat refused to clear a closed window's pointer focus and kept listening to
   its surface, which the last frame's render pass held until the renderer went, after the input manager; upstream's
   too), and none came back in 36 session ends; the soak held its Pss within 0.6 MB over its last eleven hours. The X200
-  and the Mac mini could not be reached that night, the Galaxy Book's UFS storage stopped at 06:33 (rpmh timeouts).
+  and the Mac mini could not be reached that night. The Galaxy Book ran the first candidate against stock, 16 blocks of
+  each, until its UFS storage stopped at 06:33 (rpmh timeouts in the controller's resume, not the GPU); after the user's
+  power cycle the final master passed its session check there (98 of 98).
 
 ## Hard constraints
 
