@@ -65,6 +65,19 @@ Print the version as JSON.
 .TP
 \f[B]\-\-locked\-cmd\f[R] \f[I]COMMAND\f[R]
 Launches a locker on startup via the provided command.
+.SH ENVIRONMENT
+.TP
+\f[B]HYPOLAND_ALPHA_BOUNDS=0\f[R]
+Draw layers with an alpha channel (panels, docks, notification columns)
+whole instead of only the part with visible pixels.
+.TP
+\f[B]HYPOLAND_SHM_TEXTURE=0\f[R]
+Upload windows drawn on the CPU (shm) through Mesa instead of into
+linear buffers the compositor fills itself.
+.TP
+\f[B]HYPOLAND_SHM_ZEROCOPY=0\f[R]
+Copy windows drawn on the CPU instead of showing them straight from the
+program\(aqs memory.
 .SH BUGS
 .TP
 Submit bug reports and request features online at:
