@@ -500,7 +500,11 @@ Tools:
   package elsewhere (Omarchy's repository; installed on the T550, the XPS, lianli, the T460s, the Chromebook, the
   Galaxy Book and the Mac mini that day). `kitty-scroll` is the same in kitty (OpenGL 3.3 as well, the `kitty` package,
   installed on the same seven machines the same day; kitty takes the command as arguments, no `-e`). On the T550 the
-  compositor costs the same with all three GL terminals (5.0%); Ghostty shows 45 frames a second against 60. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
+  compositor costs the same with all three GL terminals (5.0%); Ghostty shows 45 frames a second against 60. `velocitty-scroll`
+  (added 2026-11-03, asked for by the user) is the same in Velocitty (github.com/valvesky/velocitty), a terminal for Omarchy
+  that draws on the CPU into shm buffers like foot but reuses three buffers, so it always takes the zero-copy path; it
+  is not packaged, its release tarball's binary goes to `/usr/local/bin/velocitty` (on macmini-m1 only so far), and the
+  workload is skipped where it is missing. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
   user) scroll a folder of 5000 empty files in Flea (Omarchy's file manager, a Quickshell window) and in Nautilus (GTK
   4, its list view, set for the run if needed) with the Down key held on the uinput keyboard for the whole run
   (`clients/holdkey.py`, root only): the compositor forwards the one press and the client repeats it at the session's

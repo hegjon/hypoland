@@ -58,6 +58,14 @@ workload_kitty_scroll() { # the same in kitty, which draws with OpenGL 3.3 as we
     stop_clients
 }
 
+needs_velocitty_scroll="velocitty"
+workload_velocitty_scroll() { # the same in Velocitty, a terminal for Omarchy that draws on the CPU (shm, like foot); from its release tarball, not packaged
+    client $((SECONDS_PER_RUN + 10)) "exec velocitty -e sh -c 'while true; do ls -la /usr/lib; done'"
+    sleep 4
+    rec velocitty-scroll
+    stop_clients
+}
+
 # A 20 s 720p H.264 clip, encoded once into the user's cache. Decoded in software unless the user's mpv config
 # says otherwise, as Omarchy's does not.
 VIDEO=$USERHOME/.cache/hypoland-bench/video.mp4
