@@ -2,6 +2,7 @@
 #include "State.hpp"
 #include "../helpers/Logger.hpp"
 
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <sys/poll.h>
@@ -70,12 +71,22 @@ void CHyprlandInstance::runHyprlandThread(bool safeMode, bool lockedCrash) {
             int status = 0;
             int ret    = waitpid(m_hlPid, &status, 0);
             if (ret == -1) {
+                if (errno == EINTR)
+                    continue;
+
                 g_logger->log(Hyprutils::CLI::LOG_ERR, "Couldn't waitpid for hyprland: {}", strerror(errno));
                 break;
             }
 
-            if (WIFEXITED(status))
+            if (WIFEXITED(status)) {
+                g_logger->log(Hyprutils::CLI::LOG_DEBUG, "Hypoland exited with code {}", WEXITSTATUS(status));
                 break;
+            }
+
+            if (WIFSIGNALED(status)) {
+                g_logger->log(Hyprutils::CLI::LOG_DEBUG, "Hypoland terminated by signal {}", WTERMSIG(status));
+                break;
+            }
         }
 
         if (write(m_wakeupWrite.get(), "vax", 3) < 0)
