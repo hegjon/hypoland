@@ -209,8 +209,9 @@ ARM_NOTE=
 {
     echo "Hypoland $NEW, based on Hyprland $BASE. Hypoland is a fork of [Hyprland](https://github.com/hyprwm/Hyprland) for old GPUs that only support OpenGL ES 2.0 / OpenGL 2.1, developed and tested on a ThinkPad X200 (GMA 4500MHD) running Omarchy."
     echo
-    # one line per paragraph: GitHub keeps the line breaks of the changelog
-    echo "$SECTION" | sed 's/^### /## /' | awk '
+    # one line per paragraph: GitHub keeps the line breaks of the changelog; the changelog's "Other" section (the web
+    # page, the docs) is left out of the release notes
+    echo "$SECTION" | awk '/^### / { skip = ($0 == "### Other") } !skip' | sed 's/^### /## /' | awk '
         !started && /^$/ { next }
         { started = 1 }
         /^$/ || /^#/ { if (p != "") print p; p = ""; print; next }
