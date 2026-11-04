@@ -1,0 +1,208 @@
+2026-11-03 12:46:03 until 2026-11-04 07:30:00 on t550, user a, hypoland /root/abnight/hypoland-0.3.0-1-x86_64.pkg.tar.zst, hyprland /var/cache/pacman/pkg/hyprland-0.57.0-4-x86_64.pkg.tar.zst /var/cache/pacman/pkg/omarchy-hyprland-titlebars-0.3.0-3-x86_64.pkg.tar.zst 
+2026-11-03 12:46:03 stopped timers: archlinux-keyring-wkd-sync.timer man-db.timer plocate-updatedb.timer shadow.timer snapper-cleanup.timer systemd-tmpfiles-clean.timer 
+2026-11-03 12:46:10 hypoland up: hypoland 0.3.0-1
+2026-11-03 13:01:08 hypoland round 1: 500 values
+2026-11-03 13:04:47 hypoland check: 69 passed, 0 failed
+2026-11-03 13:04:54 hyprland up: hyprland 0.57.0-4
+2026-11-03 13:04:58 stopped an update check
+2026-11-03 13:19:45 hyprland round 1: 502 values
+2026-11-03 13:23:57 hyprland check: 37 passed, 32 failed
+2026-11-03 13:24:05 hyprland up: hyprland 0.57.0-4
+2026-11-03 13:38:56 hyprland round 2: 502 values
+2026-11-03 13:39:03 hypoland up: hypoland 0.3.0-1
+2026-11-03 13:54:00 hypoland round 2: 500 values
+2026-11-03 13:54:05 hypoland up: hypoland 0.3.0-1
+2026-11-03 13:54:10 stopped an update check
+2026-11-03 14:09:03 hypoland round 3: 500 values
+2026-11-03 14:09:09 hyprland up: hyprland 0.57.0-4
+2026-11-03 14:09:13 stopped an update check
+2026-11-03 14:24:01 hyprland round 3: 502 values
+2026-11-03 14:24:07 hyprland up: hyprland 0.57.0-4
+2026-11-03 14:24:12 stopped an update check
+2026-11-03 14:38:58 hyprland round 4: 502 values
+2026-11-03 14:39:05 hypoland up: hypoland 0.3.0-1
+2026-11-03 14:39:11 stopped an update check
+2026-11-03 14:54:04 hypoland round 4: 500 values
+2026-11-03 14:54:08 hypoland up: hypoland 0.3.0-1
+2026-11-03 15:09:06 hypoland round 5: 500 values
+2026-11-03 15:09:14 hyprland up: hyprland 0.57.0-4
+2026-11-03 15:09:18 stopped an update check
+2026-11-03 15:24:05 hyprland round 5: 502 values
+2026-11-03 15:24:12 hyprland up: hyprland 0.57.0-4
+2026-11-03 15:24:17 stopped an update check
+2026-11-03 15:39:03 hyprland round 6: 502 values
+2026-11-03 15:39:12 hypoland up: hypoland 0.3.0-1
+2026-11-03 15:39:16 stopped an update check
+2026-11-03 15:54:09 hypoland round 6: 500 values
+2026-11-03 15:54:13 hypoland up: hypoland 0.3.0-1
+2026-11-03 16:09:11 hypoland round 7: 500 values
+2026-11-03 16:09:18 hyprland up: hyprland 0.57.0-4
+2026-11-03 16:09:23 stopped an update check
+2026-11-03 16:24:07 hyprland round 7: 502 values
+2026-11-03 16:24:14 hyprland up: hyprland 0.57.0-4
+2026-11-03 16:24:18 stopped an update check
+2026-11-03 16:39:06 hyprland round 8: 502 values
+2026-11-03 16:39:13 hypoland up: hypoland 0.3.0-1
+2026-11-03 16:39:17 stopped an update check
+2026-11-03 16:54:11 hypoland round 8: 500 values
+2026-11-03 16:54:16 hypoland up: hypoland 0.3.0-1
+2026-11-03 16:54:20 stopped an update check
+2026-11-03 17:09:15 hypoland round 9: 500 values
+2026-11-03 17:09:22 hyprland up: hyprland 0.57.0-4
+2026-11-03 17:24:11 hyprland round 9: 502 values
+2026-11-03 17:24:18 hyprland up: hyprland 0.57.0-4
+2026-11-03 17:24:23 stopped an update check
+2026-11-03 17:39:10 hyprland round 10: 502 values
+2026-11-03 17:39:17 hypoland up: hypoland 0.3.0-1
+2026-11-03 17:39:22 stopped an update check
+2026-11-03 17:54:14 hypoland round 10: 500 values
+2026-11-03 17:54:19 hypoland up: hypoland 0.3.0-1
+2026-11-03 18:09:18 hypoland round 11: 500 values
+2026-11-03 18:09:25 hyprland up: hyprland 0.57.0-4
+2026-11-03 18:09:30 stopped an update check
+2026-11-03 18:24:16 hyprland round 11: 502 values
+2026-11-03 18:24:22 hyprland up: hyprland 0.57.0-4
+2026-11-03 18:39:12 hyprland round 12: 502 values
+2026-11-03 18:39:20 hypoland up: hypoland 0.3.0-1
+2026-11-03 18:39:24 stopped an update check
+2026-11-03 18:54:17 hypoland round 12: 500 values
+2026-11-03 18:54:22 hypoland up: hypoland 0.3.0-1
+2026-11-03 19:09:20 hypoland round 13: 500 values
+2026-11-03 19:09:27 hyprland up: hyprland 0.57.0-4
+2026-11-03 19:09:32 stopped an update check
+2026-11-03 19:24:17 hyprland round 13: 502 values
+2026-11-03 19:24:22 hyprland up: hyprland 0.57.0-4
+2026-11-03 19:24:26 stopped an update check
+2026-11-03 19:39:13 hyprland round 14: 502 values
+2026-11-03 19:39:21 hypoland up: hypoland 0.3.0-1
+2026-11-03 19:39:25 stopped an update check
+2026-11-03 19:54:18 hypoland round 14: 500 values
+2026-11-03 19:54:22 hypoland up: hypoland 0.3.0-1
+2026-11-03 20:09:22 hypoland round 15: 500 values
+2026-11-03 20:09:29 hyprland up: hyprland 0.57.0-4
+2026-11-03 20:09:33 stopped an update check
+2026-11-03 20:24:20 hyprland round 15: 502 values
+2026-11-03 20:24:26 hyprland up: hyprland 0.57.0-4
+2026-11-03 20:24:32 stopped an update check
+2026-11-03 20:39:18 hyprland round 16: 502 values
+2026-11-03 20:39:25 hypoland up: hypoland 0.3.0-1
+2026-11-03 20:39:32 stopped an update check
+2026-11-03 20:54:24 hypoland round 16: 500 values
+2026-11-03 20:54:28 hypoland up: hypoland 0.3.0-1
+2026-11-03 21:09:26 hypoland round 17: 500 values
+2026-11-03 21:09:33 hyprland up: hyprland 0.57.0-4
+2026-11-03 21:24:24 hyprland round 17: 502 values
+2026-11-03 21:24:29 hyprland up: hyprland 0.57.0-4
+2026-11-03 21:24:34 stopped an update check
+2026-11-03 21:39:21 hyprland round 18: 502 values
+2026-11-03 21:39:28 hypoland up: hypoland 0.3.0-1
+2026-11-03 21:39:34 stopped an update check
+2026-11-03 21:54:25 hypoland round 18: 500 values
+2026-11-03 21:54:30 hypoland up: hypoland 0.3.0-1
+2026-11-03 21:54:33 stopped an update check
+2026-11-03 22:09:30 hypoland round 19: 500 values
+2026-11-03 22:09:37 hyprland up: hyprland 0.57.0-4
+2026-11-03 22:09:42 stopped an update check
+2026-11-03 22:24:28 hyprland round 19: 502 values
+2026-11-03 22:24:33 hyprland up: hyprland 0.57.0-4
+2026-11-03 22:39:24 hyprland round 20: 502 values
+2026-11-03 22:39:31 hypoland up: hypoland 0.3.0-1
+2026-11-03 22:39:36 stopped an update check
+2026-11-03 22:54:30 hypoland round 20: 500 values
+2026-11-03 22:54:34 hypoland up: hypoland 0.3.0-1
+2026-11-03 22:54:41 stopped an update check
+2026-11-03 23:09:34 hypoland round 21: 500 values
+2026-11-03 23:09:41 hyprland up: hyprland 0.57.0-4
+2026-11-03 23:09:45 stopped an update check
+2026-11-03 23:24:30 hyprland round 21: 502 values
+2026-11-03 23:24:37 hyprland up: hyprland 0.57.0-4
+2026-11-03 23:39:27 hyprland round 22: 502 values
+2026-11-03 23:39:34 hypoland up: hypoland 0.3.0-1
+2026-11-03 23:39:39 stopped an update check
+2026-11-03 23:54:33 hypoland round 22: 500 values
+2026-11-03 23:54:38 hypoland up: hypoland 0.3.0-1
+2026-11-03 23:54:44 stopped an update check
+2026-11-04 00:09:35 hypoland round 23: 500 values
+2026-11-04 00:09:42 hyprland up: hyprland 0.57.0-4
+2026-11-04 00:09:48 stopped an update check
+2026-11-04 00:24:33 hyprland round 23: 502 values
+2026-11-04 00:24:38 hyprland up: hyprland 0.57.0-4
+2026-11-04 00:24:43 stopped an update check
+2026-11-04 00:39:29 hyprland round 24: 502 values
+2026-11-04 00:39:36 hypoland up: hypoland 0.3.0-1
+2026-11-04 00:39:42 stopped an update check
+2026-11-04 00:54:34 hypoland round 24: 500 values
+2026-11-04 00:54:39 hypoland up: hypoland 0.3.0-1
+2026-11-04 00:54:42 stopped an update check
+2026-11-04 01:09:37 hypoland round 25: 500 values
+2026-11-04 01:09:44 hyprland up: hyprland 0.57.0-4
+2026-11-04 01:24:36 hyprland round 25: 502 values
+2026-11-04 01:24:44 hyprland up: hyprland 0.57.0-4
+2026-11-04 01:39:35 hyprland round 26: 502 values
+2026-11-04 01:39:42 hypoland up: hypoland 0.3.0-1
+2026-11-04 01:39:46 stopped an update check
+2026-11-04 01:54:41 hypoland round 26: 500 values
+2026-11-04 01:54:45 hypoland up: hypoland 0.3.0-1
+2026-11-04 01:54:50 stopped an update check
+2026-11-04 02:09:43 hypoland round 27: 500 values
+2026-11-04 02:09:50 hyprland up: hyprland 0.57.0-4
+2026-11-04 02:09:55 stopped an update check
+2026-11-04 02:24:40 hyprland round 27: 502 values
+2026-11-04 02:24:45 hyprland up: hyprland 0.57.0-4
+2026-11-04 02:24:50 stopped an update check
+2026-11-04 02:39:37 hyprland round 28: 502 values
+2026-11-04 02:39:46 hypoland up: hypoland 0.3.0-1
+2026-11-04 02:39:49 stopped an update check
+2026-11-04 02:54:43 hypoland round 28: 500 values
+2026-11-04 02:54:48 hypoland up: hypoland 0.3.0-1
+2026-11-04 02:54:54 stopped an update check
+2026-11-04 03:09:46 hypoland round 29: 500 values
+2026-11-04 03:09:54 hyprland up: hyprland 0.57.0-4
+2026-11-04 03:09:59 stopped an update check
+2026-11-04 03:24:44 hyprland round 29: 502 values
+2026-11-04 03:24:51 hyprland up: hyprland 0.57.0-4
+2026-11-04 03:39:40 hyprland round 30: 502 values
+2026-11-04 03:39:49 hypoland up: hypoland 0.3.0-1
+2026-11-04 03:39:54 stopped an update check
+2026-11-04 03:54:47 hypoland round 30: 500 values
+2026-11-04 03:54:52 hypoland up: hypoland 0.3.0-1
+2026-11-04 04:09:49 hypoland round 31: 500 values
+2026-11-04 04:09:57 hyprland up: hyprland 0.57.0-4
+2026-11-04 04:10:03 stopped an update check
+2026-11-04 04:24:49 hyprland round 31: 502 values
+2026-11-04 04:24:54 hyprland up: hyprland 0.57.0-4
+2026-11-04 04:24:58 stopped an update check
+2026-11-04 04:39:47 hyprland round 32: 502 values
+2026-11-04 04:39:54 hypoland up: hypoland 0.3.0-1
+2026-11-04 04:39:58 stopped an update check
+2026-11-04 04:54:53 hypoland round 32: 500 values
+2026-11-04 04:54:58 hypoland up: hypoland 0.3.0-1
+2026-11-04 04:55:03 stopped an update check
+2026-11-04 05:09:57 hypoland round 33: 500 values
+2026-11-04 05:10:04 hyprland up: hyprland 0.57.0-4
+2026-11-04 05:10:08 stopped an update check
+2026-11-04 05:24:55 hyprland round 33: 502 values
+2026-11-04 05:25:00 hyprland up: hyprland 0.57.0-4
+2026-11-04 05:39:52 hyprland round 34: 502 values
+2026-11-04 05:39:59 hypoland up: hypoland 0.3.0-1
+2026-11-04 05:54:58 hypoland round 34: 500 values
+2026-11-04 05:55:02 hypoland up: hypoland 0.3.0-1
+2026-11-04 05:55:08 stopped an update check
+2026-11-04 06:10:02 hypoland round 35: 500 values
+2026-11-04 06:10:09 hyprland up: hyprland 0.57.0-4
+2026-11-04 06:10:13 stopped an update check
+2026-11-04 06:25:00 hyprland round 35: 502 values
+2026-11-04 06:25:05 hyprland up: hyprland 0.57.0-4
+2026-11-04 06:39:57 hyprland round 36: 502 values
+2026-11-04 06:40:05 hypoland up: hypoland 0.3.0-1
+2026-11-04 06:55:05 hypoland round 36: 500 values
+2026-11-04 06:55:10 hypoland up: hypoland 0.3.0-1
+2026-11-04 07:10:08 hypoland round 37: 500 values
+2026-11-04 07:10:15 hyprland up: hyprland 0.57.0-4
+2026-11-04 07:25:05 hyprland round 37: 502 values
+2026-11-04 07:25:05 no time for round 38
+2026-11-04 07:25:05 back to hypoland
+2026-11-04 07:25:13 hypoland up: hypoland 0.3.0-1
+2026-11-04 07:25:18 stopped an update check
+2026-11-04 07:26:13 started the timers again
+2026-11-04 07:26:13 done

@@ -81,8 +81,8 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   and `hardware_details`, and the events `window.update_state`, `window.minimize`, `workspace.created_early` and
   `config.unload`. `docs/port-0.57.0.md` lists every upstream commit with its decision (cherry-pick, by
   hand, ignore, later): about 110 wait behind the workspace refactor (e9e2f64cc, 163 files), which with aquamarine 0.15
-  is the real remaining port. The 2026-10-27 baseline compares against Hyprland 0.56.2, the 2026-10-30 one and the lab
-  page (since 2026-11-02) against 0.57.0; the user wants 0.3.0 itself compared with 0.57.0 after its release. A config is tested headless as hyprtester starts the compositor
+  is the real remaining port. The 2026-10-27 baseline compares against Hyprland 0.56.2, the 2026-10-30 one against 0.57.0,
+  and so does the 2026-11-03 one, the released 0.3.0, which the lab page takes its numbers from since 2026-11-04. A config is tested headless as hyprtester starts the compositor
   (`HYPRLAND_HEADLESS_ONLY=1 ./build/hypoland --config <file>`, then `hyprctl configerrors`).
 - `CHANGELOG.md` lists Hypoland's changes per release. Add user-visible changes and measured speedups to
   "Unreleased" with the commit that makes them, and move them under the version when releasing.
@@ -240,6 +240,12 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   and the Mac mini could not be reached that night. The Galaxy Book ran the first candidate against stock, 16 blocks of
   each, until its UFS storage stopped at 06:33 (rpmh timeouts in the controller's resume, not the GPU); after the user's
   power cycle the final master passed its session check there (98 of 98).
+  The released 0.3.0 against Hyprland 0.57.0-4 is `docs/baseline/20261103-all-machines-0.3.0-vs-hyprland-0.57.0/` (2026-11-03
+  12:46 to 11-04 07:30, ten machines with samsung-i5 and the T490, 31 to 37 fresh sessions of each, the Galaxy Book 2:
+  its GPU hung at a Chromium start in its third Hypoland block); the lab page (`scripts/web/lab.py`) uses it. Hypoland
+  less compositor CPU in nearly every workload on every machine, 40 to 43 MiB Pss at the start against 113 to 116 (148),
+  every session check passed (stock failed 2 to 56); no compositor died. Behind stock: the toast as before, the X200's
+  `resize` (more frames) and the Galaxy Book's workspace switch, menu and Chromium window from its two sessions.
 
 ## Hard constraints
 

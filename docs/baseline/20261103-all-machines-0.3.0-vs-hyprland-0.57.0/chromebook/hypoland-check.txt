@@ -1,0 +1,107 @@
+machine: chromebook, 7.2.15-2-omarchy, 2 cores, 3815 MiB
+compositor: /usr/bin/hypoland, pid 3430, user a, instance a36c8cd9a1c7ae0d0255049a8e556820782da0a3_1793702787_750021199
+clocksource: tsc
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.57.0 built from branch master at commit a36c8cd9a1c7ae0d0255049a8e556820782da0a3 clean
+INFO  Hypoland 0.3.0, based on Hyprland 0.57.0
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output eDP-1: 1366x768@59.97300
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+PASS  the screen shows the window (84% of the scanned-out buffer is the test color)
+PASS  test window drawn (84% of the screen is the test color)
+PASS  render whole: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render whole: the screen is what a full repaint shows (kmsgrab)
+PASS  render screenshot: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render screenshot again: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render rectangles: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render rectangles: the screen is what a full repaint shows (kmsgrab)
+PASS  render new buffers: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render new buffers: the screen is what a full repaint shows (kmsgrab)
+PASS  render subsurface: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render subsurface: the screen is what a full repaint shows (kmsgrab)
+PASS  render subsurface moved: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render subsurface moved: the screen is what a full repaint shows (kmsgrab)
+PASS  render subsurface closed: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render subsurface closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render viewport: the screen is what a full repaint shows (kmsgrab)
+PASS  render viewport rectangles: the screen is what a full repaint shows (kmsgrab)
+PASS  render viewports closed: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render viewports closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render popup: the popup shows every pixel it drew (kmsgrab)
+PASS  render popup: the screen is what a full repaint shows (kmsgrab)
+PASS  render popup moved: the screen is what a full repaint shows (kmsgrab)
+PASS  render popup closed: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render popup closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer: the layer shows every pixel it drew (kmsgrab)
+PASS  render layer: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer drawn: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer settled: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer popup: the layer's popup shows every pixel it drew (kmsgrab)
+PASS  render layer popup: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer popup closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer moved: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer shrunk: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render floating: hypoland-render-b shows every pixel it drew (kmsgrab)
+PASS  render floating: the screen is what a full repaint shows (kmsgrab)
+PASS  render moved: the screen is what a full repaint shows (kmsgrab)
+PASS  render resized: hypoland-render-b shows every pixel it drew (kmsgrab)
+PASS  render resized: the screen is what a full repaint shows (kmsgrab)
+PASS  render retitled: the screen is what a full repaint shows (kmsgrab)
+PASS  render opaque region: hypoland-render-b shows every pixel it drew (kmsgrab)
+PASS  render opaque region: the screen is what a full repaint shows (kmsgrab)
+PASS  render opaque region shrunk: hypoland-render-b shows every pixel it drew (kmsgrab)
+PASS  render opaque region shrunk: the screen is what a full repaint shows (kmsgrab)
+PASS  render shrunk: the screen is what a full repaint shows (kmsgrab)
+PASS  render closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render grouped: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render grouped: the screen is what a full repaint shows (kmsgrab)
+PASS  render group added: hypoland-render-c shows every pixel it drew (kmsgrab)
+PASS  render group added: the screen is what a full repaint shows (kmsgrab)
+PASS  render group switched: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render group switched: the screen is what a full repaint shows (kmsgrab)
+PASS  render group switched back: hypoland-render-c shows every pixel it drew (kmsgrab)
+PASS  render group closed: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render group closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render ungrouped: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render ungrouped: the screen is what a full repaint shows (kmsgrab)
+PASS  render scratchpad stored: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render scratchpad stored: the screen is what a full repaint shows (kmsgrab)
+PASS  render scratchpad: hypoland-render-d shows every pixel it drew (kmsgrab)
+PASS  render scratchpad: the screen is what a full repaint shows (kmsgrab)
+PASS  render scratchpad rectangles: hypoland-render-d shows every pixel it drew (kmsgrab)
+PASS  render scratchpad rectangles: the screen is what a full repaint shows (kmsgrab)
+PASS  render scratchpad hidden: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render scratchpad hidden: the screen is what a full repaint shows (kmsgrab)
+PASS  render fullscreen: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render fullscreen: the screen is what a full repaint shows (kmsgrab)
+PASS  render fullscreen left: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render fullscreen left: the screen is what a full repaint shows (kmsgrab)
+PASS  Chromium draws its page (80% of the screen is the test color, after 1 s)
+PASS  GTK 3 window drawn (86% of the screen is the test color, after 1 s)
+PASS  GTK 3 window at 57 fps (renderer cairo)
+PASS  GTK 4 window drawn (86% of the screen is the test color, after 1 s)
+PASS  GTK 4 window at 58 fps (renderer vulkan)
+PASS  GTK 3 (Xwayland) window drawn (85% of the screen is the test color, after 1 s)
+PASS  GTK 3 (Xwayland) window at 57 fps (renderer cairo)
+PASS  Qt Quick window drawn (85% of the screen is the test color, after 1 s)
+PASS  Qt Quick window at 60 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (86% of the screen is the test color, after 1 s)
+PASS  Qt Quick (software) window at 60 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (86% of the screen is the test color, after 1 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 60 fps
+PASS  X11 client through Xwayland (glxgears) at 60 fps
+INFO  compositor memory: Rss: 88 MiB, Pss: 50 MiB, Anonymous: 23 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+PASS  no core dumps
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.pPQEcO on chromebook
+RESULT: PASS
