@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hypoland: terminals</title>
-<meta name="description" content="foot, Alacritty, Ghostty and kitty scrolling under Hypoland and under Hyprland 0.57.0 on ten machines: the compositor's CPU, its frames, the GPU and the terminal's own CPU.">
+<meta name="description" content="foot, Alacritty, Ghostty and kitty scrolling under Hypoland and under Hyprland 0.57.0 on ten machines: the compositor's CPU, its frames and the GPU.">
 <meta name="theme-color" content="#efe6d2">
 <meta property="og:site_name" content="Hypoland">
 <meta property="og:title" content="Hypoland: terminals">
@@ -29,7 +29,6 @@
     <li><a href="#m2">3</a></li>
     <li><a href="#m3">4</a></li>
     <li><a href="#m4">5</a></li>
-    <li><a href="#m5">6</a></li>
   </ul>
   <div class="right">
     <span class="opt">terminals</span>
@@ -149,28 +148,6 @@
         </tbody>
       </table></div>
       <p class="note">The i915 busy counter: the terminal's drawing, the compositor's and Mesa's copies together. The iris machines only: radeon and msm have no such counter, and on the crocus ones it reads next to nothing for a foot window the GPU samples in place, whatever it costs.</p>
-    </div>
-  </section>
-
-  <section class="win full" id="m5" aria-labelledby="t-m5">
-    <h2 class="title" id="t-m5">The terminal&#x27;s own CPU</h2>
-    <div class="body">
-      <div class="scroll"><table>
-        <thead><tr><th>Hypoland / Hyprland 0.57.0</th><th>foot</th><th>Alacritty</th><th>Ghostty</th><th>kitty</th></tr></thead>
-        <tbody>
-          <tr><td>Lenovo ThinkPad X200</td><td>108.7% / 107.4%</td><td>113.2% / 112.9%</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Desktop, AMD A8-6600K APU</td><td>130.6% / 129.6%</td><td>133.6% / 134.2%</td><td>154.2% / 150.4%</td><td>157.5% / 158.0%</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td>131.3% / 130.2%</td><td>138.4% / 135.1%</td><td>&ndash;</td><td>146.9% / 145.4%</td></tr>
-          <tr><td>Apple Mac mini Late 2014</td><td>133.9% / 133.8%</td><td>141.3% / 141.7%</td><td>159.4% / 155.4%</td><td>153.8% / 155.6%</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td>109.0% / 105.9%</td><td>111.7% / 111.1%</td><td>&ndash;</td><td>116.5% / 116.0%</td></tr>
-          <tr><td>Lenovo ThinkPad T550</td><td>134.3% / 135.2%</td><td>135.6% / 136.1%</td><td>142.1% / 141.2%</td><td>143.0% / 143.6%</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td>144.7% / 139.3%</td><td>138.2% / 137.1%</td><td>139.7% / 136.7%</td><td>150.1% / 151.8%</td></tr>
-          <tr><td>Lenovo ThinkPad T460s</td><td>133.9% / 133.6%</td><td>136.7% / 137.5%</td><td>145.9% / 144.6%</td><td>146.5% / 146.9%</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td>129.6% / 128.8%</td><td>134.7% / 134.0%</td><td>148.0% / 149.0%</td><td>146.0% / 146.8%</td></tr>
-          <tr><td>Samsung Galaxy Book4 Edge 14&quot; <span class="opt">(2 sessions)</span></td><td>145.6% / 145.4%</td><td>129.3% / 129.3%</td><td>134.1% / 132.4%</td><td>133.2% / 134.3%</td></tr>
-        </tbody>
-      </table></div>
-      <p class="note">The terminal and the shell loop it runs, in percent of one core. Not coloured: the loop prints as fast as the terminal takes its output, so a higher figure is more throughput as much as more cost.</p>
     </div>
   </section>
 

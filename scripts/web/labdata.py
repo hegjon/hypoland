@@ -53,7 +53,6 @@ def fmt(x, unit):
 
 def cell(h, s, unit, lower_better):
     if h is None or s is None: return "<td>&ndash;</td>"
-    if lower_better is None: return f"<td>{fmt(h, unit)} / {fmt(s, unit)}</td>"  # a figure that is neither better nor worse
     better = (h <= s * 0.95) if lower_better else (h >= s * 1.05)
     worse = (h >= s * 1.05) if lower_better else (h <= s * 0.95)
     cls = ' class="yes"' if better else (' class="no"' if worse else "")
