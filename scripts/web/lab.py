@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # Writes web/lab.html, the page about the test machines: the hardware table (the facts below), and every machine's
-# numbers against stock Hyprland from the regression baseline (docs/baseline/20261030-all-machines-r871-vs-hyprland-0.57.0,
-# values.txt and raw.txt per machine and compositor; the 0.56.2 one of 2026-10-27 before 2026-11-02), so no number on
+# numbers against stock Hyprland from the baseline (docs/baseline/20261103-all-machines-0.3.0-vs-hyprland-0.57.0, values.txt
+# and raw.txt per machine and compositor; the r871 one of 2026-10-30 before 2026-11-04, the 0.56.2 one of 2026-10-27
+# before 2026-11-02), so no number on
 # the page is typed by hand. Run it again after a new baseline, from anywhere: scripts/web/lab.py
 import html, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BASELINE = "docs/baseline/20261030-all-machines-r871-vs-hyprland-0.57.0"
+BASELINE = "docs/baseline/20261103-all-machines-0.3.0-vs-hyprland-0.57.0"
 HYPRLAND = "0.57.0"
 OUT = os.path.join(ROOT, "web", "lab.html")
 
@@ -25,13 +26,13 @@ MACHINES = [
     dict(alias="t460s", name="Lenovo ThinkPad T460s", year=2016, cpu="Core i7-6600U, 4 threads", gpu="Intel HD Graphics 520 (Skylake)",
          driver="iris, GLES 3.2", screen="1920x1080 at scale 1.5", ram="20 GB", role="The fractional scale, and the only Skylake: its scanout buffers are render compressed.", baseline=True),
     dict(alias="t490", name="Lenovo ThinkPad T490", year=2019, cpu="Core i5-8265U, 8 threads", gpu="Intel UHD Graphics 620 (Whiskey Lake)",
-         driver="iris, GLES 3.2", screen="1920x1080", ram="8 GB", role="Joined on 2026-10-30, the newest Intel GPU of the lab; no baseline yet.", baseline=False),
+         driver="iris, GLES 3.2", screen="1920x1080", ram="8 GB", role="Joined on 2026-10-30, the newest Intel GPU of the lab.", baseline=True),
     dict(alias="lianli", name="Desktop, AMD A8-6600K APU", year=2013, cpu="A8-6600K, 4 cores", gpu="AMD Radeon HD 8570D (TeraScale 3)",
          driver="r600, GLES 3.1", screen="1920x1200", ram="8 GB", role="The AMD machine: the r600 driver with legacy modesetting.", baseline=True),
     dict(alias="galaxybook", name="Samsung Galaxy Book4 Edge 14\"", year=2024, cpu="Snapdragon X Elite, 12 cores, aarch64", gpu="Qualcomm Adreno X1-85",
          driver="freedreno, GLES 3.2", screen="2880x1800 at scale 2, 120 Hz", ram="16 GB", role="The aarch64 machine, with its own package build; 120 Hz.", baseline=True),
     dict(alias="samsung-i5", name="Samsung Series 7 Ultra (NP730U3E)", year=2013, cpu="Core i5-3337U, 4 threads", gpu="Intel HD Graphics 4000 (Ivy Bridge)",
-         driver="crocus, GLES 3.0", screen="1920x1080", ram="4 GB", role="Joined on 2026-10-31, Ivy Bridge: the crocus generation between Bay Trail and Haswell; no baseline yet.", baseline=False),
+         driver="crocus, GLES 3.0", screen="1920x1080", ram="4 GB", role="Joined on 2026-10-31, Ivy Bridge: the crocus generation between Bay Trail and Haswell.", baseline=True),
 ]
 # both tables list the machines by year, the oldest first (sorted is stable: same-year machines keep the order above)
 MACHINES.sort(key=lambda m: m["year"])
@@ -88,7 +89,13 @@ for m in MACHINES:
                     for k, _, unit, lower, sc in METRICS)
     rows_num.append(f"          <tr><td>{E(m['name'])}</td>{cells}</tr>")
 heads = "".join(f"<th>{E(label)}</th>" for _, label, _, _, _ in METRICS)
-smin = min(min(v) for v in sessions.values()); smax = max(max(v) for v in sessions.values())
+# a machine with fewer sessions than this (the Galaxy Book, whose GPU hung early in the night) is named in the note instead
+FEW = 10
+full = [v for v in sessions.values() if min(v) >= FEW]
+smin = min(min(v) for v in full); smax = max(max(v) for v in full)
+few = [m for m in MACHINES if m["alias"] in sessions and min(sessions[m["alias"]]) < FEW]
+FEW_NOTE = "".join(f" {E(m['name'])}: {min(sessions[m['alias']])} sessions of each only, its GPU hung early in the night (a kernel"
+                   f" <code>msm</code> hang at a Chromium start, the third there), so its numbers are less sure." for m in few)
 
 page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -108,7 +115,6 @@ page = f"""<!DOCTYPE html>
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://hypoland.org/lab.html">
-<meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 <link rel="stylesheet" href="style.css">
@@ -164,7 +170,7 @@ page = f"""<!DOCTYPE html>
       </table></div>
       <p class="note">
         Compositor CPU in percent of one core, medians of {smin} to {smax} fresh sessions of each compositor per machine,
-        alternating through the night of 2026-10-30 to 31 (Hypoland r871 against Hyprland {HYPRLAND}-2). Green where
+        alternating from 2026-11-03 12:46 to 11-04 07:30 (Hypoland 0.3.0 against Hyprland {HYPRLAND}-4).{FEW_NOTE} Green where
         Hypoland is at least 5% better, red where it is at least 5% worse. On the X200, Hyprland ran with Omarchy's
         GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), since it does
         not start there otherwise. Hyprland ran with <code>quirks:skip_non_kms_dmabuf_formats = false</code>,
