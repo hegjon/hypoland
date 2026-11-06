@@ -1808,10 +1808,8 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit, std::optiona
     if (!*PDAMAGEBLINK)
         damageBlinkCleanup = 0;
 
-    if (*PDEBUGOVERLAY == 1) {
+    if (*PDEBUGOVERLAY == 1)
         renderStart = std::chrono::high_resolution_clock::now();
-        Debug::overlay()->frameData(pMonitor);
-    }
 
     if (!g_pCompositor->m_sessionActive)
         return;
@@ -1841,6 +1839,9 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit, std::optiona
     // commit while a pageflip was in flight, so pending damage must keep the frame alive.
     if (!pMonitor->m_output->needsFrame && pMonitor->m_forceFullFrames == 0 && !pMonitor->m_damage.hasChanged())
         return;
+
+    if (*PDEBUGOVERLAY == 1)
+        Debug::overlay()->frameData(pMonitor);
 
     // tearing and DS first
     bool       shouldTear              = pMonitor->updateTearing();
