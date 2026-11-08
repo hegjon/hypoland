@@ -1710,8 +1710,13 @@ void IHyprRenderer::beginBackdropScope(SP<SBackdropScope> scope) {
             const auto savedBlend       = backend && backend->blendEnabled();
 
             {
-                auto guard                      = bindTempFB(backdrop);
-                m_renderData.damage             = scope->damage;
+                auto    guard = bindTempFB(backdrop);
+
+                CRegion copyDamage = scope->damage.copy();
+                expandBlurDamage(copyDamage);
+                copyDamage.intersect(CBox{{}, m_renderData.pMonitor->m_transformedSize});
+
+                m_renderData.damage             = copyDamage;
                 m_renderData.renderModif        = {};
                 m_renderData.useNearestNeighbor = true;
                 blend(false);
