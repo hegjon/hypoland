@@ -482,12 +482,22 @@ void CScrollingFullscreenHandler::syncFullscreenTargets() {
         }
 
         const auto TARGET_FS_MODES = getFullscreenModes(TARGET);
+        const auto TDATA           = m_scrollingAlgorithm->dataFor(TARGET, true);
 
-        if (!isFullscreen(TARGET, std::nullopt, std::nullopt) && TARGET_FS_MODES.client == FSMODE_NONE) {
-            const auto NEXT = std::next(it);
-            removeFsTarget(TARGET, true);
-            it = NEXT;
-            continue;
+        if (!isFullscreen(TARGET, std::nullopt, std::nullopt)) {
+            if (TARGET_FS_MODES.client == FSMODE_NONE) {
+                const auto NEXT = std::next(it);
+                removeFsTarget(TARGET, true);
+                it = NEXT;
+                continue;
+            }
+            // If target is no longer intenal FS but still client FS, restore its column width
+            if (it->second.restoreColumnWidth.has_value()) {
+                if (TDATA->column)
+                    TDATA->column->setColumnWidth(it->second.restoreColumnWidth.value());
+                it->second.restoreColumnWidth = std::nullopt;
+                continue;
+            }
         }
 
         // This might happen if the target was moved to another col, so we need to unFS it properly
