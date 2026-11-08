@@ -64,6 +64,7 @@ namespace Desktop::View {
 
         WP<CLayerShellResource>                                   m_layerSurface;
         bool                                                      shouldBlur() const;
+        bool                                                      isHiddenByFullscreen(const PHLMONITOR& monitor) const;
 
         LayerFlags                                                m_flags = LAYER_FLAG_NONE;
 
