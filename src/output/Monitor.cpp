@@ -2121,6 +2121,15 @@ uint16_t CMonitor::isDSBlocked(bool full) {
             return reasons;
     }
 
+    // the output takes the scanned-out buffer's format, and the renderer has to be able to take over in it: after a scanout of
+    // mpv's 10-bit video (XRGB2101010) the X200 composited a frame with the output still in it and aborted on the incomplete
+    // work buffer, GLES 2 renders into no 10-bit format (2026-11-09, render:direct_scanout auto, master's first auto as well)
+    if (params.success && !g_pHyprRenderer->canRenderToFormat(params.format)) {
+        reasons |= DS_BLOCK_DMA;
+        if (!full)
+            return reasons;
+    }
+
     // no surface can carry an image description, only the output side can need CM
     if (*PNONSHADER != CM_NS_IGNORE && needsCM() && !canNoShaderCM(true)) {
         reasons |= DS_BLOCK_CM; // block SDR that needs CM while non-shader CM isn't available
