@@ -88,6 +88,18 @@ client_running() {
     pid=$(cat "$CLIENTDIR/client.$CLIENTS.pid" 2>/dev/null)
     [[ $pid =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null
 }
+
+# waits until a client's log has a line matching an extended regex, for at most the seconds given; with "running" it gives
+# up as soon as the last client has exited. Returns whether the line came
+await_log() { # log, regex, seconds, [running]
+    local i
+    for ((i = 0; i < $3 * 4; i++)); do
+        grep -a -q -E "$2" "$1" 2>/dev/null && return 0
+        [ "${4:-}" = running ] && ! client_running && break
+        sleep 0.25
+    done
+    grep -a -q -E "$2" "$1" 2>/dev/null
+}
 stop_clients() {
     local pidfile
     local pid

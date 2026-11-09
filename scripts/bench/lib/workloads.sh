@@ -98,12 +98,13 @@ workload_video_window() { video_workload video-window; } # in a tiled window, ev
 # package's data; no sound.
 XONOTIC_ARGS="-benchmark demos/the-big-keybench -nosound +r_glsl 1 +vid_fullscreen 1 +vid_desktopfullscreen 1 \
 +cl_curl_enabled 0 +r_texture_dds_load 1 +cl_playerdetailreduction 0 +developer 1 +cl_allow_uid2name 0"
-xonotic_result() { grep -a -m 1 -E '^[0-9]+ frames [0-9.]+ seconds [0-9.]+ fps' "$1" 2>/dev/null; } # log
+XONOTIC_RESULT='^[0-9]+ frames [0-9.]+ seconds [0-9.]+ fps'
+xonotic_result() { grep -a -m 1 -E "$XONOTIC_RESULT" "$1" 2>/dev/null; } # log
 xonotic_workload() { # workload, effects preset: low, high, ultra or ultimate
     local log=$CLIENTDIR/$1.log home=$CLIENTDIR/$1.home result
     # lianli's r600 (ARUBA) locked up under the ultimate preset every time (2026-11-09, five lockups in three sessions, each
     # reset by the driver); the EliteBook's radeon GPU died after lockups, so above low the radeon driver is left out
-    if [ "$2" != low ] && ls -l /sys/class/drm/card*/device/driver 2>/dev/null | grep -q '/radeon$'; then
+    if [ "$2" != low ] && readlink /sys/class/drm/card*/device/driver 2>/dev/null | grep -q '/radeon$'; then
         echo "    skipped, the effects above low lock up r600 GPUs (radeon)"
         return
     fi
@@ -111,12 +112,7 @@ xonotic_workload() { # workload, effects preset: low, high, ultra or ultimate
     asuser mkdir -p "$home"
     client $((SECONDS_PER_RUN + 300)) "exec xonotic-sdl -userdir '$home' $XONOTIC_ARGS +exec effects-$2.cfg >$log 2>&1"
     # loading takes 5 s on the desktop, the slow machines read 1 GB of data first
-    for _ in $(seq 1 240); do
-        grep -a -q 'CL_SignonReply: 4' "$log" 2>/dev/null && break
-        client_running || break
-        sleep 0.5
-    done
-    if ! grep -a -q 'CL_SignonReply: 4' "$log" 2>/dev/null; then
+    if ! await_log "$log" 'CL_SignonReply: 4' 120 running; then
         echo "    Xonotic did not start its demo: $(grep -a -i -m 1 -E 'error|failed' "$log")"
         value "invalid.$1" 1
         stop_clients
@@ -128,11 +124,8 @@ xonotic_workload() { # workload, effects preset: low, high, ultra or ultimate
     result=$(xonotic_result "$log")
     [ -n "$result" ] && { echo "    the demo ended inside the window"; value "invalid.$1" 1; }
     stop_clients
-    for _ in $(seq 1 40); do
-        result=$(xonotic_result "$log")
-        [ -n "$result" ] && break
-        sleep 0.25
-    done
+    await_log "$log" "$XONOTIC_RESULT" 10
+    result=$(xonotic_result "$log")
     echo "    Xonotic, effects $2: ${result:-no result}"
     echo "    $(grep -a -m 1 -E '^GL_RENDERER:' "$log")"
     asuser rm -rf "$home"
@@ -165,12 +158,7 @@ gravitymark_workload() { # workload, renderer options
     # its libraries are next to it and it reads ../data.zip
     client 600 "cd '${GRAVITYMARK%/*}' && exec env DISPLAY=$(xdisplay) LD_LIBRARY_PATH=. './${GRAVITYMARK##*/}' -vsync 0 -fps 1 \
         -benchmark 1 -close 1 -fullscreen 1 -times '$times' $2 >$log 2>&1"
-    for _ in $(seq 1 240); do
-        grep -a -q -E 'Starting .* Benchmark' "$log" 2>/dev/null && break
-        client_running || break
-        sleep 0.5
-    done
-    if ! grep -a -q -E 'Starting .* Benchmark' "$log" 2>/dev/null; then
+    if ! await_log "$log" 'Starting .* Benchmark' 120 running; then
         # its errors come last (E: lines, an X error); a crash leaves only its progress lines
         echo "    skipped, GravityMark did not start: $(grep -a -v -E '^\s*$' "$log" | tail -n 2 | tr '\n' ' ')$(client_running || echo '(it exited)')"
         stop_clients
@@ -178,10 +166,8 @@ gravitymark_workload() { # workload, renderer options
     fi
     sleep 5
     SECONDS_PER_RUN=155 rec "$1"
-    for _ in $(seq 1 120); do
-        grep -a -q -E 'FPS: [0-9.]+' "$log" 2>/dev/null && break
-        sleep 0.5
-    done
+    # it closes itself after its result (-close 1), so this waits for the line, not for the client
+    await_log "$log" 'FPS: [0-9.]+' 60
     stop_clients
     result=$(sed -n -E 's/.*FPS: ([0-9.]+).*/\1/p' "$log" | head -n 1)
     echo "    GravityMark $2: $(grep -a -m 1 -E ' Device: .*\(' "$log" | sed 's/.*Device: //'), ${result:-no result} fps, score $(sed -n -E 's/.*Score: ([0-9]+).*/\1/p' "$log" | head -n 1)"
