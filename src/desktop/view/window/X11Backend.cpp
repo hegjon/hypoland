@@ -1,6 +1,7 @@
 #include "X11Backend.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <array>
 #include <limits>
 #include <span>
@@ -12,6 +13,7 @@
 #include "../../../protocols/core/Compositor.hpp"
 #include "../../../xwayland/XSurface.hpp"
 #include "../../state/WindowState.hpp"
+#include "../../../state/MonitorState.hpp"
 
 #ifndef NO_XWAYLAND
 #include "../../../xwayland/XWayland.hpp"
@@ -130,7 +132,7 @@ static bool metadataEqual(const SBackendMetadata& lhs, const SBackendMetadata& r
 static bool traitsEqual(const SBackendTraits& lhs, const SBackendTraits& rhs) {
     return lhs.overrideRedirect == rhs.overrideRedirect && lhs.modal == rhs.modal && lhs.hasModalChild == rhs.hasModalChild && lhs.transient == rhs.transient &&
         lhs.wantsFocus == rhs.wantsFocus && lhs.suggestsFloat == rhs.suggestsFloat && lhs.suggestsNoInitialFocus == rhs.suggestsNoInitialFocus &&
-        lhs.preventsFocus == rhs.preventsFocus && lhs.suggestsNoBorder == rhs.suggestsNoBorder && lhs.fullscreen == rhs.fullscreen;
+        lhs.preventsFocus == rhs.preventsFocus && lhs.suggestsNoBorder == rhs.suggestsNoBorder && lhs.fullscreen == rhs.fullscreen && lhs.legacyFullscreen == rhs.legacyFullscreen;
 }
 
 CX11Backend::CX11Backend(SP<CXWaylandSurface> surface) : m_xwaylandSurface(surface) {
@@ -290,10 +292,43 @@ SBackendMetadata CX11Backend::metadata() const {
 }
 
 SBackendTraits CX11Backend::traits() const {
-    if (const auto SURFACE = m_xwaylandSurface.lock())
-        return traitsFrom(SURFACE);
+    if (const auto SURFACE = m_xwaylandSurface.lock()) {
+        auto traits             = traitsFrom(SURFACE);
+        traits.legacyFullscreen = m_traits.legacyFullscreen;
+        return traits;
+    }
 
     return m_traits;
+}
+
+// A game's fullscreen without the window manager: a window of the normal type that asks for no decorations
+// (_MOTIF_WM_HINTS) and is exactly the size of a monitor at its origin, but never sets _NET_WM_STATE_FULLSCREEN. GravityMark
+// makes it override-redirect too, which an X server stacks above everything, panels included; here it stayed a floating
+// window under the layers above windows (Omarchy's bar), which kept its buffer off the screen plane as well. It is made
+// fullscreen when it maps instead (xwayland:legacy_fullscreen). Override-redirect menus, tooltips and drag icons set no
+// Motif hints and do not cover a monitor. Computed in updateTraits() only: traits() is asked many times a frame
+bool CX11Backend::isLegacyFullscreen(const SP<CXWaylandSurface>& surface) const {
+#ifndef NO_XWAYLAND
+    static auto PLEGACY = CConfigValue<Config::INTEGER>("xwayland:legacy_fullscreen");
+
+    if (!*PLEGACY || !surface || !surface->m_undecorated || surface->m_transient || surface->m_parent || surface->m_modal)
+        return false;
+
+    // only a normal window: a splash screen, a menu or a dock that covers the screen stays what it is
+    if (!std::ranges::all_of(surface->m_atoms, [](const auto atom) { return atom == HYPRATOMS["_NET_WM_WINDOW_TYPE_NORMAL"]; }))
+        return false;
+
+    return std::ranges::any_of(State::monitorState()->monitors(), [this, &surface](const auto& monitor) {
+        if (!monitor || !monitor->m_enabled)
+            return false;
+
+        const auto BOX     = clientToLogical(surface->m_geometry, monitor);
+        const auto MONITOR = monitor->logicalBox();
+        return std::abs(BOX.x - MONITOR.x) < 1 && std::abs(BOX.y - MONITOR.y) < 1 && std::abs(BOX.w - MONITOR.w) < 1 && std::abs(BOX.h - MONITOR.h) < 1;
+    });
+#else
+    return false;
+#endif
 }
 
 double CX11Backend::surfaceScale() const {
@@ -442,8 +477,9 @@ void CX11Backend::updateTraits(bool emitEvent) {
     if (!SURFACE)
         return;
 
-    m_geometryHints   = geometryHintsFrom(SURFACE, surfaceScale());
-    const auto TRAITS = traitsFrom(SURFACE);
+    m_geometryHints         = geometryHintsFrom(SURFACE, surfaceScale());
+    auto TRAITS             = traitsFrom(SURFACE);
+    TRAITS.legacyFullscreen = isLegacyFullscreen(SURFACE);
     if (traitsEqual(TRAITS, m_traits))
         return;
 

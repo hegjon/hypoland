@@ -48,6 +48,7 @@ namespace Desktop::View {
       private:
         void                    attach(PHLWINDOWREF window) override;
         PHLMONITOR              preferredMonitor(PHLMONITOR monitor) const;
+        bool                    isLegacyFullscreen(const SP<CXWaylandSurface>& surface) const;
         void                    updateGeometry(bool emitEvent);
         void                    updateMetadata(bool emitEvent);
         void                    updateTraits(bool emitEvent);

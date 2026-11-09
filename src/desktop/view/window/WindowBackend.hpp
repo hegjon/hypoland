@@ -69,6 +69,7 @@ namespace Desktop::View {
         bool preventsFocus : 1          = false;
         bool suggestsNoBorder : 1       = false;
         bool fullscreen : 1             = false;
+        bool legacyFullscreen : 1       = false; // an X11 window that makes itself fullscreen: undecorated and the size of a monitor
     };
 
     struct SBackendStateRequest {

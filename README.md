@@ -52,6 +52,9 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
   a wallpaper show over black.
 - Xwayland starts when the first X11 program connects, not together with the compositor. `DISPLAY` is set from
   the start as before.
+- An X11 window that makes itself fullscreen without asking the window manager (no decorations, exactly the size
+  of a monitor, as games such as GravityMark do) is made fullscreen when it maps, so panels such as Omarchy's bar are
+  hidden over it as over any fullscreen window. `xwayland:legacy_fullscreen = false` switches this off.
 - The logo background and the default wallpapers are removed, `misc:disable_hyprland_logo` and
   `misc:force_default_wallpaper` are ignored.
 - Hypoland does not start Hyprland's welcome app, update news or donation popup

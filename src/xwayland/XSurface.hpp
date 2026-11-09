@@ -85,6 +85,7 @@ class CXWaylandSurface {
     bool                              m_minimized        = false;
     bool                              m_mapped           = false;
     bool                              m_modal            = false;
+    bool                              m_undecorated      = false; // _MOTIF_WM_HINTS asks for no decorations
 
     WP<CXWaylandSurface>              m_parent;
     WP<CXWaylandSurface>              m_self;

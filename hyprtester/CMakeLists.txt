@@ -102,3 +102,8 @@ clientNew("fullscreen-with-monitor" PROTOS "xdg-shell")
 clientNew("activate" PROTOS "xdg-activation-v1" "xdg-shell")
 clientNew("wlr-foreign-toplevel" PROTOS "wlr-foreign-toplevel-management-unstable-v1")
 protocolnew("../protocols" "wlr-foreign-toplevel-management-unstable-v1" true)
+
+# an X11 client, through Xwayland: a window that makes itself fullscreen without the window manager
+pkg_check_modules(xcb_deps REQUIRED IMPORTED_TARGET xcb)
+add_executable(legacy-fullscreen clients/legacy-fullscreen.cpp)
+target_link_libraries(legacy-fullscreen PUBLIC PkgConfig::xcb_deps)

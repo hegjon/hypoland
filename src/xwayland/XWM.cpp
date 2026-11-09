@@ -334,6 +334,17 @@ void CXWM::readProp(SP<CXWaylandSurface> XSURF, uint32_t atom, xcb_get_property_
             XSURF->m_sizeHints->max_width = XSURF->m_sizeHints->max_height = -1;
     };
 
+    // _MOTIF_WM_HINTS is five CARD32s: flags, functions, decorations, input mode, status. Flag 2 says the decorations field
+    // counts, and 0 there asks for no decorations at all: the borderless window of a game's legacy fullscreen
+    auto handleMotifHints = [&]() {
+        XSURF->m_undecorated = false;
+        if (reply->format != 32 || reply->value_len < 3)
+            return;
+
+        const auto* hints    = rc<const uint32_t*>(value);
+        XSURF->m_undecorated = (hints[0] & 2) && hints[2] == 0;
+    };
+
     auto handleWMProtocols = [&]() {
         if (reply->type != XCB_ATOM_ATOM)
             return;
@@ -359,6 +370,8 @@ void CXWM::readProp(SP<CXWaylandSurface> XSURF, uint32_t atom, xcb_get_property_
         handleSizeHints();
     else if (atom == HYPRATOMS["WM_PROTOCOLS"])
         handleWMProtocols();
+    else if (atom == HYPRATOMS["_MOTIF_WM_HINTS"])
+        handleMotifHints();
     else {
         Log::logger->log(Log::TRACE, "[xwm] Unhandled prop {} -> {}", atom, propName);
         return;
@@ -1188,10 +1201,17 @@ void CXWM::onNewResource(SP<CXWaylandSurfaceResource> resource) {
 }
 
 void CXWM::readWindowData(SP<CXWaylandSurface> surf) {
-    const std::array<xcb_atom_t, 9> interestingProps = {
-        XCB_ATOM_WM_CLASS,          XCB_ATOM_WM_NAME,          XCB_ATOM_WM_TRANSIENT_FOR,        HYPRATOMS["WM_HINTS"],
-        HYPRATOMS["_NET_WM_STATE"], HYPRATOMS["_NET_WM_NAME"], HYPRATOMS["_NET_WM_WINDOW_TYPE"], HYPRATOMS["WM_NORMAL_HINTS"],
+    const std::array<xcb_atom_t, 10> interestingProps = {
+        XCB_ATOM_WM_CLASS,
+        XCB_ATOM_WM_NAME,
+        XCB_ATOM_WM_TRANSIENT_FOR,
+        HYPRATOMS["WM_HINTS"],
+        HYPRATOMS["_NET_WM_STATE"],
+        HYPRATOMS["_NET_WM_NAME"],
+        HYPRATOMS["_NET_WM_WINDOW_TYPE"],
+        HYPRATOMS["WM_NORMAL_HINTS"],
         HYPRATOMS["WM_PROTOCOLS"],
+        HYPRATOMS["_MOTIF_WM_HINTS"],
     };
 
     for (size_t i = 0; i < interestingProps.size(); i++) {

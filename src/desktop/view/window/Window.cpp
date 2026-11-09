@@ -1217,7 +1217,7 @@ void CWindow::mapWindow() {
     std::optional<Fullscreen::SFullscreenMode> requestedFSState;
     const auto&                                PENDING_CLIENT_FS = m_fullscreenPolicy->pendingClientRequest();
     requestedClientFSMode                                        = PENDING_CLIENT_FS.mode;
-    if (!requestedClientFSMode.has_value() && m_backend->isX11() && TRAITS.fullscreen)
+    if (!requestedClientFSMode.has_value() && m_backend->isX11() && (TRAITS.fullscreen || TRAITS.legacyFullscreen))
         requestedClientFSMode = Fullscreen::FSMODE_FULLSCREEN;
     MONITORID requestedFSMonitor = PENDING_CLIENT_FS.monitor.value_or(MONITOR_INVALID);
 
