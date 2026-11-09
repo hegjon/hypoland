@@ -116,7 +116,9 @@ eFullscreenRequestResult IFullscreenHandler::requestFullscreen(const SFullscreen
     // ignore if DS is disabled.
     static auto PDIRECTSCANOUT = CConfigValue<Config::INTEGER>("render:direct_scanout");
 
-    if (*PDIRECTSCANOUT == 1 || (*PDIRECTSCANOUT == 2 && WINDOW->getContentType() == NContentType::CONTENT_TYPE_GAME)) {
+    // auto scans out any fullscreen window in Hypoland (CMonitor::isDSBlocked()), not only those that say they are games, so they
+    // all get the scanout formats: without them a game's buffers fail the KMS test every frame and it is held to the refresh rate
+    if (*PDIRECTSCANOUT != 0) {
         auto surf = WINDOW->getSolitaryResource();
         if (surf)
             g_pHyprRenderer->setSurfaceScanoutMode(surf, request.mode != FSMODE_NONE ? MONITOR : nullptr);

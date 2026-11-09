@@ -154,6 +154,20 @@ namespace Monitor {
         bool m_directScanoutIsActive    = false; // for cleanup logic. m_lastScanout.expired() can become true before the DS cleanup if client crashes/exits while DS is active.
         bool m_scanoutNeedsCursorUpdate = false;
 
+        // render:direct_scanout auto: when the scanout candidate's last new buffers became current, to tell a client that draws
+        // faster than the monitor refreshes (dsCandidateOutruns())
+        struct {
+            WP<CWLSurfaceResource>          surface;
+            CHyprSignalListener             commit;
+            WP<IHLBuffer>                   lastBuffer;
+            std::array<Time::steady_tp, 16> times   = {};
+            size_t                          count   = 0;
+            size_t                          next    = 0;
+            bool                            outruns = false;
+            // a format and modifier of the candidate's buffers that failed the KMS test: not tried again every frame under auto
+            std::optional<std::pair<uint32_t, uint64_t>> failedFormat;
+        } m_dsRate;
+
         // for special fade/blur
         PHLANIMVAR<float> m_specialFade;
         PHLANIMVAR<float> m_specialDim;
@@ -211,6 +225,7 @@ namespace Monitor {
             DS_BLOCK_DMA       = (1 << 10),
             DS_BLOCK_FAILED    = (1 << 11),
             DS_BLOCK_CM        = (1 << 12),
+            DS_BLOCK_RATE      = (1 << 13), // render:direct_scanout auto: the candidate commits faster than the monitor refreshes
 
             DS_CHECKS_COUNT = 14,
         };
@@ -285,6 +300,7 @@ namespace Monitor {
         uint16_t     isDSBlocked(bool full = false);
         bool         attemptDirectScanout();
         void         handleDSleave();
+        bool         dsCandidateOutruns(const SP<CWLSurfaceResource>& surface);
         bool         canAttemptDirectScanoutFast() const;
         bool         isMultiGPU();
         void         setCTM(const Mat3x3& ctm);

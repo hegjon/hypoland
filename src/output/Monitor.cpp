@@ -2059,15 +2059,13 @@ uint16_t CMonitor::isDSBlocked(bool full) {
             return reasons;
     }
 
+    // auto: a fullscreen window, of any content type (Hyprland's auto takes only those that say they are games), unless it
+    // draws faster than the monitor refreshes, see dsCandidateOutruns() below
     if (*PDIRECTSCANOUT == 2) {
         const auto FSWINDOW = Fullscreen::controller()->getFullscreenWindow(m_self.lock());
 
         if (!PWORKSPACE || !FSWINDOW || Fullscreen::controller()->getFullscreenModes(FSWINDOW).internal != Fullscreen::FSMODE_FULLSCREEN) {
             reasons |= DS_BLOCK_WINDOWED;
-            if (!full)
-                return reasons;
-        } else if (FSWINDOW->getContentType() != CONTENT_TYPE_GAME) {
-            reasons |= DS_BLOCK_CONTENT;
             if (!full)
                 return reasons;
         }
@@ -2124,10 +2122,67 @@ uint16_t CMonitor::isDSBlocked(bool full) {
     }
 
     // no surface can carry an image description, only the output side can need CM
-    if (*PNONSHADER != CM_NS_IGNORE && needsCM() && !canNoShaderCM(true))
+    if (*PNONSHADER != CM_NS_IGNORE && needsCM() && !canNoShaderCM(true)) {
         reasons |= DS_BLOCK_CM; // block SDR that needs CM while non-shader CM isn't available
+        if (!full)
+            return reasons;
+    }
+
+    if (*PDIRECTSCANOUT == 2 && !m_tearingState.activelyTearing && dsCandidateOutruns(PSURFACE)) {
+        reasons |= DS_BLOCK_RATE;
+        if (!full)
+            return reasons;
+    }
+
+    // auto does not test a buffer the display refused again every frame: each test imports it into KMS, which held a client
+    // to the refresh rate
+    if (*PDIRECTSCANOUT == 2 && params.success && m_dsRate.surface == PSURFACE && m_dsRate.failedFormat == std::pair{params.format, params.modifier})
+        reasons |= DS_BLOCK_FAILED;
 
     return reasons;
+}
+
+// A client that draws faster than the monitor refreshes (a game without vsync) loses by being scanned out: KMS holds the buffer
+// on the screen and the one waiting for the flip, so it runs out of free buffers, and Mesa's EGL then waits for a release with
+// wl_display.sync round trips in a loop (Xonotic on a T550, 2026-11-09: 102908 syncs for 1656 commits against 2085 for 2074
+// composited, the compositor's CPU time doubled, 131 instead of 167 fps); at 134 fps on a 120 Hz Galaxy Book it still cost three
+// times the compositor's CPU per frame. Composited, its buffer is released as soon as the frame that read it is done. So auto
+// composites a candidate whose new buffers come more than 5% faster than the refresh rate, over its last 16, and scans it out
+// again once they come no faster than the refresh rate: a client with vsync never does
+bool CMonitor::dsCandidateOutruns(const SP<CWLSurfaceResource>& surface) {
+    if (m_dsRate.surface != surface) {
+        m_dsRate         = {};
+        m_dsRate.surface = surface;
+        m_dsRate.commit  = surface->m_events.commit.listen([this] {
+            const auto SURFACE = m_dsRate.surface.lock();
+            if (!SURFACE || !SURFACE->m_current.buffer || SURFACE->m_current.buffer.m_buffer == m_dsRate.lastBuffer)
+                return;
+
+            m_dsRate.lastBuffer           = SURFACE->m_current.buffer.m_buffer;
+            m_dsRate.times[m_dsRate.next] = Time::steadyNow();
+            m_dsRate.next                 = (m_dsRate.next + 1) % m_dsRate.times.size();
+            m_dsRate.count                = std::min(m_dsRate.count + 1, m_dsRate.times.size());
+        });
+        return false;
+    }
+
+    if (m_dsRate.count < m_dsRate.times.size() || m_refreshRate <= 0)
+        return m_dsRate.outruns;
+
+    // the oldest of the last 16 to now, so a client that stopped drawing reads as slow
+    const double SECONDS = std::chrono::duration<double>(Time::steadyNow() - m_dsRate.times[m_dsRate.next]).count();
+    const double RATE    = SECONDS > 0 ? m_dsRate.times.size() / SECONDS : 0;
+
+    const bool   OUTRUNS = m_dsRate.outruns ? RATE > m_refreshRate : RATE > m_refreshRate * 1.05;
+    if (OUTRUNS == m_dsRate.outruns)
+        return OUTRUNS;
+
+    // the scanout formats are for the screen's planes, not the best to render into: under them Xonotic took X-tiled buffers
+    // instead of Y-tiled on a T550 and lost 4% of its frames while composited. A client that is composited gets the regular
+    // formats back, and the scanout ones again when it slows down to the refresh rate
+    m_dsRate.outruns = OUTRUNS;
+    g_pHyprRenderer->setSurfaceScanoutMode(surface, OUTRUNS ? nullptr : m_self.lock());
+    return OUTRUNS;
 }
 
 bool CMonitor::attemptDirectScanout() {
@@ -2208,6 +2263,8 @@ bool CMonitor::attemptDirectScanout() {
 
     if (NEEDS_TEST && !m_state.test()) {
         Log::logger->log(Log::TRACE, "attemptDirectScanout: failed basic test");
+        if (m_dsRate.surface == PSURFACE)
+            m_dsRate.failedFormat = std::pair{params.format, params.modifier};
         return false;
     }
 

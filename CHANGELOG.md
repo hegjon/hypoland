@@ -6,12 +6,25 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ## Unreleased
 
+### Faster
+
+- Fullscreen games that are held back by the GPU show more frames: `render:direct_scanout` is `auto` by default, which
+  shows a fullscreen window's buffers on the screen directly while it draws no faster than the monitor refreshes, and
+  draws it as before when it does (scanned out, such a game runs short of buffers and loses frames). Xonotic at its
+  highest effects runs up to 8% faster on Intel GPUs, and the screen shows every frame it draws: 50 instead of 29 a second
+  on a Mac mini 2014, 5.5 instead of 3.1 on the X200, and at its lowest effects 48 instead of 27.
+
 ### Added
 
 - Games in `hypoland-bench`: `xonotic-low` and `xonotic-ultimate` play Xonotic's benchmark demo, `gravitymark-gl` and
   `gravitymark-vk` run GravityMark, all fullscreen without vsync, reporting the game's own frame rate. They come last in
   the default list; the games are optional dependencies.
 - `velocitty-scroll`, the benchmark's terminal scrolling in Velocitty.
+
+### Changed
+
+- `render:direct_scanout = auto` means any fullscreen window that draws no faster than the monitor refreshes; Hyprland's
+  auto only scans out windows that say they are games. `1` (on) and `0` (off) work as before.
 
 ### Fixed
 

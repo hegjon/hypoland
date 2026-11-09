@@ -527,7 +527,7 @@ Tools:
   its OpenGL renderer segfaults on the T550, the XPS and the Galaxy Book, it cannot run on the X200, samsung-i5 or lianli,
   and its Vulkan renderer fails on the Mac mini. One round against Hyprland 0.57.0 (`ab/`, `abtable.py`): Xonotic low 5
   to 9% more frames under Hypoland on Intel (the XPS 19%), ultimate 1 to 8%, GravityMark the same, with less compositor
-  CPU a frame. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
+  CPU a frame. Fullscreen and direct scanout for them are further down (fullscreen games). `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
   user) scroll a folder of 5000 empty files in Flea (Omarchy's file manager, a Quickshell window) and in Nautilus (GTK
   4, its list view, set for the run if needed) with the Down key held on the uinput keyboard for the whole run
   (`clients/holdkey.py`, root only): the compositor forwards the one press and the client repeats it at the session's
@@ -1297,6 +1297,36 @@ Tools:
   r909 against the pool, 4 fresh sessions each) on the Mac mini in 3.35 instead of 7.75 ms, the X200 4.15 / 9.9, the
   Chromebook 9.8 / 14.85, every block; the rest of `launch` and `menu` the same (`test-results/pool-20261101/`). Hyprland
   0.57.0 closed it in 7.7 ms on the Mac mini and 13.7 on the Chromebook in the night of 2026-10-31.
+- Fullscreen games (2026-11-09, `test-results/games-20261109/`, after the user saw Omarchy's bar over the games above).
+  GravityMark's fullscreen is an X11 window it places itself: override-redirect, the monitor's size, `_MOTIF_WM_HINTS`
+  without decorations and no `_NET_WM_STATE_FULLSCREEN`, so it was a floating window under the top layer, the bar over it
+  (stock Hyprland the same). `xwayland:legacy_fullscreen` (on by default) makes such a window fullscreen when it maps: no
+  decorations by its Motif hints, the normal window type, no parent, not transient or modal, and exactly an enabled
+  monitor's box to within a pixel (`CX11Backend::isLegacyFullscreen()`, computed in `updateTraits()` only, since the traits
+  are read every frame; hyprtester `legacyFullscreen` with `hyprtester/clients/legacy-fullscreen.cpp`, an xcb client).
+  0.3.0 against it, one round on the machines: the same frame rates, the compositor's CPU a frame 3 to 11% lower, the bar
+  hidden. `render:direct_scanout` is auto (2) by default since then, with auto redefined: upstream's scans out only windows
+  whose content type is game, which neither game sets; Hypoland's scans out any fullscreen window while it draws no faster
+  than the monitor refreshes (`CMonitor::dsCandidateOutruns()`: the rate of its last 16 buffer changes, outrunning above
+  1.05 times the refresh rate and again at or below it; `RATE`, "client outruns the display", in the blocked reasons of
+  `hyprctl monitors`). Scanned out, a client without vsync that draws faster than the screen runs short of buffers: Mesa's
+  EGL waits for a free one with `wl_display.sync` round trips (102908 syncs for 1656 commits on the T550), the compositor's
+  context switches go up thirty times and its CPU twice, and with `on` (1) Xonotic low drew 131 instead of 170 fps on the
+  T550, 138 instead of 205 on the T460s and 455 instead of 700 on the Galaxy Book. A fullscreen window gets the scanout
+  formats as dmabuf feedback under auto as under on (without them its buffers failed KMS's test every frame, which held
+  Xonotic at 59.7 fps), and one that outruns the display the regular formats back (with the scanout tranche Intel clients
+  take X-tiled over Y-tiled buffers and draw slower: auto lost 4 to 11% at low before, and so did r949 on the T460s and the
+  T490, 2 to 4%); a format KMS refused once is not tried again for that surface (`DS_BLOCK_FAILED`). off against on, 2
+  rounds: GPU-bound games gain, Xonotic ultimate 2 to 8% more frames and none dropped on the way to the screen (shown: Mac
+  mini 28 -> 50, samsung-i5 11.8 -> 18.2, the X200 at low 26.6 -> 51.5), GravityMark at 40% less compositor CPU a frame.
+  off against auto (r950, 3 rounds, six machines, `dsab4/`, `ds3table.py`): low as with off (T550 169.8 / 168.8 fps, lianli
+  165.8 / 167.2, samsung-i5 100.6 / 100.6), ultimate as with on (T550 43.5 -> 46.1, XPS 20.7 -> 22.3, Mac mini 47.7 -> 50.7
+  with 28.8 -> 50.0 shown, samsung-i5 shown 11.6 -> 18.2, the X200 shown 3.1 -> 5.5 and 26.6 -> 48 at low). Open: on the
+  Galaxy Book (r951, 120 Hz, 3 rounds) Xonotic ultimate draws 135 fps composited, but scanned out it gets about 121 buffers
+  a second, below the 126 that count as outrunning, so auto keeps it scanned out at 116 to 126 fps with the compositor at
+  17 to 20% instead of 4% (low and GravityMark the same or better); the threshold has to see a client that scanout itself
+  holds down. And the XPS's compositor takes 0.4 ms a frame more at low under auto (1.69 -> 2.08) with the same frames.
+
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
 | | before 2026-09-27 evening | now |
