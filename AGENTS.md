@@ -504,7 +504,30 @@ Tools:
   (added 2026-11-03, asked for by the user) is the same in Velocitty (github.com/valvesky/velocitty), a terminal for Omarchy
   that draws on the CPU into shm buffers like foot but reuses three buffers, so it always takes the zero-copy path; it
   is not packaged, its release tarball's binary goes to `/usr/local/bin/velocitty` (on macmini-m1 only so far), and the
-  workload is skipped where it is missing. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
+  workload is skipped where it is missing. Games (added 2026-11-09, asked for by the user after Phoronix's Omarchy 4.5
+  comparison of 2026-11-06, where Omarchy showed 3 to 6% fewer frames than Arch with Plasma in GravityMark and in Xonotic
+  above its lowest effects, and the article named the desktop as a possible cause): `xonotic-low` and `xonotic-ultimate`
+  (`xonotic-high` and `xonotic-ultra` too, not in the default list) play Xonotic's benchmark demo `the-big-keybench`
+  fullscreen without vsync at that effects preset, as Phoronix's test does, a native Wayland client (SDL 2 through
+  sdl2-compat takes Wayland, Phoronix's bundled build as well). The demo is 35534 frames, minutes on these machines, so it
+  is stopped after the window, 3 s after loading ends; stopped, the game prints its frames and seconds so far, which
+  make `fps.xonotic-*`. A fresh `-userdir` each time, no sound. `gravitymark-gl` and `gravitymark-vk` run GravityMark
+  (Tellusim's, the AUR package `gravitymark` in `/opt/gravitymark`, x86_64 and aarch64) fullscreen without vsync, an X11
+  client through Xwayland. Its benchmark lasts 167 s whatever the frame rate and it reports nothing when stopped early,
+  so the window is its run (155 s from 5 s after its start, whatever `--seconds` says) and `fps.gravitymark-*` its own
+  mean (`FPS:`); `fps.gravitymark-*.low` is the frame rate at the 99th percentile of its frame times. OpenGL needs 4.5
+  (not the X200), Vulkan not r600: it says so and is skipped. They come last in the default list, about 8 minutes a round, so the A/B nights (`abnight.sh`, which runs the default
+  list) have them, and its `table.py` shows the client's own frame rate as well.
+  The game's frame rate is the throughput figure; `fps.*.screen` is what the compositor showed. Tested nested on the
+  desktop first (2026-11-09, RX 7600, 1920x1080 headless: Xonotic low 1513 fps, ultimate 825, GravityMark OpenGL 155.3
+  fps, Vulkan 151.1), then on nine machines the same day (`test-results/games-20261109/`), which have `xonotic` and the AUR
+  package installed now: not the Chromebook (652 MB free for Xonotic's 1.1 GB) nor macmini-m1. lianli's r600 locked up five
+  times under `xonotic-ultimate` (stock Hyprland 0.57.0 aborted on the GPU reset), so presets above low are skipped on
+  radeon. GravityMark draws 0.5 to 6 fps on the Intel GPUs (about 1 on the XPS at 3200x1800) and 19.6 on the Galaxy Book;
+  its OpenGL renderer segfaults on the T550, the XPS and the Galaxy Book, it cannot run on the X200, samsung-i5 or lianli,
+  and its Vulkan renderer fails on the Mac mini. One round against Hyprland 0.57.0 (`ab/`, `abtable.py`): Xonotic low 5
+  to 9% more frames under Hypoland on Intel (the XPS 19%), ultimate 1 to 8%, GravityMark the same, with less compositor
+  CPU a frame. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
   user) scroll a folder of 5000 empty files in Flea (Omarchy's file manager, a Quickshell window) and in Nautilus (GTK
   4, its list view, set for the run if needed) with the Down key held on the uinput keyboard for the whole run
   (`clients/holdkey.py`, root only): the compositor forwards the one press and the client repeats it at the session's
@@ -1274,7 +1297,6 @@ Tools:
   r909 against the pool, 4 fresh sessions each) on the Mac mini in 3.35 instead of 7.75 ms, the X200 4.15 / 9.9, the
   Chromebook 9.8 / 14.85, every block; the rest of `launch` and `menu` the same (`test-results/pool-20261101/`). Hyprland
   0.57.0 closed it in 7.7 ms on the Mac mini and 13.7 on the Chromebook in the night of 2026-10-31.
-
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
 | | before 2026-09-27 evening | now |

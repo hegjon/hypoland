@@ -136,7 +136,7 @@ while :; do
         fi
         rm -rf /tmp/abnight-measure
         # ABNIGHT_WORKLOADS limits the workloads, for a quick check of the whole thing
-        # a block takes 15 to 18 minutes; one that hangs has a hung compositor (stock Hyprland 0.57.0 on the X200 on
+        # a block takes 15 to 18 minutes, about 8 more with the games of 2026-11-09 (Xonotic, GravityMark); one that hangs has a hung compositor (stock Hyprland 0.57.0 on the X200 on
         # 2026-11-01, blocked on a dead Xwayland), which SDDM cannot stop either: it is killed and the night goes on
         timeout -k 30 2400 bash "$D/bench/measure.sh" --rounds 1 --out /tmp/abnight-measure ${ABNIGHT_WORKLOADS:+--workloads "$ABNIGHT_WORKLOADS"} \
             "${env[@]}" >"$OUT/$v-$r.txt" 2>&1

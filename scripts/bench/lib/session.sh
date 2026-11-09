@@ -82,6 +82,12 @@ client() { # seconds to live, command
         sleep 0.1
     done
 }
+# whether the client started last still runs (its process group's leader, timeout, lives as long as the command)
+client_running() {
+    local pid
+    pid=$(cat "$CLIENTDIR/client.$CLIENTS.pid" 2>/dev/null)
+    [[ $pid =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null
+}
 stop_clients() {
     local pidfile
     local pid

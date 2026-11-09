@@ -18,14 +18,15 @@ def load(h, v):
 data = {h: (load(h, "hyprland"), load(h, "hypoland")) for h in hosts}
 wls = sorted({k.split(".")[1] for h in hosts for k in data[h][1] if k.startswith("cpu.")})
 for metric, label in (("percent", "compositor CPU %"), ("ms_per_frame", "compositor CPU ms per frame on the screen"),
-                      ("total_percent", "session total %"), ("screen", "screen fps")):
+                      ("total_percent", "session total %"), ("screen", "screen fps"), ("client", "the client's own fps")):
     print(f"\n### {label}: Hyprland 0.57.0 -> Hypoland")
     print(f"{'workload':22}" + "".join(f"{h:>17}" for h in hosts))
     for w in wls:
         row = f"{w:22}"
         for h in hosts:
             a, b = data[h]
-            key = f"fps.{w}.screen" if metric == "screen" else f"cpu.{w}.{metric}"
+            # the client's own frame rate: what a game reaches (fps.xonotic-*, fps.gravitymark-*), a toolkit client's frames
+            key = f"fps.{w}.screen" if metric == "screen" else f"fps.{w}" if metric == "client" else f"cpu.{w}.{metric}"
             if key in a and key in b and (metric != "ms_per_frame" or min(a[key], b[key]) >= 0):
                 row += f"{a[key]:>8.1f}>{b[key]:<8.1f}"
             else:

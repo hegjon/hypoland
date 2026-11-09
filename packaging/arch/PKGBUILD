@@ -157,6 +157,8 @@ package_hypoland-bench() {
     'gtk4: the GTK 4 clients'
     'qt6-declarative: the Qt Quick clients (qml6)'
     'tk: the Tk canvas workload and its check'
+    'xonotic: the xonotic-* workloads'
+    'gravitymark: the gravitymark-* workloads (AUR)'
     'libnotify: the notifications workload (notify-send)'
     'glmark2: the soak'
     'ttfx: the soak'

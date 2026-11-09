@@ -4,6 +4,15 @@ Changes of Hypoland. Hyprland's own changes are in its [releases](https://github
 Hypoland 0.3.0 is based on Hyprland 0.57.0. Numbers are measured on a ThinkPad X200 (Core 2 Duo P8400,
 GMA 4500MHD, 1280x800) running Omarchy 4.
 
+## Unreleased
+
+### Added
+
+- Games in `hypoland-bench`: `xonotic-low` and `xonotic-ultimate` play Xonotic's benchmark demo, `gravitymark-gl` and
+  `gravitymark-vk` run GravityMark, all fullscreen without vsync, reporting the game's own frame rate. They come last in
+  the default list; the games are optional dependencies.
+- `velocitty-scroll`, the benchmark's terminal scrolling in Velocitty.
+
 ## 0.3.0 - 2026-11-03
 
 ### Faster
