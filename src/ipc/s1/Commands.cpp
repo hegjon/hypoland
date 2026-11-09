@@ -156,7 +156,7 @@ const std::array<const char*, Monitor::CMonitor::DS_CHECKS_COUNT> DS_REASONS_JSO
 
 const std::array<const char*, Monitor::CMonitor::DS_CHECKS_COUNT> DS_REASONS_TEXT = {
     "unknown reason",    "user settings",   "windowed mode",           "content type",   "monitor mirrors",   "screen record/screenshot", "software renders/cursors",
-    "missing candidate", "invalid surface", "surface transformations", "invalid buffer", "activation failed", "color management",         "client outruns the display",
+    "missing candidate", "invalid surface", "surface transformations", "invalid buffer", "activation failed", "color management",         "better composited",
 };
 
 std::string CCommandFormatter::getDSBlockedReason(PHLMONITOR m, eHyprCtlOutputFormat format) {

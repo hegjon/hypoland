@@ -1306,26 +1306,57 @@ Tools:
   are read every frame; hyprtester `legacyFullscreen` with `hyprtester/clients/legacy-fullscreen.cpp`, an xcb client).
   0.3.0 against it, one round on the machines: the same frame rates, the compositor's CPU a frame 3 to 11% lower, the bar
   hidden. `render:direct_scanout` is auto (2) by default since then, with auto redefined: upstream's scans out only windows
-  whose content type is game, which neither game sets; Hypoland's scans out any fullscreen window while it draws no faster
-  than the monitor refreshes (`CMonitor::dsCandidateOutruns()`: the rate of its last 16 buffer changes, outrunning above
-  1.05 times the refresh rate and again at or below it; `RATE`, "client outruns the display", in the blocked reasons of
-  `hyprctl monitors`). Scanned out, a client without vsync that draws faster than the screen runs short of buffers: Mesa's
-  EGL waits for a free one with `wl_display.sync` round trips (102908 syncs for 1656 commits on the T550), the compositor's
-  context switches go up thirty times and its CPU twice, and with `on` (1) Xonotic low drew 131 instead of 170 fps on the
-  T550, 138 instead of 205 on the T460s and 455 instead of 700 on the Galaxy Book. A fullscreen window gets the scanout
-  formats as dmabuf feedback under auto as under on (without them its buffers failed KMS's test every frame, which held
-  Xonotic at 59.7 fps), and one that outruns the display the regular formats back (with the scanout tranche Intel clients
-  take X-tiled over Y-tiled buffers and draw slower: auto lost 4 to 11% at low before, and so did r949 on the T460s and the
-  T490, 2 to 4%); a format KMS refused once is not tried again for that surface (`DS_BLOCK_FAILED`). off against on, 2
-  rounds: GPU-bound games gain, Xonotic ultimate 2 to 8% more frames and none dropped on the way to the screen (shown: Mac
-  mini 28 -> 50, samsung-i5 11.8 -> 18.2, the X200 at low 26.6 -> 51.5), GravityMark at 40% less compositor CPU a frame.
-  off against auto (r950, 3 rounds, six machines, `dsab4/`, `ds3table.py`): low as with off (T550 169.8 / 168.8 fps, lianli
-  165.8 / 167.2, samsung-i5 100.6 / 100.6), ultimate as with on (T550 43.5 -> 46.1, XPS 20.7 -> 22.3, Mac mini 47.7 -> 50.7
-  with 28.8 -> 50.0 shown, samsung-i5 shown 11.6 -> 18.2, the X200 shown 3.1 -> 5.5 and 26.6 -> 48 at low). Open: on the
-  Galaxy Book (r951, 120 Hz, 3 rounds) Xonotic ultimate draws 135 fps composited, but scanned out it gets about 121 buffers
-  a second, below the 126 that count as outrunning, so auto keeps it scanned out at 116 to 126 fps with the compositor at
-  17 to 20% instead of 4% (low and GravityMark the same or better); the threshold has to see a client that scanout itself
-  holds down. And the XPS's compositor takes 0.4 ms a frame more at low under auto (1.69 -> 2.08) with the same frames.
+  whose content type is game, which neither game sets; Hypoland's measures each fullscreen window both ways and keeps the
+  better (`CScanoutAuto` in `src/output/ScanoutAuto.*`, pure logic fed times by `CMonitor::updateScanoutAuto()` once a frame
+  and by the output's commits; 15 unit tests in `tests/output/ScanoutAuto.cpp` run it against simulated clients, the
+  machines' cases among them). Which way is better is not known beforehand. Scanned out, a client without vsync that draws
+  faster than the screen runs short of buffers: Mesa's EGL waits for a free one with `wl_display.sync` round trips (102908
+  syncs for 1656 commits on the T550), the compositor's context switches go up thirty times and its CPU twice, and with `on`
+  (1) Xonotic low drew 131 instead of 170 fps on the T550, 138 instead of 205 on the T460s and 455 instead of 700 on the
+  Galaxy Book; a client held to about the refresh rate that way (Galaxy Book ultimate: 121 instead of 135) cannot be told
+  from one that draws at it anyway, which is what the first auto (a rate threshold, r947 to r951 of `wip/legacy-fullscreen`,
+  on master as d3d0933e0) got wrong. And a GPU-bound game gains on the plane (Xonotic ultimate 2 to 8% more frames and none
+  dropped on the way to the screen: Mac mini 28 -> 50 shown, samsung-i5 11.8 -> 18.2), while the X200 at low draws 77 to 80
+  fps either way but the GM45 composites only 27 of them a second and shows 48 to 52 scanned out. So the choice measures
+  the frames the screen shows first (the window's new buffers that an output commit went out after, counted by the
+  window's commits: by buffer object, a client cycling three or four buffers faster than the refresh rate had the same one
+  current at two frames in a row, and vkcube read 32 to 41 instead of 60 nested) and the frames the client draws second,
+  each over a second after half a second to settle (the client reallocates for the other formats); shown at 90% of the
+  refresh rate or more either way counts as equal, so the client's rate decides (the Galaxy Book showed Xonotic low at 113
+  composited and 120 scanned out, at a third fewer of its frames). A window shown at about every refresh composited while
+  it draws faster than that is not tried on the plane at all (the measurement cost the Galaxy Book a tenth of the frames of
+  a 12 s run). The other way is measured again after 15 s, doubled up to 240 s; a scanned-out window only when it draws
+  near the refresh rate (below it, it cannot be short of buffers); and at once when the screen shows the window at a fifth
+  more or less than when it chose (a game's loading screen, then its play: measured composited first, where it is, then
+  scanned out; two measurements more than twice apart in drawn rate are of other scenes and taken again after a second).
+  A plane that refuses the buffers for a second and four buffers leaves it composited until the next try. A buffer in a
+  format the renderer cannot render into is never scanned out (`canRenderToFormat()`): with scanout on by default the X200
+  aborted in every session a few seconds into the fullscreen `video` workload, mpv's 10-bit buffers (XRGB2101010) having
+  left the output in a format the work buffer then failed in (`fsab/`, 8 of 8 sessions of auto and of the first auto). A buffer the plane
+  refuses (KMS's test fails, after the settling and two buffers) ends the scanout measurement at once: every refused frame
+  is tested in KMS again. The fullscreen handlers offer a fullscreen window the scanout formats as dmabuf feedback when it
+  goes fullscreen, as the first auto did, and it keeps them unless it measured better composited (with them Intel clients
+  take X-tiled over Y-tiled buffers and draw slower: the first auto lost 4 to 11% at low composited). Offering them only
+  for the scanout measurement and taking them back otherwise (r950 to r962) cost the fullscreen `video` workload a third of
+  its frames on the screen (T550 20 against 30 fps, XPS 26, Mac mini 22, `fsab/`): mpv reads the formats when it starts,
+  its buffers were refused, and after the formats were taken back it drew 20 fps composited (r963 on the T550: off 30.0,
+  on 30.1, auto 20.1; r964, which leaves a refused window its formats: 30.0). `HYPOLAND_SCANOUT_DEBUG=1` prints every change of the
+  choice with its rates to stderr (the session's journal); `RATE`, "better composited", in `hyprctl monitors`' blocked
+  reasons. Measured overnight (2026-11-09, `test-results/games-20261109/dsm/`, variants off / auto / old = master's auto,
+  `VARIANTS=off,auto,old python3 ds3table.py dsm`, medians `python3 dsmsum.py dsm`, in `dsm/summary.txt`; the builds before
+  r959 in `dsm-r1` to `dsm-r9`): r959 (`wip/ds-measure` 4/ec0293a95), 8 fresh sessions of each on six machines, game fps
+  off / auto / old: Galaxy Book ultimate 135.5 / 134.9 / 119.4 (shown 114.9 / 116.4 / 102.8, the compositor 0.28 / 1.31 /
+  1.88 ms a frame), low 714.6 / 694.2 / 709.0; X200 low shown 26.8 / 52.0 / 46.5, ultimate 3.2 / 5.7 / 5.7; Mac mini
+  ultimate shown 28.9 / 45.9 / 47.2; samsung-i5 ultimate shown 11.8 / 18.2 / 18.2, low 101.3 / 98.1 / 99.5; T550 ultimate
+  43.6 / 46.1 / 46.1, low 169.9 / 167.7 / 167.5; XPS ultimate 20.8 / 22.4 / 22.3, low 82.1 / 82.3 / 82.0; GravityMark the
+  same everywhere, its compositor 30% cheaper a frame on the Galaxy Book. Open: where auto scans out a client that outruns
+  the display because the screen shows more of it that way, the compositor pays for the client's busy wait (XPS low 2.33 ms
+  a frame against 1.70 off, 1.90 old): a profile on samsung-i5 under `on` (`test-results/profile-20261109-195948`, against
+  `-200123` off) has the kernel at 53% of the compositor's samples and libwayland-server at 10%, Mesa's `wl_display.sync`
+  round trips answered, the drawing 15%. The final build r964 (`dsm-r964/`, 4 fresh sessions each on the X200, T550, XPS and
+  Mac mini, the games and `video`, `nautilus`, `flea`): the games as r959 (X200 low shown 52.0 / 46.8 old / 26.7 off, Mac
+  mini ultimate 48.0 / 47.7 / 28.8), the fullscreen video at 30 fps on the screen everywhere with the compositor's CPU as
+  with off, `nautilus` and `flea` unchanged, and master's first auto aborted the X200 in all 4 of its sessions.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 

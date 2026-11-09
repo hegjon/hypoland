@@ -68,10 +68,10 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
 - The splash text is off (`misc:disable_splash_rendering` is true).
 - `cursor:enable_hyprcursor` is off, XCursor themes are used.
 - `render:direct_scanout` is `auto` (Hyprland: off): a fullscreen window's buffers are shown on the screen directly,
-  without the compositor drawing them, as long as the window draws no faster than the monitor refreshes. Hyprland's `auto`
-  only did this for windows that say they are games. A game without vsync that outruns the display is drawn by the
-  compositor as before: scanned out, it runs short of buffers and its frame rate drops. `1` scans out every fullscreen
-  window (Hyprland's on) and `0` none.
+  without the compositor drawing them, when that shows the window better. Hypoland measures both ways, by the frames that
+  reach the screen and then by the frames the window draws, and checks again now and then. Hyprland's `auto` only did
+  this for windows that say they are games. A game without vsync that outruns the display stays composited: scanned out,
+  it runs short of buffers and its frame rate drops. `1` scans out every fullscreen window (Hyprland's on) and `0` none.
 - `quirks:skip_non_kms_dmabuf_formats` is off. Gen4 display planes have no formats with alpha, so with the
   Hyprland default no client gets an EGL config with alpha and transparent surfaces turn black.
 

@@ -695,7 +695,7 @@ std::vector<SP<IValue>> Values::getConfigValues() {
          */
 
         MS<Bool>("render:async_commit", "Submit eligible output commits asynchronously. Accepted and ignored by Hypoland, whose aquamarine commits synchronously.", false),
-        MS<Int>("render:direct_scanout", "Enables direct scanout. auto: a fullscreen window, while it draws no faster than the monitor refreshes (Hypoland's default)", 2,
+        MS<Int>("render:direct_scanout", "Enables direct scanout. auto: a fullscreen window, when it shows better scanned out than composited, measured (Hypoland's default)", 2,
                 {.min = 0, .max = 2, .map = OptionMap{{"disable", 0}, {"enable", 1}, {"auto", 2}}}),
         MS<Bool>("render:expand_undersized_textures", "Whether to expand textures that have not yet resized to be larger.", true),
         MS<Bool>("render:xp_mode", "Disable back buffer and bottom layer rendering.", false),

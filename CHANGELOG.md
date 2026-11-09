@@ -8,11 +8,13 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Faster
 
-- Fullscreen games that are held back by the GPU show more frames: `render:direct_scanout` is `auto` by default, which
-  shows a fullscreen window's buffers on the screen directly while it draws no faster than the monitor refreshes, and
-  draws it as before when it does (scanned out, such a game runs short of buffers and loses frames). Xonotic at its
-  highest effects runs up to 8% faster on Intel GPUs, and the screen shows every frame it draws: 50 instead of 29 a second
-  on a Mac mini 2014, 5.5 instead of 3.1 on the X200, and at its lowest effects 48 instead of 27.
+- Fullscreen games held back by the GPU show more frames: `render:direct_scanout` is `auto` by default, which shows a
+  fullscreen window's buffers on the screen directly, without the compositor drawing them, when that shows it better.
+  Which way is better is measured, by the frames that reach the screen and then by the frames the game draws, and checked
+  again now and then: a game without vsync that draws faster than the screen refreshes runs short of buffers on the screen
+  and is drawn by the compositor as before. Xonotic at its highest effects runs up to 8% faster on Intel GPUs, and the
+  screen shows every frame it draws: 46 instead of 29 a second on a Mac mini 2014, 18 instead of 12 on an Ivy Bridge
+  laptop, 5.7 instead of 3.2 on the X200, and at its lowest effects 52 instead of 27 there.
 
 ### Added
 
@@ -23,8 +25,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Changed
 
-- `render:direct_scanout = auto` means any fullscreen window that draws no faster than the monitor refreshes; Hyprland's
-  auto only scans out windows that say they are games. `1` (on) and `0` (off) work as before.
+- `render:direct_scanout = auto` means any fullscreen window, when it shows better scanned out than composited, measured;
+  Hyprland's auto only scans out windows that say they are games. `1` (on) and `0` (off) work as before.
+  `HYPOLAND_SCANOUT_DEBUG=1` prints the choices to the session's journal.
 
 ### Fixed
 

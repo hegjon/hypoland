@@ -26,6 +26,7 @@
 #include "../helpers/cm/ColorManagement.hpp"
 #include "../helpers/signal/Signal.hpp"
 #include "DamageRing.hpp"
+#include "ScanoutAuto.hpp"
 #include <aquamarine/output/Output.hpp>
 #include <aquamarine/allocator/Swapchain.hpp>
 #include <hyprutils/os/FileDescriptor.hpp>
@@ -154,19 +155,17 @@ namespace Monitor {
         bool m_directScanoutIsActive    = false; // for cleanup logic. m_lastScanout.expired() can become true before the DS cleanup if client crashes/exits while DS is active.
         bool m_scanoutNeedsCursorUpdate = false;
 
-        // render:direct_scanout auto: when the scanout candidate's last new buffers became current, to tell a client that draws
-        // faster than the monitor refreshes (dsCandidateOutruns())
+        // render:direct_scanout auto: the fullscreen window it chooses for (updateScanoutAuto()), and whether that was offered the
+        // scanout formats
         struct {
-            WP<CWLSurfaceResource>          surface;
-            CHyprSignalListener             commit;
-            WP<IHLBuffer>                   lastBuffer;
-            std::array<Time::steady_tp, 16> times   = {};
-            size_t                          count   = 0;
-            size_t                          next    = 0;
-            bool                            outruns = false;
-            // a format and modifier of the candidate's buffers that failed the KMS test: not tried again every frame under auto
-            std::optional<std::pair<uint32_t, uint64_t>> failedFormat;
-        } m_dsRate;
+            WP<CWLSurfaceResource> surface;
+            CHyprSignalListener    commit;
+            WP<IHLBuffer>          lastBuffer;
+            uint64_t               drawn = 0, shown = 0; // the window's new buffers, and how many of them a frame was committed after
+            CScanoutAuto           choice;
+            bool                   offered = false;
+            std::string            described; // HYPOLAND_SCANOUT_DEBUG
+        } m_dsAuto;
 
         // for special fade/blur
         PHLANIMVAR<float> m_specialFade;
@@ -225,7 +224,7 @@ namespace Monitor {
             DS_BLOCK_DMA       = (1 << 10),
             DS_BLOCK_FAILED    = (1 << 11),
             DS_BLOCK_CM        = (1 << 12),
-            DS_BLOCK_RATE      = (1 << 13), // render:direct_scanout auto: the candidate commits faster than the monitor refreshes
+            DS_BLOCK_RATE      = (1 << 13), // render:direct_scanout auto: the candidate shows better composited (CScanoutAuto)
 
             DS_CHECKS_COUNT = 14,
         };
@@ -300,7 +299,7 @@ namespace Monitor {
         uint16_t     isDSBlocked(bool full = false);
         bool         attemptDirectScanout();
         void         handleDSleave();
-        bool         dsCandidateOutruns(const SP<CWLSurfaceResource>& surface);
+        void         updateScanoutAuto(const Time::steady_tp& now);
         bool         canAttemptDirectScanoutFast() const;
         bool         isMultiGPU();
         void         setCTM(const Mat3x3& ctm);

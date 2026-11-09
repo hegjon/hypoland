@@ -88,6 +88,11 @@ void CMonitorFrameScheduler::onFrame() {
 
     PMONITOR->recheckSolitary();
 
+    // one clock read for the frame: direct scanout's choice and, without the new scheduling, the timer, the animation tick
+    // and the render share it
+    const auto NOW = Time::steadyNow();
+    PMONITOR->updateScanoutAuto(NOW);
+
     PMONITOR->m_tearingState.busy = false;
 
     if (PMONITOR->m_tearingState.activelyTearing && PMONITOR->m_solitaryClient.lock() /* can be invalidated by a recheck */) {
@@ -100,8 +105,6 @@ void CMonitorFrameScheduler::onFrame() {
     }
 
     if (!newSchedulingEnabled()) {
-        // one clock read for the frame: the timer, the animation tick and the render share it
-        const auto NOW = Time::steadyNow();
         PMONITOR->m_lastPresentationTimer.reset(NOW);
         g_pHyprRenderer->renderMonitor(PMONITOR, true, NOW);
         return;
