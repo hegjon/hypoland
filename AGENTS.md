@@ -1323,7 +1323,7 @@ Tools:
   hidden. `render:direct_scanout` is auto (2) by default since then, with auto redefined: upstream's scans out only windows
   whose content type is game, which neither game sets; Hypoland's measures each fullscreen window both ways and keeps the
   better (`CScanoutAuto` in `src/output/ScanoutAuto.*`, pure logic fed times by `CMonitor::updateScanoutAuto()` once a frame
-  and by the output's commits; 15 unit tests in `tests/output/ScanoutAuto.cpp` run it against simulated clients, the
+  and by the output's commits; 22 unit tests in `tests/output/ScanoutAuto.cpp` run it against simulated clients, the
   machines' cases among them). Which way is better is not known beforehand. Scanned out, a client without vsync that draws
   faster than the screen runs short of buffers: Mesa's EGL waits for a free one with `wl_display.sync` round trips (102908
   syncs for 1656 commits on the T550), the compositor's context switches go up thirty times and its CPU twice, and with `on`
@@ -1364,11 +1364,23 @@ Tools:
   1.88 ms a frame), low 714.6 / 694.2 / 709.0; X200 low shown 26.8 / 52.0 / 46.5, ultimate 3.2 / 5.7 / 5.7; Mac mini
   ultimate shown 28.9 / 45.9 / 47.2; samsung-i5 ultimate shown 11.8 / 18.2 / 18.2, low 101.3 / 98.1 / 99.5; T550 ultimate
   43.6 / 46.1 / 46.1, low 169.9 / 167.7 / 167.5; XPS ultimate 20.8 / 22.4 / 22.3, low 82.1 / 82.3 / 82.0; GravityMark the
-  same everywhere, its compositor 30% cheaper a frame on the Galaxy Book. Open: where auto scans out a client that outruns
-  the display because the screen shows more of it that way, the compositor pays for the client's busy wait (XPS low 2.33 ms
-  a frame against 1.70 off, 1.90 old): a profile on samsung-i5 under `on` (`test-results/profile-20261109-195948`, against
+  same everywhere, its compositor 30% cheaper a frame on the Galaxy Book. Where auto scans out a client that outruns the
+  display because the screen shows more of it that way, the compositor pays for the client's busy wait (XPS low 2.33 ms a
+  frame against 1.70 off, 1.90 old): a profile on samsung-i5 under `on` (`test-results/profile-20261109-195948`, against
   `-200123` off) has the kernel at 53% of the compositor's samples and libwayland-server at 10%, Mesa's `wl_display.sync`
-  round trips answered, the drawing 15%. The final build r964 (`dsm-r964/`, 4 fresh sessions each on the X200, T550, XPS and
+  round trips answered, the drawing 15%; on the XPS about 8300 round trips a second, 3.6 ms of the compositor's CPU a frame on
+  the plane against 1.7 composited, for 59 frames shown against 53. So since 2026-11-10 auto weighs that cost as well: each
+  measurement takes the compositor's CPU time (`CLOCK_PROCESS_CPUTIME_ID`, Mesa's threads included) per frame shown; a plane
+  that costs more than 1.5 times and 0.3 ms a frame more than composited (`COSTLIER`, `COSTLIER_MIN`) is chosen only when
+  the screen shows 30% more frames on it (`WORTH_ITS_COST`: the X200's 48 against 27 passes, the XPS's 59 against 53 does
+  not), a scanned-out window that grows that costly is measured again at once, and a window that measured better
+  composited because the plane cost more (`m_pollsOnThePlane`) is tried on the plane at its retries only, not at every
+  change of scene (Xonotic's demo changes scene every few seconds: without that, r956, the XPS kept 2.19 ms a frame). XPS
+  low, 5 fresh sessions each (`test-results/dscost-20261110/`, `xps-r959`): 1.98 ms a frame (1.94 to 2.03) against 2.19 for
+  master's auto (1.69 to 2.22) and 1.77 off, the screen 57.2 frames a second either way, the game 81.0 against 80.6;
+  ultimate shown 22.4 against 20.8 off, as before. What is left over off is the one measurement on the plane within the
+  benchmark's 12 s, whose retries double up to 240 s in a longer game. The X200, the T550, the Mac mini and samsung-i5 the
+  same as master (3 rounds each of the rule's first version, r955): X200 low shown 51.6 against 51.8. The final build r964 (`dsm-r964/`, 4 fresh sessions each on the X200, T550, XPS and
   Mac mini, the games and `video`, `nautilus`, `flea`): the games as r959 (X200 low shown 52.0 / 46.8 old / 26.7 off, Mac
   mini ultimate 48.0 / 47.7 / 28.8), the fullscreen video at 30 fps on the screen everywhere with the compositor's CPU as
   with off, `nautilus` and `flea` unchanged, and master's first auto aborted the X200 in all 4 of its sessions.

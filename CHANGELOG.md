@@ -14,7 +14,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   again now and then: a game without vsync that draws faster than the screen refreshes runs short of buffers on the screen
   and is drawn by the compositor as before. Xonotic at its highest effects runs up to 8% faster on Intel GPUs, and the
   screen shows every frame it draws: 46 instead of 29 a second on a Mac mini 2014, 18 instead of 12 on an Ivy Bridge
-  laptop, 5.7 instead of 3.2 on the X200, and at its lowest effects 52 instead of 27 there.
+  laptop, 5.7 instead of 3.2 on the X200, and at its lowest effects 52 instead of 27 there. A game that the screen shows
+  only a few frames more of directly, but that costs the compositor more that way, stays drawn by the compositor.
 - Programs that update many small areas cost the compositor far less on newer Intel GPUs and the Snapdragon: a frame's
   damage is merged into fewer rectangles on every driver (only the older Intel and AMD ones before), and many rectangles
   of a window are drawn in one go. Sixty moving squares drawn by Qt in software cost 6.6 instead of 17.6% of a CPU on a

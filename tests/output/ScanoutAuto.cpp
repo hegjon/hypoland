@@ -13,10 +13,12 @@ static Time::steady_tp::duration seconds(double s) {
     return std::chrono::duration_cast<Time::steady_tp::duration>(std::chrono::duration<double>(s));
 }
 
-// One way of showing the simulated client: the frames it draws a second, and the most the screen shows of them a second.
+// One way of showing the simulated client: the frames it draws a second, the most the screen shows of them a second, and the
+// compositor's CPU time a second, as a share of a CPU.
 struct SWay {
     double drawn = 60;
     double shown = 60;
+    double cpu   = 0;
 };
 
 // A simulated fullscreen client on a monitor that refreshes at REFRESH and asks for a choice every refresh. ACCEPTS says
@@ -37,6 +39,7 @@ struct SSim {
     Time::steady_tp       nextBuffer = now, nextShown = now;
     bool                  onPlane    = false;
     Time::steady_tp       switched   = now;
+    Time::steady_dur      cpu        = {};
     bool                  offered    = true; // the client has the scanout formats
     size_t                sinceOffer = 1000; // its buffers since
     std::string           traced;
@@ -61,11 +64,12 @@ struct SSim {
                 nextShown          = std::max(nextShown + seconds(1.0 / SHOWN), now);
             }
             now = NEXT;
+            cpu += std::chrono::duration_cast<Time::steady_dur>(seconds(WAY.cpu / refresh));
             if (startsWithout) {
                 startsWithout = false;
                 sinceOffer    = 0;
             }
-            const bool WANTS = choice.update(now, refresh, onPlane);
+            const bool WANTS = choice.update(now, refresh, onPlane, cpu);
             if (choice.wantsScanoutFormats() != offered) {
                 offered    = choice.wantsScanoutFormats();
                 sinceOffer = 0;
@@ -122,6 +126,49 @@ TEST(ScanoutAuto, clientFasterCompositedIsComposited) {
 TEST(ScanoutAuto, moreFramesOnTheScreenScannedOutIsScannedOut) {
     SSim sim{.refresh = 60, .composited = {77, 27}, .scannedOut = {80, 48}};
     EXPECT_GT(sim.run(600, 590), 0.98);
+}
+
+// and so it is when the plane costs the compositor more, a client polling it for buffers there: 1.6 against 1.0 ms a frame
+TEST(ScanoutAuto, clientPollingOnThePlaneIsScannedOutWhenTheScreenShowsMuchMore) {
+    SSim sim{.refresh = 60, .composited = {77, 27, 0.027}, .scannedOut = {80, 48, 0.077}};
+    EXPECT_GT(sim.run(600, 590), 0.98);
+}
+
+// Xonotic's lowest effects on the XPS in a heavy scene: it draws at about the refresh rate either way, the screen shows 53 of
+// them composited and 59 scanned out, where the game polls the compositor for buffers, 3.6 instead of 1.7 ms of its CPU a
+// frame: composited
+TEST(ScanoutAuto, aFewFramesMoreAreNotWorthAClientPollingOnThePlane) {
+    SSim sim{.refresh = 60, .composited = {60, 53, 0.09}, .scannedOut = {60, 59, 0.21}};
+    EXPECT_LT(sim.run(600, 590), 0.02);
+}
+
+// the same game measured composited in a heavy scene and scanned out in a lighter one (the XPS, its compositor at 1.69 and
+// 3.77 ms a frame): it draws more there, but for the scene; composited
+TEST(ScanoutAuto, aLighterSceneOnThePlaneIsNoGainWorthAClientPolling) {
+    SSim sim{.refresh = 60, .composited = {55, 48.2, 0.081}, .scannedOut = {77, 60, 0.226}};
+    EXPECT_LT(sim.run(600, 590), 0.02);
+}
+
+// and Xonotic's demo, whose scenes change every few seconds: the plane is measured again at its retries, not after every scene
+// (measured after every scene the window spends an eighth of the time on the plane here, polling)
+TEST(ScanoutAuto, aClientPollingOnThePlaneIsMeasuredThereAtItsRetriesOnly) {
+    SSim   sim{.refresh = 60, .scannedOut = {60, 59, 0.21}};
+    double onPlane = 0;
+    for (int i = 0; i < 40; ++i) {
+        sim.composited = i % 2 ? SWay{116, 60, 0.1} : SWay{55, 46, 0.08};
+        onPlane += sim.run(3, 3) / 40;
+    }
+    EXPECT_LT(onPlane, 0.06);
+}
+
+// scanned out at no cost, then a lighter scene the client would draw faster, held at the refresh rate on the plane and
+// polling for buffers: measured again at once, not after the retry, and composited
+TEST(ScanoutAuto, clientThatStartsPollingOnThePlaneIsMeasuredAgain) {
+    SSim sim{.refresh = 60, .composited = {55, 55, 0.08}, .scannedOut = {58, 58, 0.06}};
+    EXPECT_EQ(sim.run(10, 2), 1);
+    sim.composited = {120, 60, 0.1};
+    sim.scannedOut = {61, 60, 0.25};
+    EXPECT_EQ(sim.run(8, 3), 0);
 }
 
 // a GPU-bound game below the refresh rate gains on the plane and is not measured composited again

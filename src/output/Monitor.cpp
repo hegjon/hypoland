@@ -59,6 +59,7 @@
 #include <hyprutils/utils/ScopeGuard.hpp>
 #include <cstring>
 #include <climits>
+#include <ctime>
 #include <optional>
 #include <ranges>
 #include <vector>
@@ -2153,9 +2154,17 @@ uint16_t CMonitor::isDSBlocked(bool full) {
     return reasons;
 }
 
+// the compositor's CPU time so far, all its threads: Mesa's driver threads do part of a frame's drawing
+static Time::steady_dur processCPUTime() {
+    timespec ts = {};
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
+    return std::chrono::seconds(ts.tv_sec) + std::chrono::nanoseconds(ts.tv_nsec);
+}
+
 // render:direct_scanout auto, once a frame: follows the fullscreen window it may scan out and lets CScanoutAuto choose by the
-// rate the window draws at composited and scanned out. The window gets the scanout formats only while it is chosen for the
-// plane: under them Intel clients take X-tiled buffers, which they draw into slower (Xonotic lost 4% on a T550 composited)
+// frames the screen shows of it and the window draws, composited and scanned out, and by what each way costs the compositor.
+// The window keeps the scanout formats the fullscreen handlers offered it unless it measured better composited: under them
+// Intel clients take X-tiled buffers, which they draw into slower (Xonotic lost 4% on a T550 composited)
 void CMonitor::updateScanoutAuto(const Time::steady_tp& now) {
     static auto            PDIRECTSCANOUT = CConfigValue<Config::INTEGER>("render:direct_scanout");
 
@@ -2189,7 +2198,7 @@ void CMonitor::updateScanoutAuto(const Time::steady_tp& now) {
         return;
 
     const bool SCANNEDOUT = WINDOW && m_lastScanout.lock() == WINDOW;
-    m_dsAuto.choice.update(now, m_refreshRate, SCANNEDOUT);
+    m_dsAuto.choice.update(now, m_refreshRate, SCANNEDOUT, processCPUTime());
 
     // HYPOLAND_SCANOUT_DEBUG=1 prints every change of the choice to stderr (the session's journal)
     static const bool DEBUG = getenv("HYPOLAND_SCANOUT_DEBUG");
