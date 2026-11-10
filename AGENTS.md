@@ -1372,6 +1372,16 @@ Tools:
   Mac mini, the games and `video`, `nautilus`, `flea`): the games as r959 (X200 low shown 52.0 / 46.8 old / 26.7 off, Mac
   mini ultimate 48.0 / 47.7 / 28.8), the fullscreen video at 30 fps on the screen everywhere with the compositor's CPU as
   with off, `nautilus` and `flea` unchanged, and master's first auto aborted the X200 in all 4 of its sessions.
+  Tests (2026-11-10): hyprtester's `directScanout`, `directScanoutRefused`, `directScanoutFormat` and `directScanoutAuto`
+  (`hyprtester/src/tests/clients/direct-scanout.cpp`) put a fullscreen window drawn in linear GBM buffers on the
+  compositor's main device (`hyprtester/clients/dmabuf-fullscreen.cpp`, `--format xrgb8888|xrgb2101010|argb8888`, `--shrink`,
+  `--transform`) on a headless output, which takes any buffer in a commit: on the plane and drawing, off it under a
+  notification, a software cursor (headless outputs have no cursor plane, so the tests make the cursor invisible) and out of
+  fullscreen, a grim screenshot of it while scanned out, closed on the plane, refused for a 10-bit buffer, a buffer a pixel
+  small, one turned by 180 degrees and `direct_scanout = 0`, the output back in its own format after an ARGB8888 buffer, and
+  auto measuring composited first and choosing the plane for a client at the refresh rate. Without the 10-bit guard or the
+  format restore of `handleDSleave()` they fail. Not covered nested: what a KMS driver accepts, the scanout tranche of the
+  dmabuf feedback (only made with a session) and mirrors (a mirror output cannot be removed again within the test).
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 

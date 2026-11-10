@@ -94,12 +94,17 @@ protocolnew("staging/pointer-warp" "pointer-warp-v1" false)
 protocolnew("staging/fractional-scale" "fractional-scale-v1" false)
 protocolnew("stable/xdg-shell" "xdg-shell" false)
 protocolnew("staging/xdg-activation" "xdg-activation-v1" false)
+protocolnew("stable/linux-dmabuf" "linux-dmabuf-v1" false)
 
 clientNew("pointer-warp" PROTOS "pointer-warp-v1" "xdg-shell")
 clientNew("surface-scale-transform" PROTOS "fractional-scale-v1" "xdg-shell")
 clientNew("child-window" PROTOS "xdg-shell")
 clientNew("fullscreen-with-monitor" PROTOS "xdg-shell")
 clientNew("activate" PROTOS "xdg-activation-v1" "xdg-shell")
+# a fullscreen window in GBM buffers, for the direct scanout tests
+clientNew("dmabuf-fullscreen" PROTOS "linux-dmabuf-v1" "xdg-shell")
+pkg_check_modules(gbm_deps REQUIRED IMPORTED_TARGET gbm libdrm)
+target_link_libraries(dmabuf-fullscreen PUBLIC PkgConfig::gbm_deps)
 clientNew("wlr-foreign-toplevel" PROTOS "wlr-foreign-toplevel-management-unstable-v1")
 protocolnew("../protocols" "wlr-foreign-toplevel-management-unstable-v1" true)
 
