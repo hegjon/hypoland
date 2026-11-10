@@ -92,6 +92,13 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   0.57.1: 253.0), and Yamagi Quake II with Vulkan costs the compositor 3.5 instead of 34.6% of a CPU.
 - `hypoland-bench`'s `flea` and `flea-scroll` are skipped where Flea opens no window (the X200: no Vulkan, no OpenGL 3),
   instead of leaving its error notification over every later workload.
+- The fixes of Hyprland 0.57.1 and 0.57.2 that apply to Hypoland (`docs/port-0.57.2.md` lists every one and what was
+  done with it), among them: crashes and protocol errors when subsurfaces are torn down parent first, when a Lua handler
+  reads a closed window, and when a lock screen asks for a surface on a monitor that just went away; a wallpaper or
+  bottom layer that maps under a fullscreen window no longer stays hidden after it; a window asking for activation
+  without a serial (foot's bell) is marked urgent instead of being ignored; dialogs keep their place relative to their
+  parent window instead of being centred on the screen. Hypoland keeps realtime scheduling with its guard, which 0.57.2
+  gave up.
 
 ## 0.3.0 - 2026-11-03
 
