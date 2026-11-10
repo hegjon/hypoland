@@ -1073,33 +1073,115 @@ bool CHyprOpenGLImpl::blendEnabled() const {
     return m_blend;
 }
 
+CBox CHyprOpenGLImpl::scissorBox(const CBox& originalBox, bool transform) const {
+    if (!transform)
+        return originalBox;
+
+    const auto& m_renderData = g_pHyprRenderer->m_renderData;
+    CBox        box          = originalBox;
+    const auto  TR           = Math::wlTransformToHyprutils(Math::invertTransform(m_renderData.pMonitor->m_transform));
+    box.transform(TR, m_renderData.pMonitor->m_transformedSize.x, m_renderData.pMonitor->m_transformedSize.y);
+    return box;
+}
+
 void CHyprOpenGLImpl::scissor(const CBox& originalBox, bool transform) {
-    auto& m_renderData = g_pHyprRenderer->m_renderData;
-    RASSERT(m_renderData.pMonitor, "Tried to scissor without begin()!");
+    RASSERT(g_pHyprRenderer->m_renderData.pMonitor, "Tried to scissor without begin()!");
 
     // only call glScissor if the box has changed
     static CBox m_lastScissorBox = {};
 
-    if (transform) {
-        CBox       box = originalBox;
-        const auto TR  = Math::wlTransformToHyprutils(Math::invertTransform(m_renderData.pMonitor->m_transform));
-        box.transform(TR, m_renderData.pMonitor->m_transformedSize.x, m_renderData.pMonitor->m_transformedSize.y);
-
-        if (box != m_lastScissorBox) {
-            GLCALL(glScissor(box.x, box.y, box.width, box.height));
-            m_lastScissorBox = box;
-        }
-
-        setCapStatus(GL_SCISSOR_TEST, true);
-        return;
-    }
-
-    if (originalBox != m_lastScissorBox) {
-        GLCALL(glScissor(originalBox.x, originalBox.y, originalBox.width, originalBox.height));
-        m_lastScissorBox = originalBox;
+    const auto  box = scissorBox(originalBox, transform);
+    if (box != m_lastScissorBox) {
+        GLCALL(glScissor(box.x, box.y, box.width, box.height));
+        m_lastScissorBox = box;
     }
 
     setCapStatus(GL_SCISSOR_TEST, true);
+}
+
+bool CHyprOpenGLImpl::drawQuadInRegion(WP<CShader> shader, const Mat3x3& projection, const CRegion& region, bool transform, const Vector2D& uvTopLeft,
+                                       const Vector2D& uvBottomRight) {
+    // HYPOLAND_NO_BATCH_RECTS=1 draws per damage rectangle as before, for comparing the two on a machine (2026-11-06)
+    static const bool DISABLED = Env::envEnabled("HYPOLAND_NO_BATCH_RECTS");
+    if (DISABLED || !shader)
+        return false;
+
+    // a few rectangles are drawn one by one, scissored, from the quad the VAO holds: a batch uploads a vertex buffer of its own
+    // per element, which cost the compositor 3 to 9% more CPU in workspace switching and the dev screen, where most elements
+    // have one or two rectangles (the batch A/B of 2026-11-09, every machine). HYPOLAND_BATCH_MIN_RECTS sets the count
+    static const int MIN_RECTS = [] {
+        try {
+            return std::max(1, std::stoi(Env::get("HYPOLAND_BATCH_MIN_RECTS").value_or("4")));
+        } catch (const std::exception&) { return 4; }
+    }();
+    if (pixman_region32_n_rects(region.pixman()) < MIN_RECTS)
+        return false;
+
+    const GLint POS = shader->getUniformLocation(SHADER_POS_ATTRIB);
+    const GLint TEX = shader->getUniformLocation(SHADER_TEX_ATTRIB);
+    if (POS < 0 || m_lastViewport.width <= 0 || m_lastViewport.height <= 0)
+        return false;
+
+    // the quad's corner q goes to M * (q, 1) in normalized device coordinates; only turns by multiples of 90 degrees,
+    // where a rectangle of the target is a rectangle of the quad as well
+    const auto   M = projection.getMatrix();
+    const double A = M[0], B = M[1], C = M[2], D = M[3], E = M[4], F = M[5];
+    const double DET = A * E - B * D;
+    if (std::abs(DET) < 1e-12 || !((std::abs(B) < 1e-9 && std::abs(D) < 1e-9) || (std::abs(A) < 1e-9 && std::abs(E) < 1e-9)))
+        return false;
+
+    const auto TOQUAD = [&](double px, double py) {
+        const double X = 2.0 * (px - m_lastViewport.x) / m_lastViewport.width - 1.0 - C;
+        const double Y = 2.0 * (py - m_lastViewport.y) / m_lastViewport.height - 1.0 - F;
+        return Vector2D{(E * X - B * Y) / DET, (A * Y - D * X) / DET};
+    };
+    const auto UV = [&](double x, double y) { return Vector2D{uvTopLeft.x + (uvBottomRight.x - uvTopLeft.x) * x, uvTopLeft.y + (uvBottomRight.y - uvTopLeft.y) * y}; };
+
+    m_batchVerts.clear();
+    region.forEachRect([&](const auto& RECT) {
+        const auto BOX = scissorBox(CBox{RECT.x1, RECT.y1, RECT.x2 - RECT.x1, RECT.y2 - RECT.y1}, transform);
+        const auto P1  = TOQUAD(BOX.x, BOX.y);
+        const auto P2  = TOQUAD(BOX.x + BOX.width, BOX.y + BOX.height);
+        // cut to the quad in its own space, so its edges stay exactly where the whole quad has them
+        const double X1 = std::clamp(std::min(P1.x, P2.x), 0.0, 1.0), X2 = std::clamp(std::max(P1.x, P2.x), 0.0, 1.0);
+        const double Y1 = std::clamp(std::min(P1.y, P2.y), 0.0, 1.0), Y2 = std::clamp(std::max(P1.y, P2.y), 0.0, 1.0);
+        if (X2 <= X1 || Y2 <= Y1)
+            return;
+
+        const auto VERTEX = [&](double x, double y) {
+            const auto T = UV(x, y);
+            m_batchVerts.push_back(SVertex{sc<float>(x), sc<float>(y), sc<float>(T.x), sc<float>(T.y)});
+        };
+        VERTEX(X1, Y1);
+        VERTEX(X1, Y2);
+        VERTEX(X2, Y1);
+        VERTEX(X2, Y1);
+        VERTEX(X1, Y2);
+        VERTEX(X2, Y2);
+    });
+
+    if (m_batchVerts.empty())
+        return true;
+
+    if (!m_batchVbo)
+        glGenBuffers(1, &m_batchVbo);
+
+    setCapStatus(GL_SCISSOR_TEST, false);
+    glBindVertexArray(0);
+    bindArrayBuffer(m_batchVbo);
+    glBufferData(GL_ARRAY_BUFFER, sc<GLsizeiptr>(sizeof(SVertex) * m_batchVerts.size()), m_batchVerts.data(), GL_STREAM_DRAW);
+    glEnableVertexAttribArray(POS);
+    glVertexAttribPointer(POS, 2, GL_FLOAT, GL_FALSE, sizeof(SVertex), rc<void*>(offsetof(SVertex, x)));
+    if (TEX >= 0) {
+        glEnableVertexAttribArray(TEX);
+        glVertexAttribPointer(TEX, 2, GL_FLOAT, GL_FALSE, sizeof(SVertex), rc<void*>(offsetof(SVertex, u)));
+    }
+    glDrawArrays(GL_TRIANGLES, 0, sc<GLsizei>(m_batchVerts.size()));
+    glDisableVertexAttribArray(POS);
+    if (TEX >= 0)
+        glDisableVertexAttribArray(TEX);
+
+    return true;
 }
 
 void CHyprOpenGLImpl::scissor(const pixman_box32* pBox, bool transform) {
@@ -1214,19 +1296,16 @@ void CHyprOpenGLImpl::renderRectWithDamageInternal(const CBox& box, const CHyprC
 
     glBindVertexArray(shader->getUniformLocation(SHADER_SHADER_VAO));
 
+    CRegion damageClip;
     if (g_pHyprRenderer->m_renderData.clipBox.width != 0 && g_pHyprRenderer->m_renderData.clipBox.height != 0) {
-        CRegion damageClip{g_pHyprRenderer->m_renderData.clipBox.x, g_pHyprRenderer->m_renderData.clipBox.y, g_pHyprRenderer->m_renderData.clipBox.width,
-                           g_pHyprRenderer->m_renderData.clipBox.height};
+        damageClip = CRegion{g_pHyprRenderer->m_renderData.clipBox.x, g_pHyprRenderer->m_renderData.clipBox.y, g_pHyprRenderer->m_renderData.clipBox.width,
+                             g_pHyprRenderer->m_renderData.clipBox.height};
         damageClip.intersect(*data.damage);
+    }
+    const CRegion& REGION = g_pHyprRenderer->m_renderData.clipBox.width != 0 && g_pHyprRenderer->m_renderData.clipBox.height != 0 ? damageClip : *data.damage;
 
-        if (!damageClip.empty()) {
-            damageClip.forEachRect([this](const auto& RECT) {
-                scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
-                glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            });
-        }
-    } else {
-        data.damage->forEachRect([this](const auto& RECT) {
+    if (!drawQuadInRegion(shader, glMatrix, REGION, g_pHyprRenderer->m_renderData.transformDamage)) {
+        REGION.forEachRect([this](const auto& RECT) {
             scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         });
@@ -1473,8 +1552,11 @@ void CHyprOpenGLImpl::renderTextureInternal(SP<ITexture> tex, const CBox& box, c
         tex->setTexParameter(GL_TEXTURE_MAG_FILTER, tex->magFilter);
         tex->setTexParameter(GL_TEXTURE_MIN_FILTER, tex->minFilter);
     }
+    // a texture sampled at the nearest texel shows the same pixels whichever triangles cover them; filtered, the texture
+    // coordinates of a smaller triangle round differently and a pixel can come out a step off from a full repaint
+    const bool NEAREST = g_pHyprRenderer->m_renderData.useNearestNeighbor || (tex->magFilter == GL_NEAREST && tex->minFilter == GL_NEAREST);
 
-    auto shader = useScreenShader ? renderScreenShaderInternal() : renderToFBInternal(tex, data, tex->m_type, newBox);
+    auto       shader = useScreenShader ? renderScreenShaderInternal() : renderToFBInternal(tex, data, tex->m_type, newBox);
 
     shader->setUniformMatrix3fv(SHADER_PROJ, 1, GL_TRUE, glMatrix.getMatrix());
     shader->setUniformInt(SHADER_TEX, 0);
@@ -1508,8 +1590,9 @@ void CHyprOpenGLImpl::renderTextureInternal(SP<ITexture> tex, const CBox& box, c
     } else
         GLCALL(glBindVertexArray(shader->getUniformLocation(SHADER_SHADER_VAO)));
 
+    CRegion damageClip;
     if (!g_pHyprRenderer->m_renderData.clipBox.empty() || !data.clipRegion.empty()) {
-        CRegion damageClip = g_pHyprRenderer->m_renderData.clipBox;
+        damageClip = CRegion{g_pHyprRenderer->m_renderData.clipBox};
 
         if (!data.clipRegion.empty()) {
             if (g_pHyprRenderer->m_renderData.clipBox.empty())
@@ -1519,15 +1602,14 @@ void CHyprOpenGLImpl::renderTextureInternal(SP<ITexture> tex, const CBox& box, c
         }
 
         damageClip.intersect(*data.damage);
+    }
+    const CRegion& REGION = !g_pHyprRenderer->m_renderData.clipBox.empty() || !data.clipRegion.empty() ? damageClip : *data.damage;
 
-        if (!damageClip.empty()) {
-            damageClip.forEachRect([this](const auto& RECT) {
-                scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
-                glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            });
-        }
-    } else {
-        data.damage->forEachRect([this](const auto& RECT) {
+    const bool     BATCHUV = CUSTOMUV && CUSTOM_VAO;
+    if (!NEAREST ||
+        !drawQuadInRegion(shader, glMatrix, REGION, g_pHyprRenderer->m_renderData.transformDamage, BATCHUV ? data.primarySurfaceUVTopLeft : Vector2D{0, 0},
+                          BATCHUV ? data.primarySurfaceUVBottomRight : Vector2D{1, 1})) {
+        REGION.forEachRect([this](const auto& RECT) {
             scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         });
@@ -2691,6 +2773,20 @@ bool CHyprOpenGLImpl::coalesceDamage() const {
 
     // r600 (2026-10-27): every upload rectangle is a staging texture and a blit, and every damage rectangle a draw
     return m_eglDriverName == "crocus" || m_eglDriverName == "r600";
+}
+
+bool CHyprOpenGLImpl::coalesceFrameDamage() const {
+    // every element is drawn once per rectangle of the frame's damage, a draw call each, on every driver: on the XPS
+    // (iris, scale 2) Qt's 60 squares were 730 draws a frame. HYPOLAND_COALESCE_FRAME=legacy merges on crocus and
+    // r600 only, as 0.3.0 did, =off never (uploads are still merged there), for comparing them on a machine
+    static const auto MODE = Env::get("HYPOLAND_COALESCE_FRAME").value_or("");
+    if (MODE == "legacy")
+        return coalesceDamage();
+    if (MODE == "off")
+        return false;
+
+    static const bool DISABLED = Env::envEnabled("HYPOLAND_NO_COALESCE");
+    return !DISABLED;
 }
 
 bool CHyprOpenGLImpl::explicitSyncSupported() {

@@ -1976,10 +1976,48 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit, std::optiona
         ZOOM_DAMAGE_ENTIRE)
         damage = {0, 0, sc<int>(pMonitor->m_transformedSize.x) * 10, sc<int>(pMonitor->m_transformedSize.y) * 10};
 
-    // every element is drawn once per damage rectangle, see CHyprOpenGLImpl::coalesceDamage()
+    // every element is drawn once per damage rectangle, see CHyprOpenGLImpl::coalesceFrameDamage()
     static constexpr size_t MAX_DAMAGE_RECTS = 8;
-    if (Render::GL::g_pHyprOpenGL->coalesceDamage())
-        damage = Math::coalesceRegion(damage, MAX_DAMAGE_RECTS);
+    if (Render::GL::g_pHyprOpenGL->coalesceFrameDamage()) {
+        // HYPOLAND_COALESCE_RECT_COST=<pixels> overrides the cost of a rectangle, for measuring it on a machine;
+        // HYPOLAND_COALESCE_DEBUG=1 prints what the merging did every 300 frames, =frames every frame it merged
+        static const double RECT_COST = [] {
+            const auto V = Env::get("HYPOLAND_COALESCE_RECT_COST");
+            try {
+                return V ? std::stod(std::string{*V}) : Math::COALESCE_FRAME_RECT_COST;
+            } catch (...) { return Math::COALESCE_FRAME_RECT_COST; }
+        }();
+        static const auto DEBUG  = Env::get("HYPOLAND_COALESCE_DEBUG").value_or("");
+        const auto        MERGED = Math::coalesceRegion(damage, MAX_DAMAGE_RECTS, RECT_COST);
+        if (!DEBUG.empty()) {
+            static size_t frames = 0, over = 0, rectsIn = 0, rectsOut = 0;
+            static double areaIn = 0, areaOut = 0;
+            const auto    N = sc<size_t>(pixman_region32_n_rects(damage.pixman()));
+            frames++;
+            if (N > MAX_DAMAGE_RECTS) {
+                over++;
+                rectsIn += N;
+                rectsOut += sc<size_t>(pixman_region32_n_rects(MERGED.pixman()));
+                areaIn += Math::regionArea(damage);
+                areaOut += Math::regionArea(MERGED);
+                if (DEBUG == "frames") {
+                    std::string rects;
+                    damage.forEachRect([&rects](const auto& R) { rects += std::format(" {},{} {}x{}", R.x1, R.y1, R.x2 - R.x1, R.y2 - R.y1); });
+                    const auto EXT = damage.copy().getExtents();
+                    std::println(stderr, "[coalesce] {} rects {:.0f} kpx (extents {:.0f}) -> {} rects {:.0f} kpx:{}", N, Math::regionArea(damage) / 1000, EXT.w * EXT.h / 1000,
+                                 pixman_region32_n_rects(MERGED.pixman()), Math::regionArea(MERGED) / 1000, rects);
+                }
+            }
+            if (frames % 300 == 0) {
+                std::println(stderr, "[coalesce] {} frames, {} over {} rects: {:.1f} -> {:.1f} rects, {:.0f} -> {:.0f} kpx a frame", frames, over, MAX_DAMAGE_RECTS,
+                             over ? sc<double>(rectsIn) / over : 0.0, over ? sc<double>(rectsOut) / over : 0.0, over ? areaIn / over / 1000 : 0.0,
+                             over ? areaOut / over / 1000 : 0.0);
+                frames = over = rectsIn = rectsOut = 0;
+                areaIn = areaOut = 0;
+            }
+        }
+        damage = MERGED;
+    }
 
     finalDamage = damage;
 

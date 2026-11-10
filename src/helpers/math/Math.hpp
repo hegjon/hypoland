@@ -17,11 +17,22 @@ namespace Math {
     eTransform               invertTransform(eTransform tr);
     eTransform               composeTransform(eTransform a, eTransform b);
 
-    // A region of more than maxRects rectangles, merged into horizontal strips: the bounding boxes of the rectangles
-    // that overlap or touch vertically, and into its bounding box when that still leaves more strips. The result
-    // covers the region. Drawing or uploading a region costs a call per rectangle, which costs more than the extra
-    // pixels once a region falls apart into many small rectangles.
-    CRegion coalesceRegion(const CRegion& region, size_t maxRects);
+    // What a rectangle of a region costs to upload on top of its pixels, in pixels: the call per rectangle
+    constexpr double COALESCE_RECT_COST = 8192;
+    // What a rectangle of a frame's damage costs on top of its pixels: every element of the frame is drawn once per
+    // rectangle (a scissor and a draw call each). Measured on crocus and r600 (2026-11-04, 4 fresh sessions each of 8k,
+    // 64k and 256k): at 8k a focus change under load came 0.4 to 0.6 ms later, at 256k typing 1 ms
+    constexpr double COALESCE_FRAME_RECT_COST = 65536;
+
+    // A region of more than maxRects rectangles as the cheapest of three that cover it, a rectangle costing rectCost
+    // pixels on top of its area: the region itself, its horizontal strips (the bounding boxes of the rectangles that
+    // overlap or touch vertically) or its bounding box. Drawing or uploading a region costs a call per rectangle, which
+    // costs more than the extra pixels once a region falls apart into many small rectangles, and less than the pixels
+    // of a bounding box around distant ones (a typed key in one window and a printing log in another).
+    CRegion coalesceRegion(const CRegion& region, size_t maxRects, double rectCost = COALESCE_RECT_COST);
+
+    // The pixels of a region, its rectangles' areas added up (they do not overlap)
+    double regionArea(const CRegion& region);
 
     // The region with every rectangle grown by `by` pixels on each side: what CRegion::expand() gives, made at once
     // instead of unioning the grown rectangles one at a time, whose cost grows with the square of their number

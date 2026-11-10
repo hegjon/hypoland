@@ -747,6 +747,21 @@ Tools:
     workloads and a grim capture each alone before the sprites leave it at 26.8 to 27.1). The merging stays on for
     every crocus: its loss on the Mac mini is small, its gain on the Chromebook and the X200 large. Scripts and
     numbers: `test-results/macmini-sprites-20261028/`.
+    Since 2026-11-10 (branch `wip/coalesce-cost`) a frame's damage is merged on every driver, by a cost per rectangle
+    (`Math::coalesceRegion()`: the cheapest of the rectangles as they are, horizontal strips and their bounding box, a
+    rectangle costing as much as 64k pixels; `HYPOLAND_COALESCE_RECT_COST` sets it, `HYPOLAND_COALESCE_FRAME=off` and
+    `=legacy` give the drawing no merging or 0.3.0's crocus/r600 gate, `HYPOLAND_COALESCE_DEBUG=1|frames` prints the
+    choices), uploads keep crocus and r600 at 8k, and an element with 4 or more damage rectangles is drawn in one draw call
+    over all of them (`CHyprOpenGLImpl::drawQuadInRegion()`, only for textures sampled at the nearest texel and solid
+    rectangles: linear filtering in sub-triangles came out a step off at 1.6 and when magnified; `HYPOLAND_NO_BATCH_RECTS`,
+    `HYPOLAND_BATCH_MIN_RECTS`). Qt's sprites on the XPS were 730 draw calls a frame (365 rectangles, two elements), 7
+    now. Batching from one rectangle cost 2 to 9% more compositor CPU in workspace switching, `dev` and many windows on
+    every machine (a vertex buffer uploaded per element, where a scissored draw of the quad the VAO holds is cheaper), hence
+    the 4. master / batched from 1 / from 4, 11 to 14 fresh sessions of each on five machines (2026-11-10,
+    `test-results/minb-20261110/summary.txt`; from 1 against merging off on ten in `test-results/batch-20261106/`): the
+    sprites XPS 17.6 / 6.7 / 6.6% (Galaxy Book from 1: 14.1 -> 7.2), everything else within 1 to 3% of master (Chromebook
+    workspace switch 5.73 / 6.09 / 5.90, X200 3.46 / 3.74 / 3.50), the `dev` typing latency Mac mini 10.5 / 8.9 / 8.8 ms,
+    lianli 8.7 / 7.7 / 7.6. The render matrix passes (`render-matrix.sh --quick`, 7 of 7).
   - Mesa uploads a shm window into an idle tiled texture through a temporary of the window's size that it mallocs
     and frees per upload (`crocus_map_tiled_memcpy()` from Gen 5 on, `iris_map_tiled_memcpy()`; Gen 4 maps the
     texture directly, which is why the X200 gained from the idle second texture and Bay Trail lost). Upstream's

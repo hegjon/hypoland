@@ -224,6 +224,13 @@ namespace Render::GL {
         void renderTexturePrimitive(SP<ITexture> tex, const CBox& box);
 
         void setViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+        // Draws the used shader's quad, placed by projection, in every rectangle of region (in the coordinates scissor()
+        // takes) with one draw call: each rectangle becomes two triangles of the quad cut to it, instead of a scissor and
+        // a draw per rectangle. uvTopLeft and uvBottomRight are the texture coordinates of the quad's corners. False when
+        // the quad is turned by other than a multiple of 90 degrees or HYPOLAND_NO_BATCH_RECTS is set: draw per rectangle
+        bool drawQuadInRegion(WP<CShader> shader, const Mat3x3& projection, const CRegion& region, bool transform, const Vector2D& uvTopLeft = {0, 0},
+                              const Vector2D& uvBottomRight = {1, 1});
+        CBox scissorBox(const CBox& box, bool transform) const; // a box in the coordinates glScissor takes
         void setCapStatus(int cap, bool status);
         void setActiveTexture(GLenum texture);
         void blendFunc(GLenum sfactor, GLenum dfactor);
@@ -257,7 +264,8 @@ namespace Render::GL {
         WP<CShader>                       useShader(WP<CShader> prog);
 
         bool                              explicitSyncSupported();
-        bool                              coalesceDamage() const; // whether damage is merged into few rectangles
+        bool                              coalesceDamage() const;      // whether uploads are merged into few rectangles
+        bool                              coalesceFrameDamage() const; // whether a frame's damage is merged
         void                              scheduleShaderCompilerRelease();
         void                              scheduleHeapTrim();
         // HYPOLAND_ALPHA_BOUNDS: the box of a layer surface's pixels with alpha, so the transparent rest is not blended
@@ -358,6 +366,9 @@ namespace Render::GL {
         } m_lastViewport;
 
         std::array<bool, CAP_STATUS_END> m_capStatus = {};
+
+        GLuint                           m_batchVbo = 0; // drawQuadInRegion()'s vertices
+        std::vector<SVertex>             m_batchVerts;
 
         // shadowed GL state, all initialized to the GL defaults
         GLenum                  m_activeTexture    = GL_TEXTURE0;

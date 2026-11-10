@@ -72,6 +72,20 @@ TEST(Helpers, coalesceRegionFallsBackToExtents) {
     EXPECT_TRUE(covers(result, CRegion{CBox{0, 0, 30, 460}}));
 }
 
+TEST(Helpers, coalesceRegionKeepsDistantRectanglesApart) {
+    // a log printing in one window and a key typed in another above it, with a few small updates in between: their
+    // bounding box would be a large area nothing changed in, so the region stays as it is
+    CRegion region{CBox{960, 600, 960, 600}};
+    for (int i = 0; i < 10; i++) {
+        region.add(CBox{964, i * 30, 900, 16});
+    }
+
+    const CRegion result = coalesceRegion(region, 8);
+
+    EXPECT_TRUE(covers(result, region));
+    EXPECT_TRUE(covers(region, result));
+}
+
 TEST(Helpers, coalesceRegionEmpty) {
     EXPECT_TRUE(coalesceRegion(CRegion{}, 8).empty());
     EXPECT_TRUE(coalesceRegion(CRegion{}, 0).empty());

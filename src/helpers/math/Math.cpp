@@ -95,8 +95,15 @@ eTransform Math::composeTransform(eTransform a, eTransform b) {
     return lookup[a][b];
 }
 
-CRegion Math::coalesceRegion(const CRegion& region, size_t maxRects) {
-    if (sc<size_t>(pixman_region32_n_rects(region.pixman())) <= maxRects)
+double Math::regionArea(const CRegion& region) {
+    double area = 0;
+    region.forEachRect([&area](const auto& RECT) { area += sc<double>(RECT.x2 - RECT.x1) * sc<double>(RECT.y2 - RECT.y1); });
+    return area;
+}
+
+CRegion Math::coalesceRegion(const CRegion& region, size_t maxRects, double rectCost) {
+    const auto RECTS = sc<size_t>(pixman_region32_n_rects(region.pixman()));
+    if (RECTS <= maxRects)
         return region.copy();
 
     // pixman sorts the rectangles by their top edge, so one that starts below the strip so far starts the next one
@@ -113,15 +120,29 @@ CRegion Math::coalesceRegion(const CRegion& region, size_t maxRects) {
         strip.y2    = std::max(strip.y2, RECT.y2);
     });
 
-    if (strips.size() > maxRects)
-        return CRegion{region.copy().getExtents()};
-
-    CRegion result;
+    double stripsArea = 0;
     for (const auto& strip : strips) {
-        result.add(CBox{strip.x1, strip.y1, strip.x2 - strip.x1, strip.y2 - strip.y1});
+        stripsArea += sc<double>(strip.x2 - strip.x1) * sc<double>(strip.y2 - strip.y1);
     }
 
-    return result;
+    const auto   EXTENTS    = region.copy().getExtents();
+    const double AS_IS      = sc<double>(RECTS) * rectCost + regionArea(region);
+    const double AS_STRIPS  = sc<double>(strips.size()) * rectCost + stripsArea;
+    const double AS_EXTENTS = rectCost + EXTENTS.w * EXTENTS.h;
+    const double CHEAPEST   = std::min({AS_IS, AS_STRIPS, AS_EXTENTS});
+
+    if (AS_EXTENTS <= CHEAPEST)
+        return CRegion{EXTENTS};
+
+    if (AS_STRIPS <= CHEAPEST) {
+        CRegion result;
+        for (const auto& strip : strips) {
+            result.add(CBox{strip.x1, strip.y1, strip.x2 - strip.x1, strip.y2 - strip.y1});
+        }
+        return result;
+    }
+
+    return region.copy();
 }
 
 CRegion Math::expandRegion(const CRegion& region, int by) {
