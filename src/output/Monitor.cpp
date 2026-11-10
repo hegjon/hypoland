@@ -2131,15 +2131,6 @@ uint16_t CMonitor::isDSBlocked(bool full) {
             return reasons;
     }
 
-    // the output takes the scanned-out buffer's format, and the renderer has to be able to take over in it: after a scanout of
-    // mpv's 10-bit video (XRGB2101010) the X200 composited a frame with the output still in it and aborted on the incomplete
-    // work buffer, GLES 2 renders into no 10-bit format (2026-11-09, render:direct_scanout auto, master's first auto as well)
-    if (params.success && !g_pHyprRenderer->canRenderToFormat(params.format)) {
-        reasons |= DS_BLOCK_DMA;
-        if (!full)
-            return reasons;
-    }
-
     // no surface can carry an image description, only the output side can need CM
     if (*PNONSHADER != CM_NS_IGNORE && needsCM() && !canNoShaderCM(true)) {
         reasons |= DS_BLOCK_CM; // block SDR that needs CM while non-shader CM isn't available
@@ -2834,11 +2825,14 @@ bool CMonitorState::updateSwapchain() {
     static auto  PNEWSCHEDULING = CConfigValue<Config::INTEGER>("render:new_render_scheduling");
     const size_t LENGTH         = *PNEWSCHEDULING ? 3 : 2;
 
-    if (OPTIONS.format == m_owner->m_drmFormat && OPTIONS.scanout && OPTIONS.length == LENGTH && OPTIONS.size == MODE->pixelSize)
+    // the swapchain is only rendered into: reconfigured to the format of a scanned-out 10-bit buffer by a monitor commit during the
+    // scanout, it left the X200 drawing into an incomplete framebuffer (2026-11-09)
+    const auto FORMAT = m_owner->renderableFormat(m_owner->m_drmFormat);
+    if (OPTIONS.format == FORMAT && OPTIONS.scanout && OPTIONS.length == LENGTH && OPTIONS.size == MODE->pixelSize)
         return true;
 
     auto options    = OPTIONS;
-    options.format  = m_owner->m_drmFormat;
+    options.format  = FORMAT;
     options.scanout = true;
     options.length  = LENGTH;
     options.size    = MODE->pixelSize;
@@ -2863,8 +2857,15 @@ PImageDescription CMonitor::workBufferImageDescription() {
     return m_imageDescription;
 }
 
+// the output takes the format of the buffer it scans out, and what is rendered into (the work buffers, the swapchain) has to stay
+// in one the renderer can render into: GLES 2 renders into no 10-bit format, and the X200 aborted a second into a scanout of
+// mpv's 10-bit video (XRGB2101010), allocating its work buffers in it (2026-11-09 and 10)
+uint32_t CMonitor::renderableFormat(uint32_t format) const {
+    return !g_pHyprRenderer || g_pHyprRenderer->canRenderToFormat(format) ? format : m_prevDrmFormat;
+}
+
 WP<CMonitorResources> CMonitor::resources() {
-    const auto DRM_FORMAT = m_output->state->state().drmFormat;
+    const auto DRM_FORMAT = renderableFormat(m_output->state->state().drmFormat);
     const auto DESC       = workBufferImageDescription();
 
     if (!m_resources || m_resources->m_drmFormat != DRM_FORMAT || m_resources->m_size != m_transformedSize)

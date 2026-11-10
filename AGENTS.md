@@ -1344,10 +1344,20 @@ Tools:
   near the refresh rate (below it, it cannot be short of buffers); and at once when the screen shows the window at a fifth
   more or less than when it chose (a game's loading screen, then its play: measured composited first, where it is, then
   scanned out; two measurements more than twice apart in drawn rate are of other scenes and taken again after a second).
-  A plane that refuses the buffers for a second and four buffers leaves it composited until the next try. A buffer in a
-  format the renderer cannot render into is never scanned out (`canRenderToFormat()`): with scanout on by default the X200
-  aborted in every session a few seconds into the fullscreen `video` workload, mpv's 10-bit buffers (XRGB2101010) having
-  left the output in a format the work buffer then failed in (`fsab/`, 8 of 8 sessions of auto and of the first auto). A buffer the plane
+  A plane that refuses the buffers for a second and four buffers leaves it composited until the next try. With scanout on by
+  default the X200 aborted in every session a few seconds into the fullscreen `video` workload (`fsab/`, 8 of 8 sessions of
+  auto and of the first auto): the output takes the format of the buffer it scans out, mpv's 10-bit XRGB2101010, and the
+  frames composited after it allocated what they render into in that format, which GLES 2 cannot render into. Until
+  2026-11-10 such buffers were kept off the plane, which cost the fullscreen video wherever the plane takes them; since then
+  what is rendered into keeps a format the renderer can render into, the output's format from before the scanout
+  (`CMonitor::renderableFormat()`, for the swapchain in `updateSwapchain()`, the work buffers in `resources()` and the render
+  buffer in `beginRender()`), and 10-bit buffers are scanned out again. The swapchain alone (r957) still aborted in 8 of 8
+  sessions (work buffers allocated in XRGB2101010, `markMirrorFBStale()`); with all three (r958) none of 8 sessions of auto
+  and on did, and the video cost 0.60 to 0.62 ms of compositor CPU a frame against 0.85 composited
+  (`test-results/dscost-20261110/x200-10bit-*`). The T550, the Mac mini and the XPS refuse mpv's buffers on the plane
+  anyway. On the Galaxy Book master with the block cost the fullscreen video 1.09 against 0.57 ms a frame of the build
+  before (r954 against r951, 2 fresh sessions each, `test-results/gb-20261110/`; its GPU hung in the third block, 10:31),
+  and the fix is not measured there yet. A buffer the plane
   refuses (KMS's test fails, after the settling and two buffers) ends the scanout measurement at once: every refused frame
   is tested in KMS again. The fullscreen handlers offer a fullscreen window the scanout formats as dmabuf feedback when it
   goes fullscreen, as the first auto did, and it keeps them unless it measured better composited (with them Intel clients
@@ -1389,10 +1399,11 @@ Tools:
   compositor's main device (`hyprtester/clients/dmabuf-fullscreen.cpp`, `--format xrgb8888|xrgb2101010|argb8888`, `--shrink`,
   `--transform`) on a headless output, which takes any buffer in a commit: on the plane and drawing, off it under a
   notification, a software cursor (headless outputs have no cursor plane, so the tests make the cursor invisible) and out of
-  fullscreen, a grim screenshot of it while scanned out, closed on the plane, refused for a 10-bit buffer, a buffer a pixel
-  small, one turned by 180 degrees and `direct_scanout = 0`, the output back in its own format after an ARGB8888 buffer, and
-  auto measuring composited first and choosing the plane for a client at the refresh rate. Without the 10-bit guard or the
-  format restore of `handleDSleave()` they fail. Not covered nested: what a KMS driver accepts, the scanout tranche of the
+  fullscreen, a grim screenshot of it while scanned out, closed on the plane, refused for a buffer a pixel small, one turned
+  by 180 degrees and `direct_scanout = 0`, the output back in its own format after an ARGB8888 buffer, a 10-bit buffer
+  scanned out, composited around it three times and the output back in its format out of fullscreen (`directScanout10Bit`;
+  the X200's abort does not show nested, the test passes without its fix), and auto measuring composited first and
+  choosing the plane for a client at the refresh rate. Without the format restore of `handleDSleave()` they fail. Not covered nested: what a KMS driver accepts, the scanout tranche of the
   dmabuf feedback (only made with a session) and mirrors (a mirror output cannot be removed again within the test).
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):

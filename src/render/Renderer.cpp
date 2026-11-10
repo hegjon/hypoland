@@ -1669,7 +1669,7 @@ bool IHyprRenderer::beginRender(PHLMONITOR pMonitor, CRegion& damage, eRenderMod
 
     initRender();
 
-    if (!initRenderBuffer(m_currentBuffer, pMonitor->m_output->state->state().drmFormat)) {
+    if (!initRenderBuffer(m_currentBuffer, pMonitor->renderableFormat(pMonitor->m_output->state->state().drmFormat))) {
         Log::logger->log(Log::ERR, "failed to start a render pass for output {}, no RBO could be obtained", pMonitor->m_name);
         return false;
     }

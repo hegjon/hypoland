@@ -398,6 +398,8 @@ namespace Monitor {
         bool                                needsACopyFB();
         NColorManagement::PImageDescription workBufferImageDescription();
         WP<Monitor::CMonitorResources>      resources();
+        // FORMAT if the renderer can render into it, else the format of the frames composited before a scanout in it
+        uint32_t renderableFormat(uint32_t format) const;
 
       private:
         void                    updateMatrix();

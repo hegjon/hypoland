@@ -285,10 +285,6 @@ SUBTEST(refusedBuffer, std::vector<std::string> args, std::string reason) {
 TEST_CASE(directScanoutRefused) {
     prepare(1);
 
-    NLog::log("{}A 10-bit buffer, which the renderer cannot take over in (the X200's abort of 2026-11-09)", Colors::YELLOW);
-    CALL_SUBTEST(refusedBuffer, std::vector<std::string>{"--format", "xrgb2101010"}, "invalid buffer");
-    Tests::killAllWindows();
-
     NLog::log("{}A buffer a pixel smaller than the monitor", Colors::YELLOW);
     CALL_SUBTEST(refusedBuffer, std::vector<std::string>{"--shrink", "1"}, "surface transformations");
     Tests::killAllWindows();
@@ -300,6 +296,41 @@ TEST_CASE(directScanoutRefused) {
     NLog::log("{}Scanout switched off", Colors::YELLOW);
     prepare(0);
     CALL_SUBTEST(refusedBuffer, std::vector<std::string>{}, "user settings");
+}
+
+// a 10-bit buffer (mpv's video, XRGB2101010) goes on the plane, and the frames composited around it keep a format the renderer
+// can render into: the X200 aborted when a frame was drawn with the output still in the buffer's format, into a swapchain
+// reconfigured to it (2026-11-09)
+TEST_CASE(directScanout10Bit) {
+    prepare(1);
+
+    std::optional<CDmabufClient> client;
+    try {
+        client.emplace(std::vector<std::string>{"--format", "xrgb2101010"});
+    } catch (const std::exception& e) { FAIL_TEST("dmabuf-fullscreen: {}", e.what()); }
+    const auto ADDRESS = client->address();
+    const auto FORMAT  = Tests::getAttribute(monitorOf(ADDRESS), "currentFormat");
+
+    NLog::log("{}A fullscreen window in 10-bit dmabufs is scanned out", Colors::YELLOW);
+    client->command("fullscreen");
+    ASSERT(waitForScanout(ADDRESS), true);
+    EXPECT(drawing(*client), true);
+
+    NLog::log("{}Taken off the plane and back, composited in between", Colors::YELLOW);
+    for (int i = 0; i < 3; ++i) {
+        OK(getFromSocket("/notify 1 10000 0 scanout test"));
+        EXPECT(waitForBlocked(ADDRESS, "missing candidate"), true);
+        EXPECT(drawing(*client), true);
+        OK(getFromSocket("/dismissnotify"));
+        EXPECT(waitForScanout(ADDRESS), true);
+    }
+
+    NLog::log("{}Out of fullscreen it is composited in the output's format of before", Colors::YELLOW);
+    client->command("unfullscreen");
+    EXPECT(waitForBlocked(ADDRESS, "missing candidate"), true);
+    EXPECT(Tests::getAttribute(monitorOf(ADDRESS), "currentFormat"), FORMAT);
+    EXPECT(drawing(*client), true);
+    EXPECT(Tests::processAlive(HYPRLAND_PID), true);
 }
 
 TEST_CASE(directScanoutFormat) {
