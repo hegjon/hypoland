@@ -127,7 +127,7 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
     <h2 class="title" id="t-tools">perf: what else is looked at</h2>
     <div class="body">
       <ul class="pixel-list">
-        <li>GPU time per frame, by the compositor's own pass profile and the i915 busy counter</li>
+        <li>GPU time per frame, by the compositor's own pass profile</li>
         <li>Power, by RAPL or the battery's discharge rate, net of an idle baseline</li>
         <li>Memory: PSS, heap, threads and the GPU buffers the compositor holds</li>
         <li>Profiles with <code>perf</code> and the kernel's and Mesa's symbols</li>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hypoland: terminals</title>
-<meta name="description" content="foot, Alacritty, Ghostty and kitty scrolling under Hypoland and under Hyprland 0.57.0 on ten machines: the compositor's CPU, its frames and the GPU.">
+<meta name="description" content="foot, Alacritty, Ghostty and kitty scrolling under Hypoland and under Hyprland 0.57.0 on ten machines: the compositor's CPU and its frames.">
 <meta name="theme-color" content="#efe6d2">
 <meta property="og:site_name" content="Hypoland">
 <meta property="og:title" content="Hypoland: terminals">
@@ -28,7 +28,6 @@
     <li><a href="#m1">2</a></li>
     <li><a href="#m2">3</a></li>
     <li><a href="#m3">4</a></li>
-    <li><a href="#m4">5</a></li>
   </ul>
   <div class="right">
     <span class="opt">terminals</span>
@@ -132,22 +131,6 @@
         </tbody>
       </table></div>
       <p class="note">The compositor's page flips a second. The terminals print as fast as they can, so this is how many of their frames reach the screen; the Galaxy Book's screen runs at 120&nbsp;Hz.</p>
-    </div>
-  </section>
-
-  <section class="win full" id="m4" aria-labelledby="t-m4">
-    <h2 class="title" id="t-m4">The GPU&#x27;s render engine busy</h2>
-    <div class="body">
-      <div class="scroll"><table>
-        <thead><tr><th>Hypoland / Hyprland 0.57.0</th><th>foot</th><th>Alacritty</th><th>Ghostty</th><th>kitty</th></tr></thead>
-        <tbody>
-          <tr><td>Lenovo ThinkPad T550</td><td class="yes">13.2% / 31.1%</td><td class="yes">25.6% / 47.7%</td><td class="yes">61.9% / 72.1%</td><td class="yes">46.9% / 59.4%</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td class="yes">19.7% / 48.3%</td><td class="yes">49.1% / 74.9%</td><td>96.5% / 99.0%</td><td class="yes">64.8% / 75.4%</td></tr>
-          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">7.0% / 22.2%</td><td class="yes">16.5% / 30.1%</td><td class="yes">43.9% / 52.2%</td><td class="yes">31.4% / 39.4%</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td class="yes">12.8% / 32.3%</td><td class="yes">25.2% / 46.3%</td><td class="yes">51.7% / 58.8%</td><td class="yes">41.7% / 47.8%</td></tr>
-        </tbody>
-      </table></div>
-      <p class="note">The i915 busy counter: the terminal's drawing, the compositor's and Mesa's copies together. The iris machines only: radeon and msm have no such counter, and on the crocus ones it reads next to nothing for a foot window the GPU samples in place, whatever it costs.</p>
     </div>
   </section>
 
