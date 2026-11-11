@@ -150,6 +150,7 @@ package_hypoland-bench() {
     'chromium: shm-fullwindow and its check'
     'nautilus: the nautilus workload, the soak'
     'flea: the flea workload, the soak'
+    'folio: the folio workloads (Files), the soak'
     'mpv: the video workloads'
     'ffmpeg: the clip of the video workloads'
     'python-gobject: the GTK 3 and GTK 4 clients'

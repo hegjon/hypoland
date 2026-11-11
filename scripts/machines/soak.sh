@@ -8,7 +8,8 @@
 # only those workloads (soak-ab.sh uses the first two).
 # Runs as the session user on the machine under test. It repeats a cycle of workloads (GPU client, terminal
 # scrolling in foot (shm) and alacritty (GL), a fullscreen video in mpv, nautilus (GTK 4) with fullscreen toggles,
-# flea (Quickshell) paged, searched and switched between views with keys, both file managers scrolling the same
+# flea (Quickshell) paged, searched and switched between views with keys, Files (folio, Qt Quick) with fullscreen
+# toggles, its views and new windows, the three file managers scrolling the same
 # 25000 files with the same keys and searching them by name (w_files_*, w_search_*, to compare them), Omarchy's screensaver (ttfx in foot and in alacritty, tiled and fullscreen), Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm, screenshots and
 # recording, config reload, DPMS off/on, idle, glmark2, notifications; the ones whose program is not installed are skipped) and samples the compositor every minute:
 # memory (Pss, anonymous, GPU buffers), CPU time, fds, threads, IPC latency, the hottest CPU temperature sensor and the
@@ -109,6 +110,7 @@ stop_clients() {
 restore() {
     trap - EXIT
     stop_clients
+    declare -F folio_restore >/dev/null && folio_restore
     [ -n "$SAMPLER" ] && kill "$SAMPLER" 2>/dev/null
     [ -n "$UPDATE_GUARD" ] && kill "$UPDATE_GUARD" 2>/dev/null
     [ -n "$PERF" ] && stop_perf
@@ -256,6 +258,43 @@ w_nautilus() {
     stop_clients
     nautilus -q >/dev/null 2>&1
 }
+# Files (folio), Omarchy's file manager since omacom/omarchy#18378 (2026-11-10): C++ and Qt Quick, a process and a
+# window per launch. The icon folder in its grid with fullscreen toggles as Nautilus', its three views (CTRL 1 grid,
+# 2 list, 3 columns) and new windows (CTRL N). It remembers its view in ~/.config/folio/folio.conf, which the
+# workloads set and put back as it was.
+FOLIOCONF=$HOME/.config/folio/folio.conf
+FOLIOSAVED=$OUT/clients/folio.conf
+folio_view() { # grid or list
+    if [ ! -e "$FOLIOSAVED" ] && [ ! -e "$FOLIOSAVED.none" ]; then
+        if [ -e "$FOLIOCONF" ]; then cp -p "$FOLIOCONF" "$FOLIOSAVED"; else : >"$FOLIOSAVED.none"; fi
+    fi
+    mkdir -p "${FOLIOCONF%/*}"
+    [ -e "$FOLIOCONF" ] || echo "[General]" >"$FOLIOCONF"
+    if grep -q "^viewMode=" "$FOLIOCONF"; then
+        sed -i "s/^viewMode=.*/viewMode=$1/" "$FOLIOCONF"
+    else
+        sed -i "/^\[General\]/a viewMode=$1" "$FOLIOCONF"
+    fi
+}
+folio_restore() { # after stop_clients
+    if [ -e "$FOLIOSAVED" ]; then
+        cp -p "$FOLIOSAVED" "$FOLIOCONF" && rm -f "$FOLIOSAVED"
+    elif [ -e "$FOLIOSAVED.none" ]; then
+        rm -f "$FOLIOCONF" "$FOLIOSAVED.none"
+    fi
+}
+w_folio() {
+    command -v folio >/dev/null || return 0
+    folio_view grid
+    client "exec folio /usr/share/icons/Adwaita/symbolic/actions" folio
+    sleep 5
+    local _ v
+    for _ in $(seq 1 20); do dispatch 'hl.dsp.window.fullscreen({action="toggle"})'; sleep 1; done
+    for v in 2 3 1; do key CTRL $v 2; done # list, columns, back to the grid
+    for _ in 1 2 3; do key CTRL n 2; done  # new windows, in the same process
+    stop_clients
+    folio_restore
+}
 # 25000 empty files, made once in the user's cache (relative names, the full paths would come close to ARG_MAX)
 FILES=$HOME/.cache/hypoland-bench/files-25000
 make_files() { [ -e "$FILES/file-25000.txt" ] || { mkdir -p "$FILES" && (cd "$FILES" && touch file-{00001..25000}.txt); }; }
@@ -276,14 +315,16 @@ w_flea() {
     # flea execs qs and leaves a backend; the bracket keeps pkill from matching its own command line
     pkill -f "[q]s -p /usr/share/flea"; pkill -x flea; sleep 1
 }
-# Nautilus and flea on the same 25000 files in list view (CTRL 1 in both), every 10 s: 64 rows down one at a time
-# with Down, 8 a second (once the selection reaches the bottom every key scrolls by one row, so both go through the
-# same files on every screen; Page_Down moves by as many rows as the window shows), then End to the last file and
-# Home back to the first. The window opens before and closes after the measurement (measured() runs
-# <workload>_start and <workload>_stop around it), so the two costs compare by the scrolling alone.
-scroll_files() {
+# Nautilus, flea and Files on the same 25000 files in list view (CTRL 1 in the first two, CTRL 2 in Files), every
+# 10 s: 64 rows down one at a time with Down, 8 a second (once the selection reaches the bottom every key scrolls by
+# one row, so all go through the same files on every screen; Page_Down moves by as many rows as the window shows),
+# then End to the last file and Home back to the first. Files' list has no End and Home and does not scroll to the
+# cursor on Down (folio 0.1.1 and 0.2.0, fixed in omacom/folio#18): the cursor walks off the bottom and only the cursor
+# and the details pane redraw. The window opens before and closes after the measurement (measured() runs
+# <workload>_start and <workload>_stop around it), so the costs compare by the scrolling alone.
+scroll_files() { # [the key that shows the list, with CTRL]
     local _
-    key CTRL 1 1
+    key CTRL "${1:-1}" 1
     for _ in $(seq 1 $((T_LONG >= 20 ? T_LONG / 10 : 1))); do
         for _ in $(seq 1 64); do key "" Down 0.1; done
         key "" End 1
@@ -306,13 +347,22 @@ w_files_flea_start() {
 }
 w_files_flea() { command -v flea >/dev/null || return 0; scroll_files; }
 w_files_flea_stop() { stop_clients; pkill -f "[q]s -p /usr/share/flea"; pkill -x flea; sleep 1; }
+w_files_folio_start() {
+    command -v folio >/dev/null || return 0
+    make_files
+    folio_view list
+    client "exec folio '$FILES'" files-folio
+    sleep 8
+}
+w_files_folio() { command -v folio >/dev/null || return 0; scroll_files 2; }
+w_files_folio_stop() { stop_clients; folio_restore; }
 # The same files searched by name: open the search (CTRL F in Nautilus, / in flea, whose CTRL F searches the whole
 # home directory), type five digits, look at the one match, clear with Escape, about one name every 5 s. The names
 # are spread over the folder: flea 0.3.12-1 filtered only the rows it had loaded (the first 321, flea issue 315),
 # the patched build 0.3.12-1.316 on the test machines has its backend test the rest of the folder.
-search_files() { # modifiers and key that open the search
+search_files() { # modifiers and key that open the search, [the key that shows the list, with CTRL]
     local _ q c
-    key CTRL 1 1
+    key CTRL "${3:-1}" 1
     for _ in $(seq 1 $((T_LONG >= 20 ? T_LONG / 20 : 1))); do
         for q in 00012 06123 13234 24301; do
             key "$1" "$2" 1
@@ -328,6 +378,9 @@ w_search_nautilus_stop() { w_files_nautilus_stop; }
 w_search_flea_start() { w_files_flea_start; }
 w_search_flea() { command -v flea >/dev/null || return 0; search_files "" slash; }
 w_search_flea_stop() { w_files_flea_stop; }
+w_search_folio_start() { w_files_folio_start; }
+w_search_folio() { command -v folio >/dev/null || return 0; search_files "" slash 2; }
+w_search_folio_stop() { w_files_folio_stop; }
 # Omarchy's screensaver: ttfx in foot or alacritty with the screensaver's config, frame rate and text, but a fixed
 # list of effects and seed instead of random ones, and a class of its own (the sampler takes
 # org.omarchy.screensaver for the real screensaver). Tiled like the other clients, and fullscreen (_fs) as the
@@ -588,7 +641,7 @@ if H monitors | grep -q "solitaryBlockedBy:.*lock"; then
     log "the session is locked, a new one is needed first (systemctl restart sddm as root)"
     exit 1
 fi
-WORKLOADS=${SOAK_WORKLOADS:-w_gpu w_scroll w_scroll_alacritty w_video w_nautilus w_flea w_files_nautilus w_files_flea w_search_nautilus w_search_flea w_ttfx_foot w_ttfx_foot_fs w_ttfx_alacritty w_ttfx_alacritty_fs w_xwayland_fullscreen w_workspaces w_churn w_capture w_notify w_reload w_dpms w_idle w_glmark2}
+WORKLOADS=${SOAK_WORKLOADS:-w_gpu w_scroll w_scroll_alacritty w_video w_nautilus w_flea w_folio w_files_nautilus w_files_flea w_files_folio w_search_nautilus w_search_flea w_search_folio w_ttfx_foot w_ttfx_foot_fs w_ttfx_alacritty w_ttfx_alacritty_fs w_xwayland_fullscreen w_workspaces w_churn w_capture w_notify w_reload w_dpms w_idle w_glmark2}
 log "soak test for $HOURS h, compositor pid $COMP, $(comp_pkg), perf $HAVE_PERF, energy $([ -n "$(energy)" ] && echo RAPL || echo none), ${#TEMPS[@]} CPU temperature sensors, ${#FANS[@]} fan sensors"
 LAST_EVENTS=$START
 LAST_SHOT=0

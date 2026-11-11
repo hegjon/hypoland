@@ -579,8 +579,19 @@ Tools:
   clients' Pss with the folder loaded Flea 105 MB, Nautilus 115 to 119 MB on both, their cgroups' peak Flea 111 / 163 MB,
   Nautilus 92 / 180 MB (X200 / T550); the compositor 42 to 45 MB Pss. The older `flea` and
   `nautilus` workloads page with four keys a second and toggle fullscreen twice a second, which is why they show 8 and
-  25 to 32 frames a second. Before 2026-10-26 the clients ran in root's ssh session (`user-0.slice`), which the CPU
-  controller weighs against the user's slice; now they share the user's slice with the compositor, as programs
+  25 to 32 frames a second. `folio` and `folio-scroll` (added 2026-11-11, asked for by the user) are the same two as
+  Nautilus' in Files (`folio`, C++ and Qt Quick), Omarchy's file manager in place of Nautilus since omacom/omarchy#18378
+  of 2026-11-10; the soak has it too (`w_folio`, `w_files_folio`, `w_search_folio`). Files keeps its view in
+  `~/.config/folio/folio.conf`, which they set and put back. Files 0.1.1 and 0.2.0 (released 2026-11-11, a2bc0ca) do
+  not scroll the list to the cursor on Down: the cursor walks off the bottom and the view stays (XPS, screenshots), so
+  until that is fixed `folio-scroll` measures the cursor and the details pane redrawn, not scrolling, and does not
+  compare with `nautilus-scroll`. The fix is in omacom/folio#18, open on 2026-11-11 and tested on the XPS (the report,
+  a headless test and the screenshots are in `test-results/folio-scroll-bug-20261111/`). First run, one round of each
+  in a fresh session (compositor CPU / frames on the screen, the client):
+  T460s `folio` 1.41% / 18.9 fps, `folio-scroll` 4.11% / 58.5 fps, client 22.3%, its Pss 88 MB (Nautilus 2.16% / 27.8,
+  3.10% / 40.5, 28.5%, 119 MB); XPS `folio` 1.79% / 17.9, `folio-scroll` 4.73% / 58.5, 30.5%, 91 MB (Nautilus 2.78% /
+  20.8, 3.26% / 40.4, 33.5%, 111 MB). Before 2026-10-26 the clients ran in root's ssh session (`user-0.slice`), which
+  the CPU controller weighs against the user's slice; now they share the user's slice with the compositor, as programs
   started from the desktop do in `app.slice`. `systemd-run` expands `$` in the command it runs like `ExecStart=`
   does, so it runs with `--expand-environment=no` (a client's `$$` came out as `$` and nothing stopped them).
   `fps.<workload>.screen` (since 2026-10-26) is the frames the compositor put on the screen per second over the same

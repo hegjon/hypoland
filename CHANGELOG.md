@@ -32,6 +32,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   `gravitymark-vk` run GravityMark, all fullscreen without vsync, reporting the game's own frame rate. They come last in
   the default list; the games are optional dependencies.
 - `velocitty-scroll`, the benchmark's terminal scrolling in Velocitty.
+- `folio` and `folio-scroll`, the benchmark's Nautilus workloads in Files (`folio`), Omarchy's file manager in place of
+  Nautilus, and Files in the soak's file manager workloads.
 
 ### Changed
 

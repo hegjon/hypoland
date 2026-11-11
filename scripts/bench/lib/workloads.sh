@@ -383,6 +383,55 @@ workload_nautilus_scroll() {
     return 0
 }
 
+# Files (folio), Omarchy's file manager since omacom/omarchy#18378 (2026-11-10, in place of Nautilus): C++ and Qt Quick,
+# a process and a window per launch (app id folio). The same two workloads as Nautilus': `folio` the icon folder in its
+# grid with fullscreen toggled twice a second, `folio-scroll` the 5000 files in its list with Down held. It remembers
+# its view (grid, list or columns) in ~/.config/folio/folio.conf; the workloads set it before the start and put the
+# user's file back afterwards. Added 2026-11-11, asked for by the user. Files 0.1.1 and 0.2.0 do not scroll the list to
+# the cursor on Down (the cursor walks off the bottom, the view stays; fixed in omacom/folio#18), so until a release has
+# the fix `folio-scroll` measures the cursor and the details pane, not scrolling.
+FOLIOCONF=$USERHOME/.config/folio/folio.conf
+folio_view() { # view: grid or list. Keeps the user's settings for folio_restore
+    if [ -e "$FOLIOCONF" ] && [ ! -e "$CLIENTDIR/folio.conf" ]; then
+        cp -p "$FOLIOCONF" "$CLIENTDIR/folio.conf"
+    elif [ ! -e "$FOLIOCONF" ]; then
+        : >"$CLIENTDIR/folio.conf.none"
+    fi
+    asuser bash -c 'mkdir -p "${0%/*}" && { [ -e "$0" ] || echo "[General]" >"$0"; } &&
+        if grep -q "^viewMode=" "$0"; then sed -i "s/^viewMode=.*/viewMode=$1/" "$0"; else sed -i "/^\[General\]/a viewMode=$1" "$0"; fi' \
+        "$FOLIOCONF" "$1"
+}
+folio_restore() { # after stop_clients: each launch is a process of its own, so a window of the user's stays
+    if [ -e "$CLIENTDIR/folio.conf" ]; then
+        asuser cp "$CLIENTDIR/folio.conf" "$FOLIOCONF"
+        rm -f "$CLIENTDIR/folio.conf"
+    elif [ -e "$CLIENTDIR/folio.conf.none" ]; then
+        rm -f "$FOLIOCONF" "$CLIENTDIR/folio.conf.none"
+    fi
+}
+needs_folio="folio"
+workload_folio() { # Qt Quick redrawing a full window of icons, fullscreen toggled twice a second
+    folio_view grid
+    client $((SECONDS_PER_RUN + 15)) "exec folio /usr/share/icons/Adwaita/symbolic/actions"
+    sleep 5
+    (for i in $(seq 1 "$SECONDS_PER_RUN"); do
+        dispatch 'hl.dsp.window.fullscreen({action="toggle"})' "fullscreen"; sleep 0.5
+    done) &
+    local toggler=$!
+    rec folio
+    wait $toggler
+    stop_clients
+    folio_restore
+}
+needs_folio_scroll="folio root"
+workload_folio_scroll() {
+    # the list, one file per Down; the grid moves a row
+    folio_view list
+    scroll_folder folio-scroll 5 "exec folio 'FOLDER'"
+    folio_restore
+    return 0
+}
+
 needs_shm_fullwindow="chromium"
 workload_shm_fullwindow() {
     local page="data:text/html,<body style='background:linear-gradient(90deg,red,blue)'><marquee scrollamount=20 style='font:60px sans-serif;color:white'>Hypoland</marquee><div style='animation:s 2s linear infinite;width:200px;height:200px;background:lime'></div><style>@keyframes s{to{transform:translateX(900px) rotate(360deg)}}</style>"
