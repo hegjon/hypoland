@@ -3,14 +3,17 @@
 #include "../../hyprctlCompat.hpp"
 #include "../shared.hpp"
 
+#include <hyprutils/os/Process.hpp>
 #include <hyprutils/utils/ScopeGuard.hpp>
 
 #include <chrono>
+#include <csignal>
 #include <format>
 #include <string>
 #include <thread>
 
 using namespace Hyprutils::Utils;
+using namespace Hyprutils::OS;
 
 static constexpr const char* RECONNECT_OUTPUT = "HYPRTEST-RECONNECT";
 static constexpr const char* RECONNECT_CLASS  = "reconnect_floating";
@@ -95,4 +98,40 @@ TEST_CASE(floatingWindowKeepsPositionAfterMonitorReconnect) {
     const auto ACTIVE_AFTER = getFromSocket("/activewindow");
     EXPECT_CONTAINS(ACTIVE_AFTER, "(reconnect_floating)");
     EXPECT_CONTAINS(ACTIVE_AFTER, "floating: 1");
+}
+
+// A monitor connecting while the screen is captured (2026-11-11, macmini-intel: the KVM's HDMI came back while the session
+// check captured the screen): its first commit came before it had a size, and the screenshare manager made its framebuffers
+// at 0x0 there, which asserted. grim in a loop keeps a capture pending or a share going
+TEST_CASE(monitorConnectsWhileCaptured) {
+    if (Tests::execAndGet("command -v grim").empty()) {
+        NLog::log("{}grim is not installed, skipping", Colors::YELLOW);
+        return;
+    }
+
+    getFromSocket(std::format("/output remove {}", RECONNECT_OUTPUT));
+    waitForOutput(false);
+    OK(getFromSocket(std::format("/eval hl.monitor({{ output = '{}', mode = '1280x720@60', position = '1920x0', scale = '1' }})", RECONNECT_OUTPUT)));
+
+    CProcess grim("sh", {"-c", "while :; do grim -o HEADLESS-2 /dev/null 2>/dev/null; done"});
+    grim.addEnv("WAYLAND_DISPLAY", WLDISPLAY);
+    grim.runAsync();
+
+    CScopeGuard guard = {[&]() {
+        if (grim.pid() > 0)
+            kill(grim.pid(), SIGKILL);
+        Tests::execAndGet("pkill -f 'grim -o HEADLESS-2 /dev/null'");
+        getFromSocket(std::format("/output remove {}", RECONNECT_OUTPUT));
+        waitForOutput(false);
+    }};
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    for (int i = 0; i < 5; ++i) {
+        OK(getFromSocket(std::format("/output create headless {}", RECONNECT_OUTPUT)));
+        ASSERT(waitForOutput(true), true);
+        OK(getFromSocket(std::format("/output remove {}", RECONNECT_OUTPUT)));
+        ASSERT(waitForOutput(false), true);
+    }
+
+    EXPECT_CONTAINS(getFromSocket("/version"), "Hyprland");
 }

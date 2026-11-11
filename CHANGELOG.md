@@ -41,6 +41,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - Omarchy's bar showed over GravityMark and other X11 programs that make their window fullscreen by themselves (no
   decorations, exactly the size of a monitor) instead of asking the window manager. Such a window is made fullscreen
   when it maps now, which hides the bar over it; `xwayland:legacy_fullscreen = false` switches this off.
+- A monitor plugged in while the screen was being recorded or captured (a screenshot at that moment, screen sharing)
+  crashed Hypoland 0.3.0: its first commit came before it had a size, and getting the capture's frame made the
+  monitor's buffers at 0x0.
 
 ## 0.3.0 - 2026-11-03
 

@@ -2877,6 +2877,10 @@ WP<CMonitorResources> CMonitor::resources() {
     return m_resources;
 }
 
+WP<CMonitorResources> CMonitor::allocatedResources() const {
+    return m_resources;
+}
+
 bool CMonitor::trySetFormat(std::span<const uint32_t> formats) {
     for (auto fmt : formats) {
         m_output->state->setFormat(fmt);

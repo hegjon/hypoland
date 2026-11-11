@@ -27,8 +27,11 @@ void CScreenshareManager::onOutputCommit(PHLMONITOR monitor) {
     // A frame of a monitor is taken from its mirror framebuffer, which the frames drawn straight into the screen's buffers
     // leave behind (CHyprOpenGLImpl::canRenderDirectly()). A commit that drew no new frame for it, as a cursor moved on
     // legacy modesetting is, leaves the frame pending until the frame the capture scheduled has brought the mirror up to
-    // date: on radeon a screenshot showed the screen of the capture before, minutes old
-    const auto RESOURCES   = monitor->resources();
+    // date: on radeon a screenshot showed the screen of the capture before, minutes old. Without allocating the resources: a
+    // monitor that connects commits before it has a size, and resources() then made its framebuffers at 0x0 and asserted
+    // (macmini-intel, 2026-11-11, an HDMI hotplug while the session check captured the screen), and a monitor without
+    // them has no mirror to be stale
+    const auto RESOURCES   = monitor->allocatedResources();
     const bool MIRRORSTALE = RESOURCES && !RESOURCES->pendingMirrorFBDamage().empty();
 
     std::ranges::for_each(m_pendingFrames, [&](WP<CScreenshareFrame>& frame) {

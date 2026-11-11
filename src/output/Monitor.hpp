@@ -398,6 +398,8 @@ namespace Monitor {
         bool                                needsACopyFB();
         NColorManagement::PImageDescription workBufferImageDescription();
         WP<Monitor::CMonitorResources>      resources();
+        // the resources if they are allocated, without allocating them: a monitor's first commit comes before it has a size
+        WP<Monitor::CMonitorResources> allocatedResources() const;
         // FORMAT if the renderer can render into it, else the format of the frames composited before a scanout in it
         uint32_t renderableFormat(uint32_t format) const;
 
