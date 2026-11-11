@@ -22,6 +22,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   damage is merged into fewer rectangles on every driver (only the older Intel and AMD ones before), and many rectangles
   of a window are drawn in one go. Sixty moving squares drawn by Qt in software cost 6.6 instead of 17.6% of a CPU on a
   Dell XPS 13 and 7.2 instead of 14.1 on a Galaxy Book4 Edge; everything else costs the same.
+- Programs that draw on the CPU and update many small areas cost less on Apple Silicon (Asahi): a window's texture is
+  updated in place there, as Hyprland does, instead of in a second one. Qt's sixty moving squares cost a Mac mini M1 64
+  instead of 80% of a CPU and show 57 instead of 39 frames a second.
 
 ### Added
 

@@ -228,6 +228,18 @@ CGLTexture::CGLTexture(const Aquamarine::SDMABUFAttrs& attrs, void* image, bool 
     unbind();
 }
 
+// One texture updated in place, as upstream does, instead of the two below. On asahi (Apple M1) the driver pays per
+// upload call, not for the GPU still reading the texture, and the damage the second texture missed doubles the calls:
+// Qt's sixty moving squares cost the Mac mini M1 79 to 81% of a CPU at 39 frames a second with two textures, most of it in
+// the kernel, and 64% at 57 with one (2026-11-11, 3 fresh sessions each; Hyprland 0.57.1, which has one, 70% at 55), the
+// other workloads the same. The dumb-buffer row copy and zero copy cost 1 to 3% there in a first try, not checked for
+// correctness yet. HYPOLAND_SINGLE_TEXTURE=1 takes one texture on any driver, =0 two, for comparing them on a machine.
+static bool singleTexture() {
+    if (const auto ENV = Env::get("HYPOLAND_SINGLE_TEXTURE"); ENV && !ENV->empty())
+        return *ENV != "0";
+    return g_pHyprOpenGL->m_eglDriverName == "asahi";
+}
+
 // Writing to a texture that the GPU still reads from makes the driver (crocus at least) allocate, clear and
 // cache-flush a staging buffer for every upload, which costs more than twice the upload itself. So the update
 // goes into a second texture that was last shown one update ago and is idle by now, and the two are swapped.
@@ -256,10 +268,9 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
 
     GLCALL(glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, stride / format->bytesPerBlock));
 
-    const CRegion DAMAGE = damage.copy().intersect(CBox{{}, m_size});
+    const CRegion     DAMAGE = damage.copy().intersect(CBox{{}, m_size});
 
-    // HYPOLAND_SINGLE_TEXTURE=1 updates the shown texture in place, as upstream does, for comparing the two on a machine
-    static const bool SINGLE = Env::envEnabled("HYPOLAND_SINGLE_TEXTURE");
+    static const bool SINGLE = singleTexture();
 
     if (SINGLE) {
         static constexpr size_t MAX_UPLOAD_RECTS = 8;
