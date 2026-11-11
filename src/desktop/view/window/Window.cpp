@@ -1788,6 +1788,19 @@ void CWindow::commitWindow(bool initialCommit) {
         m_lastCommitSize = SIZE;
     }
 
+    // A main surface smaller than its window is drawn at its own size when it counts as small, and otherwise over the whole
+    // window (CSurfacePassElement::getTexBox()): stretched, or with its edge pixels repeated out to the window's edges
+    // (render:expand_undersized_textures), as while a window that went fullscreen has not drawn at its new size yet. Its
+    // damage is in its own size either way, so drawn over the window an update did not reach the rest of it, and a change
+    // between the two ways left the other's pixels (render checks). A larger one is cut at the window, pixel for pixel
+    const bool OWNSIZE   = wlSurface()->small() && !wlSurface()->m_fillIgnoreSmall;
+    const auto SURFSIZE  = SIZE / m_backend->surfaceScale();
+    const auto WINSIZE   = m_realSize->value();
+    const bool STRETCHED = !OWNSIZE && (SURFSIZE.x < WINSIZE.x - 1 || SURFSIZE.y < WINSIZE.y - 1);
+    if (STRETCHED || OWNSIZE != m_lastCommitOwnSize)
+        g_pHyprRenderer->damageWindow(m_self.lock());
+    m_lastCommitOwnSize = OWNSIZE;
+
     g_pHyprRenderer->damageSurface(wlSurface()->resource(), m_realPosition->goal().x, m_realPosition->goal().y, 1.0 / m_backend->surfaceScale());
 
     if (!m_backend->isX11()) {

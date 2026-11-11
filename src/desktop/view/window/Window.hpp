@@ -173,6 +173,7 @@ namespace Desktop::View {
 
         // the surface's size at its last commit drawn, see commitWindow()
         Vector2D      m_lastCommitSize;
+        bool          m_lastCommitOwnSize = false;
 
         PHLWORKSPACE  m_workspace;
         PHLMONITORREF m_monitor, m_prevMonitor;

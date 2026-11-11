@@ -83,6 +83,7 @@ class CSurfacePassElement : public IPassElement {
     SRenderData m_data;
 
     CBox        getTexBox();
+    int         filteredEdge() const;
 
   private:
     bool m_texBoxCached = false;

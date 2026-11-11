@@ -60,7 +60,7 @@ Vector2D CWLSurface::correctSmallVec() const {
     if (!m_view || m_view->type() != VIEW_TYPE_WINDOW || !exists() || !small() || !m_fillIgnoreSmall)
         return {};
 
-    const auto SIZE = getViewporterCorrectedSize();
+    const auto SIZE = m_resource->m_current.size; // logical, as the reported size: the buffer's size is that only at buffer scale 1
     const auto O    = dynamicPointerCast<CWindow>(m_view.lock());
     const auto REP  = O->backend().reportedSize();
 

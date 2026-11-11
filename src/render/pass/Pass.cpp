@@ -8,6 +8,7 @@
 #include "../../managers/SeatManager.hpp"
 #include "../../managers/eventLoop/EventLoopManager.hpp"
 #include "../../render/Renderer.hpp"
+#include "../../helpers/math/Math.hpp"
 #include "../../desktop/state/FocusState.hpp"
 #include "../../protocols/core/Compositor.hpp"
 #include "../../state/MonitorState.hpp"
@@ -80,13 +81,16 @@ void CRenderPass::simplify(bool willBlur, const CRegion& liveBlurRegion) {
         auto opaque = el.element->opaqueRegion();
 
         if (!opaque.empty()) {
-            // scale and rounding is very particular so we have to use CBoxes scale and round functions
+            // Only the pixels the opaque region covers whole hide what is under them. Rounded to the nearest pixel, a box
+            // that ends inside a pixel (a fractional scale) hid it, so what is under it was not drawn there, and the
+            // surface's edge pixel, part transparent, blended over the frame's old pixel (render checks at scale 1.5 on
+            // samsung-i5: a dialog's opaque region shrunk around a cleared band left a row of old colour at each edge)
             if (pixman_region32_n_rects(opaque.pixman()) == 1)
-                opaque = opaque.getExtents().scale(pMonitor->m_scale).round();
+                opaque = Math::wholePixels(opaque.getExtents().scale(pMonitor->m_scale));
             else {
                 CRegion scaledRegion;
                 opaque.forEachRect([&scaledRegion, pMonitor](const auto& RECT) {
-                    scaledRegion.add(CBox(RECT.x1, RECT.y1, RECT.x2 - RECT.x1, RECT.y2 - RECT.y1).scale(pMonitor->m_scale).round());
+                    scaledRegion.add(Math::wholePixels(CBox(RECT.x1, RECT.y1, RECT.x2 - RECT.x1, RECT.y2 - RECT.y1).scale(pMonitor->m_scale)));
                 });
                 opaque = scaledRegion;
             }

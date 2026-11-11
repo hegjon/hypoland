@@ -19,6 +19,7 @@
 import argparse
 import fcntl
 import json
+import math
 import mmap
 import os
 import random
@@ -1141,11 +1142,57 @@ class Render:
             print(f"FAIL  render fullscreen: the window did not go fullscreen (state {c.get('fullscreen')}, {a.w}x{a.h})", flush=True)
         self.check_pixels("fullscreen", a)
         self.check_repaint("fullscreen")
+        # a fullscreen client that draws smaller than the screen and stays so, as vkmark does at a fractional scale (its
+        # buffer of the screen's pixels at the integer scale wl_output sends, 2 for 1.5: a surface of 3/4 of the screen;
+        # samsung-i5, 2026-11-11, where the rest of the screen kept old frames): the screen shows no stale pixels, neither
+        # after the shrink nor after small updates
+        a.allocate((a.w // self.scale * 3 // 4, a.h // self.scale * 3 // 4))
+        a.fill(18)
+        a.commit()
+        self.settle(1.2)
+        self.check_repaint("fullscreen smaller")
+        for frame in range(12):
+            a.commit([a.rect(400 + frame * 4 + k, rng.randrange(a.w), rng.randrange(a.h), rng.randrange(8, 160), rng.randrange(8, 90)) for k in range(4)])
+        self.settle(1.0)
+        self.check_repaint("fullscreen smaller rectangles")
+        # what vkmark does: a buffer of the screen's pixels at the scale wl_output sends, the monitor's rounded up, so at a
+        # fractional scale the surface is smaller than the window. Its size was taken as the buffer's (no buffer scale): it
+        # was drawn over the whole screen and damaged as a surface-sized part of it
+        bscale = math.ceil(self.monitor["scale"] - 0.01)
+        if bscale != self.scale:
+            self.wl.send(a.surface, 8, i32(bscale))
+            s = self.monitor["scale"]
+            px = [round(v * s) // bscale * bscale for v in self.size]  # a whole number of logical pixels at the buffer scale
+            a.allocate(self.logical, pixels=tuple(px))
+            a.fill(19)
+            a.commit()
+            self.settle(1.2)
+            self.check_repaint("fullscreen buffer scale")
+            for frame in range(12):
+                a.commit([a.rect(500 + frame * 4 + k, rng.randrange(a.w), rng.randrange(a.h), rng.randrange(8, 160), rng.randrange(8, 90)) for k in range(4)])
+            self.settle(1.0)
+            self.check_repaint("fullscreen buffer scale rectangles")
+            self.wl.send(a.surface, 8, i32(self.scale))
         self.dispatch('hl.dsp.window.fullscreen({action = "unset"})', "fullscreen 0")
         a.follow(12)
         self.settle(1.2)
         self.check_pixels("fullscreen left", a)
         self.check_repaint("fullscreen left")
+        # fullscreen while the client has not followed yet: it goes on drawing at its old size, small updates and some at its
+        # edges, which the compositor repeats out to the window's (or stretches) until the client draws at the new size
+        self.dispatch('hl.dsp.window.fullscreen({action = "set"})', "fullscreen 0")
+        self.settle(1.2)
+        for frame in range(12):
+            damage = [a.rect(600 + frame * 4 + k, rng.randrange(a.w), rng.randrange(a.h), rng.randrange(8, 160), rng.randrange(8, 90)) for k in range(2)]
+            damage += [a.rect(650 + frame, a.w - 40, rng.randrange(a.h), 40, 30), a.rect(670 + frame, rng.randrange(a.w), a.h - 30, 60, 30)]
+            a.commit(damage)
+        self.settle(1.0)
+        self.check_repaint("fullscreen not followed")
+        a.follow(12)
+        self.dispatch('hl.dsp.window.fullscreen({action = "unset"})', "fullscreen 0")
+        a.follow(12)
+        self.settle(1.2)
+        self.check_repaint("fullscreen not followed left")
 
         a.destroy()
         self.settle(0.5)

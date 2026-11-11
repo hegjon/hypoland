@@ -42,4 +42,8 @@ namespace Math {
     // (a logical position at a fractional scale) is drawn with the row or column whose centre lies on its edge, on one
     // side or the other depending on the GPU, which CBox::round() can drop from its damage
     CBox coveredPixels(const CBox& box);
+
+    // The pixels a box in pixels covers whole: its start rounded up, its end down (empty when it covers none). What an
+    // opaque box hides: a pixel it covers in part shows what is under it as well
+    CBox wholePixels(const CBox& box);
 }

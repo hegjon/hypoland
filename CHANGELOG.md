@@ -49,6 +49,15 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - A monitor plugged in while the screen was being recorded or captured (a screenshot at that moment, screen sharing)
   crashed Hypoland 0.3.0: its first commit came before it had a size, and getting the capture's frame made the
   monitor's buffers at 0x0.
+- Old frames stayed on the screen around a fullscreen window whose picture is smaller than the screen, as vkmark's at a
+  fractional scale (it draws at the next whole scale, 2 at 1.5): its picture was drawn twice its size, cut to the screen,
+  but only a part of the screen the size it should have had was updated. It is drawn at its size now.
+- Old pixels stayed at the right and bottom edges of a window that went fullscreen until the program drew at the new
+  size: its edge pixels are repeated out to the screen's edges meanwhile, and those strips were not redrawn when the edge
+  changed. The same for any window shown larger than the picture it has drawn.
+- At a fractional scale, a row of old pixels could stay at the edge of a window's opaque area next to a transparent one
+  (a dialog that clears a band of itself): the pixel row the edge falls in, and the half-transparent pixels the filter
+  makes there, counted as covering what is under them.
 
 ## 0.3.0 - 2026-11-03
 

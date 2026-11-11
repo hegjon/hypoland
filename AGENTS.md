@@ -1339,6 +1339,26 @@ Tools:
   The last 29 pixels there, a step off in columns next to the small updates of the subsurface turned by a quarter, came
   from the same filter: a turned buffer is texel for texel at its turned size, but only unturned ones took the nearest
   texel; they all do since 2026-11-01 (`IElementRenderer::drawSurface()`), and the Galaxy Book passes all 71 checks.
+  Three more bugs, upstream's, found on samsung-i5 (scale 1.5) on 2026-11-11 after the user photographed vkmark's cube in
+  the top left two thirds of the screen and old frames of its horse below: a main surface smaller than its window counts
+  as small and is drawn at its own size (`CSurfacePassElement::getTexBox()`), which was taken from the buffer
+  (`getViewporterCorrectedSize()`, no buffer scale), so vkmark's 1920x1080 buffer at buffer scale 2 (wl_output's integer
+  scale; a 960x540 surface in a 1280x720 fullscreen window) was drawn twice its size, cut to the window, while its damage
+  covered its own size; it takes the surface's logical size now (render check `fullscreen buffer scale`, which fails at
+  1.6 nested without it, 50726 pixels). A main surface smaller than its window and not drawn at its own size, which the
+  renderer stretches or whose edge pixels it repeats out to the window's edges (`render:expand_undersized_textures`), as
+  a window that went fullscreen until the client draws at the new size, damaged only its own size: its commit damages the
+  whole window then, and a change between the two ways as well (`CWindow`, `m_lastCommitOwnSize`; check `fullscreen not
+  followed`, which fails at scale 1 too). And the pass hid what is under an opaque box by rounding it to the nearest
+  pixel, so at a fractional scale a pixel row the box covers in part counted as covered, the window under was not drawn
+  there and the surface's part transparent edge pixel blended over the frame's old one (`opaque region shrunk` failed on
+  samsung-i5 with a row of old colour at each edge of the band); occlusion takes the pixels a box covers whole now
+  (`Math::wholePixels()`), and a surface drawn with the linear filter gives up the half texel and half pixel at its opaque
+  region's edge (`CSurfacePassElement::filteredEdge()`). Real programs were checked the same way that day with a
+  stale-pixel detector of the session's scratchpad (`/tmp/phx-x2/scripts/stale.py`: the program and the shell frozen, the
+  scanout read, a workspace switch away and back, read again): about 150 samples on samsung-i5 of terminals, toolkits,
+  Chromium, video, the games, Omarchy's menu and notifications, scale changes, window swaps, moves and resizes,
+  screenshots and fullscreen toggles found nothing more.
 - A closing window's fade damages only where it is drawn (2026-10-31, `CWindowFadeout::damage()`): upstream's fade-out
   damaged the whole monitor on every animation step, so closing a window repainted the screen for half a second (Omarchy's
   `windowsOut` and `fadeOut`). The snapshot is still the monitor's size; the window's part of it (`m_contentBox`: its frame

@@ -33,3 +33,30 @@ TEST(Helpers, coveredPixelsCoversWhatRoundCovers) {
         }
     }
 }
+
+TEST(Helpers, wholePixelsKeepsAWholePixelBox) {
+    expectBox(wholePixels(CBox{51, 54, 100, 33}), CBox{51, 54, 100, 33});
+}
+
+TEST(Helpers, wholePixelsDropsThePartRows) {
+    // an opaque band ending in the middle of a pixel at scale 1.5 (logical 279 to 323): the half rows show what is under it
+    expectBox(wholePixels(CBox{0, 279, 100, 44}.scale(1.5)), CBox{0, 419, 150, 65});
+    expectBox(wholePixels(CBox{10.5, 0.25, 20, 10.5}), CBox{11, 1, 19, 9});
+}
+
+TEST(Helpers, wholePixelsOfLessThanAPixelIsEmpty) {
+    const CBox box = wholePixels(CBox{3.2, 7.6, 0.5, 0.3});
+    EXPECT_EQ(box.w, 0);
+    EXPECT_EQ(box.h, 0);
+}
+
+TEST(Helpers, wholePixelsLieInsideTheBox) {
+    for (double start : {0.0, 0.25, 0.5, 0.75, 13.5, 52.5, 85.4}) {
+        for (double size : {1.0, 1.5, 32.5, 33.0, 33.25}) {
+            const CBox whole = wholePixels(CBox{start, start, size, size});
+            EXPECT_GE(whole.x, start) << start << " " << size;
+            EXPECT_LE(whole.x + whole.w, start + size) << start << " " << size;
+            EXPECT_GT(whole.x + whole.w + 1, start + size) << start << " " << size;
+        }
+    }
+}

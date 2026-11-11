@@ -162,3 +162,8 @@ CBox Math::coveredPixels(const CBox& box) {
     const double X = std::floor(box.x), Y = std::floor(box.y);
     return {X, Y, std::ceil(box.x + box.w) - X, std::ceil(box.y + box.h) - Y};
 }
+
+CBox Math::wholePixels(const CBox& box) {
+    const double X = std::ceil(box.x), Y = std::ceil(box.y);
+    return {X, Y, std::max(0.0, std::floor(box.x + box.w) - X), std::max(0.0, std::floor(box.y + box.h) - Y)};
+}

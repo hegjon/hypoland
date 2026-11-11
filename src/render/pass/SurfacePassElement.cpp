@@ -37,8 +37,12 @@ CBox CSurfacePassElement::getTexBox() {
 
         // center the surface if it's smaller than the viewport we assign it
         if (PSURFACE && !PSURFACE->m_fillIgnoreSmall && PSURFACE->small() /* guarantees PWINDOW */) {
-            const auto CORRECT  = PSURFACE->correctSmallVec();
-            const auto SIZE     = PSURFACE->getViewporterCorrectedSize();
+            const auto CORRECT = PSURFACE->correctSmallVec();
+            // the surface's own size, in logical pixels: the buffer's size (getViewporterCorrectedSize()) is that only at a
+            // buffer scale of 1. vkmark fullscreen at scale 1.5 (a 1920x1080 buffer at buffer scale 2, a 960x540 surface in a
+            // 1280x720 window) was drawn twice its size, cut to the window, while its damage covered its own size: every
+            // frame updated a quarter of the screen's area less than it drew, the rest kept old frames (samsung-i5)
+            const auto SIZE     = m_data.surface->m_current.size;
             const auto REPORTED = PWINDOW->backend().reportedSize();
 
             if (!INTERACTIVERESIZEINPROGRESS) {
@@ -134,6 +138,23 @@ bool CSurfacePassElement::isBackdrop(bool lowestBackgroundLayer, const CBox& sur
         surfaceBox.y + surfaceBox.height >= monitorBox.y + monitorBox.height;
 }
 
+// How far in from the edge of its opaque region a surface drawn with the linear filter can still be part transparent, in
+// logical pixels: a pixel whose centre is within half a texel of the edge takes in a texel outside the region. 0 for a
+// surface drawn texel for texel (an integer scale and a buffer of the surface's pixels)
+int CSurfacePassElement::filteredEdge() const {
+    const auto& ST    = m_data.surface->m_current;
+    Vector2D    SRC   = ST.viewport.hasSource ? ST.viewport.source.size() * ST.scale : ST.bufferSize;
+    const auto  SCALE = m_data.pMonitor->m_scale;
+    if (ST.transform % 2 == 1)
+        SRC = {SRC.y, SRC.x};
+    if (SRC.x <= 0 || SRC.y <= 0 || SCALE <= 0)
+        return 0;
+    const double TEXEL = std::max(ST.size.x / SRC.x, ST.size.y / SRC.y); // logical pixels
+    if (SCALE == std::floor(SCALE) && !ST.viewport.hasSource && std::abs(TEXEL * SCALE - 1.0) < 1e-6)
+        return 0;
+    return sc<int>(std::ceil(0.5 * TEXEL + 0.5 / SCALE));
+}
+
 CRegion CSurfacePassElement::opaqueRegion() {
     auto        PSURFACE = Desktop::View::CWLSurface::fromResource(m_data.surface);
 
@@ -149,7 +170,7 @@ CRegion CSurfacePassElement::opaqueRegion() {
         CRegion    opaqueSurf = m_data.surface->m_current.opaque.copy().intersect(CBox{{}, {m_data.w, m_data.h}});
         const auto texBox     = getTexBox();
         opaqueSurf.scale(texBox.size() / Vector2D{m_data.w, m_data.h});
-        return opaqueSurf.translate(m_data.pos + m_data.localPos - m_data.pMonitor->m_position).expand(-m_data.rounding);
+        return opaqueSurf.translate(m_data.pos + m_data.localPos - m_data.pMonitor->m_position).expand(-m_data.rounding - filteredEdge());
     }
 
     return m_data.texture && m_data.texture->m_opaque ? boundingBox()->expand(-m_data.rounding) : CRegion{};
