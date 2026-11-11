@@ -59,11 +59,12 @@
           <tr><td>Dell XPS 13 9343</td><td>2015</td><td>Core i5-5300U, 4 threads</td><td>Intel HD Graphics 5500 (Broadwell)<br><code>iris, GLES 3.2</code></td><td>3200x1800 at scale 2</td><td>8 GB</td><td>The high-resolution one: four times the pixels of the X200 on the same class of GPU.</td></tr>
           <tr><td>Lenovo ThinkPad T460s</td><td>2016</td><td>Core i7-6600U, 4 threads</td><td>Intel HD Graphics 520 (Skylake)<br><code>iris, GLES 3.2</code></td><td>1920x1080 at scale 1.5</td><td>20 GB</td><td>The fractional scale, and the only Skylake: its scanout buffers are render compressed.</td></tr>
           <tr><td>Lenovo ThinkPad T490</td><td>2019</td><td>Core i5-8265U, 8 threads</td><td>Intel UHD Graphics 620 (Whiskey Lake)<br><code>iris, GLES 3.2</code></td><td>1920x1080</td><td>8 GB</td><td>Joined on 2026-10-30, the newest Intel GPU of the lab.</td></tr>
+          <tr><td>Apple Mac mini M1</td><td>2020</td><td>Apple M1, 8 cores, aarch64</td><td>Apple M1 GPU (G13)<br><code>asahi, GLES 3.2</code></td><td>1920x1080 over HDMI</td><td>8 GB</td><td>Apple Silicon with the Asahi kernel and Mesa, joined on 2026-11-10; no cursor plane, and its display driver reports no page flips to count.</td></tr>
           <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td>2024</td><td>Snapdragon X Elite, 12 cores, aarch64</td><td>Qualcomm Adreno X1-85<br><code>freedreno, GLES 3.2</code></td><td>2880x1800 at scale 2, 120 Hz</td><td>16 GB</td><td>The aarch64 machine, with its own package build; 120 Hz.</td></tr>
         </tbody>
       </table></div>
       <p class="note">
-        An HP EliteBook 8560p (2011, Radeon HD 6470M, r600) was in the lab from 2026-10-22 until its GPU failed on 2026-10-27. An Apple Mac mini M1 is being set up for Omarchy on Apple Silicon. Not in the lab: NVIDIA
+        An HP EliteBook 8560p (2011, Radeon HD 6470M, r600) was in the lab from 2026-10-22 until its GPU failed on 2026-10-27. Not in the lab: NVIDIA
         (<code>nouveau</code>), AMD GCN and newer (<code>radeonsi</code>, <code>amdgpu</code>), and the two other Intel
         generations that stop at GLES 2.0, GMA X3100 (965GM) and Ironlake. Reports from any of them are welcome.
       </p>
@@ -71,34 +72,35 @@
   </section>
 
   <section class="win full" id="numbers" aria-labelledby="t-numbers">
-    <h2 class="title" id="t-numbers">bench: Hypoland against Hyprland 0.57.0, per machine</h2>
+    <h2 class="title" id="t-numbers">bench: Hypoland against Hyprland 0.57.1, per machine</h2>
     <div class="body">
       <div class="scroll"><table>
-        <thead><tr><th>Hypoland / Hyprland 0.57.0</th><th>GPU client at 60 fps</th><th>foot terminal scrolling fast</th><th>Chromium in a full window</th><th>workspace switching</th><th>memory (PSS), 60 s after the start</th><th>frames on the screen, GTK 3 scrolling</th><th>a focus change shown</th></tr></thead>
+        <thead><tr><th>Hypoland / Hyprland 0.57.1</th><th>GPU client at 60 fps</th><th>foot terminal scrolling fast</th><th>Chromium in a full window</th><th>workspace switching</th><th>memory (PSS), 60 s after the start</th><th>frames on the screen, GTK 3 scrolling</th><th>a focus change shown</th></tr></thead>
         <tbody>
-          <tr><td>Lenovo ThinkPad X200</td><td class="yes">2.6% / 4.2%</td><td class="yes">9.2% / 14.4%</td><td class="yes">8.7% / 22.4%</td><td class="yes">3.4% / 8.4%</td><td class="yes">41 MiB / 113 MiB</td><td class="yes">60 fps / 30 fps</td><td class="yes">3.4 ms / 3.8 ms</td></tr>
-          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">3.3% / 3.8%</td><td class="yes">2.5% / 13.8%</td><td class="yes">3.3% / 4.2%</td><td class="yes">3.1% / 8.8%</td><td class="yes">41 MiB / 115 MiB</td><td>60 fps / 59 fps</td><td class="yes">1.5 ms / 1.7 ms</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">3.9% / 6.3%</td><td class="yes">4.1% / 15.9%</td><td class="yes">4.9% / 6.3%</td><td class="yes">4.2% / 9.1%</td><td class="yes">42 MiB / 114 MiB</td><td class="yes">47 fps / 36 fps</td><td class="yes">2.4 ms / 18.8 ms</td></tr>
-          <tr><td>Apple Mac mini Late 2014</td><td class="yes">3.2% / 4.3%</td><td class="yes">3.6% / 19.8%</td><td class="yes">3.8% / 4.8%</td><td class="yes">3.6% / 7.2%</td><td class="yes">42 MiB / 113 MiB</td><td>60 fps / 60 fps</td><td class="yes">2.0 ms / 2.3 ms</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td class="yes">6.1% / 9.4%</td><td class="yes">5.4% / 14.2%</td><td class="yes">7.4% / 9.1%</td><td class="yes">5.7% / 10.7%</td><td class="yes">40 MiB / 113 MiB</td><td>60 fps / 60 fps</td><td class="yes">5.6 ms / 6.1 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T550</td><td class="yes">3.7% / 4.6%</td><td class="yes">3.5% / 13.0%</td><td class="yes">3.6% / 4.8%</td><td class="yes">3.3% / 6.7%</td><td class="yes">42 MiB / 115 MiB</td><td>60 fps / 60 fps</td><td class="yes">1.8 ms / 9.0 ms</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td class="yes">3.9% / 6.0%</td><td class="yes">3.7% / 22.6%</td><td class="yes">4.2% / 5.7%</td><td class="yes">3.9% / 8.1%</td><td class="yes">42 MiB / 115 MiB</td><td class="yes">47 fps / 42 fps</td><td class="yes">2.0 ms / 17.4 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">4.1% / 4.8%</td><td class="yes">3.1% / 9.5%</td><td class="yes">4.2% / 5.3%</td><td class="yes">3.2% / 5.6%</td><td class="yes">42 MiB / 116 MiB</td><td>60 fps / 60 fps</td><td class="yes">1.9 ms / 9.6 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td class="yes">3.4% / 4.2%</td><td class="yes">4.0% / 15.2%</td><td class="yes">3.9% / 4.8%</td><td class="yes">3.0% / 4.8%</td><td class="yes">42 MiB / 116 MiB</td><td>60 fps / 59 fps</td><td class="yes">1.9 ms / 8.4 ms</td></tr>
-          <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td class="yes">2.3% / 4.8%</td><td>7.0% / 6.6%</td><td class="no">3.3% / 2.9%</td><td class="no">4.5% / 3.7%</td><td class="yes">43 MiB / 148 MiB</td><td>120 fps / 120 fps</td><td class="yes">2.1 ms / 4.6 ms</td></tr>
+          <tr><td>Lenovo ThinkPad X200</td><td class="yes">2.6% / 4.2%</td><td class="yes">9.0% / 14.1%</td><td class="yes">8.5% / 14.7%</td><td class="yes">4.1% / 7.9%</td><td class="yes">42 MiB / 116 MiB</td><td class="yes">60 fps / 31 fps</td><td class="yes">4.9 ms / 5.4 ms</td></tr>
+          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">3.4% / 3.8%</td><td class="yes">2.6% / 14.4%</td><td class="yes">3.3% / 4.2%</td><td class="yes">3.2% / 7.7%</td><td class="yes">42 MiB / 115 MiB</td><td>60 fps / 59 fps</td><td class="yes">1.7 ms / 2.0 ms</td></tr>
+          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">3.2% / 6.4%</td><td class="yes">4.3% / 15.9%</td><td class="yes">4.6% / 6.0%</td><td class="yes">4.0% / 7.8%</td><td class="yes">42 MiB / 117 MiB</td><td class="yes">46 fps / 34 fps</td><td class="yes">2.6 ms / 14.9 ms</td></tr>
+          <tr><td>Dell Chromebook 11 3120</td><td class="yes">6.1% / 9.2%</td><td class="yes">5.2% / 15.1%</td><td class="yes">7.0% / 9.0%</td><td class="yes">5.6% / 10.9%</td><td class="yes">43 MiB / 115 MiB</td><td>60 fps / 60 fps</td><td class="yes">7.8 ms / 8.4 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T550</td><td class="yes">3.7% / 4.5%</td><td class="yes">3.7% / 13.4%</td><td class="yes">3.9% / 5.4%</td><td class="yes">3.7% / 7.1%</td><td class="yes">43 MiB / 118 MiB</td><td>60 fps / 60 fps</td><td class="yes">2.3 ms / 7.8 ms</td></tr>
+          <tr><td>Dell XPS 13 9343</td><td class="yes">4.0% / 5.8%</td><td class="yes">3.9% / 22.8%</td><td class="yes">4.4% / 6.5%</td><td class="yes">4.0% / 8.3%</td><td class="yes">43 MiB / 118 MiB</td><td class="yes">44 fps / 40 fps</td><td class="yes">2.5 ms / 12.5 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">4.1% / 4.7%</td><td class="yes">3.2% / 9.2%</td><td class="yes">4.2% / 5.2%</td><td class="yes">3.2% / 6.4%</td><td class="yes">43 MiB / 119 MiB</td><td>60 fps / 60 fps</td><td class="yes">2.0 ms / 12.0 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T490</td><td class="yes">3.4% / 4.2%</td><td class="yes">4.2% / 15.1%</td><td class="yes">4.2% / 4.9%</td><td class="yes">3.0% / 5.2%</td><td class="yes">43 MiB / 119 MiB</td><td>60 fps / 59 fps</td><td class="yes">1.7 ms / 8.1 ms</td></tr>
+          <tr><td>Apple Mac mini M1</td><td>0.9% / 0.9%</td><td class="yes">4.5% / 5.5%</td><td class="yes">1.4% / 2.3%</td><td class="yes">1.0% / 2.2%</td><td class="yes">49 MiB / 124 MiB</td><td>&ndash;</td><td class="yes">0.8 ms / 1.0 ms</td></tr>
+          <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td class="yes">4.1% / 4.6%</td><td class="yes">6.6% / 7.3%</td><td class="yes">2.9% / 3.5%</td><td>3.6% / 3.8%</td><td class="yes">43 MiB / 146 MiB</td><td>120 fps / 120 fps</td><td class="yes">1.3 ms / 4.8 ms</td></tr>
         </tbody>
       </table></div>
       <p class="note">
-        Compositor CPU in percent of one core, medians of 31 to 37 fresh sessions of each compositor per machine,
-        alternating from 2026-11-03 12:46 to 11-04 07:30 (Hypoland 0.3.0 against Hyprland 0.57.0-4). Samsung Galaxy Book4 Edge 14&quot;: 2 sessions of each only, its GPU hung early in the night (a kernel <code>msm</code> hang at a Chromium start, the third there), so its numbers are less sure. Green where
+        Compositor CPU in percent of one core, medians of 8 to 10 fresh sessions of each compositor per machine,
+        alternating from 2026-11-10 23:09 to 11-11 07:30, Hypoland master r957 (after 0.3.0) against Hyprland 0.57.1-2. Apple Mac mini Late 2014: not in the table, it had no monitor in the night of the baseline (its HDMI went to a KVM), so its numbers are left out. Both ran without realtime scheduling, which Omarchy turns off for Hyprland now
+        (<code>HYPRLAND_NO_RT=1</code>), except on the Galaxy Book. Green where
         Hypoland is at least 5% better, red where it is at least 5% worse. On the X200, Hyprland ran with Omarchy's
         GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), since it does
         not start there otherwise. Hyprland ran with <code>quirks:skip_non_kms_dmabuf_formats = false</code>,
         Hypoland's default: with its own default the T550's session came up without a wallpaper and GL clients that ask
         for alpha got no config. The frames are the compositor's own page flips; the Galaxy Book's screen runs at
-        120&nbsp;Hz. The memory holds the shell's shared pages too.
+        120&nbsp;Hz, and the Mac mini M1's display driver reports none. The memory holds the shell's shared pages too.
         Four terminals side by side on every machine: <a href="terminals.html">terminals</a>.
-        <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261103-all-machines-0.3.0-vs-hyprland-0.57.0">Raw data, every session's values and the scripts</a>.
+        <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261110-all-machines-r957-vs-hyprland-0.57.1">Raw data, every session's values and the scripts</a>.
       </p>
     </div>
   </section>

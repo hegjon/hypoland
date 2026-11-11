@@ -3,15 +3,18 @@
 import html, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BASELINE = "docs/baseline/20261103-all-machines-0.3.0-vs-hyprland-0.57.0"
-HYPRLAND = "0.57.0"
+BASELINE = "docs/baseline/20261110-all-machines-r957-vs-hyprland-0.57.1"
+HYPRLAND = "0.57.1"
+# the run the numbers come from, for the pages' notes
+RUN = "alternating from 2026-11-10 23:09 to 11-11 07:30, Hypoland master r957 (after 0.3.0) against Hyprland " + HYPRLAND + "-2"
 
 # alias, machine, year, CPU, GPU, Mesa driver and GLES level, screen, RAM, what it stands for; baseline: has a column
 MACHINES = [
     dict(alias="x200", name="Lenovo ThinkPad X200", year=2008, cpu="Core 2 Duo P8400, 2 cores", gpu="Intel GMA 4500MHD (GM45, Gen 4.5)",
          driver="crocus, GLES 2.0 only", screen="1280x800", ram="6 GB", role="The target and the main test machine: stock Hyprland does not start on it.", baseline=True),
     dict(alias="macmini-intel", name="Apple Mac mini Late 2014", year=2014, cpu="Core i5-4260U, 4 threads", gpu="Intel HD Graphics 5000 (Haswell GT3)",
-         driver="crocus, GLES 3.0", screen="1920x1200 over HDMI", ram="4 GB", role="Haswell, the last crocus generation: Mesa copies shm windows through a tiled temporary here.", baseline=True),
+         driver="crocus, GLES 3.0", screen="1920x1200 over HDMI", ram="4 GB", role="Haswell, the last crocus generation: Mesa copies shm windows through a tiled temporary here.", baseline=False,
+         nodata="had no monitor in the night of the baseline (its HDMI went to a KVM), so its numbers are left out"),
     dict(alias="chromebook", name="Dell Chromebook 11 3120", year=2015, cpu="Celeron N2840, 2 cores", gpu="Intel Bay Trail",
          driver="crocus, GLES 3.0", screen="1366x768", ram="4 GB, 16 GB eMMC", role="The low end with GLES 3: two slow cores, little memory, wifi only.", baseline=True),
     dict(alias="t550", name="Lenovo ThinkPad T550", year=2015, cpu="Core i5-5300U, 4 threads", gpu="Intel HD Graphics 5500 (Broadwell)",
@@ -28,6 +31,8 @@ MACHINES = [
          driver="freedreno, GLES 3.2", screen="2880x1800 at scale 2, 120 Hz", ram="16 GB", role="The aarch64 machine, with its own package build; 120 Hz.", baseline=True),
     dict(alias="samsung-i5", name="Samsung Series 7 Ultra (NP730U3E)", year=2013, cpu="Core i5-3337U, 4 threads", gpu="Intel HD Graphics 4000 (Ivy Bridge)",
          driver="crocus, GLES 3.0", screen="1920x1080", ram="4 GB", role="Joined on 2026-10-31, Ivy Bridge: the crocus generation between Bay Trail and Haswell.", baseline=True),
+    dict(alias="macmini-m1", name="Apple Mac mini M1", year=2020, cpu="Apple M1, 8 cores, aarch64", gpu="Apple M1 GPU (G13)",
+         driver="asahi, GLES 3.2", screen="1920x1080 over HDMI", ram="8 GB", role="Apple Silicon with the Asahi kernel and Mesa, joined on 2026-11-10; no cursor plane, and its display driver reports no page flips to count.", baseline=True),
 ]
 # both tables list the machines by year, the oldest first (sorted is stable: same-year machines keep the order above)
 MACHINES.sort(key=lambda m: m["year"])
@@ -53,6 +58,8 @@ def fmt(x, unit):
 
 def cell(h, s, unit, lower_better):
     if h is None or s is None: return "<td>&ndash;</td>"
+    # no frames counted (the M1's display driver reports no page flips): nothing to compare
+    if unit == "fps" and (h <= 0 or s <= 0): return "<td>&ndash;</td>"
     better = (h <= s * 0.95) if lower_better else (h >= s * 1.05)
     worse = (h >= s * 1.05) if lower_better else (h <= s * 0.95)
     cls = ' class="yes"' if better else (' class="no"' if worse else "")

@@ -84,7 +84,7 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   `config.unload`. `docs/port-0.57.0.md` lists every upstream commit with its decision (cherry-pick, by
   hand, ignore, later): about 110 wait behind the workspace refactor (e9e2f64cc, 163 files), which with aquamarine 0.15
   is the real remaining port. The 2026-10-27 baseline compares against Hyprland 0.56.2, the 2026-10-30 one against 0.57.0,
-  and so does the 2026-11-03 one, the released 0.3.0, which the lab page takes its numbers from since 2026-11-04. A config is tested headless as hyprtester starts the compositor
+  and so does the 2026-11-03 one, the released 0.3.0, which the lab page took its numbers from from 2026-11-04 to 11-11 (since then the 2026-11-10 one, r957 against 0.57.1). A config is tested headless as hyprtester starts the compositor
   (`HYPRLAND_HEADLESS_ONLY=1 ./build/hypoland --config <file>`, then `hyprctl configerrors`).
 - `CHANGELOG.md` lists Hypoland's changes per release. Add user-visible changes and measured speedups to
   "Unreleased" with the commit that makes them, and move them under the version when releasing.
@@ -244,10 +244,24 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   power cycle the final master passed its session check there (98 of 98).
   The released 0.3.0 against Hyprland 0.57.0-4 is `docs/baseline/20261103-all-machines-0.3.0-vs-hyprland-0.57.0/` (2026-11-03
   12:46 to 11-04 07:30, ten machines with samsung-i5 and the T490, 31 to 37 fresh sessions of each, the Galaxy Book 2:
-  its GPU hung at a Chromium start in its third Hypoland block); the lab page (`scripts/web/lab.py`) uses it. Hypoland
+  its GPU hung at a Chromium start in its third Hypoland block); the lab page (`scripts/web/lab.py`) used it until 2026-11-11. Hypoland
   less compositor CPU in nearly every workload on every machine, 40 to 43 MiB Pss at the start against 113 to 116 (148),
   every session check passed (stock failed 2 to 56); no compositor died. Behind stock: the toast as before, the X200's
   `resize` (more frames) and the Galaxy Book's workspace switch, menu and Chromium window from its two sessions.
+  Master r957 (29b9f86a9: the measured direct scanout, merged frame damage, 10-bit buffers on the plane) against Hyprland
+  0.57.1-2 is `docs/baseline/20261110-all-machines-r957-vs-hyprland-0.57.1/` (2026-11-10 23:09 to 11-11 07:30, eleven
+  machines with macmini-m1, 8 to 10 fresh sessions of each, every workload with the games and ElectroBench; Omarchy-dev
+  r7677 sets `HYPRLAND_NO_RT=1`, so both ran without realtime except on the Galaxy Book); the lab and terminals pages use
+  it since 2026-11-11, without macmini-intel, which had no monitor that night (headless later blocks). No Hypoland
+  compositor died; Hypoland passed every session check on ten machines, the M1's 31 render failures were Omarchy's pointer
+  warp (fixed in the checks, c8c87f613). Hypoland's compositor costs less per frame in 15 to 41 workloads a machine and
+  more in none of the comparable ones except: the M1's Qt software sprites (80 against 70% at 39 against 55 fps: the second
+  shm texture, see `HYPOLAND_SINGLE_TEXTURE` under Tools, fixed for asahi), the Galaxy Book's menu, lianli's ElectroBench
+  (0.05 to 0.08 ms a frame); and the T490 shows Velocitty at 28 against 34 frames a second with the client's CPU the same,
+  only there (zero copy is not it, open). The next morning the deploy check of `port/0.57.2` on macmini-intel found a
+  crash of master too: a monitor that connects while a screen capture is pending (the KVM's HDMI coming up during the
+  check's screencopy) made its framebuffers at 0x0 in `CScreenshareManager::onOutputCommit()`, which asserted; it takes
+  only allocated resources now (`CMonitor::allocatedResources()`, a31250872, hyprtester `monitorConnectsWhileCaptured`).
 
 ## Hard constraints
 
@@ -930,7 +944,12 @@ Tools:
 - `HYPOLAND_NO_COALESCE=1` uploads and draws the damage rectangles as the client sent them instead of merging them on
   crocus and r600 (`CHyprOpenGLImpl::coalesceDamage()`), `HYPOLAND_SINGLE_TEXTURE=1` updates the shown shm texture in
   place as upstream does instead of the idle second one (`CGLTexture::update()`), both for comparing the paths on a
-  machine (2026-10-28). Like `HYPOLAND_PROFILE_PASS` they have to reach the session environment (`~/.config/uwsm/env`).
+  machine (2026-10-28). Since 2026-11-11 one texture is the default on asahi (`singleTexture()`, `=0` gives two): the
+  driver pays per upload call there, mostly in the kernel, and the second texture's missed damage doubled the calls (the
+  M1's Qt sprites 79 to 81% at 39 fps with two, 64% at 57 with one, 3 fresh sessions each; Hyprland 0.57.1 70% at 55).
+  The dumb-buffer row copy (`HYPOLAND_SHM_TEXTURE=linear`) and zero copy (`HYPOLAND_SHM_ZEROCOPY=force`) cost 1.2 and
+  2.6% there in one session each (`test-results/m1sprites-20261111/`, with a KVM re-enumerating on the M1's USB every
+  9 s), not yet checked for stale pixels or render errors. Like `HYPOLAND_PROFILE_PASS` they have to reach the session environment (`~/.config/uwsm/env`).
 - `HYPOLAND_SHM_TEXTURE` (2026-10-28/29): every synchronous (shm) texture gets a linear DRM dumb buffer of the
   compositor's own device as its storage, imported as an EGLImage (`CGLTexture::backWithBuffer()`, aquamarine's
   `CDRMDumbAllocator` on the primary node; a texture gets its buffer at its second update, the first stays on Mesa's

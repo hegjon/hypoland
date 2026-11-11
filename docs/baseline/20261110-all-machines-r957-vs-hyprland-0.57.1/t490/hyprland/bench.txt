@@ -1,0 +1,1 @@
+machine: t490, 7.2.15-2-omarchy, 8 cores, 7583 MiB

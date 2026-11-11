@@ -1,0 +1,107 @@
+machine: samsung-i5, 7.2.15-2-omarchy, 4 cores, 3786 MiB
+compositor: /usr/bin/hypoland, pid 6727, user a, instance 29b9f86a95e2c447b21253bc87006269e5471a50_1794345003_686640312
+clocksource: tsc
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.57.0 built from branch master at commit 29b9f86a95e2c447b21253bc87006269e5471a50 dirty
+INFO  Hypoland 0.3.0, based on Hyprland 0.57.0
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output eDP-1: 1920x1080@60.00100
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+PASS  the screen shows the window (84% of the scanned-out buffer is the test color)
+PASS  test window drawn (84% of the screen is the test color)
+SKIP  render whole: pixels need an integer scale (1.5)
+PASS  render whole: the screen is what a full repaint shows (kmsgrab)
+SKIP  render screenshot: pixels need an integer scale (1.5)
+SKIP  render screenshot again: pixels need an integer scale (1.5)
+SKIP  render rectangles: pixels need an integer scale (1.5)
+PASS  render rectangles: the screen is what a full repaint shows (kmsgrab)
+SKIP  render new buffers: pixels need an integer scale (1.5)
+PASS  render new buffers: the screen is what a full repaint shows (kmsgrab)
+SKIP  render subsurface: pixels need an integer scale (1.5)
+PASS  render subsurface: the screen is what a full repaint shows (kmsgrab)
+SKIP  render subsurface moved: pixels need an integer scale (1.5)
+PASS  render subsurface moved: the screen is what a full repaint shows (kmsgrab)
+SKIP  render subsurface closed: pixels need an integer scale (1.5)
+PASS  render subsurface closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render viewport: the screen is what a full repaint shows (kmsgrab)
+PASS  render viewport rectangles: the screen is what a full repaint shows (kmsgrab)
+SKIP  render viewports closed: pixels need an integer scale (1.5)
+PASS  render viewports closed: the screen is what a full repaint shows (kmsgrab)
+SKIP  render popup: pixels need an integer scale (1.5)
+PASS  render popup: the screen is what a full repaint shows (kmsgrab)
+PASS  render popup moved: the screen is what a full repaint shows (kmsgrab)
+SKIP  render popup closed: pixels need an integer scale (1.5)
+PASS  render popup closed: the screen is what a full repaint shows (kmsgrab)
+SKIP  render layer: pixels need an integer scale (1.5)
+PASS  render layer: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer drawn: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer settled: the screen is what a full repaint shows (kmsgrab)
+SKIP  render layer popup: pixels need an integer scale (1.5)
+PASS  render layer popup: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer popup closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer moved: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer shrunk: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer closed: the screen is what a full repaint shows (kmsgrab)
+SKIP  render floating: pixels need an integer scale (1.5)
+PASS  render floating: the screen is what a full repaint shows (kmsgrab)
+PASS  render moved: the screen is what a full repaint shows (kmsgrab)
+SKIP  render resized: pixels need an integer scale (1.5)
+PASS  render resized: the screen is what a full repaint shows (kmsgrab)
+PASS  render retitled: the screen is what a full repaint shows (kmsgrab)
+SKIP  render opaque region: pixels need an integer scale (1.5)
+PASS  render opaque region: the screen is what a full repaint shows (kmsgrab)
+SKIP  render opaque region shrunk: pixels need an integer scale (1.5)
+PASS  render opaque region shrunk: the screen is what a full repaint shows (kmsgrab)
+PASS  render shrunk: the screen is what a full repaint shows (kmsgrab)
+PASS  render closed: the screen is what a full repaint shows (kmsgrab)
+SKIP  render grouped: pixels need an integer scale (1.5)
+PASS  render grouped: the screen is what a full repaint shows (kmsgrab)
+SKIP  render group added: pixels need an integer scale (1.5)
+PASS  render group added: the screen is what a full repaint shows (kmsgrab)
+SKIP  render group switched: pixels need an integer scale (1.5)
+PASS  render group switched: the screen is what a full repaint shows (kmsgrab)
+SKIP  render group switched back: pixels need an integer scale (1.5)
+SKIP  render group closed: pixels need an integer scale (1.5)
+PASS  render group closed: the screen is what a full repaint shows (kmsgrab)
+SKIP  render ungrouped: pixels need an integer scale (1.5)
+PASS  render ungrouped: the screen is what a full repaint shows (kmsgrab)
+SKIP  render scratchpad stored: pixels need an integer scale (1.5)
+PASS  render scratchpad stored: the screen is what a full repaint shows (kmsgrab)
+SKIP  render scratchpad: pixels need an integer scale (1.5)
+PASS  render scratchpad: the screen is what a full repaint shows (kmsgrab)
+SKIP  render scratchpad rectangles: pixels need an integer scale (1.5)
+PASS  render scratchpad rectangles: the screen is what a full repaint shows (kmsgrab)
+SKIP  render scratchpad hidden: pixels need an integer scale (1.5)
+PASS  render scratchpad hidden: the screen is what a full repaint shows (kmsgrab)
+SKIP  render fullscreen: pixels need an integer scale (1.5)
+PASS  render fullscreen: the screen is what a full repaint shows (kmsgrab)
+SKIP  render fullscreen left: pixels need an integer scale (1.5)
+PASS  render fullscreen left: the screen is what a full repaint shows (kmsgrab)
+PASS  Chromium draws its page (79% of the screen is the test color, after 1 s)
+PASS  GTK 3 window drawn (85% of the screen is the test color, after 1 s)
+PASS  GTK 3 window at 41 fps (renderer cairo)
+PASS  GTK 4 window drawn (85% of the screen is the test color, after 1 s)
+PASS  GTK 4 window at 60 fps (renderer vulkan)
+PASS  GTK 3 (Xwayland) window drawn (86% of the screen is the test color, after 1 s)
+PASS  GTK 3 (Xwayland) window at 59 fps (renderer cairo)
+PASS  Qt Quick window drawn (85% of the screen is the test color, after 1 s)
+PASS  Qt Quick window at 60 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (86% of the screen is the test color, after 0 s)
+PASS  Qt Quick (software) window at 60 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (87% of the screen is the test color, after 0 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 60 fps
+PASS  X11 client through Xwayland (glxgears) at 60 fps
+INFO  compositor memory: Rss: 72 MiB, Pss: 36 MiB, Anonymous: 13 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+PASS  no core dumps
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.kjdboR on samsung-i5
+RESULT: PASS

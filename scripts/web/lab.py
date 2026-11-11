@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # Writes web/lab.html, the page about the test machines: the hardware table (the facts below), and every machine's
-# numbers against stock Hyprland from the baseline (docs/baseline/20261103-all-machines-0.3.0-vs-hyprland-0.57.0, values.txt
-# and raw.txt per machine and compositor; the r871 one of 2026-10-30 before 2026-11-04, the 0.56.2 one of 2026-10-27
-# before 2026-11-02; the baseline and the machines are in labdata.py), so no number on the page is typed by hand. Run it
+# numbers against stock Hyprland from the baseline (docs/baseline/20261110-all-machines-r957-vs-hyprland-0.57.1, values.txt
+# and raw.txt per machine and compositor; the 0.3.0 one of 2026-11-03 before 2026-11-11, the r871 one of 2026-10-30 before
+# 2026-11-04, the 0.56.2 one of 2026-10-27 before 2026-11-02; the baseline and the machines are in labdata.py), so no number on the page is typed by hand. Run it
 # again after a new baseline, from anywhere: scripts/web/lab.py
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from labdata import ROOT, BASELINE, HYPRLAND, MACHINES, RETIRED, values, cell, E, head, FOOTER
+from labdata import ROOT, BASELINE, HYPRLAND, RUN, MACHINES, RETIRED, values, cell, E, head, FOOTER
 
 OUT = os.path.join(ROOT, "web", "lab.html")
 
@@ -36,13 +36,15 @@ for m in MACHINES:
                     for k, _, unit, lower, sc in METRICS)
     rows_num.append(f"          <tr><td>{E(m['name'])}</td>{cells}</tr>")
 heads = "".join(f"<th>{E(label)}</th>" for _, label, _, _, _ in METRICS)
-# a machine with fewer sessions than this (the Galaxy Book, whose GPU hung early in the night) is named in the note instead
-FEW = 10
+# a machine with fewer sessions than this (the Galaxy Book in the 0.3.0 baseline, whose GPU hung early in the night) is
+# named in the note instead
+FEW = 5
 full = [v for v in sessions.values() if min(v) >= FEW]
 smin = min(min(v) for v in full); smax = max(max(v) for v in full)
 few = [m for m in MACHINES if m["alias"] in sessions and min(sessions[m["alias"]]) < FEW]
-FEW_NOTE = "".join(f" {E(m['name'])}: {min(sessions[m['alias']])} sessions of each only, its GPU hung early in the night (a kernel"
-                   f" <code>msm</code> hang at a Chromium start, the third there), so its numbers are less sure." for m in few)
+FEW_NOTE = "".join(f" {E(m['name'])}: {min(sessions[m['alias']])} sessions of each only, so its numbers are less sure." for m in few)
+# machines of the lab without numbers in this baseline, and why
+NODATA_NOTE = "".join(f" {E(m['name'])}: not in the table, it {E(m['nodata'])}." for m in MACHINES if not m["baseline"] and m.get("nodata"))
 
 page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on, from a 2008 ThinkPad X200 to a Snapdragon X Elite laptop, and every machine's numbers against stock Hyprland.", "The test machines Hypoland is measured on, and every machine's numbers against stock Hyprland.", "lab.html")}
 
@@ -78,7 +80,7 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
         </tbody>
       </table></div>
       <p class="note">
-        {E(RETIRED)} An Apple Mac mini M1 is being set up for Omarchy on Apple Silicon. Not in the lab: NVIDIA
+        {E(RETIRED)} Not in the lab: NVIDIA
         (<code>nouveau</code>), AMD GCN and newer (<code>radeonsi</code>, <code>amdgpu</code>), and the two other Intel
         generations that stop at GLES 2.0, GMA X3100 (965GM) and Ironlake. Reports from any of them are welcome.
       </p>
@@ -96,13 +98,14 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
       </table></div>
       <p class="note">
         Compositor CPU in percent of one core, medians of {smin} to {smax} fresh sessions of each compositor per machine,
-        alternating from 2026-11-03 12:46 to 11-04 07:30 (Hypoland 0.3.0 against Hyprland {HYPRLAND}-4).{FEW_NOTE} Green where
+        {RUN}.{FEW_NOTE}{NODATA_NOTE} Both ran without realtime scheduling, which Omarchy turns off for Hyprland now
+        (<code>HYPRLAND_NO_RT=1</code>), except on the Galaxy Book. Green where
         Hypoland is at least 5% better, red where it is at least 5% worse. On the X200, Hyprland ran with Omarchy's
         GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), since it does
         not start there otherwise. Hyprland ran with <code>quirks:skip_non_kms_dmabuf_formats = false</code>,
         Hypoland's default: with its own default the T550's session came up without a wallpaper and GL clients that ask
         for alpha got no config. The frames are the compositor's own page flips; the Galaxy Book's screen runs at
-        120&nbsp;Hz. The memory holds the shell's shared pages too.
+        120&nbsp;Hz, and the Mac mini M1's display driver reports none. The memory holds the shell's shared pages too.
         Four terminals side by side on every machine: <a href="terminals.html">terminals</a>.
         <a href="https://github.com/hegjon/hypoland/tree/master/{BASELINE}">Raw data, every session's values and the scripts</a>.
       </p>

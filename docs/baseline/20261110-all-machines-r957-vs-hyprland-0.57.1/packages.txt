@@ -1,0 +1,110 @@
+== x200
+kernel 7.2.15-2-omarchy
+hypoland 0.3.0.r957.g29b9f86a9-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-4
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== t550
+kernel 7.2.15-2-omarchy
+hypoland 0.3.0.r957.g29b9f86a9-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-4
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== xps
+kernel 7.2.15-2-omarchy
+hypoland 0.3.0.r957.g29b9f86a9-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-4
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== lianli
+kernel 7.2.15-2-omarchy
+hypoland 0.3.0.r957.g29b9f86a9-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-4
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== chromebook
+kernel 7.2.15-2-omarchy
+hypoland 0.3.0.r957.g29b9f86a9-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-4
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== t460s
+kernel 7.2.15-2-omarchy
+hypoland 0.3.0.r957.g29b9f86a9-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-4
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== samsung-i5
+kernel 7.2.15-2-omarchy
+hypoland 0.3.0.r957.g29b9f86a9-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-4
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== t490
+kernel 7.2.15-2-omarchy
+hypoland 0.3.0.r957.g29b9f86a9-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-4
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== galaxybook
+kernel 7.3.0-46-omarchy
+hypoland 0.3.0.r957.g29b9f86-1
+omarchy 4.5.0-3
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-3
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== macmini-intel
+kernel 7.2.15-2-omarchy
+hypoland 0.3.0.r957.g29b9f86a9-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa 1:26.2.6-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-4
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
+== macmini-m1
+kernel 7.2.11-16-1-ARCH
+hypoland 0.3.0.r957.g29b9f86-1
+omarchy-dev 4.0.0.r7677.ge56f833-1
+mesa-aurora 1:26.3.0_devel.20261107.231485.b7b03c5b3b8-1
+gtk3 1:3.24.52-2
+gtk4 1:4.24.1-1
+qt6-base 6.12.0-3
+foot 1.28.0-2
+hyprland 0.57.1-2 (stock, from the cache)
