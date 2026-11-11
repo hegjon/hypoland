@@ -1167,7 +1167,32 @@ def main():
     ap.add_argument("--nearest", action="store_true", help="sample its windows with the nearest texel")
     ap.add_argument("--no-freeze", dest="freeze", action="store_false", help="leave the shell running (a nested compositor has none of its own)")
     args = ap.parse_args()
-    raise SystemExit(1 if Render(args).run() else 0)
+    warp = hold_pointer(args.socket)
+    try:
+        failed = Render(args).run()
+    finally:
+        if warp:
+            set_warp(args.socket, warp)
+    raise SystemExit(1 if failed else 0)
+
+
+def set_warp(path, value):
+    lua = f"eval hl.config({{cursor = {{warp_on_change_workspace = {value}}}}})"
+    if request(path, lua) != "ok":
+        request(path, f"keyword cursor:warp_on_change_workspace {value}")
+
+
+def hold_pointer(path):
+    """The pointer stays in the corner it is parked in: a workspace switch warps it to the window that gets the focus
+    (Omarchy's cursor:warp_on_change_workspace), and a cursor drawn into the frame (no cursor plane: macmini-m1) is then
+    somewhere else in the repaint than in the frame before (2026-11-11). Returns the setting to restore, 0 for none"""
+    try:
+        warp = int(hyprctl(path, "j/getoption cursor:warp_on_change_workspace").get("int", 0))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, json.JSONDecodeError):
+        return 0
+    if warp:
+        set_warp(path, 0)
+    return warp
 
 
 if __name__ == "__main__":
