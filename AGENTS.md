@@ -527,7 +527,33 @@ Tools:
   its OpenGL renderer segfaults on the T550, the XPS and the Galaxy Book, it cannot run on the X200, samsung-i5 or lianli,
   and its Vulkan renderer fails on the Mac mini. One round against Hyprland 0.57.0 (`ab/`, `abtable.py`): Xonotic low 5
   to 9% more frames under Hypoland on Intel (the XPS 19%), ultimate 1 to 8%, GravityMark the same, with less compositor
-  CPU a frame. Fullscreen and direct scanout for them are further down (fullscreen games). `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
+  CPU a frame. Fullscreen and direct scanout for them are further down (fullscreen games). ElectroBench (added 2026-11-10,
+  asked for by the user, github.com/deadbeef7/ElectroBench, GPL-3, not packaged: `scripts/machines/electrobench.sh <host>...`
+  builds a pinned commit on the machine into `/opt/electrobench` and installs glew) has four scenes of fixed length without
+  vsync, each run by itself fullscreen and in a window: `electrobench-guns` (scene 1, OpenGL 2.1, 60 s, so the X200 too),
+  `electrobench-ocean`, `-pool` and `-lines` (OpenGL 3.3 core, 45 s each, skipped without it), each with a `-window` twin,
+  about 7 minutes a round, last in the default list. A native Wayland client (`SDL_VIDEODRIVER=wayland`: sdl2-compat
+  takes X11 otherwise, and without a DISPLAY it fails rather than try Wayland); Arch's GLEW is built for GLX, so on an EGL
+  context `glewInit()` returns `GLEW_ERROR_NO_GLX_DISPLAY` after loading the functions, which scenes 2 to 4 took for a
+  failure: they accept it since upstream merged our fix (PR #60, 2026-11-10; until then the install script patched them). The workload waits for `FPS :` in the window's title (the scene
+  draws), measures from 2 s later until about 5 s before the scene's end (invalid if the scene printed its result before the window ended) and takes the scene's own mean as `fps.<workload>`.
+  Scene 1 draws every face of its 110 guns with `glBegin` / `glEnd`, twice a frame: 0.6 fps on the X200, 1.6 on the T550, 3.4 on the T460s,
+  1.2 on the Galaxy Book, 5.4 nested on the desktop. Its window is not resizable, so in a window it floats at 1280x720 pixels (853x480 at the T460s'
+  1.5); the other scenes tile. SDL 2 is not scale aware, so at a fractional scale the fullscreen buffer is the logical size
+  scaled up. First run, T460s, fresh session, one round (game fps fullscreen / window; compositor CPU ms a frame): guns 3.4
+  / 3.3 (0.53 / 0.84), ocean 12.3 / 12.6 (0.43 / 0.82), pool 18.1 / 19.2 (0.50 / 0.96), lines 48.4 / 49.7 (0.54 / 0.91),
+  the GPU busy 89 to 100% in all (`test-results/bench-20261110-*-eb-t460s-fresh/`). The Galaxy Book draws
+  the lines in a window at 102 fps (`-eb-galaxybook`). Installed on every machine on 2026-11-10 (the Galaxy Book after
+  its power cycle). Scenes 2 to 4 once on every machine the same day (`-eb-quick-*`, ocean / pool in a window / lines,
+  game fps): Galaxy Book 13.6 / 49.6 / 103.6, T490 12.9 / 19.9 / 48.6, T550 10.5 / 15.5 / 36.0, Mac mini 10.1 / 13.5 /
+  44.4, lianli 9.9 / 14.3 / 35.5, samsung-i5 6.1 / 9.1 / 26.7, XPS 5.4 / 6.2 / 14.4, Chromebook 2.3 / 5.3 / 12.1. The
+  screen shows every frame on iris and freedreno, but only about half of them on crocus in a window (Mac mini pool 13.5
+  drawn / 6.7 shown, samsung-i5 9.1 / 4.5, Chromebook 5.3 / 2.6) and on lianli's r600 in all three (lines 35.5 / 16.5);
+  not looked into yet. macmini-m1 has no monitor, so stock Hyprland has no `wl_output` for SDL ("The video driver did not
+  add any displays", which ElectroBench reports as no OpenGL 3.3): with `hyprctl output create headless` it draws 53.5 /
+  83.8 / 193.5 (asahi). The workload's check that the scene did not end inside the window compares when the result was
+  printed with the window's end (`WINDOW_END`, set by `bench()`): the result being there when `rec` returned was too
+  coarse, since its steps around the window take seconds on the Chromebook. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
   user) scroll a folder of 5000 empty files in Flea (Omarchy's file manager, a Quickshell window) and in Nautilus (GTK
   4, its list view, set for the run if needed) with the Down key held on the uinput keyboard for the whole run
   (`clients/holdkey.py`, root only): the compositor forwards the one press and the client repeats it at the session's

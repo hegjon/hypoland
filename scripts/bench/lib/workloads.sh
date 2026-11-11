@@ -186,9 +186,90 @@ workload_gravitymark_gl() { gravitymark_workload gravitymark-gl -opengl; }
 needs_gravitymark_vk="$GRAVITYMARK x11 xprop"
 workload_gravitymark_vk() { gravitymark_workload gravitymark-vk -vulkan; }
 
+# ElectroBench (github.com/deadbeef7/ElectroBench, built into /opt/electrobench by scripts/machines/electrobench.sh) has
+# four scenes of fixed length without vsync, each run by itself here, fullscreen and in a window (every frame composited;
+# scenes 2 to 4 tile alone on the workspace, scene 1's window is not resizable and floats), as a native Wayland client (SDL 2 through sdl2-compat, which would take X11
+# without SDL_VIDEODRIVER). Scene 1, the guns, needs OpenGL 2.1 (the X200 too) and draws every face of its 110 guns with
+# glBegin / glEnd, twice a frame, which keeps Mesa busy on the CPU: about 5 fps on the desktop. Scenes 2 to 4, the ocean,
+# the pool and the power lines (4x MSAA), need OpenGL 3.3 core and are the GPU's work; without it they exit, skipped.
+# A scene times itself from after its setup (shaders, meshes) for 60 s (the guns) or 45 s and prints its frames' mean,
+# fps.<workload>. It puts its frame rate into its window's title after its first second of frames or more, which is
+# the sign it draws: the window starts 2 s after that and ends about 5 s before the scene does (the scene printing its
+# result before the window ended makes the workload invalid)
+ELECTROBENCH=${ELECTROBENCH:-/opt/electrobench/ElectroBench}
+EB_RESULT='Benchmark Results - Time : [0-9.]+s, Average FPS : [0-9.]+'
+electrobench_drawing() { H -j clients 2>/dev/null | grep -q -E '"title": "ElectroBench[^"]* - FPS : '; }
+# the size it asks for is in its log, the size it got from the compositor
+electrobench_window() { H -j clients 2>/dev/null | python3 -I -c 'import json, sys
+for c in json.load(sys.stdin):
+    if c.get("class") == "ElectroBench":
+        print("%dx%d, fullscreen %s" % (*c["size"], c.get("fullscreen")))
+        break'; }
+electrobench_workload() { # workload, scene option, scene seconds, [--windowed]
+    local log=$CLIENTDIR/$1.log result i window
+    rm -f "$log"
+    # it reads shaders/ and assets/ from the working directory first
+    client $(($3 + 180)) "cd '${ELECTROBENCH%/*}' && exec env SDL_VIDEODRIVER=wayland './${ELECTROBENCH##*/}' $2 ${4:-} >$log 2>&1"
+    for ((i = 0; i < 480; i++)); do
+        electrobench_drawing && break
+        client_running || break
+        sleep 0.25
+    done
+    if ! electrobench_drawing; then
+        echo "    skipped, ElectroBench did not run: $(grep -a -v -E '^\s*$|^ |^Assets:' "$log" | tail -n 1)"
+        stop_clients
+        return
+    fi
+    sleep 2
+    window=$(electrobench_window)
+    # when the scene printed its result, to the tenth of a second: rec's own steps around the window take seconds on
+    # the slow machines, so the result being there when rec returns does not mean it came inside the window
+    (until grep -a -q -E "$EB_RESULT" "$log"; do sleep 0.1; done; date +%s%N >"$log.ended") &
+    local watcher=$!
+    WINDOW_END=
+    SECONDS_PER_RUN=$(($3 - 8)) rec "$1"
+    await_log "$log" "$EB_RESULT" 120 running
+    sleep 0.2
+    kill $watcher 2>/dev/null
+    wait $watcher 2>/dev/null
+    if [ -s "$log.ended" ] && [ -n "$WINDOW_END" ] && [ "$(cat "$log.ended")" -lt "$WINDOW_END" ]; then
+        echo "    the scene ended $(((WINDOW_END - $(cat "$log.ended")) / 1000000)) ms before the window did"
+        value "invalid.$1" 1
+    fi
+    rm -f "$log.ended"
+    stop_clients
+    result=$(grep -a -m 1 -o -E "$EB_RESULT" "$log")
+    echo "    ElectroBench $2 ${4:-}: window $window, $(grep -a -m 1 -E '^Renderer: ' "$log" | sed 's/ |.*//;s/^Renderer: //')${result:+, }${result:-no result}"
+    [ -n "$result" ] || { value "invalid.$1" 1; return; }
+    [ "$MODE" != perf ] && value "fps.$1" "$(sed -E 's/.*Average FPS : //' <<<"$result")"
+}
+
+needs_electrobench_guns="$ELECTROBENCH"
+workload_electrobench_guns() { electrobench_workload electrobench-guns --og-only 60; }
+
+needs_electrobench_guns_window="$ELECTROBENCH"
+workload_electrobench_guns_window() { electrobench_workload electrobench-guns-window --og-only 60 --windowed; }
+
+needs_electrobench_ocean="$ELECTROBENCH"
+workload_electrobench_ocean() { electrobench_workload electrobench-ocean --scene-only 45; }
+
+needs_electrobench_ocean_window="$ELECTROBENCH"
+workload_electrobench_ocean_window() { electrobench_workload electrobench-ocean-window --scene-only 45 --windowed; }
+
+needs_electrobench_pool="$ELECTROBENCH"
+workload_electrobench_pool() { electrobench_workload electrobench-pool --pool-only 45; }
+
+needs_electrobench_pool_window="$ELECTROBENCH"
+workload_electrobench_pool_window() { electrobench_workload electrobench-pool-window --pool-only 45 --windowed; }
+
+needs_electrobench_lines="$ELECTROBENCH"
+workload_electrobench_lines() { electrobench_workload electrobench-lines --pole-only 45; }
+
+needs_electrobench_lines_window="$ELECTROBENCH"
+workload_electrobench_lines_window() { electrobench_workload electrobench-lines-window --pole-only 45 --windowed; }
+
 needs_nautilus="nautilus"
 workload_nautilus() { # GTK 4 redrawing a full window of icons, fullscreen toggled twice a second
-    local i
     client $((SECONDS_PER_RUN + 15)) "exec nautilus --new-window /usr/share/icons/Adwaita/symbolic/actions"
     sleep 5
     (for i in $(seq 1 "$SECONDS_PER_RUN"); do
@@ -316,7 +397,6 @@ workload_shm_fullwindow() {
 # a neighbouring window and to the other workspace (latency.workspace-switch.*, see switching())
 needs_workspace_switch="foot"
 workload_workspace_switch() {
-    local i
     for i in 1 2 3; do
         client $((SECONDS_PER_RUN + 60)) "exec foot -e sleep 600"
         sleep 1

@@ -101,6 +101,7 @@ bench() { # name
     m0=$(mark) c0=$(cputime) t0=$(date +%s%N) u0=$(cgtime "$user") k0=$(cgtime "$user/$SLICE") b0=$(busytime)
     window "$name"
     c1=$(cputime) t1=$(date +%s%N) u1=$(cgtime "$user") k1=$(cgtime "$user/$SLICE") b1=$(busytime) m1=$(mark)
+    WINDOW_END=$t1 # for a workload that checks its client was still at work then
     [ -n "$sampler" ] && wait "$sampler"
     [ -n "$flipper" ] && wait "$flipper"
     echo "--- $name; clients: $(clients)$(in_the_way)"
@@ -150,6 +151,7 @@ perf_rec() { # name
     c0=$(cputime) t0=$(date +%s%N)
     perf record -q -F 999 --call-graph fp -p $P -o "$OUT/$name.data" -- sleep "$SECONDS_PER_RUN" >/dev/null 2>&1
     c1=$(cputime) t1=$(date +%s%N)
+    WINDOW_END=$t1
     local list
     list=$(clients)
     echo
