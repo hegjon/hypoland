@@ -1,0 +1,107 @@
+machine: t550, 7.2.15-2-omarchy, 4 cores, 15676 MiB
+compositor: /usr/bin/Hyprland, pid 1939533, user a, instance acc1aa0bfd4bd575dcb0f76c35ccf12b660a1ab9_1794400235_42295811
+clocksource: tsc
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.57.1 built from branch v0.57.1 at commit acc1aa0bfd4bd575dcb0f76c35ccf12b660a1ab9 clean
+INFO  
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output eDP-1: 1920x1080@60.05200
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+PASS  the screen shows the window (82% of the scanned-out buffer is the test color)
+PASS  test window drawn (82% of the screen is the test color)
+SKIP  render whole: pixels need an integer scale (1.5)
+FAIL  render whole: 1748 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render screenshot: pixels need an integer scale (1.5)
+SKIP  render screenshot again: pixels need an integer scale (1.5)
+SKIP  render rectangles: pixels need an integer scale (1.5)
+FAIL  render rectangles: 19834 pixels differ from a full repaint, in 22,58 to 1902,1061 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render new buffers: pixels need an integer scale (1.5)
+FAIL  render new buffers: 26567 pixels differ from a full repaint, in 17,62 to 1902,1061 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render subsurface: pixels need an integer scale (1.5)
+FAIL  render subsurface: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render subsurface moved: pixels need an integer scale (1.5)
+FAIL  render subsurface moved: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render subsurface closed: pixels need an integer scale (1.5)
+FAIL  render subsurface closed: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render viewport: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render viewport rectangles: 10514 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render viewports closed: pixels need an integer scale (1.5)
+FAIL  render viewports closed: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render popup: pixels need an integer scale (1.5)
+FAIL  render popup: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render popup moved: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render popup closed: pixels need an integer scale (1.5)
+FAIL  render popup closed: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render layer: pixels need an integer scale (1.5)
+FAIL  render layer: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render layer drawn: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render layer settled: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render layer popup: pixels need an integer scale (1.5)
+FAIL  render layer popup: 1986 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render layer popup closed: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render layer moved: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render layer shrunk: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render layer closed: 1803 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render floating: pixels need an integer scale (1.5)
+FAIL  render floating: 2161 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render moved: 368 pixels differ from a full repaint, in 359,270 to 359,704 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render resized: pixels need an integer scale (1.5)
+FAIL  render resized: 285 pixels differ from a full repaint, in 404,294 to 404,674 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render retitled: 285 pixels differ from a full repaint, in 404,294 to 404,674 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render opaque region: pixels need an integer scale (1.5)
+FAIL  render opaque region: 331 pixels differ from a full repaint, in 404,311 to 404,674 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render opaque region shrunk: pixels need an integer scale (1.5)
+FAIL  render opaque region shrunk: 265 pixels differ from a full repaint, in 404,311 to 404,674 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+FAIL  render shrunk: 260 pixels differ from a full repaint, in 404,294 to 404,674 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+PASS  render closed: the screen is what a full repaint shows (kmsgrab)
+SKIP  render grouped: pixels need an integer scale (1.5)
+FAIL  render grouped: 1645 pixels differ from a full repaint, in 22,104 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render group added: pixels need an integer scale (1.5)
+FAIL  render group added: 1675 pixels differ from a full repaint, in 22,104 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render group switched: pixels need an integer scale (1.5)
+PASS  render group switched: the screen is what a full repaint shows (kmsgrab)
+SKIP  render group switched back: pixels need an integer scale (1.5)
+SKIP  render group closed: pixels need an integer scale (1.5)
+PASS  render group closed: the screen is what a full repaint shows (kmsgrab)
+SKIP  render ungrouped: pixels need an integer scale (1.5)
+FAIL  render ungrouped: 1817 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render scratchpad stored: pixels need an integer scale (1.5)
+PASS  render scratchpad stored: the screen is what a full repaint shows (kmsgrab)
+SKIP  render scratchpad: pixels need an integer scale (1.5)
+PASS  render scratchpad: the screen is what a full repaint shows (kmsgrab)
+SKIP  render scratchpad rectangles: pixels need an integer scale (1.5)
+FAIL  render scratchpad rectangles: 2704 pixels differ from a full repaint, in 695,355 to 1259,784 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+SKIP  render scratchpad hidden: pixels need an integer scale (1.5)
+PASS  render scratchpad hidden: the screen is what a full repaint shows (kmsgrab)
+SKIP  render fullscreen: pixels need an integer scale (1.5)
+PASS  render fullscreen: the screen is what a full repaint shows (kmsgrab)
+SKIP  render fullscreen left: pixels need an integer scale (1.5)
+FAIL  render fullscreen left: 1702 pixels differ from a full repaint, in 22,62 to 1898,1057 (screens in /tmp/hypoland-measure.5wqett/clients/render)
+PASS  Chromium draws its page (79% of the screen is the test color, after 1 s)
+PASS  GTK 3 window drawn (85% of the screen is the test color, after 1 s)
+PASS  GTK 3 window at 59 fps (renderer cairo)
+PASS  GTK 4 window drawn (85% of the screen is the test color, after 1 s)
+PASS  GTK 4 window at 59 fps (renderer vulkan)
+PASS  GTK 3 (Xwayland) window drawn (86% of the screen is the test color, after 0 s)
+PASS  GTK 3 (Xwayland) window at 60 fps (renderer cairo)
+PASS  Qt Quick window drawn (85% of the screen is the test color, after 0 s)
+PASS  Qt Quick window at 60 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (86% of the screen is the test color, after 1 s)
+PASS  Qt Quick (software) window at 60 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (87% of the screen is the test color, after 0 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 60 fps
+PASS  X11 client through Xwayland (glxgears) at 60 fps
+INFO  compositor memory: Rss: 160 MiB, Pss: 119 MiB, Anonymous: 86 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+INFO  core dumps since the compositor started: 66M 1x
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.5wqett on t550
+RESULT: FAIL

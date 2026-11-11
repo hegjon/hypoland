@@ -1,0 +1,40 @@
+machine: macmini-intel, 7.2.15-2-omarchy, 4 cores, 3778 MiB
+compositor: /usr/bin/hypoland, pid 1807868, user a, instance 9897075b1561a52e8f3e0bfb43323192f13d7b6c_1794397751_990091194
+clocksource: tsc
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.57.0 built from branch wip/long-ab at commit 9897075b1561a52e8f3e0bfb43323192f13d7b6c clean
+INFO  Hypoland 0.3.0, based on Hyprland 0.57.0
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output HEADLESS-NIGHT: 1920x1080@60.00000
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+FAIL  hypoland-kmsgrab could not read the scanned-out buffer
+PASS  test window drawn (77% of the screen is the test color)
+FAIL  render checks did not run: subprocess.CalledProcessError: Command '['hypoland-kmsgrab', '/tmp/hypoland-measure.hkkaUO/clients/render/whole-pixels.ppm']' returned non-zero exit status 1.
+PASS  Chromium draws its page (72% of the screen is the test color, after 0 s)
+PASS  GTK 3 window drawn (81% of the screen is the test color, after 1 s)
+PASS  GTK 3 window at 59 fps (renderer cairo)
+PASS  GTK 4 window drawn (81% of the screen is the test color, after 1 s)
+PASS  GTK 4 window at 60 fps (renderer vulkan)
+PASS  GTK 3 (Xwayland) window drawn (84% of the screen is the test color, after 1 s)
+PASS  GTK 3 (Xwayland) window at 60 fps (renderer cairo)
+PASS  Qt Quick window drawn (82% of the screen is the test color, after 1 s)
+PASS  Qt Quick window at 60 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (82% of the screen is the test color, after 1 s)
+PASS  Qt Quick (software) window at 60 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (84% of the screen is the test color, after 1 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 60 fps
+PASS  X11 client through Xwayland (glxgears) at 60 fps
+INFO  compositor memory: Rss: 50 MiB, Pss: 25 MiB, Anonymous: 7 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+PASS  no core dumps
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.hkkaUO on macmini-intel
+RESULT: FAIL

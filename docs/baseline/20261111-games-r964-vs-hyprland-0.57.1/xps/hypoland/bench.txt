@@ -1,0 +1,1 @@
+machine: xps, 7.2.15-2-omarchy, 4 cores, 7815 MiB

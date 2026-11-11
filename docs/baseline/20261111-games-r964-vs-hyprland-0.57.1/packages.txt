@@ -1,0 +1,23 @@
+== x200
+hypoland 0.3.0.r964.g9897075b1-1 mesa 1:26.2.6-1 linux-omarchy 7.2.15-2 omarchy-dev 4.0.0.r7677.ge56f833-1 omarchy-dev 4.0.0.r7677.ge56f833-1 7.2.15-2-omarchy
+== t550
+hypoland 0.3.0.r964.g9897075b1-1 mesa 1:26.2.6-1 linux-omarchy 7.2.15-2 omarchy-dev 4.0.0.r7677.ge56f833-1 omarchy-dev 4.0.0.r7677.ge56f833-1 7.2.15-2-omarchy
+== xps
+hypoland 0.3.0.r964.g9897075b1-1 mesa 1:26.2.6-1 linux-omarchy 7.2.15-2 omarchy-dev 4.0.0.r7677.ge56f833-1 omarchy-dev 4.0.0.r7677.ge56f833-1 7.2.15-2-omarchy
+== lianli
+hypoland 0.3.0.r964.g9897075b1-1 mesa 1:26.2.6-1 linux-omarchy 7.2.15-2 omarchy-dev 4.0.0.r7677.ge56f833-1 omarchy-dev 4.0.0.r7677.ge56f833-1 7.2.15-2-omarchy
+== chromebook
+hypoland 0.3.0.r964.g9897075b1-1 mesa 1:26.2.6-1 linux-omarchy 7.2.15-2 omarchy-dev 4.0.0.r7677.ge56f833-1 omarchy-dev 4.0.0.r7677.ge56f833-1 7.2.15-2-omarchy
+== t460s
+hypoland 0.3.0.r964.g9897075b1-1 mesa 1:26.2.6-1 linux-omarchy 7.2.15-2 omarchy-dev 4.0.0.r7677.ge56f833-1 omarchy-dev 4.0.0.r7677.ge56f833-1 7.2.15-2-omarchy
+== t490
+hypoland 0.3.0.r964.g9897075b1-1 mesa 1:26.2.6-1 linux-omarchy 7.2.15-2 omarchy-dev 4.0.0.r7677.ge56f833-1 omarchy-dev 4.0.0.r7677.ge56f833-1 7.2.15-2-omarchy
+== galaxybook
+hypoland 0.3.0.r964.g9897075-1 mesa 1:26.2.6-1 linux-omarchy 7.3-46 omarchy 4.5.0-3 7.3.0-46-omarchy
+== macmini-intel
+hypoland 0.3.0.r964.g9897075b1-1 mesa 1:26.2.6-1 linux-omarchy 7.2.15-2 omarchy-dev 4.0.0.r7677.ge56f833-1 omarchy-dev 4.0.0.r7677.ge56f833-1 7.2.15-2-omarchy
+== macmini-m1
+hypoland 0.3.0.r964.g9897075-1 mesa-aurora 1:26.3.0_devel.20261107.231485.b7b03c5b3b8-1 omarchy-dev 4.0.0.r7677.ge56f833-1 omarchy-dev 4.0.0.r7677.ge56f833-1 7.2.11-16-1-ARCH
+== t550 games: supertuxkart 1.5-2 vkmark 1:2025.01-2 xonotic 0.8.6-3 gravitymark 1.89-1 folio 0.1.1-1 LICENSE VERSION baseq2 q2ded quake2 ref_gl1.so ref_gl3.so ref_gles3.so ref_soft.so ref_vk.so 8.10, ref_vk 1.0.2, Quake II 3.14 demo data
+== galaxybook games: supertuxkart 1.5-1 vkmark 1:2025.01-2 xonotic 0.8.6-3 gravitymark 1.89-1 folio 0.2.0-2 LICENSE VERSION baseq2 q2ded quake2 ref_gl1.so ref_gl3.so ref_gles3.so ref_soft.so ref_vk.so 8.10, ref_vk 1.0.2, Quake II 3.14 demo data
+== macmini-m1 games: supertuxkart 1.5-1 vkmark 1:2025.01-2 folio 0.2.0-2 LICENSE VERSION baseq2 q2ded quake2 ref_gl1.so ref_gl3.so ref_gles3.so ref_soft.so ref_vk.so 8.10, ref_vk 1.0.2, Quake II 3.14 demo data

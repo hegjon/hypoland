@@ -1,4 +1,4 @@
-# The facts and helpers the generated pages about the lab share (scripts/web/lab.py, scripts/web/terminals.py): the
+# The facts and helpers the generated pages about the lab share (scripts/web/lab.py, terminals.py, games.py): the
 # machines, the baseline their numbers come from, its values, and the page's head and footer.
 import html, os, re
 
@@ -38,8 +38,8 @@ MACHINES = [
 MACHINES.sort(key=lambda m: m["year"])
 RETIRED = "An HP EliteBook 8560p (2011, Radeon HD 6470M, r600) was in the lab from 2026-10-22 until its GPU failed on 2026-10-27."
 
-def values(alias, compositor):
-    d = os.path.join(ROOT, BASELINE, alias, compositor)
+def values(alias, compositor, baseline=BASELINE):
+    d = os.path.join(ROOT, baseline, alias, compositor)
     v = {}
     for line in open(os.path.join(d, "values.txt")):
         parts = line.split()
@@ -53,6 +53,9 @@ def fmt(x, unit):
     if unit == "%": return f"{x:.1f}%"
     if unit == "MiB": return f"{x:.0f} MiB"
     if unit == "fps": return f"{x:.0f} fps"
+    # a game's own frame rate: a decimal where it is low (ElectroBench's first scene draws 0.4 on the X200)
+    if unit == "game fps": return f"{x:.1f} fps" if x < 100 else f"{x:.0f} fps"
+    if unit == "score": return f"{x:.0f}"
     if unit == "ms/frame": return f"{x:.2f} ms"
     return f"{x:.1f} ms"
 
