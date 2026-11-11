@@ -268,6 +268,214 @@ workload_electrobench_lines() { electrobench_workload electrobench-lines --pole-
 needs_electrobench_lines_window="$ELECTROBENCH"
 workload_electrobench_lines_window() { electrobench_workload electrobench-lines-window --pole-only 45 --windowed; }
 
+# The graphics benchmarks of Phoronix's first look at the Snapdragon X2 Elite on Linux (2026-10-21, phoronix.com/review/
+# snapdragon-x2-linux/2): SuperTuxKart with Vulkan at its Ultimate effects, Yamagi Quake II's timedemo with Vulkan and with
+# OpenGL 3, 16x anisotropic filtering and MSAA, and vkmark in mailbox mode, run as Phoronix's test profiles run them
+# (pts/supertuxkart-1.8.1, pts/yquake2-1.3.0, pts/vkmark-1.3.2), but fullscreen at the monitor's size like the games
+# above. Each reports what Phoronix reports, its own frame rate or score, as fps.<workload>.
+
+# whether the GPU is a radeon one: lianli's r600 (ARUBA) locked up under Xonotic's heavier effects (2026-11-09), and the
+# EliteBook's radeon GPU died after lockups, so heavy GPU workloads that were not tried there leave it out
+radeon_gpu() { readlink /sys/class/drm/card*/device/driver 2>/dev/null | grep -q '/radeon$'; }
+
+# the focused monitor's size in the compositor's logical coordinates, as a client that is not scale aware sees it: WxH
+logical_size() {
+    H -j monitors 2>/dev/null | python3 -I -c 'import json, sys
+for m in json.load(sys.stdin):
+    if m.get("focused"):
+        w, h = (m["height"], m["width"]) if m.get("transform", 0) % 2 else (m["width"], m["height"])
+        print("%dx%d" % (round(w / m["scale"]), round(h / m["scale"])))
+        break'
+}
+
+# the size and fullscreen state of a client's window as the compositor has it, by class or title
+window_of() { # class or title
+    H -j clients 2>/dev/null | python3 -I -c 'import json, sys
+for c in json.load(sys.stdin):
+    if sys.argv[1] in (c.get("class"), c.get("title")):
+        print("%dx%d, fullscreen %s" % (*c["size"], c.get("fullscreen")))
+        break' "$1"
+}
+
+# when a line matching a regex shows up in a log, in ns since the epoch, written into a file by a watcher in the
+# background: rec's own steps around the window take seconds on the slow machines, so a result being there when rec
+# returns does not mean it came inside the window. Prints the watcher's pid
+watch_for_line() { # log, regex, file
+    rm -f "$3"
+    (until grep -a -q -E "$2" "$1" 2>/dev/null; do sleep 0.1; done; date +%s%N >"$3") >/dev/null 2>&1 &
+    echo $!
+}
+# whether the line came before the window ended (WINDOW_END, set by rec), which makes the workload invalid; stops the watcher
+ended_inside_window() { # watcher's pid, file, workload
+    local ended
+    kill "$1" 2>/dev/null
+    wait "$1" 2>/dev/null
+    ended=$(cat "$2" 2>/dev/null)
+    rm -f "$2"
+    [ -n "$ended" ] && [ -n "$WINDOW_END" ] && [ "$ended" -lt "$WINDOW_END" ] || return 1
+    echo "    the benchmark ended $(((WINDOW_END - ended) / 1000000)) ms before the window did"
+    value "invalid.$3" 1
+}
+
+# SuperTuxKart (the supertuxkart package, 774 MB) in its benchmark mode: the replay of a race on black_forest with one ghost
+# kart, about 38 s of race after loading, timed by the game. No frame limit (max_fps 9999), no sound, Christmas hats and
+# bunny ears off, a fresh save directory (SUPERTUXKART_SAVEDIR) each time, as Phoronix's config, and no vsync
+# (swap-interval-vsync 0: Phoronix's config sets swap-interval, a name 1.5 does not know, so its runs had vsync, and the
+# Galaxy Book's Vulkan run stayed at 119 of its 120 Hz with it; without vsync the Vulkan renderer presents in immediate
+# mode on Linux, the OpenGL one with a swap interval of 0); fullscreen at the monitor's logical size, since SDL 2 is not
+# scale aware (1440x900 on the Galaxy Book). The game writes its log into the save directory: when the race ends it
+# prints the frames and the time of the race, which make the mean frame rate, fps.<workload>, and its own "Steady FPS"
+# and "Mostly stable FPS", Phoronix's two charts, as fps.<workload>.steady and .stable (frame rates that most of the
+# race's frames reach, the game's profiler.cpp; a few long stalls make them 0). The window starts 4 s after the game read
+# the replay (the race's countdown) and lasts 30 s, inside the race, which takes longer when the game stalls.
+STK_EFFECTS_ULTIMATE="--enable-glow --enable-bloom --enable-light-shaft --enable-dof --enable-motion-blur --enable-mlaa \
+--enable-ssao --enable-ibl --enable-hd-textures --enable-dynamic-lights --anisotropic=16 --shadows=1024"
+STK_RESULT="Profiler: Frame count '[0-9]+', Time \(ms\) '[0-9]+', Steady FPS '[0-9]+', Mostly stable FPS '[0-9]+'"
+supertuxkart_workload() { # workload, render driver: vulkan or gl
+    local dir=$CLIENTDIR/$1.save log result watcher window frames ms steady stable
+    if [ "$2" = vulkan ] && radeon_gpu; then
+        echo "    skipped, the radeon driver has no Vulkan"
+        return
+    fi
+    log=$dir/config-0.10/stdout.log
+    rm -rf "$dir"
+    asuser mkdir -p "$dir/config-0.10" "$dir/data"
+    # asuser's stdin is /dev/null, so the config goes in as an argument
+    asuser sh -c 'printf "%s\n" "$1" >"$0"' "$dir/config-0.10/config.xml" '<?xml version="1.0"?>
+<stkconfig version="8" >
+    <Audio sfx_on="false" music_on="false" />
+    <Video fullscreen="true" max_fps="9999" vulkan_fullscreen_desktop="true" />
+    <GFX swap-interval-vsync="0" />
+</stkconfig>'
+    client 600 "exec env SUPERTUXKART_SAVEDIR='$dir' XDG_DATA_HOME='$dir/data' supertuxkart --benchmark --unlock-all \
+        --xmas=2 --easter=2 --no-sound --fullscreen --screensize=$(logical_size) --render-driver=$2 $STK_EFFECTS_ULTIMATE \
+        >$CLIENTDIR/$1.out 2>&1"
+    # loading takes 15 s on the T550
+    if ! await_log "$log" 'Replay: Reading replay file' 180 running; then
+        echo "    skipped, SuperTuxKart did not start its benchmark: $(sed 's/\x1b\[[0-9;]*m//g' "$log" "$CLIENTDIR/$1.out" 2>/dev/null | grep -a -i -E 'error|fatal' | grep -v 'User Config' | tail -n 1)"
+        stop_clients
+        return
+    fi
+    sleep 4
+    window=$(window_of supertuxkart)
+    watcher=$(watch_for_line "$log" "$STK_RESULT" "$log.ended")
+    WINDOW_END=
+    SECONDS_PER_RUN=30 rec "$1"
+    await_log "$log" "$STK_RESULT" 180 running
+    sleep 0.2
+    ended_inside_window "$watcher" "$log.ended" "$1"
+    stop_clients
+    result=$(grep -a -m 1 -o -E "$STK_RESULT" "$log")
+    echo "    SuperTuxKart $2: window $window, $(sed 's/\x1b\[[0-9;]*m//g' "$log" | grep -a -m 1 -o -E '(Vulkan|GL) renderer: .*|OpenGL renderer: .*' ), ${result:-no result}"
+    [ -n "$result" ] || { value "invalid.$1" 1; return; }
+    [ "$MODE" = perf ] && return
+    read -r frames ms steady stable < <(grep -o -E "'[0-9]+'" <<<"$result" | tr -d "'" | tr '\n' ' ')
+    value "fps.$1" "$(awk -v f="$frames" -v t="$ms" 'BEGIN {if (t > 0) printf "%.1f", 1000 * f / t; else print "nan"}')"
+    value "fps.$1.steady" "$steady"
+    value "fps.$1.stable" "$stable"
+    asuser rm -rf "$dir"
+}
+
+needs_supertuxkart_vk="supertuxkart"
+workload_supertuxkart_vk() { supertuxkart_workload supertuxkart-vk vulkan; } # Phoronix's chart
+
+needs_supertuxkart_gl="supertuxkart"
+workload_supertuxkart_gl() { supertuxkart_workload supertuxkart-gl gl; }
+
+# Yamagi Quake II (built with id's demo data into /opt/yquake2 by scripts/machines/yquake2.sh) plays the demo q2demo1.dm2
+# as a timedemo, as fast as it can, and prints the frames, seconds and frame rate of each pass (632 frames: 20.8 s on the
+# T550 with Vulkan, 2 to 3 s on the Galaxy Book). Phoronix plays it once; here it is played over and over (a config that
+# stops the server and sets the next demo to itself, since starting a map clears it), and fps.<workload> is the frames
+# over the seconds of the passes that ran during the window: from the first pass to end after it started to the one
+# running when it ended. The first pass is not measured (shaders, caches). Phoronix's options: textures as the game
+# shipped them, no frame limit, no vsync, 16x anisotropic filtering, 16x MSAA (the driver's most where it has fewer: 8 on
+# Intel, 4 with Vulkan on the Adreno); fullscreen at the desktop's resolution in pixels (r_mode -2, vid_fullscreen 2:
+# 2880x1800 on the Galaxy Book) instead of Phoronix's 1920x1080 window, a native Wayland client (SDL 2 through sdl2-compat), its
+# config in a directory of its own under the user's home (-cfgdir), no sound. A renderer that does not start makes the
+# game try another, so the workload is skipped unless the renderer it asked for drew the demo.
+YQUAKE2=${YQUAKE2:-/opt/yquake2/quake2}
+YQ2_RESULT='^[0-9]+ frames, [0-9.]+ seconds: [0-9.]+ fps'
+yq2_passes() { grep -a -c -E "$YQ2_RESULT" "$1" 2>/dev/null; } # log
+yquake2_workload() { # workload, renderer: vk or gl3, the name its refresher has
+    local log=$CLIENTDIR/$1.log cfg=.hypoland-bench-$1 n0 n1 i result passes
+    # no Vulkan there, and 16x MSAA without vsync was not tried on the r600 that locked up under Xonotic's heavier effects
+    if radeon_gpu; then
+        echo "    skipped on the radeon driver"
+        return
+    fi
+    rm -f "$log"
+    asuser rm -rf "$USERHOME/$cfg"
+    asuser mkdir -p "$USERHOME/$cfg/baseq2"
+    # a demo map started over the one that ended ends at once (thousands of passes of 0 frames a second): the server first
+    asuser sh -c 'printf "%s\n" killserver "set nextdemo \"exec loop.cfg\"" "demomap q2demo1.dm2" >"$0"' "$USERHOME/$cfg/baseq2/loop.cfg"
+    client $((SECONDS_PER_RUN + 900)) "cd '${YQUAKE2%/*}' && exec env SDL_VIDEODRIVER=wayland './${YQUAKE2##*/}' -cfgdir $cfg \
+        +set timedemo 1 +set vid_fullscreen 2 +set r_mode -2 +set r_retexturing 2 +set r_scale8bittextures 1 +set vid_maxfps 999 \
+        +set r_vsync 0 +set vid_renderer $2 +set r_anisotropic 16 +set r_msaa_samples 16 +set s_initsound 0 +exec loop.cfg >$log 2>&1"
+    if ! await_log "$log" "$YQ2_RESULT" 300 running || ! grep -a -E '^Refresh: ' "$log" | tail -n 1 | grep -q "$3"; then
+        echo "    skipped, Yamagi Quake II did not play the demo with $3: $(grep -a -m 1 -E '^Refresh: ' "$log")$(grep -a -i -E 'error|failed|reverting' "$log" | tail -n 1)"
+        stop_clients
+        asuser rm -rf "$USERHOME/$cfg"
+        return
+    fi
+    sleep 1
+    n0=$(yq2_passes "$log")
+    rec "$1"
+    n1=$(yq2_passes "$log")
+    # the pass running when the window ended, at most 15 minutes on the slowest machine
+    for ((i = 0; i < 3600; i++)); do
+        [ "$(yq2_passes "$log")" -gt "$n1" ] && break
+        client_running || break
+        sleep 0.25
+    done
+    echo "    Yamagi Quake II $3: window $(window_of quake2), $(grep -a -m 1 -E 'MSAA' "$log" | sed 's/^[. ]*//')"
+    stop_clients
+    result=$(grep -a -E "$YQ2_RESULT" "$log" | sed -n "$((n0 + 1)),$((n1 + 1))p")
+    passes=$(grep -c . <<<"$result")
+    echo "    $passes passes: $(awk '{printf "%s%s fps", (NR > 1 ? ", " : ""), $5}' <<<"$result")"
+    asuser rm -rf "$USERHOME/$cfg"
+    # the pass running at the window's end has to be there, or the game stopped
+    [ "$passes" -gt "$((n1 - n0))" ] || { value "invalid.$1" 1; return; }
+    [ "$MODE" != perf ] && value "fps.$1" "$(awk '{f += $1; s += $3} END {if (s > 0) printf "%.1f", f / s; else print "nan"}' <<<"$result")"
+}
+
+needs_yquake2_vk="$YQUAKE2"
+workload_yquake2_vk() { yquake2_workload yquake2-vk vk Vulkan; }
+
+needs_yquake2_gl3="$YQUAKE2"
+workload_yquake2_gl3() { yquake2_workload yquake2-gl3 gl3 OpenGL3; }
+
+# vkmark (the vkmark package) runs its 13 scenes for 10 s each, fullscreen in mailbox mode (Phoronix's chart; Phoronix's
+# window had its screen's size), and prints its score, the mean of the scenes' frame rates, which is fps.<workload>. The
+# window is the run, from 2 s into the first scene for 124 s, whatever --seconds says. Without a Vulkan device it exits.
+needs_vkmark="vkmark"
+workload_vkmark() {
+    local log=$CLIENTDIR/vkmark.log result watcher window
+    if radeon_gpu; then
+        echo "    skipped, the radeon driver has no Vulkan"
+        return
+    fi
+    rm -f "$log"
+    client 400 "exec vkmark --fullscreen -p mailbox >$log 2>&1"
+    if ! await_log "$log" '^\[vertex\]' 60 running; then
+        echo "    skipped, vkmark did not start: $(grep -a -v -E '^\s*$|^=+$' "$log" | tail -n 1)"
+        stop_clients
+        return
+    fi
+    sleep 2
+    window=$(window_of com.github.vkmark.vkmark)
+    watcher=$(watch_for_line "$log" 'vkmark Score: [0-9]+' "$log.ended")
+    WINDOW_END=
+    SECONDS_PER_RUN=124 rec vkmark
+    await_log "$log" 'vkmark Score: [0-9]+' 60 running
+    sleep 0.2
+    ended_inside_window "$watcher" "$log.ended" vkmark
+    stop_clients
+    result=$(sed -n -E 's/.*vkmark Score: ([0-9]+).*/\1/p' "$log" | head -n 1)
+    echo "    vkmark: window $window, $(sed -n -E 's/^ *Device Name: *//p' "$log" | head -n 1), score ${result:-none}"
+    [ -n "$result" ] || { value "invalid.vkmark" 1; return; }
+    [ "$MODE" != perf ] && value "fps.vkmark" "$result"
+}
+
 needs_nautilus="nautilus"
 workload_nautilus() { # GTK 4 redrawing a full window of icons, fullscreen toggled twice a second
     client $((SECONDS_PER_RUN + 15)) "exec nautilus --new-window /usr/share/icons/Adwaita/symbolic/actions"

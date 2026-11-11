@@ -160,6 +160,8 @@ package_hypoland-bench() {
     'tk: the Tk canvas workload and its check'
     'xonotic: the xonotic-* workloads'
     'gravitymark: the gravitymark-* workloads (AUR)'
+    'supertuxkart: the supertuxkart-* workloads'
+    'vkmark: the vkmark workload'
     'libnotify: the notifications workload (notify-send)'
     'glmark2: the soak'
     'ttfx: the soak'

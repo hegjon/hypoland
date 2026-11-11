@@ -567,7 +567,32 @@ Tools:
   add any displays", which ElectroBench reports as no OpenGL 3.3): with `hyprctl output create headless` it draws 53.5 /
   83.8 / 193.5 (asahi). The workload's check that the scene did not end inside the window compares when the result was
   printed with the window's end (`WINDOW_END`, set by `bench()`): the result being there when `rec` returned was too
-  coarse, since its steps around the window take seconds on the Chromebook. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
+  coarse, since its steps around the window take seconds on the Chromebook. The graphics benchmarks of Phoronix's first
+  look at the Snapdragon X2 Elite on Linux (added 2026-11-11, asked for by the user, phoronix.com/review/snapdragon-x2-linux/2,
+  run as Phoronix's test profiles pts/supertuxkart-1.8.1, pts/yquake2-1.3.0 and pts/vkmark-1.3.2 run them, but fullscreen
+  at the monitor's size), last in the default list, about 5 minutes a round: `supertuxkart-vk` (the `supertuxkart` package,
+  774 MB) is SuperTuxKart's `--benchmark`, the replay of a race on black_forest (38 s of race), Vulkan, Ultimate effects, no
+  frame limit; `fps.supertuxkart-vk` is its frames over its time, `.steady` and `.stable` its "Steady FPS" and "Mostly stable
+  FPS" (Phoronix's two charts), the window 30 s inside the race; `supertuxkart-gl`, OpenGL, is outside the default list.
+  Phoronix's config sets vsync off as `swap-interval`, a name SuperTuxKart 1.5 does not know (it is `swap-interval-vsync`),
+  so its runs had vsync: the Galaxy Book's stayed at 119 of its 120 Hz with it. `yquake2-vk` and `yquake2-gl3` are Yamagi
+  Quake II's timedemo of the demo q2demo1.dm2 (632 frames) with 16x anisotropic filtering and 16x MSAA (8 on Intel, 4 with
+  Vulkan on the Adreno), played over and over (a config that stops the server and starts the demo again: a demo started
+  over the one that ended ends at once, thousands of 0-frame passes a second), `fps.<workload>` the frames over the seconds
+  of the passes the window overlaps; not packaged in Arch, `scripts/machines/yquake2.sh <host>...` builds Phoronix's
+  versions (8.10, ref_vk 1.0.2) on a machine into `/opt/yquake2` with the Quake II 3.14 demo's data. `vkmark` (the `vkmark`
+  package) runs its 13 scenes of 10 s fullscreen in mailbox mode, `fps.vkmark` its score. All are skipped on radeon (no
+  Vulkan, and 16x MSAA without vsync was not tried on the r600 that locked up under Xonotic) and where the API is missing.
+  Installed on 2026-11-11 on every machine but the X200 and lianli. First runs that day, one round each (`supertuxkart-vk` /
+  `yquake2-vk` / `yquake2-gl3` / `vkmark`): Galaxy Book 121.9 / 195.8 / 287.3 / 3805, T550 33.2 / 29.4 / 109.9 / 772, T460s
+  42.1 / 21.9 / 85.0 / 1231, T490 44.6 / 20.5 / 66.8 / 1174, samsung-i5 18.8 / 16.7 / 63.5 / 489, XPS 17.3 / 10.6 / 46.0 /
+  250, Chromebook 9.7 / 9.5 / 59.9 / 464, macmini-m1 none / 1930 / 903 / 8764. vkmark at scale 1.5 (T550, T460s, T490,
+  samsung-i5) ran before the drawing fix of that day (render checks above). Open: on the Galaxy Book SuperTuxKart's Vulkan
+  run stalls under `render:direct_scanout = auto` (the race 44 s instead of 38, its Steady and Mostly stable FPS 0, both of
+  two runs; 137.3 fps, 55 / 107, with direct scanout off at runtime); the T460s marked all four invalid, not looked into;
+  macmini-intel ran none (SuperTuxKart got an empty `--screensize` from `logical_size()`, which takes the focused monitor;
+  Yamagi Quake II "Couldn't initialize the graphics subsystem", vkmark did not start); macmini-m1 gave no SuperTuxKart
+  result. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
   user) scroll a folder of 5000 empty files in Flea (Omarchy's file manager, a Quickshell window) and in Nautilus (GTK
   4, its list view, set for the run if needed) with the Down key held on the uinput keyboard for the whole run
   (`clients/holdkey.py`, root only): the compositor forwards the one press and the client repeats it at the session's
