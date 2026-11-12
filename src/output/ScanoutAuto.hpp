@@ -35,7 +35,9 @@ namespace Monitor {
         bool wantsScanout() const;
         // whether the candidate is to be offered the scanout formats: all but a window that measured better composited, since a
         // client may read them only when it starts, and taking them back from one the plane refused cost mpv a third of its
-        // frames composited on a T550 (30 against 20 fps)
+        // frames composited on a T550 (30 against 20 fps); and a window that was on the plane by choice for a while keeps them,
+        // as does one that got them back once, and one composited for a moment keeps them too, since every change of formats
+        // makes a Vulkan client rebuild its swapchain
         bool wantsScanoutFormats() const;
         // the phase and the rates, for HYPOLAND_SCANOUT_DEBUG
         std::string describe() const;
@@ -72,14 +74,19 @@ namespace Monitor {
         bool                      scanoutIsBetter(double refreshHz) const;
 
         ePhase                    m_phase = ePhase::MEASURE_COMPOSITED;
-        Time::steady_tp           m_scanoutStart; // MEASURE_SCANOUT: when the candidate first was on the plane
-        Time::steady_tp           m_retry;        // when the other way is measured again
+        Time::steady_tp           m_scanoutStart;    // MEASURE_SCANOUT: when the candidate first was on the plane
+        Time::steady_tp           m_scanoutSince;    // SCANOUT: since when
+        Time::steady_tp           m_compositedSince; // COMPOSITED: since when
+        Time::steady_tp           m_retry;           // when the other way is measured again
         Time::steady_tp::duration m_backoff = {};
         SRates                    m_composited, m_scannedOut; // measured last
         bool                      m_started                  = false;
         bool                      m_refused                  = false; // MEASURE_SCANOUT: the plane refused a buffer since the window started
         bool                      m_measuredBetterComposited = false; // COMPOSITED: by a measurement, not a refusal
         bool                      m_pollsOnThePlane          = false; // the last measurement on the plane cost more than it showed
+        bool                      m_formatsKept              = false; // on the plane by choice for KEEP_FORMATS: the formats stay
+        bool                      m_formats                  = true;  // offered (the fullscreen handlers offer them first)
+        int                       m_formatChanges            = 0;
 
         Time::steady_tp           m_windowFrom;
         SCount                    m_drawn, m_shown;

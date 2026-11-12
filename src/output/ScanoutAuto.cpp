@@ -45,6 +45,20 @@ constexpr auto   NO_SCANOUT         = 1s;
 constexpr size_t NO_SCANOUT_BUFFERS = 4;
 // a refused buffer counts once this many of the window's buffers came after the settling
 constexpr size_t REFUSED_AFTER = 2;
+// a window on the plane by choice for this long keeps the scanout formats for good: every change of a client's formats has
+// Mesa's Vulkan WSI report its swapchain suboptimal, and a game rebuilds it (SuperTuxKart for about 2 s: on a T460s its race
+// was scanned out, a scene measured better composited took the formats back, the rebuild's stall looked like another scene,
+// which offered them again, and the race took 42 s instead of 38, its Steady FPS 0). A loading screen scanned out for a
+// moment does not count, so a game faster composited in play still gets the regular formats
+constexpr auto KEEP_FORMATS = 10s;
+// and a window's formats are taken back and offered again once at most, then they stay offered: on a Galaxy Book
+// SuperTuxKart's loading screen was composited at every refresh (taken back), its race measured better on the plane
+// (offered again), then composited and scanned out once more, four rebuilds in a race of 44 s instead of 38
+constexpr int MAX_FORMAT_CHANGES = 2;
+// and a window measured better composited loses them only once it has been composited by choice for this long: a loading
+// screen composited for a few seconds took them back on a Galaxy Book, and the race measured better on the plane right after
+// got them back at its start, a rebuild that made its Steady FPS 0 (a race of 40 s instead of 38)
+constexpr auto WITHDRAW_FORMATS = 10s;
 // the first wait before the other way is measured again, doubled every time up to the last
 constexpr auto FIRST_BACKOFF = 15s;
 constexpr auto LAST_BACKOFF  = 240s;
@@ -102,6 +116,10 @@ CScanoutAuto::SRates CScanoutAuto::windowRates(const Time::steady_tp& now, Time:
 }
 
 void CScanoutAuto::enter(ePhase phase, const Time::steady_tp& now) {
+    if (phase == ePhase::SCANOUT && m_phase != ePhase::SCANOUT)
+        m_scanoutSince = now;
+    if (phase == ePhase::COMPOSITED && m_phase != ePhase::COMPOSITED)
+        m_compositedSince = now;
     m_phase        = phase;
     m_scanoutStart = {};
     m_refused      = false;
@@ -241,6 +259,15 @@ bool CScanoutAuto::update(const Time::steady_tp& now, double refreshHz, bool sca
         }
     }
 
+    if (m_phase == ePhase::SCANOUT && now - m_scanoutSince >= KEEP_FORMATS)
+        m_formatsKept = true;
+
+    const bool FORMATS = m_formatsKept || m_phase != ePhase::COMPOSITED || !m_measuredBetterComposited || now - m_compositedSince < WITHDRAW_FORMATS;
+    if (FORMATS != m_formats && m_formatChanges < MAX_FORMAT_CHANGES) {
+        m_formats = FORMATS;
+        ++m_formatChanges;
+    }
+
     return wantsScanout();
 }
 
@@ -251,7 +278,7 @@ std::string CScanoutAuto::describe() const {
 }
 
 bool CScanoutAuto::wantsScanoutFormats() const {
-    return m_phase != ePhase::COMPOSITED || !m_measuredBetterComposited;
+    return m_formats;
 }
 
 bool CScanoutAuto::wantsScanout() const {

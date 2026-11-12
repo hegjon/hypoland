@@ -43,6 +43,7 @@ struct SSim {
     bool                  offered    = true; // the client has the scanout formats
     size_t                sinceOffer = 1000; // its buffers since
     std::string           traced;
+    size_t                formatChanges = 0;
 
     // runs for SECS and returns the share of the refreshes in the last LAST seconds that were scanned out
     double run(double secs, double last) {
@@ -73,6 +74,7 @@ struct SSim {
             if (choice.wantsScanoutFormats() != offered) {
                 offered    = choice.wantsScanoutFormats();
                 sinceOffer = 0;
+                ++formatChanges;
             }
             const bool ACCEPTED   = accepts && offered && sinceOffer >= acceptsAfter;
             const bool WASONPLANE = onPlane;
@@ -247,6 +249,20 @@ TEST(ScanoutAuto, measurementsOfOtherScenesAreTakenAgain) {
     sim.composited = {700, 118};
     sim.scannedOut = {513, 117};
     EXPECT_EQ(sim.run(14, 3), 0);
+    // scanned out for a moment of loading only, so it gets the regular formats
+    EXPECT_FALSE(sim.choice.wantsScanoutFormats());
+}
+
+// a game played on the plane, then a scene faster composited (SuperTuxKart's race on a T460s): composited, but it keeps the
+// scanout formats, since taking them back makes a Vulkan client rebuild its swapchain in the middle of the race
+TEST(ScanoutAuto, gamePlayedOnThePlaneKeepsTheFormats) {
+    SSim sim{.refresh = 60, .composited = {50, 50}, .scannedOut = {58, 58}};
+    EXPECT_GT(sim.run(30, 10), 0.9);
+    // measured again at its next retry
+    sim.composited = {75, 60};
+    EXPECT_EQ(sim.run(40, 5), 0);
+    EXPECT_FALSE(sim.choice.wantsScanout());
+    EXPECT_TRUE(sim.choice.wantsScanoutFormats());
 }
 
 // the screen shows fewer frames for a moment after each switch (the client reallocating): measured after it, so it stays
@@ -254,6 +270,35 @@ TEST(ScanoutAuto, measurementsOfOtherScenesAreTakenAgain) {
 TEST(ScanoutAuto, framesLostToTheSwitchAreNotMeasured) {
     SSim sim{.refresh = 60, .composited = {170, 60}, .scannedOut = {131, 60}, .switchCost = 0.4};
     EXPECT_LT(sim.run(600, 590), 0.02);
+}
+
+// a game's loading screen composited at every refresh while it draws faster (the formats taken back), its race better on
+// the plane (offered again), then a scene better composited after a few seconds there (SuperTuxKart on a 120 Hz Galaxy
+// Book): composited, and the formats stay, since every change has a Vulkan client rebuild its swapchain
+TEST(ScanoutAuto, formatsAreTakenBackAndOfferedAgainOnceAtMost) {
+    SSim sim{.refresh = 120, .composited = {130, 118}, .scannedOut = {130, 118}};
+    EXPECT_EQ(sim.run(12, 1), 0);
+    EXPECT_FALSE(sim.choice.wantsScanoutFormats());
+    sim.composited = {124, 119.9};
+    sim.scannedOut = {136, 120};
+    // a few seconds on the plane only: not what keeps the formats here
+    EXPECT_EQ(sim.run(7, 0.5), 1);
+    EXPECT_TRUE(sim.choice.wantsScanoutFormats());
+    sim.composited = {159, 120};
+    sim.scannedOut = {136, 80};
+    EXPECT_EQ(sim.run(6, 1), 0);
+    EXPECT_TRUE(sim.choice.wantsScanoutFormats());
+}
+
+// a loading screen composited at every refresh for a few seconds, then a race better on the plane (SuperTuxKart on a 120 Hz
+// Galaxy Book): the formats it was offered never change, so the client never rebuilds its swapchain
+TEST(ScanoutAuto, loadingScreenCompositedForAMomentKeepsTheFormats) {
+    SSim sim{.refresh = 120, .composited = {133, 119}, .scannedOut = {133, 119}};
+    EXPECT_EQ(sim.run(7, 1), 0);
+    sim.composited = {125, 119.9};
+    sim.scannedOut = {137, 120};
+    EXPECT_EQ(sim.run(30, 5), 1);
+    EXPECT_EQ(sim.formatChanges, 0u);
 }
 
 // a new candidate starts composited
