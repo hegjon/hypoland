@@ -616,7 +616,8 @@ Tools:
   (`vkCreateSwapchainKHR failed`). The T460s's four invalid results and macmini-intel's missing ones of that day did not
   come back in that night (macmini-intel on a headless output). `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
   user) scroll a folder of 5000 empty files in Flea (a keyboard-first file manager for Omarchy, thisisgm/flea, in
-  Omarchy's package repository but never its default; a Quickshell window) and in Nautilus (GTK 4, its list view,
+  Omarchy's package repository but never its default; a Quickshell window in 0.3.12, a GPUI window in 0.4.1) and in
+  Nautilus (GTK 4, its list view,
   set for the run if needed) with the Down key held on the uinput keyboard for the whole run
   (`clients/holdkey.py`, root only): the compositor forwards the one press and the client repeats it at the session's
   rate (Omarchy: 40 a second after 250 ms, about 480 files in the 12 s). At the end, with the window still open, the
@@ -627,7 +628,8 @@ Tools:
   clients' Pss with the folder loaded Flea 105 MB, Nautilus 115 to 119 MB on both, their cgroups' peak Flea 111 / 163 MB,
   Nautilus 92 / 180 MB (X200 / T550); the compositor 42 to 45 MB Pss. The older `flea` and
   `nautilus` workloads page with four keys a second and toggle fullscreen twice a second, which is why they show 8 and
-  25 to 32 frames a second. Flea 0.4.1 picks Qt Quick's Vulkan or OpenGL backend itself and opens no window on the X200
+  25 to 32 frames a second. Flea 0.4.1 is a GPUI window (`flea --gui` runs `flea-gui`, Rust, drawn through wgpu; "the
+  QML frontend is no longer available") and opens no window on the X200
   (GM45: OpenGL 2.1, no Vulkan), and the shell's critical notification "No graphics driver could open Flea" stayed over
   the windows for the rest of the session (every later workload of the X200's blocks in the night of 2026-11-10, a deploy
   check's render steps): since 2026-11-12 both Flea workloads check for its window (`flea_opened()`) and are skipped

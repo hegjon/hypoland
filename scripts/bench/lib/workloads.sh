@@ -494,9 +494,10 @@ workload_nautilus() { # GTK 4 redrawing a full window of icons, fullscreen toggl
 # 25000 empty files, made once in the user's cache, so the listing is the same on every machine and run (the same
 # directory as scripts/machines/soak.sh)
 FILES=$USERHOME/.cache/hypoland-bench/files-25000
-# Flea 0.4.1 picks Qt Quick's Vulkan or OpenGL backend itself: on the X200 (GM45, OpenGL 2.1, no Vulkan) it opens no window
-# and the shell shows a critical notification, "No graphics driver could open Flea", which stays over the windows for the
-# rest of the session (it covered every later workload of the night of 2026-11-10 and failed a deploy check's render steps).
+# Flea 0.4.1 is a GPUI window (Rust, drawn through wgpu; 0.3.12 was a Quickshell window): on the X200 (GM45, OpenGL
+# 2.1, no Vulkan) it opens no window and the shell shows a critical notification, "No graphics driver could open Flea",
+# which stays over the windows for the rest of the session (it covered every later workload of the night of 2026-11-10
+# and failed a deploy check's render steps).
 # Returns whether its window is there; otherwise the workload is skipped and the notification dismissed
 flea_opened() {
     if H -j clients 2>/dev/null | grep -q -i '"class": *"[^"]*flea'; then
@@ -508,7 +509,7 @@ flea_opened() {
     return 1
 }
 needs_flea="flea"
-workload_flea() { # a file manager for Omarchy (not its default), a Quickshell window, paged through with keys
+workload_flea() { # a file manager for Omarchy (not its default), a GPUI window, paged through with keys
     local i key
     [ -e "$FILES/file-25000.txt" ] || asuser bash -c 'mkdir -p "$0" && cd "$0" && touch file-{00001..25000}.txt' "$FILES"
     client $((SECONDS_PER_RUN + 20)) "exec flea '$FILES'"
@@ -526,13 +527,13 @@ workload_flea() { # a file manager for Omarchy (not its default), a Quickshell w
     rec flea
     wait $pager
     stop_clients
-    # flea execs qs and leaves a backend; the bracket keeps pkill from matching its own command line
+    # flea 0.3.12 exec'd qs and left a backend; the bracket keeps pkill from matching its own command line
     asuser pkill -f "[q]s -p /usr/share/flea" >/dev/null 2>&1
     asuser pkill -x flea >/dev/null 2>&1
     sleep 1
 }
 
-# A folder of 5000 empty files in Flea (a file manager for Omarchy, a Quickshell window) and in Nautilus (GTK 4, its list
+# A folder of 5000 empty files in Flea (a file manager for Omarchy, a GPUI window) and in Nautilus (GTK 4, its list
 # view), scrolled with the Down key held on the uinput keyboard for the whole run (root only): the compositor forwards
 # the one press and the client repeats it at the session's rate (Omarchy: 40 a second after 250 ms, so about 480 of
 # the files in a 12 s run), as a finger resting on the key would. At the end, with the window still open, the memory of

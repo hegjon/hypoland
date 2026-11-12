@@ -8,8 +8,8 @@
 # only those workloads (soak-ab.sh uses the first two).
 # Runs as the session user on the machine under test. It repeats a cycle of workloads (GPU client, terminal
 # scrolling in foot (shm) and alacritty (GL), a fullscreen video in mpv, nautilus (GTK 4) with fullscreen toggles,
-# flea (Quickshell) paged, searched and switched between views with keys, Folio (Qt Quick) with fullscreen
-# toggles, its views and new windows, the three file managers scrolling the same
+# flea (GPUI in 0.4.1, Quickshell in 0.3.12) paged, searched and switched between views with keys, Folio (Qt Quick)
+# with fullscreen toggles, its views and new windows, the three file managers scrolling the same
 # 25000 files with the same keys and searching them by name (w_files_*, w_search_*, to compare them), Omarchy's screensaver (ttfx in foot and in alacritty, tiled and fullscreen), Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm, screenshots and
 # recording, config reload, DPMS off/on, idle, glmark2, notifications; the ones whose program is not installed are skipped) and samples the compositor every minute:
 # memory (Pss, anonymous, GPU buffers), CPU time, fds, threads, IPC latency, the hottest CPU temperature sensor and the
@@ -312,7 +312,7 @@ w_flea() {
         key "" slash 1; for j in 1 2 3 4; do key "" $j; done; sleep 2; key "" Escape 1 # filter the listing
     done
     stop_clients
-    # flea execs qs and leaves a backend; the bracket keeps pkill from matching its own command line
+    # flea 0.3.12 exec'd qs and left a backend; the bracket keeps pkill from matching its own command line
     pkill -f "[q]s -p /usr/share/flea"; pkill -x flea; sleep 1
 }
 # Nautilus, flea and Files on the same 25000 files in list view (CTRL 1 in the first two, CTRL 2 in Files), every
