@@ -265,6 +265,18 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   crash of master too: a monitor that connects while a screen capture is pending (the KVM's HDMI coming up during the
   check's screencopy) made its framebuffers at 0x0 in `CScreenshareManager::onOutputCommit()`, which asserted; it takes
   only allocated resources now (`CMonitor::allocatedResources()`, a31250872, hyprtester `monitorConnectsWhileCaptured`).
+  The night of 2026-11-11 to 12 repeated it with master r966 (with the game workloads) on all eleven machines, 13 to 18
+  fresh sessions of each (`test-results/night-20261111/`, `summary.txt`; not a baseline directory; macmini-m1 ran r967,
+  r966 with the dmabuf fix below): Hypoland's compositor cheaper a frame in 23 to 45 workloads a machine and dearer in six
+  (the Galaxy Book's menu, Flea and Xonotic, the Mac mini 2014's vkmark and Xonotic at its highest effects), the games
+  drawing as fast or faster (vkmark samsung-i5 235 against 364, Mac mini 2014 447 against 759, Galaxy Book 2652 against
+  3721), every session check passed on ten machines. It found the two direct scanout bugs fixed the next morning (fullscreen
+  games, under Tools). On the X200 Hypoland's GPU context hung three times in 6 s at 03:25 (`dev`, i915 "GPU HANG ... in
+  hypoland") and crocus aborted it in the frame's `glFlush()` once the kernel had banned the client
+  (`CHyprGLRenderer::endRender()`; crocus' `replace_hw_ctx()` fails then): its first in 13 blocks that night and none in
+  r957's night, while the X200's GPU also hung in Xwayland (twice under stock, which then hung both times, once under
+  Hypoland) and in Xonotic; open. The i915 error state (`/sys/class/drm/card1/error`) keeps the first hang until it is
+  cleared (`echo 1 >` it), and held a day-old Xwayland hang then.
 
 ## Hard constraints
 
@@ -590,12 +602,12 @@ Tools:
   `yquake2-vk` / `yquake2-gl3` / `vkmark`): Galaxy Book 121.9 / 195.8 / 287.3 / 3805, T550 33.2 / 29.4 / 109.9 / 772, T460s
   42.1 / 21.9 / 85.0 / 1231, T490 44.6 / 20.5 / 66.8 / 1174, samsung-i5 18.8 / 16.7 / 63.5 / 489, XPS 17.3 / 10.6 / 46.0 /
   250, Chromebook 9.7 / 9.5 / 59.9 / 464, macmini-m1 none / 1930 / 903 / 8764. vkmark at scale 1.5 (T550, T460s, T490,
-  samsung-i5) ran before the drawing fix of that day (render checks above). Open: on the Galaxy Book SuperTuxKart's Vulkan
-  run stalls under `render:direct_scanout = auto` (the race 44 s instead of 38, its Steady and Mostly stable FPS 0, both of
-  two runs; 137.3 fps, 55 / 107, with direct scanout off at runtime); the T460s marked all four invalid, not looked into;
-  macmini-intel ran none (SuperTuxKart got an empty `--screensize` from `logical_size()`, which takes the focused monitor;
-  Yamagi Quake II "Couldn't initialize the graphics subsystem", vkmark did not start); macmini-m1 gave no SuperTuxKart
-  result. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
+  samsung-i5) ran before the drawing fix of that day (render checks above). The first runs found two bugs of the measured
+  direct scanout, both fixed on 2026-11-12 (fullscreen games below): SuperTuxKart's race stalled under
+  `render:direct_scanout = auto` (its Steady and Mostly stable FPS 0; the night of 2026-11-11: 15 of 15 races on the
+  Galaxy Book, 7 of 13 on the T460s, 3 of 13 on the T490, never under stock), and on macmini-m1 it gave no result
+  (`vkCreateSwapchainKHR failed`). The T460s's four invalid results and macmini-intel's missing ones of that day did not
+  come back in that night (macmini-intel on a headless output). `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
   user) scroll a folder of 5000 empty files in Flea (Omarchy's file manager, a Quickshell window) and in Nautilus (GTK
   4, its list view, set for the run if needed) with the Down key held on the uinput keyboard for the whole run
   (`clients/holdkey.py`, root only): the compositor forwards the one press and the client repeats it at the session's
@@ -607,7 +619,11 @@ Tools:
   clients' Pss with the folder loaded Flea 105 MB, Nautilus 115 to 119 MB on both, their cgroups' peak Flea 111 / 163 MB,
   Nautilus 92 / 180 MB (X200 / T550); the compositor 42 to 45 MB Pss. The older `flea` and
   `nautilus` workloads page with four keys a second and toggle fullscreen twice a second, which is why they show 8 and
-  25 to 32 frames a second. `folio` and `folio-scroll` (added 2026-11-11, asked for by the user) are the same two as
+  25 to 32 frames a second. Flea 0.4.1 picks Qt Quick's Vulkan or OpenGL backend itself and opens no window on the X200
+  (GM45: OpenGL 2.1, no Vulkan), and the shell's critical notification "No graphics driver could open Flea" stayed over
+  the windows for the rest of the session (every later workload of the X200's blocks in the night of 2026-11-10, a deploy
+  check's render steps): since 2026-11-12 both Flea workloads check for its window (`flea_opened()`) and are skipped
+  without it, the notification dismissed. `folio` and `folio-scroll` (added 2026-11-11, asked for by the user) are the same two as
   Nautilus' in Files (`folio`, C++ and Qt Quick), Omarchy's file manager in place of Nautilus since omacom/omarchy#18378
   of 2026-11-10; the soak has it too (`w_folio`, `w_files_folio`, `w_search_folio`). Files keeps its view in
   `~/.config/folio/folio.conf`, which they set and put back. Files 0.1.1 and 0.2.0 (released 2026-11-11, a2bc0ca) do
@@ -1509,6 +1525,27 @@ Tools:
   the X200's abort does not show nested, the test passes without its fix), and auto measuring composited first and
   choosing the plane for a client at the refresh rate. Without the format restore of `handleDSleave()` they fail. Not covered nested: what a KMS driver accepts, the scanout tranche of the
   dmabuf feedback (only made with a session) and mirrors (a mirror output cannot be removed again within the test).
+  A window's formats do not change in the middle of a game (2026-11-12, `CScanoutAuto::wantsScanoutFormats()`): every
+  change of a window's dmabuf feedback with other modifiers makes Mesa's Vulkan WSI report its swapchain suboptimal, and a
+  game rebuilds it, SuperTuxKart freezing for about 2 s. Auto offered the scanout formats while it measured or chose the
+  plane and took them back when it chose composited, so a game it switched between the two got them changed several times
+  a race: in the night of 2026-11-11 (`HYPOLAND_SCANOUT_DEBUG` in the journal of four machines) the T460s's race was on the
+  plane for 29 s, a scene measured better composited, the rebuild's stall looked like another scene and the plane came
+  back, 42 instead of 38 s; the Galaxy Book's had four changes, the same to the second in every session, 44 s. Now the
+  formats change at most twice for a window (`MAX_FORMAT_CHANGES`), a window on the plane by choice for 10 s keeps them
+  (`KEEP_FORMATS`) and one measured better composited loses them only after 10 s composited (`WITHDRAW_FORMATS`), so a
+  loading screen composited for a moment does not decide (that alone left one change at the Galaxy Book's race start and
+  its Steady FPS 0). 3 fresh sessions each: the Galaxy Book's race 38.1 s, Steady / Mostly stable 60 / 113 and 141.6 fps
+  (stock 53 / 102, 130.2), the T460s 38.2 s and 43.5 fps (stock 40.0), the X200 still shows Xonotic's lowest effects on the
+  plane at 52 frames a second. Unit tests `gamePlayedOnThePlaneKeepsTheFormats`,
+  `formatsAreTakenBackAndOfferedAgainOnceAtMost` and `loadingScreenCompositedForAMomentKeepsTheFormats`. And no scanout
+  tranche at all where the outputs are not on the render device (`displayOnRenderDevice()` in `LinuxDMABUF.cpp`): the
+  tranche names the render device with the planes' formats, and on macmini-m1 the display controller (apple-drm) is a
+  device of its own next to the asahi GPU, whose render node aquamarine takes as the sole one; Mesa's Vulkan WSI ignores a
+  tranche's target device and takes the first tranche listing the format, so SuperTuxKart's swapchain was made with the
+  display's modifiers and failed, and Yamagi Quake II with Vulkan outran the display on the plane at 34.6% of the
+  compositor's CPU (stock 4.7). Without the tranche (17 sessions of each that night): SuperTuxKart 263.9 fps (stock 253.0),
+  Yamagi Quake II 632 fps as stock at 3.5%.
 
 Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a 60 fps client):
 
