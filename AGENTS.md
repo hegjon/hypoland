@@ -987,8 +987,16 @@ Tools:
   RAPL, so it has to run unplugged: its battery showed 26%, 7.3 V (design 11.1 V) and `Not charging` on the
   charger, check it before trusting it with a run. The run stops below `--min-battery` (30%) and when the charger
   is plugged in, since a flat battery means a reboot and the disk password. `--meter none` only counts
-  instructions and cycles and works on the charger. Tested with fake meters only so far (`--power-supply`,
-  `--powercap`); the 0.3 W noise floor of `--compare` for power is a guess until real runs.
+  instructions and cycles and works on the charger. First run with a real meter on 2026-11-12: seven machines have a
+  RAPL package zone (the T550, XPS, Chromebook, Mac mini 2014, T460s, T490 and samsung-i5; not the X200, lianli, the
+  Galaxy Book or macmini-m1), and on the T550 the idle baselines before and after a workload agreed to 0.02 W (3.0 W).
+  Where RAPL has a platform zone (`psys`: the T460s and T490) the same figures come for the whole machine as well
+  (`power.*.psys_W`, `psys_net_W`, `power.baseline.psys_W`; T460s idle 1.8 W, the GPU client 7.0 W, against 0.6 and 2.9
+  for the package); it counts a charging battery too, which the lab's batteries, always on AC and full or at their
+  limit, do not. The 0.3 W noise floor of `--compare` for power is still a guess. An A/B against Hyprland 0.57.1 that
+  day (`test-results/energy-20261112/`, alternating fresh sessions, the `balanced` profile Omarchy uses on battery)
+  leaves out the workloads whose client does more work under a faster compositor (the terminals' print loops, the
+  games).
 - `HYPOLAND_NO_DIRECT_RENDER=1` makes every frame go through the work buffer, for comparing the two paths.
 - `HYPOLAND_FENCE_HOLD=<ms>` (2026-11-02, an experiment, off by default; taken out again before 0.3.0, the code is
   commit b5222a9ee, its four source files to check out from there) held a frame while a client's commit on the

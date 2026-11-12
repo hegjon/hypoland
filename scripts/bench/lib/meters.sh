@@ -10,6 +10,16 @@ rapl_zones() {
     done
 }
 
+# RAPL's platform zone (psys, Skylake and later where the firmware has it): what the whole machine draws, screen
+# included, as the charger or the battery delivers it. Only meaningful while no battery charges, which would count too.
+psys_zone() {
+    local z
+    for z in "$POWERCAP"/intel-rapl:*; do
+        [[ $(basename "$z") == *:*:* ]] && continue
+        [ "$(cat "$z/name" 2>/dev/null)" = psys ] && { echo "$z"; return; }
+    done
+}
+
 # batteries that report a discharge rate
 batteries() {
     local b
@@ -55,7 +65,7 @@ battery_check() {
 
 # picks the meter and checks it can be read, before anything is changed on the machine
 meter_setup() {
-    RAPL_ZONES="" RAPL_WRAP="" BATTERIES="" SAMPLER=""
+    RAPL_ZONES="" RAPL_WRAP="" PSYS="" PSYS_WRAP="" BATTERIES="" SAMPLER=""
     if [ "$METER" = auto ]; then
         if [ -n "$(rapl_zones)" ]; then METER=rapl; else METER=battery; fi
     fi
@@ -69,6 +79,11 @@ meter_setup() {
                 exit 1
             fi
             RAPL_WRAP=$(for z in $RAPL_ZONES; do cat "$z/max_energy_range_uj"; done)
+            PSYS=$(psys_zone)
+            if [ -n "$PSYS" ]; then
+                PSYS_WRAP=$(cat "$PSYS/max_energy_range_uj" 2>/dev/null)
+                [ -n "$PSYS_WRAP" ] && cat "$PSYS/energy_uj" >/dev/null 2>&1 || PSYS="" PSYS_WRAP=""
+            fi
             ;;
         battery)
             BATTERIES=$(batteries)
@@ -87,20 +102,22 @@ meter_setup() {
     esac
 }
 
-# The sampler logs "<ns> <µJ since the start>" twice a second. RAPL: the steps of the counters, each corrected
-# for a wraparound, so a window may be longer than the range of a counter. Battery: the discharge rate
-# integrated over time (trapezoids). A window reads the total at its ends from the log.
+# The sampler logs "<ns> <µJ since the start>" twice a second, with a third column for the platform (psys) where
+# RAPL has it. RAPL: the steps of the counters, each corrected for a wraparound, so a window may be longer than the
+# range of a counter. Battery: the discharge rate integrated over time (trapezoids). A window reads the total at its
+# ends from the log.
 meter_start() {
     [ "$METER" = none ] && return 0
     (
-        zones=($RAPL_ZONES) wrap=($RAPL_WRAP) prev=() cur=() total=0
+        zones=($RAPL_ZONES) wrap=($RAPL_WRAP) prev=() cur=() total=0 pprev=0 pcur=0 ptotal=0
         read_rapl() {
             cur=()
             for i in "${!zones[@]}"; do cur+=("$(cat "${zones[$i]}/energy_uj")"); done
+            [ -n "$PSYS" ] && pcur=$(cat "$PSYS/energy_uj")
         }
-        if [ "$METER" = rapl ]; then read_rapl; prev=("${cur[@]}"); else p=$(battery_power); fi
+        if [ "$METER" = rapl ]; then read_rapl; prev=("${cur[@]}") pprev=$pcur; else p=$(battery_power); fi
         last=$(date +%s%N)
-        echo "$last 0"
+        echo "$last 0${PSYS:+ 0}"
         while :; do
             sleep 0.5
             now=$(date +%s%N)
@@ -112,12 +129,17 @@ meter_start() {
                     total=$((total + d))
                 done
                 prev=("${cur[@]}")
+                if [ -n "$PSYS" ]; then
+                    d=$((pcur - pprev))
+                    [ $d -lt 0 ] && d=$((d + PSYS_WRAP))
+                    ptotal=$((ptotal + d)) pprev=$pcur
+                fi
             else
                 q=$(battery_power)
                 total=$((total + (p + q) * (now - last) / 2000000000))
                 p=$q
             fi
-            echo "$now $total"
+            echo "$now $total${PSYS:+ $ptotal}"
             last=$now
         done
     ) >"$OUT/power.log" &
@@ -127,7 +149,7 @@ meter_start() {
 
 meter_describe() {
     case $METER in
-        rapl) echo "RAPL $(for z in $RAPL_ZONES; do cat "$z/name"; done | paste -sd,)" ;;
+        rapl) echo "RAPL $(for z in $RAPL_ZONES; do cat "$z/name"; done | paste -sd,)${PSYS:+, and psys (the platform) as power.*.psys_W}" ;;
         battery)
             local b
             for b in $BATTERIES; do
@@ -141,8 +163,8 @@ meter_describe() {
 
 mark() { date +%s%N; }
 
-# joules between two marks, interpolated between the samples around them
-joules() { # mark, mark
+# joules between two marks, interpolated between the samples around them; column 3 is the platform (psys)
+joules() { # mark, mark[, column]
     [ "$METER" = none ] && { echo 0; return; }
     # the sampler has to be past the end of the window
     local i
@@ -150,18 +172,18 @@ joules() { # mark, mark
         [ "$(tail -1 "$OUT/power.log" | cut -d' ' -f1)" -ge "$2" ] 2>/dev/null && break
         sleep 0.1
     done
-    awk -v t0="$1" -v t1="$2" '
+    awk -v t0="$1" -v t1="$2" -v c="${3:-2}" '
         function at(t,   i) {
             for (i = 2; i <= n; i++)
                 if (ts[i] >= t)
                     return e[i - 1] + (e[i] - e[i - 1]) * (t - ts[i - 1]) / (ts[i] - ts[i - 1])
             return e[n]
         }
-        NF == 2 {ts[++n] = $1; e[n] = $2}
+        NF >= c {ts[++n] = $1; e[n] = $c}
         END {printf "%.3f", (at(t1) - at(t0)) / 1e6}
     ' "$OUT/power.log"
 }
 
-watts() { # mark, mark
-    awk -v j="$(joules "$1" "$2")" -v a="$1" -v b="$2" 'BEGIN {printf "%.3f", j / ((b - a) / 1e9)}'
+watts() { # mark, mark[, column]
+    awk -v j="$(joules "$1" "$2" "${3:-2}")" -v a="$1" -v b="$2" 'BEGIN {printf "%.3f", j / ((b - a) / 1e9)}'
 }

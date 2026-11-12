@@ -132,11 +132,15 @@ bench() { # name
             $1 ~ /^[0-9]+$/ {k = $3; sub(/:.*/, "", k); printf "@ %s perf.%s.M%s %.2f\n", r, n, k, $1 / 1e6}
         ' "$OUT/$name.perf"
         if [ "$METER" != none ]; then
-            local w
+            local w wp=-
             w=$(watts "$m0" "$m1")
             value "power.$name.W" "$w"
+            if [ -n "$PSYS" ]; then
+                wp=$(watts "$m0" "$m1" 3)
+                value "power.$name.psys_W" "$wp"
+            fi
             # the net power needs the idle baseline after the workload, see baseline()
-            PENDING="$name $w $(((m1 - m0) / 1000000))"
+            PENDING="$name $w $(((m1 - m0) / 1000000)) $wp"
         fi
     fi
     [ -n "$sampler" ] && awk -v r=$ROUND -v n="$name" -v p="$PROCESS" '

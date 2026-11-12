@@ -1307,7 +1307,8 @@ missing() { # programs, <program>>=<version> for a program at least as new as it
 
 # The power of the idle session, sampled between the workloads. A workload's net power is its power minus the
 # mean of the baselines before and after it, half their difference is how far off that mean can be.
-PENDING="" BEFORE=""
+# With RAPL's platform zone (psys) the same again for the whole machine, as power.*.psys_W and power.*.psys_net_W.
+PENDING="" BEFORE="" PBEFORE=""
 baseline() {
     if [ "$METER" = none ]; then
         sleep 1
@@ -1315,14 +1316,18 @@ baseline() {
     fi
     sleep 2
     battery_check
-    local m0 m1 w name gross ms
+    local m0 m1 w wp="" name gross ms pgross
     m0=$(mark)
     sleep "$IDLE"
     m1=$(mark)
     w=$(watts "$m0" "$m1")
     value power.baseline.W "$w"
+    if [ -n "$PSYS" ]; then
+        wp=$(watts "$m0" "$m1" 3)
+        value power.baseline.psys_W "$wp"
+    fi
     if [ -n "$PENDING" ] && [ -n "$BEFORE" ]; then
-        read -r name gross ms <<<"$PENDING"
+        read -r name gross ms pgross <<<"$PENDING"
         awk -v r=$ROUND -v n="$name" -v g="$gross" -v a="$BEFORE" -v b="$w" -v s="$ms" 'BEGIN {
             net = g - (a + b) / 2
             pm = (a > b ? a - b : b - a) / 2
@@ -1330,9 +1335,15 @@ baseline() {
             printf "@ %s energy.%s.net_J %.2f\n", r, n, net * s / 1000
             printf "    %.2f W, %.2f W above the idle baseline (+-%.2f W)\n", g, net, pm
         }'
+        [ -n "$wp" ] && [ -n "$PBEFORE" ] && [ "${pgross:--}" != - ] &&
+            awk -v r=$ROUND -v n="$name" -v g="$pgross" -v a="$PBEFORE" -v b="$wp" 'BEGIN {
+                net = g - (a + b) / 2
+                printf "@ %s power.%s.psys_net_W %.3f\n@ %s power.%s.psys_pm_W %.3f\n", r, n, net, r, n, (a > b ? a - b : b - a) / 2
+                printf "    the machine (psys) %.2f W, %.2f W above its idle baseline\n", g, net
+            }'
     fi
     PENDING=""
-    BEFORE=$w
+    BEFORE=$w PBEFORE=$wp
 }
 
 between() {
