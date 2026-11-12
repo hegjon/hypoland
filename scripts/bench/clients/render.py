@@ -674,17 +674,24 @@ class Render:
         finally:
             for p in pids:
                 os.kill(p, signal.SIGCONT)
-        if a == b:
-            print(f"PASS  render {step}: the screen is what a full repaint shows", flush=True)
-            for n in ("incremental", "repainted"):
-                os.remove(os.path.join(self.out, f"{step}-{n}.ppm"))
-            return
+        # the pointer's corner, where it is parked, is left out: a cursor drawn into the frame (no cursor plane: macmini-m1)
+        # reaches over a window's corner as the resize cursor of its border, which comes back after a workspace switch only
+        # with a motion (2026-11-11: 201 pixels in the corner after "fullscreen left", every session there)
+        c = Sharing.CORNER * max(self.scale, 1)
         n, box = 0, [w, h, 0, 0]
-        for i in range(0, len(a), 3):
-            if a[i : i + 3] != b[i : i + 3]:
-                n += 1
-                x, y = (i // 3) % w, (i // 3) // w
-                box = [min(box[0], x), min(box[1], y), max(box[2], x), max(box[3], y)]
+        if a != b:
+            for i in range(0, len(a), 3):
+                if a[i : i + 3] != b[i : i + 3]:
+                    x, y = (i // 3) % w, (i // 3) // w
+                    if x >= w - c and y >= h - c:
+                        continue
+                    n += 1
+                    box = [min(box[0], x), min(box[1], y), max(box[2], x), max(box[3], y)]
+        if n == 0:
+            print(f"PASS  render {step}: the screen is what a full repaint shows", flush=True)
+            for name in ("incremental", "repainted"):
+                os.remove(os.path.join(self.out, f"{step}-{name}.ppm"))
+            return
         self.failed += 1
         print(f"FAIL  render {step}: {n} pixels differ from a full repaint, in {box[0]},{box[1]} to {box[2]},{box[3]} "
               f"(screens in {self.out})", flush=True)
