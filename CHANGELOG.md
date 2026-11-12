@@ -62,6 +62,18 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - At a fractional scale, a row of old pixels could stay at the edge of a window's opaque area next to a transparent one
   (a dialog that clears a band of itself): the pixel row the edge falls in, and the half-transparent pixels the filter
   makes there, counted as covering what is under them.
+- Vulkan games froze for seconds in the middle of play when shown full screen (SuperTuxKart: Steady FPS 0 in every race
+  on a Galaxy Book4 Edge, most on a ThinkPad T460s): while `render:direct_scanout = auto` measured whether the game shows
+  better directly or drawn by the compositor, it changed the buffer formats offered to the game, and a Vulkan game
+  rebuilds its swapchain at every change. A game now keeps its formats once it has been shown one way for 10 seconds, and
+  they change at most twice. SuperTuxKart's race on the Galaxy Book: 38 instead of 44 seconds, 141.6 instead of 120.9
+  frames a second (Hyprland 0.57.1: 130.2).
+- SuperTuxKart could not start full screen on Apple Silicon (Asahi), where the display and the GPU are separate devices:
+  Hypoland offered the display's buffer formats as the GPU's, which the game's Vulkan driver could not create its
+  swapchain with. They are not offered there now; the Mac mini M1 runs SuperTuxKart at 263.9 frames a second (Hyprland
+  0.57.1: 253.0), and Yamagi Quake II with Vulkan costs the compositor 3.5 instead of 34.6% of a CPU.
+- `hypoland-bench`'s `flea` and `flea-scroll` are skipped where Flea opens no window (the X200: no Vulkan, no OpenGL 3),
+  instead of leaving its error notification over every later workload.
 
 ## 0.3.0 - 2026-11-03
 
