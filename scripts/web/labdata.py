@@ -57,6 +57,9 @@ def fmt(x, unit):
     if unit == "game fps": return f"{x:.1f} fps" if x < 100 else f"{x:.0f} fps"
     if unit == "score": return f"{x:.0f}"
     if unit == "ms/frame": return f"{x:.2f} ms"
+    # the energy page: the CPU package's power, and the energy above the idle session per frame on the screen
+    if unit == "W": return f"{x:.2f} W"
+    if unit == "mJ": return f"{x:.1f} mJ" if x < 100 else f"{x:.0f} mJ"
     return f"{x:.1f} ms"
 
 def cell(h, s, unit, lower_better):
