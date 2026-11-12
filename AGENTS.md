@@ -71,6 +71,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   `web/games.html` (since 2026-11-11) is `scripts/web/games.py`: Xonotic, GravityMark and ElectroBench from that
   baseline, SuperTuxKart, Yamagi Quake II and vkmark from `docs/baseline/20261111-games-r964-vs-hyprland-0.57.1/`
   (`GAMES_RUN` in the script, a short run of 2 sessions each) until a baseline has them; run it with the other two.
+  `web/files.html` (since 2026-11-12) is `scripts/web/files.py`: Nautilus, Flea and Folio (`*-scroll`, `nautilus`, `flea`,
+  `folio`) from `docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1/` (`FILES_RUN`, the night of 2026-11-11, the
+  first with Folio on every machine); point it at a newer baseline that has them, and run it with the others.
   The pages share `web/style.css`. `web/header.svg`, `web/icon.svg` and `web/favicon.png` are copies of the logo
   in `assets/logo/`: after regenerating the logo run `scripts/web/update-logo.sh`, which copies them and renders
   the link preview image `web/og.png` (1200x630) from `scripts/web/og.html` with `scripts/web/og.sh`.

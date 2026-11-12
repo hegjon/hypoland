@@ -82,6 +82,7 @@ page = f"""{head("Hypoland: terminals", "foot, Alacritty, Ghostty and kitty scro
     <span><a href="index.html">home</a></span>
     <span><a href="lab.html">lab</a></span>
     <span><a href="games.html">games</a></span>
+    <span><a href="files.html">files</a></span>
     <span><a href="https://github.com/hegjon/hypoland">github</a></span>
   </div>
 </nav>

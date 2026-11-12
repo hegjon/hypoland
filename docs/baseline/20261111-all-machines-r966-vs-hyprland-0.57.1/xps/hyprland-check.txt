@@ -1,0 +1,111 @@
+machine: xps, 7.2.15-2-omarchy, 4 cores, 7815 MiB
+compositor: /usr/bin/Hyprland, pid 2178156, user a, instance acc1aa0bfd4bd575dcb0f76c35ccf12b660a1ab9_1794412209_531402452
+clocksource: tsc
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.57.1 built from branch v0.57.1 at commit acc1aa0bfd4bd575dcb0f76c35ccf12b660a1ab9 clean
+INFO  
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output eDP-1: 3200x1800@59.98200
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+PASS  the screen shows the window (85% of the scanned-out buffer is the test color)
+PASS  test window drawn (85% of the screen is the test color)
+FAIL  render whole: 212879 pixels of hypoland-render-a differ from what it drew, first at 6,4: (249, 71, 210) shown as (249, 71, 209)
+FAIL  render whole: 2900 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+PASS  render screenshot: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render screenshot again: hypoland-render-a shows every pixel it drew (kmsgrab)
+FAIL  render rectangles: 201619 pixels of hypoland-render-a differ from what it drew, first at 13,4: (19, 8, 66) shown as (20, 9, 66)
+FAIL  render rectangles: 5722 pixels differ from a full repaint, in 29,82 to 3176,1775 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render new buffers: 182040 pixels of hypoland-render-a differ from what it drew, first at 13,4: (19, 8, 66) shown as (20, 9, 66)
+FAIL  render new buffers: 3139 pixels differ from a full repaint, in 23,82 to 3176,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render subsurface: 184271 pixels of hypoland-render-a differ from what it drew, first at 13,4: (19, 8, 66) shown as (20, 9, 66)
+FAIL  render subsurface: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render subsurface moved: 182505 pixels of hypoland-render-a differ from what it drew, first at 13,4: (19, 8, 66) shown as (20, 9, 66)
+FAIL  render subsurface moved: 3029 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render subsurface closed: 182040 pixels of hypoland-render-a differ from what it drew, first at 13,4: (19, 8, 66) shown as (20, 9, 66)
+FAIL  render subsurface closed: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render viewport: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render viewport rectangles: 14171 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render viewports closed: 182040 pixels of hypoland-render-a differ from what it drew, first at 13,4: (19, 8, 66) shown as (20, 9, 66)
+FAIL  render viewports closed: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+PASS  render popup: the popup shows every pixel it drew (kmsgrab)
+FAIL  render popup: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render popup moved: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render popup closed: 182040 pixels of hypoland-render-a differ from what it drew, first at 13,4: (19, 8, 66) shown as (20, 9, 66)
+FAIL  render popup closed: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render layer: 6187 pixels of the layer differ from what it drew, first at 13,0: (34, 207, 140) shown as (34, 206, 140)
+FAIL  render layer: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render layer drawn: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render layer settled: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render layer popup: 5156 pixels of the layer's popup differ from what it drew, first at 6,0: (174, 142, 108) shown as (174, 141, 108)
+FAIL  render layer popup: 3054 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render layer popup closed: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render layer moved: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render layer shrunk: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render layer closed: 2924 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render floating: 10821 pixels of hypoland-render-b differ from what it drew, first at 27,4: (154, 229, 21) shown as (153, 228, 21)
+FAIL  render floating: 3423 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render moved: 496 pixels differ from a full repaint, in 479,353 to 479,939 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render resized: 4148 pixels of hypoland-render-b differ from what it drew, first at 6,4: (170, 220, 7) shown as (169, 219, 8)
+FAIL  render resized: 445 pixels differ from a full repaint, in 539,392 to 539,899 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render retitled: 445 pixels differ from a full repaint, in 539,392 to 539,899 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render opaque region: 4956 pixels of hypoland-render-b differ from what it drew, first at 6,4: (87, 71, 54) shown as (87, 71, 55)
+FAIL  render opaque region: 458 pixels differ from a full repaint, in 539,400 to 539,899 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render opaque region shrunk: 4147 pixels of hypoland-render-b differ from what it drew, first at 6,4: (87, 71, 54) shown as (87, 71, 55)
+FAIL  render opaque region shrunk: 459 pixels differ from a full repaint, in 539,400 to 539,899 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render shrunk: 438 pixels differ from a full repaint, in 539,392 to 539,899 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+PASS  render closed: the screen is what a full repaint shows (kmsgrab)
+FAIL  render grouped: 204970 pixels of hypoland-render-a differ from what it drew, first at 6,4: (85, 246, 199) shown as (85, 245, 199)
+FAIL  render grouped: 2809 pixels differ from a full repaint, in 29,138 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render group added: 203690 pixels of hypoland-render-c differ from what it drew, first at 6,4: (135, 43, 182) shown as (135, 44, 182)
+FAIL  render group added: 2907 pixels differ from a full repaint, in 29,138 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render group switched: 207779 pixels of hypoland-render-a differ from what it drew, first at 6,4: (85, 246, 199) shown as (85, 245, 199)
+PASS  render group switched: the screen is what a full repaint shows (kmsgrab)
+FAIL  render group switched back: 206597 pixels of hypoland-render-c differ from what it drew, first at 6,4: (135, 43, 182) shown as (135, 44, 182)
+FAIL  render group closed: 207779 pixels of hypoland-render-a differ from what it drew, first at 6,4: (85, 246, 199) shown as (85, 245, 199)
+PASS  render group closed: the screen is what a full repaint shows (kmsgrab)
+FAIL  render ungrouped: 211724 pixels of hypoland-render-a differ from what it drew, first at 6,4: (3, 112, 28) shown as (4, 112, 29)
+FAIL  render ungrouped: 2934 pixels differ from a full repaint, in 29,82 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render scratchpad stored: 214658 pixels of hypoland-render-a differ from what it drew, first at 6,4: (3, 112, 28) shown as (4, 112, 29)
+PASS  render scratchpad stored: the screen is what a full repaint shows (kmsgrab)
+PASS  render scratchpad: hypoland-render-d shows every pixel it drew (kmsgrab)
+PASS  render scratchpad: the screen is what a full repaint shows (kmsgrab)
+PASS  render scratchpad rectangles: hypoland-render-d shows every pixel it drew (kmsgrab)
+PASS  render scratchpad rectangles: the screen is what a full repaint shows (kmsgrab)
+FAIL  render scratchpad hidden: 214658 pixels of hypoland-render-a differ from what it drew, first at 6,4: (3, 112, 28) shown as (4, 112, 29)
+PASS  render scratchpad hidden: the screen is what a full repaint shows (kmsgrab)
+FAIL  render fullscreen: 231345 pixels of hypoland-render-a differ from what it drew, first at 13,4: (138, 173, 20) shown as (138, 172, 20)
+PASS  render fullscreen: the screen is what a full repaint shows (kmsgrab)
+PASS  render fullscreen smaller: the screen is what a full repaint shows (kmsgrab)
+FAIL  render fullscreen smaller rectangles: 843 pixels differ from a full repaint, in 3,20 to 2284,1349 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render fullscreen left: 211077 pixels of hypoland-render-a differ from what it drew, first at 13,4: (241, 102, 37) shown as (240, 103, 37)
+FAIL  render fullscreen left: 2957 pixels differ from a full repaint, in 29,52 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render fullscreen not followed: 118220 pixels differ from a full repaint, in 15,68 to 3199,1799 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+FAIL  render fullscreen not followed left: 2952 pixels differ from a full repaint, in 29,52 to 3170,1769 (screens in /tmp/hypoland-measure.sScwFc/clients/render)
+PASS  Chromium draws its page (79% of the screen is the test color, after 2 s)
+PASS  GTK 3 window drawn (88% of the screen is the test color, after 2 s)
+PASS  GTK 3 window at 37 fps (renderer cairo)
+PASS  GTK 4 window drawn (88% of the screen is the test color, after 2 s)
+PASS  GTK 4 window at 58 fps (renderer vulkan)
+PASS  GTK 3 (Xwayland) window drawn (90% of the screen is the test color, after 3 s)
+PASS  GTK 3 (Xwayland) window at 47 fps (renderer cairo)
+PASS  Qt Quick window drawn (88% of the screen is the test color, after 2 s)
+PASS  Qt Quick window at 59 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (89% of the screen is the test color, after 2 s)
+PASS  Qt Quick (software) window at 58 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (91% of the screen is the test color, after 2 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 60 fps
+PASS  X11 client through Xwayland (glxgears) at 60 fps
+INFO  compositor memory: Rss: 126 MiB, Pss: 86 MiB, Anonymous: 54 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+INFO  core dumps since the compositor started: 51.6M 1x
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.sScwFc on xps
+RESULT: FAIL

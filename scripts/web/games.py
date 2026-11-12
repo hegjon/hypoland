@@ -150,6 +150,7 @@ page = f"""{head("Hypoland: games and 3D", "Xonotic, GravityMark, SuperTuxKart, 
     <span><a href="index.html">home</a></span>
     <span><a href="lab.html">lab</a></span>
     <span><a href="terminals.html">terminals</a></span>
+    <span><a href="files.html">files</a></span>
     <span><a href="https://github.com/hegjon/hypoland">github</a></span>
   </div>
 </nav>

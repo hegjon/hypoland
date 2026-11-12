@@ -60,6 +60,7 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
     <span><a href="index.html">home</a></span>
     <span><a href="terminals.html">terminals</a></span>
     <span><a href="games.html">games</a></span>
+    <span><a href="files.html">files</a></span>
     <span><a href="https://github.com/hegjon/hypoland">github</a></span>
   </div>
 </nav>
@@ -108,7 +109,7 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
         for alpha got no config. The frames are the compositor's own page flips; the Galaxy Book's screen runs at
         120&nbsp;Hz, and the Mac mini M1's display driver reports none. The memory holds the shell's shared pages too.
         Four terminals side by side on every machine: <a href="terminals.html">terminals</a>; games and 3D
-        benchmarks: <a href="games.html">games</a>.
+        benchmarks: <a href="games.html">games</a>; three file managers: <a href="files.html">files</a>.
         <a href="https://github.com/hegjon/hypoland/tree/master/{BASELINE}">Raw data, every session's values and the scripts</a>.
       </p>
     </div>
