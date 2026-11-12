@@ -5,7 +5,7 @@ A short A/B run, not a full regression baseline: it was planned to last until 20
 Every median in `values.txt` over two values is the lower one. The full regression baseline of the same compositor
 code is `../20261110-all-machines-r957-vs-hyprland-0.57.1/` (8 to 10 sessions). This directory is kept for the
 benchmarks that night did not have: Phoronix's graphics benchmarks of its first Snapdragon X2 Elite article
-(SuperTuxKart, Yamagi Quake II, vkmark) and Files (`folio`). The games page (`web/games.html`, `scripts/web/games.py`)
+(SuperTuxKart, Yamagi Quake II, vkmark) and Folio (`folio`). The games page (`web/games.html`, `scripts/web/games.py`)
 takes those from here and Xonotic, GravityMark and ElectroBench from the r957 baseline.
 
 ## Setup
@@ -18,7 +18,7 @@ takes those from here and Xonotic, GravityMark and ElectroBench from the r957 ba
   `quirks:skip_non_kms_dmabuf_formats = false` (`pr/stock-quirks.lua`) and on the X200 Omarchy's GLES 3 override (`pr/`).
 - Ten machines: all of the lab but samsung-i5. Omarchy-dev r7677 (the Galaxy Book Omarchy 4.5.0-3), Mesa 26.2.6
   (macmini-m1 mesa-aurora 26.3.0), `packages.txt`. Games: SuperTuxKart 1.5, vkmark 2025.01, Yamagi Quake II 8.10 with
-  ref_vk 1.0.2 (`scripts/machines/yquake2.sh`), Xonotic 0.8.6, GravityMark 1.89, Files 0.1.1 (x86) / 0.2.0 (aarch64).
+  ref_vk 1.0.2 (`scripts/machines/yquake2.sh`), Xonotic 0.8.6, GravityMark 1.89, Folio 0.1.1 (x86) / 0.2.0 (aarch64).
 - macmini-intel had no monitor (its HDMI goes to a KVM): `headless-helper.sh` gave each session a headless output, so
   it has no frames on the screen and no render checks; its game frame rates are a headless output's.
 - The X200 ran without `flea` and `flea-scroll`: Flea 0.4.1 needs Vulkan, fails on GM45 and leaves a critical
@@ -55,5 +55,5 @@ The new benchmarks (Hyprland 0.57.1 > Hypoland):
   - macmini-m1: no result in 3 of 3 sessions, the game aborts with `vkCreateSwapchainKHR failed`. With
     `render:direct_scanout = 0` set at runtime it runs: 263.2 fps, Steady 123, Mostly stable 215 (stock 252.7, 116, 195).
     Open.
-- Files: the compositor about half (T550 3.1 > 1.7%), the X200 shows 13.5 > 17.8 frames a second in `folio` and
+- Folio: the compositor about half (T550 3.1 > 1.7%), the X200 shows 13.5 > 17.8 frames a second in `folio` and
   43.6 > 57.8 in `folio-scroll`.

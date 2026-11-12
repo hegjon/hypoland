@@ -628,9 +628,9 @@ Tools:
   the windows for the rest of the session (every later workload of the X200's blocks in the night of 2026-11-10, a deploy
   check's render steps): since 2026-11-12 both Flea workloads check for its window (`flea_opened()`) and are skipped
   without it, the notification dismissed. `folio` and `folio-scroll` (added 2026-11-11, asked for by the user) are the same two as
-  Nautilus' in Files (`folio`, C++ and Qt Quick), Omarchy's file manager in place of Nautilus since omacom/omarchy#18378
-  of 2026-11-10; the soak has it too (`w_folio`, `w_files_folio`, `w_search_folio`). Files keeps its view in
-  `~/.config/folio/folio.conf`, which they set and put back. Files 0.1.1 and 0.2.0 (released 2026-11-11, a2bc0ca) do
+  Nautilus' in Folio (`folio`, C++ and Qt Quick), Omarchy's file manager in place of Nautilus since omacom/omarchy#18378
+  of 2026-11-10; the soak has it too (`w_folio`, `w_files_folio`, `w_search_folio`). Folio keeps its view in
+  `~/.config/folio/folio.conf`, which they set and put back. Folio 0.1.1 and 0.2.0 (released 2026-11-11, a2bc0ca) do
   not scroll the list to the cursor on Down: the cursor walks off the bottom and the view stays (XPS, screenshots), so
   until that is fixed `folio-scroll` measures the cursor and the details pane redrawn, not scrolling, and does not
   compare with `nautilus-scroll`. The fix is in omacom/folio#18, open on 2026-11-11 and tested on the XPS (the report,

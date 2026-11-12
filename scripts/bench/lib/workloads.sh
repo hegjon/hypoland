@@ -609,11 +609,11 @@ workload_nautilus_scroll() {
     return 0
 }
 
-# Files (folio), Omarchy's file manager since omacom/omarchy#18378 (2026-11-10, in place of Nautilus): C++ and Qt Quick,
+# Folio, Omarchy's file manager since omacom/omarchy#18378 (2026-11-10, in place of Nautilus): C++ and Qt Quick,
 # a process and a window per launch (app id folio). The same two workloads as Nautilus': `folio` the icon folder in its
 # grid with fullscreen toggled twice a second, `folio-scroll` the 5000 files in its list with Down held. It remembers
 # its view (grid, list or columns) in ~/.config/folio/folio.conf; the workloads set it before the start and put the
-# user's file back afterwards. Added 2026-11-11, asked for by the user. Files 0.1.1 and 0.2.0 do not scroll the list to
+# user's file back afterwards. Added 2026-11-11, asked for by the user. Folio 0.1.1 and 0.2.0 do not scroll the list to
 # the cursor on Down (the cursor walks off the bottom, the view stays; fixed in omacom/folio#18), so until a release has
 # the fix `folio-scroll` measures the cursor and the details pane, not scrolling.
 FOLIOCONF=$USERHOME/.config/folio/folio.conf

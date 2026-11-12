@@ -8,7 +8,7 @@
 # only those workloads (soak-ab.sh uses the first two).
 # Runs as the session user on the machine under test. It repeats a cycle of workloads (GPU client, terminal
 # scrolling in foot (shm) and alacritty (GL), a fullscreen video in mpv, nautilus (GTK 4) with fullscreen toggles,
-# flea (Quickshell) paged, searched and switched between views with keys, Files (folio, Qt Quick) with fullscreen
+# flea (Quickshell) paged, searched and switched between views with keys, Folio (Qt Quick) with fullscreen
 # toggles, its views and new windows, the three file managers scrolling the same
 # 25000 files with the same keys and searching them by name (w_files_*, w_search_*, to compare them), Omarchy's screensaver (ttfx in foot and in alacritty, tiled and fullscreen), Xwayland with fullscreen toggles, workspace switching, window churn, Chromium over shm, screenshots and
 # recording, config reload, DPMS off/on, idle, glmark2, notifications; the ones whose program is not installed are skipped) and samples the compositor every minute:
@@ -258,7 +258,7 @@ w_nautilus() {
     stop_clients
     nautilus -q >/dev/null 2>&1
 }
-# Files (folio), Omarchy's file manager since omacom/omarchy#18378 (2026-11-10): C++ and Qt Quick, a process and a
+# Folio, Omarchy's file manager since omacom/omarchy#18378 (2026-11-10): C++ and Qt Quick, a process and a
 # window per launch. The icon folder in its grid with fullscreen toggles as Nautilus', its three views (CTRL 1 grid,
 # 2 list, 3 columns) and new windows (CTRL N). It remembers its view in ~/.config/folio/folio.conf, which the
 # workloads set and put back as it was.
@@ -318,7 +318,7 @@ w_flea() {
 # Nautilus, flea and Files on the same 25000 files in list view (CTRL 1 in the first two, CTRL 2 in Files), every
 # 10 s: 64 rows down one at a time with Down, 8 a second (once the selection reaches the bottom every key scrolls by
 # one row, so all go through the same files on every screen; Page_Down moves by as many rows as the window shows),
-# then End to the last file and Home back to the first. Files' list has no End and Home and does not scroll to the
+# then End to the last file and Home back to the first. Folio's list has no End and Home and does not scroll to the
 # cursor on Down (folio 0.1.1 and 0.2.0, fixed in omacom/folio#18): the cursor walks off the bottom and only the cursor
 # and the details pane redraw. The window opens before and closes after the measurement (measured() runs
 # <workload>_start and <workload>_stop around it), so the costs compare by the scrolling alone.
