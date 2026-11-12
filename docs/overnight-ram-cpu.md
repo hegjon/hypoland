@@ -67,7 +67,7 @@ spread of the rounds.
   A gain has to be clearly larger.
 - Measure a candidate that looks good a second time before it is kept.
 - After every kept change the new measurement is the baseline for the next one.
-- The benchmark runs with the `performance` governor, so its CPU numbers are lower than the ones in `AGENTS.md`
+- The benchmark runs with the `performance` governor, so its CPU numbers are lower than the ones in `docs/notes/performance.md`
   (measured with `schedutil`). Compare benchmark numbers only with benchmark numbers.
 - `fps.gpu-client` has to stay at about 60. Less CPU time with fewer frames is not a gain.
 - A run with an `invalid.*` line (screensaver, lock, compositor restart or crash) does not count.
@@ -92,7 +92,7 @@ scope, and open problems.
 
 Starting points. Measure first, the list is a guess. Add what profiling shows. Most of the first list (2026-09-27)
 is done or ruled out: THP, the shader compiler, the CRTC mode, the EGL fence, workspace switching, idle wakeups and
-compiler flags. See `AGENTS.md` for the numbers.
+compiler flags. See `docs/notes/performance.md` for the numbers.
 
 Memory (2026-09-28, 60 s after the start in the benchmark: Pss 55.2 MiB, Rss 95.8 MiB, anonymous 22.1 MiB):
 1. The binary is mapped almost completely. The build flag commits on `overnight/ram-cpu` (`--gc-sections`, `-O2`,
@@ -110,6 +110,6 @@ CPU:
 
 Out of scope for a night (needs a Mesa build): a crocus-only Mesa without LLVM, see the journal of 2026-09-29.
 
-Checked before and not worth repeating (details in `AGENTS.md`): the speed of the shm upload copy, blur,
+Checked before and not worth repeating (details in `docs/notes/performance.md`): the speed of the shm upload copy, blur,
 `malloc_trim` and the malloc arenas, moving the GSettings cursor sync into a child, `GALLIUM_THREAD=0`. Clock reads
 do matter (every read is a system call on the X200), so do not dismiss them as sampling skid.

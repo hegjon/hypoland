@@ -148,7 +148,7 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
       <ul class="pixel-list">
         <li><a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline">docs/baseline</a>: every comparison with stock Hyprland, with the raw values and the scripts that made them</li>
         <li><a href="https://github.com/hegjon/hypoland/tree/master/scripts/bench">scripts/bench</a>: the benchmark, its workloads and clients</li>
-        <li><a href="https://github.com/hegjon/hypoland/blob/master/AGENTS.md">AGENTS.md</a>: the engineering notes, with what was tried, measured and dropped</li>
+        <li><a href="https://github.com/hegjon/hypoland/tree/master/docs/notes">docs/notes</a>: the engineering notes, with what was tried, measured and dropped</li>
         <li><a href="https://github.com/hegjon/hypoland/blob/master/CHANGELOG.md">CHANGELOG.md</a>: the changes per release with their measured effect</li>
       </ul>
     </div>
