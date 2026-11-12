@@ -3,7 +3,7 @@
 # vkmark, ElectroBench) under Hypoland and stock Hyprland on every machine, one table per benchmark, from the lab page's
 # baseline (labdata.py) and, for the benchmarks that night did not have, the short run of 2026-11-11 (GAMES_RUN), so no
 # number on the page is typed by hand. Run it again after a new baseline, from anywhere: scripts/web/games.py
-import os, re, sys
+import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from labdata import ROOT, BASELINE, HYPRLAND, RUN, MACHINES, values, cell, fmt, E, head, FOOTER
 
@@ -16,43 +16,39 @@ GAMES_RUN_TEXT = ("2 fresh sessions of each compositor per machine (Hypoland 3 o
 GAME = ("fps.{w}", "The game's frame rate", "game fps", False)
 SCORE = ("fps.{w}", "Score", "score", False)
 SCREEN = ("fps.{w}.screen", "Frames on the screen", "fps", False)
-CPU = ("cpu.{w}.percent", "The compositor's CPU", "%", True)
-PER_FRAME = ("cpu.{w}.ms_per_frame", "The compositor's CPU per frame on the screen", "ms/frame", True)
 STEADY = ("fps.{w}.steady", "Steady FPS", "game fps", False)
 
 # section id, title, data directory, [(workload, column)...] or None for the standard columns of one workload, the
 # workload, the text above the table
 SECTIONS = [
-    ("xonotic-low", "Xonotic, Low", BASELINE, "xonotic-low", [GAME, SCREEN, CPU, PER_FRAME],
+    ("xonotic-low", "Xonotic, Low", BASELINE, "xonotic-low", [GAME, SCREEN],
      "Xonotic 0.8.6 plays its benchmark demo <code>the-big-keybench</code> fullscreen without vsync at the Low effects "
      "preset, as Phoronix's test does: a native Wayland client through SDL&nbsp;2. The demo is stopped after the "
      "measurement; the game's frame rate is what it drew until then."),
-    ("xonotic-ultimate", "Xonotic, Ultimate", BASELINE, "xonotic-ultimate", [GAME, SCREEN, CPU, PER_FRAME],
+    ("xonotic-ultimate", "Xonotic, Ultimate", BASELINE, "xonotic-ultimate", [GAME, SCREEN],
      "The same demo at the Ultimate preset. Not on the AMD machine: its r600 GPU locked up under the presets above Low."),
-    ("gravitymark-gl", "GravityMark, OpenGL", BASELINE, "gravitymark-gl", [GAME, SCREEN, CPU, PER_FRAME],
+    ("gravitymark-gl", "GravityMark, OpenGL", BASELINE, "gravitymark-gl", [GAME, SCREEN],
      "Tellusim's GravityMark 1.89 fullscreen without vsync, an X11 client through Xwayland, its own mean frame rate over "
      "its 167&nbsp;s run. Its OpenGL renderer needs OpenGL&nbsp;4.5 and crashes on several machines, so few rows."),
-    ("gravitymark-vk", "GravityMark, Vulkan", BASELINE, "gravitymark-vk", [GAME, SCREEN, CPU, PER_FRAME],
+    ("gravitymark-vk", "GravityMark, Vulkan", BASELINE, "gravitymark-vk", [GAME, SCREEN],
      "The same with its Vulkan renderer: not on the AMD machine (no Vulkan) nor the X200."),
-    ("supertuxkart-vk", "SuperTuxKart, Vulkan", GAMES_RUN, "supertuxkart-vk", [GAME, STEADY, SCREEN, CPU],
+    ("supertuxkart-vk", "SuperTuxKart, Vulkan", GAMES_RUN, "supertuxkart-vk", [GAME, STEADY, SCREEN],
      "SuperTuxKart 1.5's <code>--benchmark</code>: the replay of a race on black_forest, Vulkan, Ultimate effects, no frame "
      "limit and no vsync, fullscreen at the monitor's size. The game's frame rate is the race's frames over its time; "
      "its Steady FPS, one of Phoronix's two charts, is a rate most of the race's frames reach, so a few long stalls make "
      "it 0."),
-    ("yquake2-gl3", "Yamagi Quake II, OpenGL 3", GAMES_RUN, "yquake2-gl3", [GAME, SCREEN, CPU, PER_FRAME],
+    ("yquake2-gl3", "Yamagi Quake II, OpenGL 3", GAMES_RUN, "yquake2-gl3", [GAME, SCREEN],
      "Yamagi Quake II 8.10 plays the timedemo of <code>q2demo1.dm2</code> over and over, fullscreen, with 16x anisotropic "
      "filtering and 16x multisampling (8x on Intel), as Phoronix's test does."),
-    ("yquake2-vk", "Yamagi Quake II, Vulkan", GAMES_RUN, "yquake2-vk", [GAME, SCREEN, CPU, PER_FRAME],
+    ("yquake2-vk", "Yamagi Quake II, Vulkan", GAMES_RUN, "yquake2-vk", [GAME, SCREEN],
      "The same with its Vulkan renderer (ref_vk 1.0.2; 4x multisampling on the Adreno)."),
-    ("vkmark", "vkmark", GAMES_RUN, "vkmark", [SCORE, SCREEN, CPU, PER_FRAME],
+    ("vkmark", "vkmark", GAMES_RUN, "vkmark", [SCORE, SCREEN],
      "vkmark 2025.01 runs its 13 scenes of 10&nbsp;s each fullscreen in mailbox mode: it draws as fast as it can and the "
      "screen shows the newest frame. The score is its own."),
 ] + [
     (f"electrobench-{s}", f"ElectroBench, {t}", BASELINE, None,
      [(f"electrobench-{s}", GAME[:1] + ("Frame rate, fullscreen",) + GAME[2:]),
-      (f"electrobench-{s}-window", GAME[:1] + ("Frame rate, in a window",) + GAME[2:]),
-      (f"electrobench-{s}", PER_FRAME[:1] + ("Compositor per frame, fullscreen",) + PER_FRAME[2:]),
-      (f"electrobench-{s}-window", PER_FRAME[:1] + ("Compositor per frame, in a window",) + PER_FRAME[2:])],
+      (f"electrobench-{s}-window", GAME[:1] + ("Frame rate, in a window",) + GAME[2:])],
      text)
     for s, t, text in [
         ("guns", "guns", "ElectroBench's first scene, OpenGL&nbsp;2.1, so the X200 too: 110 guns drawn face by face with "
@@ -72,12 +68,6 @@ def load(run, alias):
     if (run, alias) not in cache:
         cache[run, alias] = (values(alias, "hypoland", run), values(alias, "hyprland", run))
     return cache[run, alias]
-
-def stalls(run, alias, compositor, w):
-    # sessions whose race had a stall long enough to make the game's Steady FPS 0, of those with a result
-    got = [float(m.group(1)) for line in open(os.path.join(ROOT, run, alias, compositor, "raw.txt"))
-           if (m := re.match(rf"@ \d+ fps\.{re.escape(w)}\.steady (\S+)", line))]
-    return sum(1 for v in got if v == 0), len(got)
 
 def section_cells(run, alias, columns):
     (hv, _), (sv, _) = load(run, alias)
@@ -108,7 +98,6 @@ def tables():
     out = []
     for i, (sid, title, run, w, columns, text) in enumerate(SECTIONS):
         columns = [(w, c) for c in columns] if w else columns
-        stk = sid.startswith("supertuxkart")
         body = []
         for m in MACHINES:
             if not present(run, m["alias"]) or (run == BASELINE and not m["baseline"]):
@@ -119,14 +108,9 @@ def tables():
             (hv, _), (sv, _) = load(run, m["alias"])
             if first not in hv and first not in sv and not hv.get(f"invalid.{columns[0][0]}"):
                 continue
-            if stk:
-                hs, hn = stalls(run, m["alias"], "hypoland", w)
-                ss, sn = stalls(run, m["alias"], "hyprland", w)
-                cls = ' class="no"' if hs > ss else (' class="yes"' if hs < ss else "")
-                cells += f"<td{cls}>{hs} of {hn} / {ss} of {sn}</td>"
             name = E(m["name"]) + (' <span class="opt">(headless)</span>' if m["alias"] == "macmini-intel" else "")
             body.append(f"          <tr><td>{name}</td>{cells}</tr>")
-        heads = "".join(f"<th>{E(c[1])}</th>" for _, c in columns) + ("<th>Sessions with a stall</th>" if stk else "")
+        heads = "".join(f"<th>{E(c[1])}</th>" for _, c in columns)
         source = (f"Medians of the fresh sessions of {RUN}." if run == BASELINE
                   else f"Medians, which over two sessions are the lower value: {GAMES_RUN_TEXT}.")
         out.append(f"""  <section class="win full" id="{sid}" aria-labelledby="t-{sid}">
@@ -149,14 +133,13 @@ NOTES = {
     "supertuxkart-vk": " The stalls come with Hypoland's measured direct scanout (<code>render:direct_scanout = auto</code>, "
                        "the default) and are being looked into; on the Mac mini M1 the game cannot make its swapchain "
                        "under it and gives no result, with direct scanout off it runs.",
-    "yquake2-vk": " On the Mac mini M1 the game outruns the display on the plane under Hypoland: more frames drawn, and "
-                  "the compositor pays for its waits.",
+    "yquake2-vk": " On the Mac mini M1 the game outruns the display on the plane under Hypoland: more frames drawn.",
 }
 
 nav = "".join(f'\n    <li><a href="#{sid}">{i + 2}</a></li>' for i, (sid, *_) in enumerate(SECTIONS))
 index = "\n".join(f'          <li><a href="#{sid}">{E(title)}</a></li>' for sid, title, *_ in SECTIONS)
 
-page = f"""{head("Hypoland: games and 3D", "Xonotic, GravityMark, SuperTuxKart, Yamagi Quake II, vkmark and ElectroBench under Hypoland and under Hyprland " + HYPRLAND + ": the games' frame rates, the frames on the screen and the compositor's CPU.", "Games and 3D benchmarks under Hypoland and Hyprland " + HYPRLAND + ", on the machines of the lab.", "games.html")}
+page = f"""{head("Hypoland: games and 3D", "Xonotic, GravityMark, SuperTuxKart, Yamagi Quake II, vkmark and ElectroBench under Hypoland and under Hyprland " + HYPRLAND + ": the games' frame rates and the frames on the screen.", "Games and 3D benchmarks under Hypoland and Hyprland " + HYPRLAND + ", on the machines of the lab.", "games.html")}
 <!-- Generated by scripts/web/games.py from the baselines' values, do not edit by hand. -->
 <nav class="bar" aria-label="Sections">
   <ul class="ws">
@@ -182,8 +165,7 @@ page = f"""{head("Hypoland: games and 3D", "Xonotic, GravityMark, SuperTuxKart, 
         Hypoland / Hyprland: green where Hypoland is at least 5% better, red where it is at least 5% worse; a dash where
         the benchmark does not run or there is nothing to count. The game's frame rate is what the game drew;
         the frames on the screen are the compositor's page flips a second, which stop at the screen's refresh rate
-        (120&nbsp;Hz on the Galaxy Book); the compositor's CPU is percent of one core over the measurement, and per frame
-        it put on the screen.
+        (120&nbsp;Hz on the Galaxy Book).
       </p>
       <ul>
 {index}
