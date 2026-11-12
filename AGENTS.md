@@ -283,6 +283,10 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
 - Renderer: GLES 2.0 only. Shaders in GLSL ES 1.00. No instancing, integer textures, MRT, or GLES 3 features.
 - Build for baseline `x86-64`. Never use `-march=native` (the desktop CPU is far newer than the X200's).
 - License: Hyprland is BSD-3. Keep upstream copyright notices and LICENSE. Don't use Hyprland's logo or imply endorsement.
+  "Hyprland" and its logo are EU-registered trademarks of Hyprland Development (policy of 2026-11-11,
+  https://hypr.land/trademark-usage/): naming Hyprland to say what Hypoland is or is compared with is fine, but never
+  as part of a product name or a tagline that reads as a Hyprland edition ("A fork of Hyprland for ...", not
+  "Hyprland for ..."; changed on the site and its link preview on 2026-11-12).
 
 ## Compatibility requirements (do not break)
 
