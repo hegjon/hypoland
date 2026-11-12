@@ -41,8 +41,6 @@ MEASURES = [
     ("client-mem", "The file manager's memory", "mem.{w}.clients_Pss_kB", "MiB", True, 0,
      "Pss of the file manager's processes at the end of the scrolling, with the 5000 files listed and the window open. "
      "The file manager's own memory, which the compositor hardly changes: it tells the three apart."),
-    ("comp-mem", "The compositor's memory", "mem.{w}.Pss_kB", "MiB", True, 0,
-     "Pss of the compositor at the same moment, with everything the session ran before it in the night's list."),
 ]
 
 data = {m["alias"]: (values(m["alias"], "hypoland", FILES_RUN), values(m["alias"], "hyprland", FILES_RUN))
