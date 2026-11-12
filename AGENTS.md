@@ -615,8 +615,9 @@ Tools:
   Galaxy Book, 7 of 13 on the T460s, 3 of 13 on the T490, never under stock), and on macmini-m1 it gave no result
   (`vkCreateSwapchainKHR failed`). The T460s's four invalid results and macmini-intel's missing ones of that day did not
   come back in that night (macmini-intel on a headless output). `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
-  user) scroll a folder of 5000 empty files in Flea (Omarchy's file manager, a Quickshell window) and in Nautilus (GTK
-  4, its list view, set for the run if needed) with the Down key held on the uinput keyboard for the whole run
+  user) scroll a folder of 5000 empty files in Flea (a keyboard-first file manager for Omarchy, thisisgm/flea, in
+  Omarchy's package repository but never its default; a Quickshell window) and in Nautilus (GTK 4, its list view,
+  set for the run if needed) with the Down key held on the uinput keyboard for the whole run
   (`clients/holdkey.py`, root only): the compositor forwards the one press and the client repeats it at the session's
   rate (Omarchy: 40 a second after 250 ms, about 480 files in the 12 s). At the end, with the window still open, the
   clients' memory (`mem.<name>.clients_Pss_kB`, the Pss of the processes in their scopes; `clients_cgroup_kB` and

@@ -508,7 +508,7 @@ flea_opened() {
     return 1
 }
 needs_flea="flea"
-workload_flea() { # Omarchy's file manager, a Quickshell window, paged through with keys
+workload_flea() { # a file manager for Omarchy (not its default), a Quickshell window, paged through with keys
     local i key
     [ -e "$FILES/file-25000.txt" ] || asuser bash -c 'mkdir -p "$0" && cd "$0" && touch file-{00001..25000}.txt' "$FILES"
     client $((SECONDS_PER_RUN + 20)) "exec flea '$FILES'"
@@ -532,7 +532,7 @@ workload_flea() { # Omarchy's file manager, a Quickshell window, paged through w
     sleep 1
 }
 
-# A folder of 5000 empty files in Omarchy's file manager (Flea, a Quickshell window) and in Nautilus (GTK 4, its list
+# A folder of 5000 empty files in Flea (a file manager for Omarchy, a Quickshell window) and in Nautilus (GTK 4, its list
 # view), scrolled with the Down key held on the uinput keyboard for the whole run (root only): the compositor forwards
 # the one press and the client repeats it at the session's rate (Omarchy: 40 a second after 250 ms, so about 480 of
 # the files in a 12 s run), as a finger resting on the key would. At the end, with the window still open, the memory of

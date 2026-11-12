@@ -14,11 +14,11 @@ FILES_RUN_TEXT = ("alternating from 2026-11-11 17:04 to 11-12 08:59, Hypoland ma
 
 # name, version in the night, how it is made, its two workloads: scrolling and the other one
 MANAGERS = [
-    ("Nautilus", "51.1", "GNOME's, GTK&nbsp;4: GPU buffers drawn with Vulkan or OpenGL, on the X200 cairo into shared memory.",
+    ("Nautilus", "51.1", "GNOME's, Omarchy's file manager until 2026-11-10. GTK&nbsp;4: GPU buffers drawn with Vulkan or OpenGL, on the X200 cairo into shared memory.",
      "nautilus-scroll", "nautilus"),
-    ("Flea", "0.4.1", "Omarchy's file manager until 2026-11-10, a Quickshell window (Qt Quick), which picks Qt's Vulkan or "
-     "OpenGL backend itself.", "flea-scroll", "flea"),
-    ("Folio", "0.1.1 (0.2.0 on aarch64)", "Omarchy's file manager since 2026-11-10, C++ and Qt Quick.",
+    ("Flea", "0.4.1", "A keyboard-first file manager for Omarchy (thisisgm/flea, in Omarchy's package repository, not its "
+     "default), a Quickshell window (Qt Quick), which picks Qt's Vulkan or OpenGL backend itself.", "flea-scroll", "flea"),
+    ("Folio", "0.1.1 (0.2.0 on aarch64)", "Omarchy's file manager since 2026-11-10, in place of Nautilus: C++ and Qt Quick.",
      "folio-scroll", "folio"),
 ]
 
