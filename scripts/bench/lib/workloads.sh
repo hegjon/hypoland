@@ -494,12 +494,26 @@ workload_nautilus() { # GTK 4 redrawing a full window of icons, fullscreen toggl
 # 25000 empty files, made once in the user's cache, so the listing is the same on every machine and run (the same
 # directory as scripts/machines/soak.sh)
 FILES=$USERHOME/.cache/hypoland-bench/files-25000
+# Flea 0.4.1 picks Qt Quick's Vulkan or OpenGL backend itself: on the X200 (GM45, OpenGL 2.1, no Vulkan) it opens no window
+# and the shell shows a critical notification, "No graphics driver could open Flea", which stays over the windows for the
+# rest of the session (it covered every later workload of the night of 2026-11-10 and failed a deploy check's render steps).
+# Returns whether its window is there; otherwise the workload is skipped and the notification dismissed
+flea_opened() {
+    if H -j clients 2>/dev/null | grep -q -i '"class": *"[^"]*flea'; then
+        return 0
+    fi
+    echo "    skipped, Flea opened no window (it needs Vulkan or OpenGL 3)"
+    stop_clients
+    asuser timeout 5 /usr/share/omarchy/bin/omarchy-shell -q notifications dismissAll >/dev/null 2>&1
+    return 1
+}
 needs_flea="flea"
 workload_flea() { # Omarchy's file manager, a Quickshell window, paged through with keys
     local i key
     [ -e "$FILES/file-25000.txt" ] || asuser bash -c 'mkdir -p "$0" && cd "$0" && touch file-{00001..25000}.txt' "$FILES"
     client $((SECONDS_PER_RUN + 20)) "exec flea '$FILES'"
     sleep 8
+    flea_opened || return
     (for i in $(seq 1 "$SECONDS_PER_RUN"); do # 4 pages a second, 20 down and 20 back up
         key=Page_Down
         [ $(((i - 1) / 5 % 2)) = 1 ] && key=Page_Up
@@ -546,7 +560,8 @@ clients_memory() { # name: the processes in the clients' scopes
     value "mem.$1.clients_cgroup_kB" "$cur"
     value "mem.$1.clients_peak_kB" "$peak"
 }
-scroll_folder() { # workload, seconds to wait for the window, command with FOLDER for the folder
+scroll_folder() { # workload, seconds to wait for the window, command with FOLDER for the folder; OPENED, if set, is a
+    # function that says whether the window opened (and cleans up when it did not)
     local name=$1 wait=$2 driver folder
     shift 2
     # the key would go into the password field of a lock screen
@@ -558,6 +573,9 @@ scroll_folder() { # workload, seconds to wait for the window, command with FOLDE
     folder=$(scroll_files)
     client $((SECONDS_PER_RUN + 25)) "${*//FOLDER/$folder}"
     sleep "$wait"
+    if [ -n "${OPENED:-}" ] && ! "$OPENED"; then
+        return
+    fi
     rm -f "$OUT/$name.key.txt"
     env -i PATH="$PATH" XDG_RUNTIME_DIR="$RUNTIME" WAYLAND_DISPLAY="${SOCKET:-wayland-1}" python3 -I "$CLIENTSRC/holdkey.py" down $((SECONDS_PER_RUN + 1)) \
         >"$OUT/$name.key.txt" 2>&1 &
@@ -574,7 +592,7 @@ scroll_folder() { # workload, seconds to wait for the window, command with FOLDE
 }
 needs_flea_scroll="flea root"
 workload_flea_scroll() {
-    scroll_folder flea-scroll 8 "exec flea 'FOLDER'"
+    OPENED=flea_opened scroll_folder flea-scroll 8 "exec flea 'FOLDER'"
     asuser pkill -f "[q]s -p /usr/share/flea" >/dev/null 2>&1
     asuser pkill -x flea >/dev/null 2>&1
     sleep 1
