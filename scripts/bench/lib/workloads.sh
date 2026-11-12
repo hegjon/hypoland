@@ -614,9 +614,10 @@ workload_nautilus_scroll() {
 # a process and a window per launch (app id folio). The same two workloads as Nautilus': `folio` the icon folder in its
 # grid with fullscreen toggled twice a second, `folio-scroll` the 5000 files in its list with Down held. It remembers
 # its view (grid, list or columns) in ~/.config/folio/folio.conf; the workloads set it before the start and put the
-# user's file back afterwards. Added 2026-11-11, asked for by the user. Folio 0.1.1 and 0.2.0 do not scroll the list to
-# the cursor on Down (the cursor walks off the bottom, the view stays; fixed in omacom/folio#18), so until a release has
-# the fix `folio-scroll` measures the cursor and the details pane, not scrolling.
+# user's file back afterwards. Added 2026-11-11, asked for by the user. Both need Folio 0.4.0 or later (2026-11-12, the
+# version on every machine since), so results compare across machines. Folio 0.1.1 to 0.4.0 do not scroll the list to
+# the cursor on Down (the cursor walks off the bottom, the view stays; fixed in omacom/folio#18, still open), so until a
+# release has the fix `folio-scroll` measures the cursor and the details pane, not scrolling.
 FOLIOCONF=$USERHOME/.config/folio/folio.conf
 folio_view() { # view: grid or list. Keeps the user's settings for folio_restore
     if [ -e "$FOLIOCONF" ] && [ ! -e "$CLIENTDIR/folio.conf" ]; then
@@ -636,7 +637,7 @@ folio_restore() { # after stop_clients: each launch is a process of its own, so 
         rm -f "$FOLIOCONF" "$CLIENTDIR/folio.conf.none"
     fi
 }
-needs_folio="folio"
+needs_folio="folio>=0.4.0"
 workload_folio() { # Qt Quick redrawing a full window of icons, fullscreen toggled twice a second
     folio_view grid
     client $((SECONDS_PER_RUN + 15)) "exec folio /usr/share/icons/Adwaita/symbolic/actions"
@@ -650,7 +651,7 @@ workload_folio() { # Qt Quick redrawing a full window of icons, fullscreen toggl
     stop_clients
     folio_restore
 }
-needs_folio_scroll="folio root"
+needs_folio_scroll="folio>=0.4.0 root"
 workload_folio_scroll() {
     # the list, one file per Down; the grid moves a row
     folio_view list
@@ -1268,9 +1269,16 @@ workload_custom() { # name, command
     stop_clients
 }
 
-missing() { # programs, gi:<namespace>-<version> for a library Python reaches through GObject introspection, py:<module> for a Python module, x11 for Xwayland, root, shell for Omarchy's
-    local prog lib
+missing() { # programs, <program>>=<version> for a program at least as new as its package's version, gi:<namespace>-<version> for a library Python reaches through GObject introspection, py:<module> for a Python module, x11 for Xwayland, root, shell for Omarchy's
+    local prog lib have
     for prog in $1; do
+        if [[ $prog == *'>='* ]]; then
+            asuser sh -c "command -v ${prog%%>=*}" >/dev/null 2>&1 || { echo "${prog%%>=*} ${prog#*>=} or later"; return; }
+            have=$(pacman -Q "${prog%%>=*}" 2>/dev/null | cut -d' ' -f2)
+            [ -n "$have" ] && [ "$(vercmp "$have" "${prog#*>=}")" -ge 0 ] ||
+                { echo "${prog%%>=*} ${prog#*>=} or later (${have:-not a package} here)"; return; }
+            continue
+        fi
         if [[ $prog == py:* ]]; then
             asuser python3 -I -c "import ${prog#py:}" >/dev/null 2>&1 || { echo "${prog#py:} for Python"; return; }
             continue

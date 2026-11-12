@@ -319,7 +319,7 @@ w_flea() {
 # 10 s: 64 rows down one at a time with Down, 8 a second (once the selection reaches the bottom every key scrolls by
 # one row, so all go through the same files on every screen; Page_Down moves by as many rows as the window shows),
 # then End to the last file and Home back to the first. Folio's list has no End and Home and does not scroll to the
-# cursor on Down (folio 0.1.1 and 0.2.0, fixed in omacom/folio#18): the cursor walks off the bottom and only the cursor
+# cursor on Down (folio 0.1.1 to 0.4.0, fixed in omacom/folio#18): the cursor walks off the bottom and only the cursor
 # and the details pane redraw. The window opens before and closes after the measurement (measured() runs
 # <workload>_start and <workload>_stop around it), so the costs compare by the scrolling alone.
 scroll_files() { # [the key that shows the list, with CTRL]
