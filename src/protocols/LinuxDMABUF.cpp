@@ -26,6 +26,26 @@ static std::optional<dev_t> devIDFromFD(int fd) {
     return stat.st_rdev;
 }
 
+// Whether the outputs are driven by the device the compositor renders with. A scanout tranche names the render device as its
+// target with the primary planes' formats and modifiers, which holds only then: on a display controller of its own (the Mac
+// mini M1's apple-drm, next to the asahi GPU, whose render node aquamarine takes as the sole one on the system) Mesa's Vulkan
+// WSI, which ignores a tranche's target device and takes the first tranche with its format, made a fullscreen client's
+// swapchain with the display's modifiers, and SuperTuxKart's failed (vkCreateSwapchainKHR, every session of 2026-11-11).
+static bool displayOnRenderDevice() {
+    const int KMS    = g_pCompositor->m_drm.fd;
+    const int RENDER = g_pCompositor->m_drmRenderNode.fd;
+    if (KMS < 0 || RENDER < 0 || KMS == RENDER)
+        return true;
+
+    // the render node of the KMS device itself, none for a display-only device
+    const std::unique_ptr<char, decltype(&free)> NAME(drmGetRenderDeviceNameFromFd(KMS), &free);
+    struct stat                                  node = {};
+    if (!NAME || stat(NAME.get(), &node) != 0)
+        return false;
+
+    return devIDFromFD(RENDER) == node.st_rdev;
+}
+
 CDMABUFFormatTable::CDMABUFFormatTable(SDMABUFTranche _rendererTranche, std::vector<std::pair<PHLMONITORREF, SDMABUFTranche>> tranches_) :
     m_rendererTranche(_rendererTranche), m_monitorTranches(tranches_) {
 
@@ -469,10 +489,16 @@ CLinuxDMABufV1Protocol::CLinuxDMABufV1Protocol(const wl_interface* iface, const 
             .formats = g_pHyprRenderer->getDRMFormats(),
         };
 
+        const bool SCANOUT_TRANCHES = g_pCompositor->m_aqBackend->hasSession() && displayOnRenderDevice();
+        if (g_pCompositor->m_aqBackend->hasSession() && !SCANOUT_TRANCHES)
+            LOGM(Log::DEBUG, "the outputs are not on the render device: no scanout tranches");
+
         std::vector<std::pair<PHLMONITORREF, SDMABUFTranche>> tches;
 
-        if (g_pCompositor->m_aqBackend->hasSession()) {
-            // this assumes there's only 1 device used for both scanout and rendering
+        if (SCANOUT_TRANCHES) {
+            // this assumes there's only 1 device used for both scanout and rendering (checked above: without the tranches a
+            // fullscreen client keeps the renderer's formats, as under stock Hyprland, and is scanned out when the plane takes
+            // them)
             // also that each monitor never changes its primary plane
 
             for (auto const& mon : State::monitorState()->monitors()) {
