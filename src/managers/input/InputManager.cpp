@@ -409,7 +409,7 @@ void CInputManager::mouseMoveUnified(uint32_t time, bool refocus, bool mouse, st
 
     if (forcedFocus && !foundSurface) {
         pFoundWindow = forcedFocus;
-        surfacePos   = pFoundWindow->position(Desktop::View::IGeometric::GEOMETRIC_CURRENT);
+        surfacePos   = pFoundWindow->position(Desktop::View::IGeometric::GEOMETRIC_CURRENT) + pFoundWindow->wlSurface()->correctSmallVec();
         foundSurface = pFoundWindow->wlSurface()->resource();
     }
 
@@ -560,7 +560,7 @@ void CInputManager::mouseMoveUnified(uint32_t time, bool refocus, bool mouse, st
                 foundSurface = Desktop::viewState()->hitTest().windowSurfaceAt(mouseCoords, pFoundWindow, surfaceCoords);
                 if (!foundSurface) {
                     foundSurface = pFoundWindow->wlSurface()->resource();
-                    surfacePos   = pFoundWindow->position(Desktop::View::IGeometric::GEOMETRIC_CURRENT);
+                    surfacePos   = pFoundWindow->position(Desktop::View::IGeometric::GEOMETRIC_CURRENT) + pFoundWindow->wlSurface()->correctSmallVec();
                 }
             } else {
                 foundSurface = pFoundWindow->wlSurface()->resource();

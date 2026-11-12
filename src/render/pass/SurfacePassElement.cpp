@@ -35,9 +35,9 @@ CBox CSurfacePassElement::getTexBox() {
         // however, if surface buffer w / h < box, we need to adjust them
         const auto PWINDOW = PSURFACE ? Desktop::View::CWindow::fromView(PSURFACE->view()) : nullptr;
 
-        // center the surface if it's smaller than the viewport we assign it
+        // a surface smaller than the window is drawn at its own size; centred in a fullscreen window, which
+        // renderWindow() does for the whole surface tree (CWLSurface::correctSmallVec())
         if (PSURFACE && !PSURFACE->m_fillIgnoreSmall && PSURFACE->small() /* guarantees PWINDOW */) {
-            const auto CORRECT = PSURFACE->correctSmallVec();
             // the surface's own size, in logical pixels: the buffer's size (getViewporterCorrectedSize()) is that only at a
             // buffer scale of 1. vkmark fullscreen at scale 1.5 (a 1920x1080 buffer at buffer scale 2, a 960x540 surface in a
             // 1280x720 window) was drawn twice its size, cut to the window, while its damage covered its own size: every
@@ -46,8 +46,6 @@ CBox CSurfacePassElement::getTexBox() {
             const auto REPORTED = PWINDOW->backend().reportedSize();
 
             if (!INTERACTIVERESIZEINPROGRESS) {
-                windowBox.translate(CORRECT);
-
                 const auto REALSIZE = PWINDOW->size(Desktop::View::IGeometric::GEOMETRIC_CURRENT);
                 windowBox.width     = SIZE.x * (REALSIZE.x / REPORTED.x);
                 windowBox.height    = SIZE.y * (REALSIZE.y / REPORTED.y);

@@ -237,7 +237,7 @@ std::optional<CBox> CWindow::surfaceLogicalBox() const {
     if (!mapped() || !acceptsInput())
         return std::nullopt;
 
-    return getWindowMainSurfaceBox();
+    return getWindowMainSurfaceBox().translate(wlSurface()->correctSmallVec());
 }
 
 SBoxExtents CWindow::getFullWindowExtents() const {
@@ -1778,11 +1778,14 @@ void CWindow::commitWindow(bool initialCommit) {
     const auto SURFSIZE  = SIZE / m_backend->surfaceScale();
     const auto WINSIZE   = m_realSize->value();
     const bool STRETCHED = !OWNSIZE && (SURFSIZE.x < WINSIZE.x - 1 || SURFSIZE.y < WINSIZE.y - 1);
-    if (STRETCHED || OWNSIZE != m_lastCommitOwnSize)
+    // centred in a fullscreen window (CWLSurface::correctSmallVec()), it moves as its size changes
+    const auto OFFSET = wlSurface()->correctSmallVec();
+    if (STRETCHED || OWNSIZE != m_lastCommitOwnSize || OFFSET != m_lastCommitOffset)
         g_pHyprRenderer->damageWindow(m_self.lock());
     m_lastCommitOwnSize = OWNSIZE;
+    m_lastCommitOffset  = OFFSET;
 
-    g_pHyprRenderer->damageSurface(wlSurface()->resource(), m_realPosition->goal().x, m_realPosition->goal().y, 1.0 / m_backend->surfaceScale());
+    g_pHyprRenderer->damageSurface(wlSurface()->resource(), m_realPosition->goal().x + OFFSET.x, m_realPosition->goal().y + OFFSET.y, 1.0 / m_backend->surfaceScale());
 
     if (!m_backend->isX11()) {
         subsurfaceHead()->recheckDamageForSubsurfaces();

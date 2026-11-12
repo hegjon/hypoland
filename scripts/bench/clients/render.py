@@ -696,6 +696,42 @@ class Render:
         print(f"FAIL  render {step}: {n} pixels differ from a full repaint, in {box[0]},{box[1]} to {box[2]},{box[3]} "
               f"(screens in {self.out})", flush=True)
 
+    def check_centred(self, step, win, bscale):
+        """A fullscreen surface smaller than the screen is centred on it with black around it, as xdg-shell's set_fullscreen
+        asks; it was at the top left with the wallpaper around it (vkmark at scale 1.5 on the T460s, 2026-11-12)"""
+        screen, sw, sh = self.grab(f"{step}-centred")
+        scale = self.monitor["scale"]
+        # the surface's size on the screen: its logical size (buffer over buffer scale) at the monitor's scale
+        lw, lh = win.w / bscale, win.h / bscale
+        ww, wh = round(lw * scale), round(lh * scale)
+        x0, y0 = (sw - ww) // 2, (sh - wh) // 2
+        if x0 < 4 and y0 < 4:
+            print(f"SKIP  render {step} centred: the surface is not smaller than the screen", flush=True)
+            return
+        c = Sharing.CORNER * max(self.scale, 1)
+        margin = 2  # the surface's filtered edge at a fractional scale
+        bad, where = 0, None
+        for y in range(0, sh, 2):
+            for x in range(0, sw, 2):
+                inside = x0 - margin <= x < x0 + ww + margin and y0 - margin <= y < y0 + wh + margin
+                if inside or (x >= sw - c and y >= sh - c):
+                    continue
+                if screen[(y * sw + x) * 3 : (y * sw + x) * 3 + 3] != b"\0\0\0":
+                    bad += 1
+                    where = where or (x, y)
+        # the surface itself: its centre is drawn, not black
+        mid = ((y0 + wh // 2) * sw + x0 + ww // 2) * 3
+        if screen[mid : mid + 3] == b"\0\0\0":
+            bad += 1
+            where = where or (x0 + ww // 2, y0 + wh // 2)
+        if bad == 0:
+            print(f"PASS  render {step} centred: {ww}x{wh} at {x0},{y0}, black around it", flush=True)
+            os.remove(os.path.join(self.out, f"{step}-centred.ppm"))
+            return
+        self.failed += 1
+        print(f"FAIL  render {step} centred: {bad} sampled pixels wrong around a {ww}x{wh} surface expected at {x0},{y0}, "
+              f"first at {where[0]},{where[1]} (screen in {self.out})", flush=True)
+
     def check_pixels(self, step, win, under=None, how=None):
         """The focused window shows exactly what it drew (its subsurfaces included), inside its rounding and border.
         Over the window under, its transparent pixels show that one through as premultiplied alpha blends it, to a step"""
@@ -1158,6 +1194,7 @@ class Render:
         a.commit()
         self.settle(1.2)
         self.check_repaint("fullscreen smaller")
+        self.check_centred("fullscreen smaller", a, self.scale)
         for frame in range(12):
             a.commit([a.rect(400 + frame * 4 + k, rng.randrange(a.w), rng.randrange(a.h), rng.randrange(8, 160), rng.randrange(8, 90)) for k in range(4)])
         self.settle(1.0)
@@ -1175,6 +1212,7 @@ class Render:
             a.commit()
             self.settle(1.2)
             self.check_repaint("fullscreen buffer scale")
+            self.check_centred("fullscreen buffer scale", a, bscale)
             for frame in range(12):
                 a.commit([a.rect(500 + frame * 4 + k, rng.randrange(a.w), rng.randrange(a.h), rng.randrange(8, 160), rng.randrange(8, 90)) for k in range(4)])
             self.settle(1.0)

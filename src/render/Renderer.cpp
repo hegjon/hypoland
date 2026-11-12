@@ -655,6 +655,19 @@ void IHyprRenderer::renderWindow(PHLWINDOW pWindow, PHLMONITOR pMonitor, const T
         if ((pWindow->backend().isX11() && *PXWLUSENN) || pWindow->m_ruleApplicator->nearestNeighbor().valueOrDefault())
             renderdata.useNearestNeighbor = true;
 
+        // a surface smaller than its fullscreen window is centred in it with black around (xdg-shell's set_fullscreen),
+        // not drawn over whatever is under the window (CWLSurface::correctSmallVec())
+        const auto SMALLOFFSET = pWindow->wlSurface()->correctSmallVec();
+        if (SMALLOFFSET != Vector2D{}) {
+            CBox wb = {renderdata.pos.x - pMonitor->m_position.x, renderdata.pos.y - pMonitor->m_position.y, renderdata.w, renderdata.h};
+            wb.scale(pMonitor->m_scale).round();
+            CRectPassElement::SRectData data;
+            data.color = CHyprColor(0, 0, 0, fullAlpha);
+            data.box   = wb;
+            addPassElement(makeUnique<CRectPassElement>(data));
+            renderdata.blur = false;
+        }
+
         if (pWindow->wlSurface()->small() && !pWindow->wlSurface()->m_fillIgnoreSmall && renderdata.blur) {
             CBox wb = {renderdata.pos.x - pMonitor->m_position.x, renderdata.pos.y - pMonitor->m_position.y, renderdata.w, renderdata.h};
             wb.scale(pMonitor->m_scale).round();
@@ -670,6 +683,7 @@ void IHyprRenderer::renderWindow(PHLWINDOW pWindow, PHLMONITOR pMonitor, const T
         }
 
         renderdata.surfaceCounter = 0;
+        renderdata.pos += SMALLOFFSET;
         pWindow->wlSurface()->resource()->breadthfirst(
             [this, &renderdata, &pWindow](SP<CWLSurfaceResource> s, const Vector2D& offset, void* data) {
                 if (!s->m_current.texture)
@@ -686,6 +700,7 @@ void IHyprRenderer::renderWindow(PHLWINDOW pWindow, PHLMONITOR pMonitor, const T
                 renderdata.surfaceCounter++;
             },
             nullptr);
+        renderdata.pos -= SMALLOFFSET;
 
         renderdata.useNearestNeighbor = false;
 

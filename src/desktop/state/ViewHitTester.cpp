@@ -268,7 +268,7 @@ SP<CWLSurfaceResource> CViewHitTester::windowSurfaceAt(const Vector2D& pos, PHLW
         return PPOPUP->wlSurface()->resource();
     }
 
-    auto [surf, local] = window->wlSurface()->resource()->at(pos - window->position(Desktop::View::IGeometric::GEOMETRIC_GOAL), true);
+    auto [surf, local] = window->wlSurface()->resource()->at(pos - window->position(Desktop::View::IGeometric::GEOMETRIC_GOAL) - window->wlSurface()->correctSmallVec(), true);
     if (surf) {
         surfaceLocal = local;
         return surf;
@@ -300,10 +300,12 @@ Vector2D CViewHitTester::surfaceLocalAt(const Vector2D& pos, PHLWINDOW window, S
 
     const CBox GEOMETRY = window->backend().geometry().box;
 
-    if (std::get<1>(iterData) == Vector2D{-1337, -1337})
-        return pos - window->position(Desktop::View::IGeometric::GEOMETRIC_GOAL);
+    const auto TREE = window->position(Desktop::View::IGeometric::GEOMETRIC_GOAL) + window->wlSurface()->correctSmallVec();
 
-    return pos - window->position(Desktop::View::IGeometric::GEOMETRIC_GOAL) - std::get<1>(iterData) + GEOMETRY.pos();
+    if (std::get<1>(iterData) == Vector2D{-1337, -1337})
+        return pos - TREE;
+
+    return pos - TREE - std::get<1>(iterData) + GEOMETRY.pos();
 }
 
 SP<CWLSurfaceResource> CViewHitTester::layerPopupSurfaceAt(const Vector2D& pos, PHLMONITOR monitor, Vector2D* surfaceCoords, PHLLS* layerFound) const {

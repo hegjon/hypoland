@@ -5,6 +5,7 @@
 #include "../../protocols/LayerShell.hpp"
 #include "../../protocols/FractionalScale.hpp"
 #include "../../render/Renderer.hpp"
+#include "../../managers/fullscreen/FullscreenController.hpp"
 
 #include <cmath>
 
@@ -56,12 +57,20 @@ bool CWLSurface::small() const {
     return REPORTED_SIZE.x > m_resource->m_current.size.x + 1 || REPORTED_SIZE.y > m_resource->m_current.size.y + 1;
 }
 
+// Where a small main surface sits in its window, in logical pixels of the window's current size: centred in a fullscreen
+// window, at the top left otherwise. xdg-shell asks a compositor to centre a fullscreen surface smaller than the output
+// and fill the rest (CHyprRenderer::renderWindow() draws black under it). The condition was the opposite of its callers'
+// (the surface had to be small() and m_fillIgnoreSmall, which nothing sets), so upstream never centred anything:
+// vkmark fullscreen at scale 1.5 (a 960x540 surface in a 1280x720 window) sat in the top left with the wallpaper around it
 Vector2D CWLSurface::correctSmallVec() const {
-    if (!m_view || m_view->type() != VIEW_TYPE_WINDOW || !exists() || !small() || !m_fillIgnoreSmall)
+    if (!m_view || m_view->type() != VIEW_TYPE_WINDOW || !exists() || !small() || m_fillIgnoreSmall)
+        return {};
+
+    const auto O = dynamicPointerCast<CWindow>(m_view.lock());
+    if (!O || O->backend().isX11() || Fullscreen::controller()->getFullscreenModes(O).internal != Fullscreen::FSMODE_FULLSCREEN)
         return {};
 
     const auto SIZE = m_resource->m_current.size; // logical, as the reported size: the buffer's size is that only at buffer scale 1
-    const auto O    = dynamicPointerCast<CWindow>(m_view.lock());
     const auto REP  = O->backend().reportedSize();
 
     return Vector2D{(REP.x - SIZE.x) / 2, (REP.y - SIZE.y) / 2}.clamp({}, {INFINITY, INFINITY}) * (O->size(Desktop::View::IGeometric::GEOMETRIC_CURRENT) / REP);

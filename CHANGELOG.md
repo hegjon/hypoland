@@ -62,6 +62,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Fixed
 
+- A fullscreen program that draws smaller than the screen is centred on it with black around it, as the Wayland
+  protocol asks. It sat in the top left corner with the wallpaper around it: vkmark at a fractional scale (on a 1920x1080
+  screen at 1.5 it draws 1440x810), which Hyprland shows the same way.
 - Omarchy's bar showed over GravityMark and other X11 programs that make their window fullscreen by themselves (no
   decorations, exactly the size of a monitor) instead of asking the window manager. Such a window is made fullscreen
   when it maps now, which hides the bar over it; `xwayland:legacy_fullscreen = false` switches this off.
