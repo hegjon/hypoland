@@ -1,5 +1,4 @@
 #include "Monitor.hpp"
-#include "../desktop/view/window/WindowEffectsController.hpp"
 #include "../desktop/view/window/WindowPresentation.hpp"
 #include "../helpers/MiscFunctions.hpp"
 #include "../macros.hpp"
@@ -1948,12 +1947,6 @@ uint16_t CMonitor::isDSBlocked(bool full) {
     if (!PCANDIDATE) {
         reasons |= DS_BLOCK_CANDIDATE;
         return reasons;
-    }
-
-    if (PCANDIDATE->effects().blocksDirectScanout()) {
-        reasons |= DS_BLOCK_TRANSFORM;
-        if (!full)
-            return reasons;
     }
 
     const auto PSURFACE = PCANDIDATE->getSolitaryResource();

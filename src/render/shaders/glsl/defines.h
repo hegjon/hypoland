@@ -7,4 +7,3 @@
 #define USE_TINT       1
 #define USE_ROUNDING   1
 #define USE_BLUR       1
-#define USE_BLUR_MATTE 0

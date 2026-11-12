@@ -1177,9 +1177,6 @@ WP<CShader> CHyprOpenGLImpl::renderToFBInternal(SP<ITexture> tex, const STexture
             shaderFeatures |= SH_FEAT_BLUR_PROPORTIONAL;
     }
 
-    if (data.blur && data.blurredBG && data.blurAlphaMatte && (*PBLEND || data.forceBlurBlend))
-        shaderFeatures |= SH_FEAT_BLUR_MATTE;
-
     if (data.forceBlurBlend)
         shaderFeatures |= SH_FEAT_BLUR_ALPHA_MASK;
 
@@ -1209,13 +1206,6 @@ WP<CShader> CHyprOpenGLImpl::renderToFBInternal(SP<ITexture> tex, const STexture
 
         setActiveTexture(GL_TEXTURE0 + 1);
         data.blurredBG->bind();
-    }
-
-    if (shaderFeatures & SH_FEAT_BLUR_MATTE) {
-        shader->setUniformInt(SHADER_BLUR_ALPHA_MATTE, 2);
-
-        setActiveTexture(GL_TEXTURE0 + 2);
-        data.blurAlphaMatte->bind();
     }
 
     if (data.discardActive) {
@@ -1537,7 +1527,6 @@ void CHyprOpenGLImpl::renderTextureWithBlurInternal(SP<ITexture> tex, const CBox
                           STextureRenderData{
                               .blur           = SHADERBLEND,
                               .blurredBG      = data.blurredBG,
-                              .blurAlphaMatte = data.blurAlphaMatte,
                               .damage         = data.damage,
                               .a              = data.a * data.overallA,
                               .round          = data.round,

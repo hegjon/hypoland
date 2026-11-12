@@ -34,7 +34,6 @@ std::string CShaderLoader::getDefines(const SShaderVariant& variant) {
         {"USE_ROUNDING", SH_FEAT_ROUNDING},
         {"USE_BLUR", SH_FEAT_BLUR},
         {"USE_BLUR_ALPHA_MASK", SH_FEAT_BLUR_ALPHA_MASK},
-        {"USE_BLUR_MATTE", SH_FEAT_BLUR_MATTE},
         {"USE_BLUR_PROPORTIONAL", SH_FEAT_BLUR_PROPORTIONAL},
     });
 

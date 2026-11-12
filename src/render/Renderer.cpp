@@ -16,7 +16,6 @@
 #include "../animation/AnimationManager.hpp"
 #include "../managers/fullscreen/FullscreenController.hpp"
 #include "../desktop/view/window/Window.hpp"
-#include "../desktop/view/window/WindowEffectsController.hpp"
 #include "../desktop/view/window/WindowPresentation.hpp"
 #include "../desktop/view/LayerSurface.hpp"
 #include "../desktop/view/GlobalViewMethods.hpp"
@@ -537,17 +536,7 @@ void IHyprRenderer::bindBackOnMain() {
 }
 
 void IHyprRenderer::addPassElement(UP<IPassElement>&& element) {
-    currentPass().add(std::move(element));
-}
-
-CRenderPass& IHyprRenderer::currentPass() {
-    return m_currentPass ? *m_currentPass : m_renderPass;
-}
-
-UP<CScopeGuard> IHyprRenderer::redirectPass(CRenderPass* pass) {
-    const auto oldPass = m_currentPass;
-    m_currentPass      = pass;
-    return makeUnique<CScopeGuard>([this, oldPass] { m_currentPass = oldPass; });
+    m_renderPass.add(std::move(element));
 }
 
 void IHyprRenderer::renderWindow(PHLWINDOW pWindow, PHLMONITOR pMonitor, const Time::steady_tp& time, bool decorate, eRenderPassMode mode, bool ignorePosition, bool standalone) {
@@ -642,22 +631,9 @@ void IHyprRenderer::renderWindow(PHLWINDOW pWindow, PHLMONITOR pMonitor, const T
     // render window decorations first, if not fullscreen full
     if (mode == RENDER_PASS_ALL || mode == RENDER_PASS_MAIN) {
 
-        const bool      TRANSFORMEDWINDOW = pWindow->effects().hasActiveTransformers();
-        UP<CRenderPass> transformedPass;
-        UP<CScopeGuard> passRedirect;
-        const bool      windowBlur         = renderdata.blur;
-        const bool      windowBlurUsesLive = windowBlur && !shouldUseNewBlurOptimizations(nullptr, pWindow);
-        const auto      backdropScope      = makeShared<SBackdropScope>();
+        const auto backdropScope = makeShared<SBackdropScope>();
 
         addPassElement(makeUnique<CBackdropScopePassElement>(CBackdropScopePassElement::eAction::BEGIN, backdropScope));
-
-        if (TRANSFORMEDWINDOW) {
-            transformedPass = makeUnique<CRenderPass>();
-            passRedirect    = redirectPass(transformedPass.get());
-            renderdata.blur = false;
-
-            pWindow->effects().preWindowRender(&renderdata);
-        }
 
         if (renderdata.decorate) {
             for (auto const& wd : pWindow->presentation().decorations()) {
@@ -679,7 +655,7 @@ void IHyprRenderer::renderWindow(PHLWINDOW pWindow, PHLMONITOR pMonitor, const T
         if ((pWindow->backend().isX11() && *PXWLUSENN) || pWindow->m_ruleApplicator->nearestNeighbor().valueOrDefault())
             renderdata.useNearestNeighbor = true;
 
-        if (!TRANSFORMEDWINDOW && pWindow->wlSurface()->small() && !pWindow->wlSurface()->m_fillIgnoreSmall && renderdata.blur) {
+        if (pWindow->wlSurface()->small() && !pWindow->wlSurface()->m_fillIgnoreSmall && renderdata.blur) {
             CBox wb = {renderdata.pos.x - pMonitor->m_position.x, renderdata.pos.y - pMonitor->m_position.y, renderdata.w, renderdata.h};
             wb.scale(pMonitor->m_scale).round();
             CRectPassElement::SRectData data;
@@ -720,35 +696,6 @@ void IHyprRenderer::renderWindow(PHLWINDOW pWindow, PHLMONITOR pMonitor, const T
 
                 wd->draw(pMonitor, fullAlpha);
             }
-        }
-
-        if (TRANSFORMEDWINDOW) {
-            passRedirect.reset();
-
-            CBox currentBox = pWindow->getFullWindowBoundingBox();
-            currentBox.translate(((pWindow->m_state & WINDOW_STATE_PINNED) ? Vector2D{} : PWORKSPACE->m_renderOffset->value()) + pWindow->presentation().floatingOffset() -
-                                 pMonitor->m_position);
-            CBox transformedBox = pWindow->effects().transformedExtents(currentBox);
-
-            CBox blurBox = {renderdata.pos.x - pMonitor->m_position.x, renderdata.pos.y - pMonitor->m_position.y, renderdata.w, renderdata.h};
-            blurBox.scale(pMonitor->m_scale).round();
-
-            addPassElement(makeUnique<CTransformedWindowPassElement>(CTransformedWindowPassElement::SData{
-                .pass              = std::move(transformedPass),
-                .window            = pWindow,
-                .currentBox        = currentBox,
-                .blurBox           = blurBox,
-                .blur              = windowBlur,
-                .blurUsesLive      = windowBlurUsesLive,
-                .blurA             = renderdata.fadeAlpha,
-                .blurRound         = renderdata.dontRound ? 0 : std::max(renderdata.rounding - 1, 0),
-                .blurRoundingPower = renderdata.roundingPower,
-                .transformedBox    = transformedBox,
-                .standalone        = standalone,
-                .renderingSnapshot = m_bRenderingSnapshot,
-            }));
-
-            renderdata.blur = windowBlur;
         }
 
         addPassElement(makeUnique<CBackdropScopePassElement>(CBackdropScopePassElement::eAction::END, backdropScope));
@@ -2423,7 +2370,6 @@ void IHyprRenderer::damageWindow(PHLWINDOW pWindow, bool forceFull) {
     if (PWINDOWWORKSPACE && PWINDOWWORKSPACE->m_renderOffset->isBeingAnimated() && !(pWindow->m_state & WINDOW_STATE_PINNED))
         windowBox.translate(PWINDOWWORKSPACE->m_renderOffset->value());
     windowBox.translate(pWindow->presentation().floatingOffset());
-    windowBox = pWindow->effects().transformBoxForDamage(windowBox);
 
     for (auto const& m : State::monitorState()->monitors()) {
         if (forceFull || shouldRenderWindow(pWindow, m)) { // only damage if window is rendered on monitor

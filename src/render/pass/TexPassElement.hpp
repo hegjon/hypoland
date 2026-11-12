@@ -27,15 +27,13 @@ class CTexPassElement : public IPassElement {
         float                  blurA    = 1.F;
         float                  overallA = 1.F;
         CRegion                damage;
-        bool                   useProvidedDamage = false;
-        int                    round             = 0;
-        float                  roundingPower     = 2.0f;
+        int                    round         = 0;
+        float                  roundingPower = 2.0f;
         CBox                   clipBox;
         bool                   blur           = false;
         bool                   forceBlurBlend = false;
         std::optional<float>   ignoreAlpha;
         std::optional<bool>    blockBlurOptimization;
-        std::optional<bool>    liveBlurOverride;
 
         bool                   discardActive = false;
         bool                   allowCustomUV = false;
@@ -52,7 +50,6 @@ class CTexPassElement : public IPassElement {
         PHLWINDOWREF           blurOwner;
 
         SP<Render::ITexture>   blurredBG;
-        SP<Render::ITexture>   blurAlphaMatte;
     };
 
     CTexPassElement(const SRenderData& data);

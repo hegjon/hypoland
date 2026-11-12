@@ -139,7 +139,9 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
     are ignored; the `no_shadow`, `no_glow` and `no_wobble` window rules (and the workspace rule's `no_shadow`) are
     still parsed, stored and read back by `getprop`, and change nothing. Turning on a removed feature's `enabled` (or a
     blur variant) warns once in the log (`warnIgnoredOptions()` in `src/config/lua/ConfigManager.cpp`). The window
-    transformer framework (`src/render/transformer/`, `CTransformedWindowPassElement`) has no transformer left.
+    transformer framework that drew a window offscreen for wobble went with it (2026-11-12: `src/render/transformer/`,
+    `CTransformedWindowPassElement`, `CWindowEffectsController`, the blur alpha matte of `surface.frag`): a window's
+    surfaces and decorations are always drawn straight into the frame's pass.
   - The embedded aquamarine is patched in-tree the same way (GLES2 context and ES 1.00 shaders only). It also
     creates its DRM renderer for the primary GPU only when a secondary GPU needs it.
   - Framebuffers have one color attachment. The stencil is a `GL_STENCIL_INDEX8` renderbuffer per framebuffer

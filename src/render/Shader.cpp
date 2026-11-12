@@ -140,7 +140,6 @@ void CShader::getUniformLocations() {
     m_uniformLocations[SHADER_BLURRED_BG]          = getUniform("blurredBG");
     m_uniformLocations[SHADER_UV_SIZE]             = getUniform("uvSize");
     m_uniformLocations[SHADER_UV_OFFSET]           = getUniform("uvOffset");
-    m_uniformLocations[SHADER_BLUR_ALPHA_MATTE]    = getUniform("blurAlphaMatte");
     m_uniformLocations[SHADER_BLUR_ALPHA]          = getUniform("blurAlpha");
     m_uniformLocations[SHADER_ALPHA]               = getUniform("alpha");
     m_uniformLocations[SHADER_POS_ATTRIB]          = getAttrib("pos");

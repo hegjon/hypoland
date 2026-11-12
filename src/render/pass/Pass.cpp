@@ -30,14 +30,6 @@ bool CRenderPass::single() const {
     return m_passElements.size() == 1;
 }
 
-bool CRenderPass::needsLiveBlur() {
-    return std::ranges::any_of(m_passElements, [](const auto& el) { return el.element->needsLiveBlur(); });
-}
-
-bool CRenderPass::needsPrecomputeBlur() {
-    return std::ranges::any_of(m_passElements, [](const auto& el) { return el.element->needsPrecomputeBlur(); });
-}
-
 void CRenderPass::add(UP<IPassElement>&& el) {
     m_passElements.emplace_back(SPassElementData{.element = std::move(el)});
 }

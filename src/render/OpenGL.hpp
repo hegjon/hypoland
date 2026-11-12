@@ -112,13 +112,12 @@ namespace Render::GL {
         CRegion                  finalDamage; // damage used for final off -> main
 
         Render::SRenderModifData renderModif;
-        float                    mouseZoomFactor            = 1.f;
-        bool                     mouseZoomUseMouse          = true; // true by default
-        bool                     useNearestNeighbor         = false;
-        bool                     simplePass                 = false;
-        bool                     transformDamage            = true;
-        bool                     noSimplify                 = false;
-        bool                     renderingTransformedSource = false;
+        float                    mouseZoomFactor    = 1.f;
+        bool                     mouseZoomUseMouse  = true; // true by default
+        bool                     useNearestNeighbor = false;
+        bool                     simplePass         = false;
+        bool                     transformDamage    = true;
+        bool                     noSimplify         = false;
 
         Vector2D                 primarySurfaceUVTopLeft     = Vector2D(-1, -1);
         Vector2D                 primarySurfaceUVBottomRight = Vector2D(-1, -1);
@@ -169,7 +168,6 @@ namespace Render::GL {
             float                  blurA = 1.F, overallA = 1.F;
             bool                   blockBlurOptimization = false;
             SP<ITexture>           blurredBG;
-            SP<ITexture>           blurAlphaMatte;
             const CRegion*         damage        = nullptr;
             SP<CWLSurfaceResource> surface       = nullptr;
             float                  a             = 1.F;

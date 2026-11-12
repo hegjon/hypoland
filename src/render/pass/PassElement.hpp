@@ -15,7 +15,6 @@ enum ePassElementType : uint8_t {
     EK_SURFACE,
     EK_TEXTURE,
     EK_TEXTURE_MATTE,
-    EK_TRANSFORMED_WINDOW,
     EK_CUSTOM,
     EK_BACKDROP_SCOPE,
 };

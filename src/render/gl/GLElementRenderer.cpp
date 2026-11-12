@@ -105,7 +105,6 @@ void CGLElementRenderer::draw(WP<CTexPassElement> element, const CRegion& damage
             .overallA              = m_data.overallA,
             .blockBlurOptimization = m_data.blockBlurOptimization.value_or(false),
             .blurredBG             = m_data.blurredBG,
-            .blurAlphaMatte        = m_data.blurAlphaMatte,
 
             // common settings
             .damage         = m_data.damage.empty() ? &damage : &m_data.damage,

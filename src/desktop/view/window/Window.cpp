@@ -16,7 +16,6 @@
 #include <fstream>
 #include <string_view>
 #include "Window.hpp"
-#include "WindowEffectsController.hpp"
 #include "WindowFullscreenPolicy.hpp"
 #include "WindowGroupMembership.hpp"
 #include "WindowMetadata.hpp"
@@ -156,7 +155,7 @@ void CWindow::attachBackendListeners() {
 CWindow::CWindow(UP<IWindowBackend> backend) :
     IView(CWLSurface::create()), m_grouping(makeUnique<CWindowGroupMembership>(*this)), m_swallowing(makeUnique<CWindowSwallowController>(*this)),
     m_fullscreenPolicy(makeUnique<CWindowFullscreenPolicy>()), m_backend(std::move(backend)), m_metadata(makeUnique<CWindowMetadata>()),
-    m_presentation(makeUnique<CWindowPresentation>(*this)), m_effects(makeUnique<CWindowEffectsController>(*this)), m_stateTracker(makeUnique<CWindowStateEventTracker>(*this)) {
+    m_presentation(makeUnique<CWindowPresentation>(*this)), m_stateTracker(makeUnique<CWindowStateEventTracker>(*this)) {
     ;
 }
 
@@ -200,14 +199,6 @@ CWindowFullscreenPolicy& CWindow::fullscreenPolicy() {
 
 const CWindowFullscreenPolicy& CWindow::fullscreenPolicy() const {
     return *m_fullscreenPolicy;
-}
-
-CWindowEffectsController& CWindow::effects() {
-    return *m_effects;
-}
-
-const CWindowEffectsController& CWindow::effects() const {
-    return *m_effects;
 }
 
 const CWindowMetadata& CWindow::metadata() const {
@@ -523,8 +514,6 @@ void CWindow::onUnmap() {
     if (PMONITOR && PMONITOR->m_solitaryClient == m_self)
         PMONITOR->m_solitaryClient.reset();
 
-    m_effects->reset();
-
     if (m_workspace) {
         m_workspace->updateWindows();
         m_workspace->updateWindowData();
@@ -546,8 +535,6 @@ void CWindow::onMap() {
     m_realPosition->resetAllCallbacks();
     m_realSize->resetAllCallbacks();
     m_presentation->prepareMap();
-
-    m_effects->reset();
 
     m_presentation->dispatchMap();
 
@@ -1125,13 +1112,8 @@ static void setVector2DAnimToMove(WP<CBaseAnimatedVariable> pav) {
     CAnimatedVariable<Vector2D>* animvar = dc<CAnimatedVariable<Vector2D>*>(pav.get());
     animvar->setConfig(Config::animationTree()->getAnimationPropertyConfig("windowsMove"));
 
-    if (animvar->m_Context.pWindow) {
+    if (animvar->m_Context.pWindow)
         animvar->m_Context.pWindow->presentation().setAnimatingIn(false);
-
-        if (!animvar->m_Context.pWindow->positionAnimation()->isBeingAnimated() && !animvar->m_Context.pWindow->sizeAnimation()->isBeingAnimated()) {
-            animvar->m_Context.pWindow->effects().reset();
-        }
-    }
 }
 
 void CWindow::mapWindow() {
@@ -1516,7 +1498,6 @@ void CWindow::mapWindow() {
         }
         m_realPosition->warp();
         m_realSize->warp();
-        m_effects->reset();
         if (requestedFSState.has_value()) {
             m_ruleApplicator->syncFullscreenOverride(Desktop::Types::COverridableVar(false, Desktop::Types::PRIORITY_WINDOW_RULE));
             Fullscreen::controller()->setFullscreenMode(m_self.lock(), requestedFSState.value().internal, requestedFSState.value().client, wasFullscreenLayoutHandled);

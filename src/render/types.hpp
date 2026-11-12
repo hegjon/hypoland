@@ -100,8 +100,7 @@ namespace Render {
         PHLWINDOWREF           currentWindow;
         WP<CWLSurfaceResource> surface;
 
-        bool                   transformDamage            = true;
-        bool                   noSimplify                 = false;
-        bool                   renderingTransformedSource = false;
+        bool                   transformDamage = true;
+        bool                   noSimplify      = false;
     };
 }

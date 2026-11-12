@@ -43,7 +43,6 @@ namespace Desktop {
 namespace Desktop::View {
 
     class CGroup;
-    class CWindowEffectsController;
     class CWindowFullscreenPolicy;
     class CWindowGroupMembership;
     class CWindowMetadata;
@@ -127,8 +126,6 @@ namespace Desktop::View {
 
         IWindowBackend&                                           backend();
         const IWindowBackend&                                     backend() const;
-        CWindowEffectsController&                                 effects();
-        const CWindowEffectsController&                           effects() const;
         const CWindowMetadata&                                    metadata() const;
         CWindowPresentation&                                      presentation();
         const CWindowPresentation&                                presentation() const;
@@ -293,7 +290,6 @@ namespace Desktop::View {
         UP<IWindowBackend>           m_backend;
         UP<CWindowMetadata>          m_metadata;
         UP<CWindowPresentation>      m_presentation;
-        UP<CWindowEffectsController> m_effects;
         UP<CWindowStateEventTracker> m_stateTracker;
         SP<Layout::CWindowTarget>    m_target;
         SP<Render::IFramebuffer>     m_unmapSnapshot; // taken before a commit that unmaps by dropping the buffer, see unmapWindow()
