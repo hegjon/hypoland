@@ -225,7 +225,7 @@ namespace Render::GL {
         // Draws the used shader's quad, placed by projection, in every rectangle of region (in the coordinates scissor()
         // takes) with one draw call: each rectangle becomes two triangles of the quad cut to it, instead of a scissor and
         // a draw per rectangle. uvTopLeft and uvBottomRight are the texture coordinates of the quad's corners. False when
-        // the quad is turned by other than a multiple of 90 degrees or HYPOLAND_NO_BATCH_RECTS is set: draw per rectangle
+        // the quad is turned by other than a multiple of 90 degrees or the region has few rectangles: draw per rectangle
         bool drawQuadInRegion(WP<CShader> shader, const Mat3x3& projection, const CRegion& region, bool transform, const Vector2D& uvTopLeft = {0, 0},
                               const Vector2D& uvBottomRight = {1, 1});
         CBox scissorBox(const CBox& box, bool transform) const; // a box in the coordinates glScissor takes
@@ -260,8 +260,7 @@ namespace Render::GL {
         WP<CShader>                       useShader(WP<CShader> prog);
 
         bool                              explicitSyncSupported();
-        bool                              coalesceDamage() const;      // whether uploads are merged into few rectangles
-        bool                              coalesceFrameDamage() const; // whether a frame's damage is merged
+        bool                              coalesceUploads() const; // whether texture uploads are merged into few rectangles
         void                              scheduleShaderCompilerRelease();
         void                              scheduleHeapTrim();
         // HYPOLAND_ALPHA_BOUNDS: the box of a layer surface's pixels with alpha, so the transparent rest is not blended
@@ -279,7 +278,6 @@ namespace Render::GL {
         Hyprutils::OS::CFileDescriptor            m_gbmFD;
         gbm_device*                               m_gbmDevice = nullptr;
         SP<Aquamarine::CDRMDumbAllocator>         m_dumbAllocator; // for the shm textures of CGLTexture, on demand
-        Hyprutils::OS::CFileDescriptor            m_dumbFD;        // only with HYPOLAND_SHM_TEXTURE_DEVICE
         EGLContext                                m_eglContext = nullptr;
         EGLDisplay                                m_eglDisplay = nullptr;
         EGLDeviceEXT                              m_eglDevice  = nullptr;

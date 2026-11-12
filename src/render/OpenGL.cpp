@@ -156,14 +156,8 @@ SP<Aquamarine::CDRMDumbAllocator> CHyprOpenGLImpl::dumbAllocatorForTextures() {
     if (m_dumbAllocator)
         return m_dumbAllocator;
 
-    int fd = g_pCompositor->m_drm.fd;
-    // HYPOLAND_SHM_TEXTURE_DEVICE names a primary node to use instead, for a nested run on the desktop, which has none
-    if (const char* dev = std::getenv("HYPOLAND_SHM_TEXTURE_DEVICE"); dev) {
-        m_dumbFD = CFileDescriptor{open(dev, O_RDWR | O_CLOEXEC)};
-        fd       = m_dumbFD.get();
-    }
-    if (fd >= 0)
-        m_dumbAllocator = Aquamarine::CDRMDumbAllocator::create(fd, g_pCompositor->m_aqBackend);
+    if (g_pCompositor->m_drm.fd >= 0)
+        m_dumbAllocator = Aquamarine::CDRMDumbAllocator::create(g_pCompositor->m_drm.fd, g_pCompositor->m_aqBackend);
     return m_dumbAllocator;
 }
 
@@ -945,19 +939,13 @@ void CHyprOpenGLImpl::scissor(const CBox& originalBox, bool transform) {
 
 bool CHyprOpenGLImpl::drawQuadInRegion(WP<CShader> shader, const Mat3x3& projection, const CRegion& region, bool transform, const Vector2D& uvTopLeft,
                                        const Vector2D& uvBottomRight) {
-    // HYPOLAND_NO_BATCH_RECTS=1 draws per damage rectangle as before, for comparing the two on a machine (2026-11-06)
-    static const bool DISABLED = Env::envEnabled("HYPOLAND_NO_BATCH_RECTS");
-    if (DISABLED || !shader)
+    if (!shader)
         return false;
 
     // a few rectangles are drawn one by one, scissored, from the quad the VAO holds: a batch uploads a vertex buffer of its own
     // per element, which cost the compositor 3 to 9% more CPU in workspace switching and the dev screen, where most elements
-    // have one or two rectangles (the batch A/B of 2026-11-09, every machine). HYPOLAND_BATCH_MIN_RECTS sets the count
-    static const int MIN_RECTS = [] {
-        try {
-            return std::max(1, std::stoi(Env::get("HYPOLAND_BATCH_MIN_RECTS").value_or("4")));
-        } catch (const std::exception&) { return 4; }
-    }();
+    // have one or two rectangles (the batch A/B of 2026-11-09, every machine)
+    static constexpr int MIN_RECTS = 4;
     if (pixman_region32_n_rects(region.pixman()) < MIN_RECTS)
         return false;
 
@@ -2530,32 +2518,13 @@ void CHyprOpenGLImpl::untrackBackTexture(CGLTexture* tex) {
     armHeapTrim(std::chrono::seconds(1));
 }
 
-// Draws and texture uploads cost a call per damage rectangle. On crocus (Intel Gen4 to Haswell) a call costs far more
-// than the pixels in it: 60 small squares moving in a shm window took 59% of the X200's CPU, merged into strips 32%.
-// A faster GPU pays more for the extra pixels instead, the same window on a 3200x1800 iris took 36% instead of 30%,
-// so the rectangles stay as they are there.
-bool CHyprOpenGLImpl::coalesceDamage() const {
-    // HYPOLAND_NO_COALESCE=1 keeps the rectangles as the client sent them, for comparing the two on a machine
-    static const bool DISABLED = Env::envEnabled("HYPOLAND_NO_COALESCE");
-    if (DISABLED)
-        return false;
-
-    // r600 (2026-10-27): every upload rectangle is a staging texture and a blit, and every damage rectangle a draw
+// Texture uploads cost a call per damage rectangle. On crocus (Intel Gen4 to Haswell) a call costs far more than the
+// pixels in it: 60 small squares moving in a shm window took 59% of the X200's CPU, merged into strips 32%. A faster
+// GPU pays more for the extra pixels instead, the same window on a 3200x1800 iris took 36% instead of 30%, so the
+// upload rectangles stay as they are there. (A frame's damage is merged on every driver, see renderMonitor().)
+bool CHyprOpenGLImpl::coalesceUploads() const {
+    // r600 (2026-10-27): every upload rectangle is a staging texture and a blit
     return m_eglDriverName == "crocus" || m_eglDriverName == "r600";
-}
-
-bool CHyprOpenGLImpl::coalesceFrameDamage() const {
-    // every element is drawn once per rectangle of the frame's damage, a draw call each, on every driver: on the XPS
-    // (iris, scale 2) Qt's 60 squares were 730 draws a frame. HYPOLAND_COALESCE_FRAME=legacy merges on crocus and
-    // r600 only, as 0.3.0 did, =off never (uploads are still merged there), for comparing them on a machine
-    static const auto MODE = Env::get("HYPOLAND_COALESCE_FRAME").value_or("");
-    if (MODE == "legacy")
-        return coalesceDamage();
-    if (MODE == "off")
-        return false;
-
-    static const bool DISABLED = Env::envEnabled("HYPOLAND_NO_COALESCE");
-    return !DISABLED;
 }
 
 bool CHyprOpenGLImpl::explicitSyncSupported() {

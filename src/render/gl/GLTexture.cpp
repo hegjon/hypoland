@@ -23,28 +23,16 @@ CGLTexture::CGLTexture(bool opaque) {
     m_opaque = opaque;
 }
 
-// HYPOLAND_SHM_TEXTURE=linear backs synchronous textures with linear dumb buffers (see the header); linear-gl uploads
-// into them through GL as Mesa does, a glTexSubImage2D per rectangle, instead of copying the rows, for comparing the two.
-// HYPOLAND_SHM_TEXTURE: unset takes the driver's default, "linear" on iris, crocus, r600 and freedreno (measured on all
-// of them, 2026-10-28/29), off elsewhere; "0" or "off" switches it off, "linear" on, "linear-gl" keeps Mesa's upload into
-// the buffer.
-static std::string_view shmTextureSwitch() {
-    static const std::string S = [] {
-        const char* v = std::getenv("HYPOLAND_SHM_TEXTURE");
-        if (v && *v)
-            return std::string{v};
-        const auto& DRIVER = g_pHyprOpenGL->m_eglDriverName;
-        return std::string{DRIVER == "iris" || DRIVER == "crocus" || DRIVER == "r600" || DRIVER == "msm" ? "linear" : ""};
-    }();
-    return S;
-}
-
+// Synchronous textures are backed with linear dumb buffers (see the header) on iris, crocus, r600 and freedreno, where it
+// was measured (2026-10-28/29). HYPOLAND_SHM_TEXTURE=0 or off switches it off, =linear on for any driver.
 static bool shmTexturesEnabled() {
-    return shmTextureSwitch().starts_with("linear");
-}
-
-static bool shmTextureUploadsThroughGL() {
-    return shmTextureSwitch().ends_with("-gl");
+    static const bool ENABLED = [] {
+        if (const auto ENV = Env::get("HYPOLAND_SHM_TEXTURE"); ENV && !ENV->empty())
+            return *ENV == "linear";
+        const auto& DRIVER = g_pHyprOpenGL->m_eglDriverName;
+        return DRIVER == "iris" || DRIVER == "crocus" || DRIVER == "r600" || DRIVER == "msm";
+    }();
+    return ENABLED;
 }
 
 // Gives the texture texID a linear dumb buffer of the size of this texture as its storage. Always ARGB8888: the uploads
@@ -101,10 +89,10 @@ bool CGLTexture::backWithBuffer(GLuint texID, uint32_t drmFormat, SP<Aquamarine:
 // so it invalidates its sampler cache before the next draw as it does for its own uploads. No dma-buf sync calls around
 // the copy: the mapping of a dumb buffer is write-combining (i915 maps them so or through the GTT, radeon's are in VRAM),
 // so the CPU caches hold nothing of it, and on i915 without an LLC each sync call flushed the whole buffer out of the
-// caches, twice per update (X200 gtk3-scroll 18.5 -> 27.7% with them, 2026-10-29). False when the switch keeps the GL
-// path or the mapping fails.
+// caches, twice per update (X200 gtk3-scroll 18.5 -> 27.7% with them, 2026-10-29). False when the region is empty
+// or the mapping fails.
 bool CGLTexture::copyIntoBuffer(SP<Aquamarine::IBuffer>& buffer, GLenum format, GLenum type, uint8_t* pixels, uint32_t stride, uint32_t bpp, const CRegion& region) {
-    if (shmTextureUploadsThroughGL() || region.empty())
+    if (region.empty())
         return false;
 
     auto [dst, dstFormat, dstLen] = buffer->beginDataPtr(0);
@@ -275,7 +263,7 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
     if (SINGLE) {
         static constexpr size_t MAX_UPLOAD_RECTS = 8;
         bind();
-        uploadRegion(GLFMT.format, GLFMT.type, pixels, g_pHyprOpenGL->coalesceDamage() ? Math::coalesceRegion(DAMAGE, MAX_UPLOAD_RECTS) : DAMAGE);
+        uploadRegion(GLFMT.format, GLFMT.type, pixels, g_pHyprOpenGL->coalesceUploads() ? Math::coalesceRegion(DAMAGE, MAX_UPLOAD_RECTS) : DAMAGE);
         g_pHyprOpenGL->scheduleHeapTrim();
     } else if (!m_backTexID) {
         // first update: the second texture gets the whole buffer
@@ -294,7 +282,7 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
             GLCALL(glTexImage2D(m_target, 0, GLFMT.internalFormat, m_size.x, m_size.y, 0, GLFMT.format, GLFMT.type, pixels));
         g_pHyprOpenGL->trackBackTexture(this);
     } else {
-        // a call per rectangle, see CHyprOpenGLImpl::coalesceDamage()
+        // a call per rectangle, see CHyprOpenGLImpl::coalesceUploads()
         static constexpr size_t MAX_UPLOAD_RECTS = 8;
         const CRegion           REGION           = DAMAGE.copy().add(m_backStaleDamage);
 
@@ -305,7 +293,7 @@ void CGLTexture::update(uint32_t drmFormat, uint8_t* pixels, uint32_t stride, co
             if (!copyIntoBuffer(m_backBuffer, GLFMT.format, GLFMT.type, pixels, stride, format->bytesPerBlock, ALL))
                 uploadRegion(GLFMT.format, GLFMT.type, pixels, ALL);
         } else if (!(m_backBuffer && copyIntoBuffer(m_backBuffer, GLFMT.format, GLFMT.type, pixels, stride, format->bytesPerBlock, REGION)))
-            uploadRegion(GLFMT.format, GLFMT.type, pixels, g_pHyprOpenGL->coalesceDamage() ? Math::coalesceRegion(REGION, MAX_UPLOAD_RECTS) : REGION);
+            uploadRegion(GLFMT.format, GLFMT.type, pixels, g_pHyprOpenGL->coalesceUploads() ? Math::coalesceRegion(REGION, MAX_UPLOAD_RECTS) : REGION);
     }
 
     if (!SINGLE) {
