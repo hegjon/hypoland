@@ -1,5 +1,4 @@
 #include "DragController.hpp"
-#include "../../desktop/view/window/WindowEffectsController.hpp"
 #include "../../desktop/view/window/WindowGroupMembership.hpp"
 #include "../../desktop/view/window/WindowPresentation.hpp"
 
@@ -384,13 +383,6 @@ void CDragStateController::mouseMove(const Vector2D& mousePos) {
 
     DRAGGINGTARGET->damageEntire();
 
-    const auto MOTIONWINDOW = DRAGGINGTARGET->window();
-    const bool TRACKMOTION  = validMapped(MOTIONWINDOW);
-    CBox       previousFull;
-
-    if (TRACKMOTION)
-        previousFull = MOTIONWINDOW->getFullWindowBoundingBox();
-
     if (m_dragMode == MBIND_MOVE) {
 
         Vector2D newPos  = mousePos - m_dragHotspot;
@@ -468,9 +460,6 @@ void CDragStateController::mouseMove(const Vector2D& mousePos) {
             DRAGGINGTARGET->warpPositionSize();
         }
     }
-
-    if (TRACKMOTION)
-        MOTIONWINDOW->effects().onPositionUpdate(previousFull, MOTIONWINDOW->getFullWindowBoundingBox(), Desktop::View::WINDOW_UPDATE_MOUSE);
 
     // get middle point
     Vector2D middle = DRAGGINGTARGET->position().middle();

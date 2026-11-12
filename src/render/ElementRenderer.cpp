@@ -26,8 +26,6 @@ void IElementRenderer::drawElement(WP<IPassElement> element, const CRegion& dama
         case EK_PRE_BLUR: drawPreBlur(dynamicPointerCast<CPreBlurElement>(element), damage); break;
         case EK_RECT: drawRect(dynamicPointerCast<CRectPassElement>(element), damage); break;
         case EK_HINTS: drawHints(dynamicPointerCast<CRendererHintsPassElement>(element), damage); break;
-        case EK_SHADOW: draw(dynamicPointerCast<CShadowPassElement>(element), damage); break;
-        case EK_INNER_GLOW: draw(dynamicPointerCast<CInnerGlowPassElement>(element), damage); break;
         case EK_SURFACE: preDrawSurface(dynamicPointerCast<CSurfacePassElement>(element), damage); break;
         case EK_TEXTURE: drawTex(dynamicPointerCast<CTexPassElement>(element), damage); break;
         case EK_TEXTURE_MATTE: drawTexMatte(dynamicPointerCast<CTextureMatteElement>(element), damage); break;
@@ -337,9 +335,6 @@ void IElementRenderer::drawSurface(WP<CSurfacePassElement> element, const CRegio
     // to what we do for misaligned surfaces (blur the entire thing and then render shit without blur)
     if (m_data.surfaceCounter == 0 && !m_data.popup) {
         if (BLUR) {
-            CBox blurPatternBox = {m_data.pos.x - m_data.pMonitor->m_position.x, m_data.pos.y - m_data.pMonitor->m_position.y, m_data.w, m_data.h};
-            blurPatternBox.scale(m_data.pMonitor->m_scale).round();
-
             drawElement(makeShared<CTexPassElement>(CTexPassElement::SRenderData{
                             .tex                   = TEXTURE,
                             .box                   = windowBox,
@@ -349,7 +344,6 @@ void IElementRenderer::drawSurface(WP<CSurfacePassElement> element, const CRegio
                             .round                 = rounding,
                             .roundingPower         = roundingPower,
                             .blur                  = true,
-                            .blurPatternBox        = blurPatternBox,
                             .blockBlurOptimization = m_data.blockBlurOptimization,
                             .allowCustomUV         = true,
                             .surface               = m_data.surface,
@@ -514,20 +508,7 @@ void IElementRenderer::drawTex(WP<CTexPassElement> element, const CRegion& damag
             inverseOpaque.translate(box.pos());
             m_renderData.renderModif.applyToRegion(inverseOpaque);
             inverseOpaque.intersect(element->m_data.damage);
-            auto patternBox = element->m_data.blurPatternBox.value_or(box);
-            m_renderData.renderModif.applyToBox(patternBox);
-            std::optional<SBlurShape> shape;
-            if (!element->m_data.blurShapeInvalid) {
-                auto shapeBox = box;
-                m_renderData.renderModif.applyToBox(shapeBox);
-                if (std::abs(shapeBox.rot) < 0.0001F)
-                    shape = SBlurShape{
-                        .box           = shapeBox,
-                        .radius        = std::max(sc<float>(element->m_data.round), 0.F),
-                        .roundingPower = element->m_data.roundingPower,
-                    };
-            }
-            blurredFB = g_pHyprRenderer->blurMainFramebuffer(element->m_data.a, inverseOpaque, {.patternBox = patternBox, .owner = element->m_data.blurOwner, .shape = shape});
+            blurredFB                 = g_pHyprRenderer->blurMainFramebuffer(element->m_data.a, inverseOpaque);
             element->m_data.blurredBG = blurredFB->getTexture();
         } else
             element->m_data.blurredBG = m_renderData.pMonitor->resources()->m_blurFB->getTexture();
@@ -772,8 +753,6 @@ void IElementRenderer::drawTransformedWindow(WP<CTransformedWindowPassElement> e
     if (element->m_data.blur && blurAlphaMatte) {
         data.blur             = true;
         data.forceBlurBlend   = true;
-        data.blurPatternBox   = element->m_data.blurBox;
-        data.blurShapeInvalid = true;
         data.liveBlurOverride = element->m_data.blurUsesLive;
         data.blurOwner        = element->m_data.window;
         data.blurA            = element->m_data.blurA;

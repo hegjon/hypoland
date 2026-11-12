@@ -5,7 +5,7 @@
 # degrees), and the nested window switched off, so the desktop's screen does not matter.
 # The screen is captured without a pause (render.py --grab screencopy), so stale pixels show as they would on a real
 # screen. FILE is Lua added to the config, and --config can come more than once (render-configs/ has gaps, rounding and
-# animations, blur, shadows, dimming and titlebars; render-matrix.sh runs them all). Takes a few minutes;
+# animations, blur, dimming and titlebars; render-matrix.sh runs them all). Takes a few minutes;
 # prints the checks and exits like render.py. Not a GM45: the machines' deploy check is the final judge.
 SCALE=1 TRANSFORM=0 EXTRA=() OUT=
 BIN=$(dirname "$(readlink -f "$0")")/../../build/hypoland

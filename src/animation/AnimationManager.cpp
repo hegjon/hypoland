@@ -5,7 +5,6 @@
 #include "../macros.hpp"
 #include "../config/ConfigValue.hpp"
 #include "../desktop/view/window/Window.hpp"
-#include "../desktop/view/window/WindowEffectsController.hpp"
 #include "../render/decorations/IHyprWindowDecoration.hpp"
 #include "../desktop/view/LayerSurface.hpp"
 #include "../managers/eventLoop/EventLoopManager.hpp"
@@ -191,10 +190,8 @@ void CHyprAnimationManager::tick(const Time::steady_tp& now) {
         PHLWORKSPACE                           workspace;
         PHLLS                                  layer;
         PHLMONITOR                             monitor;
-        CBox                                   previousFull;
         std::vector<SP<IHyprWindowDecoration>> decorations;
-        bool                                   entire            = false;
-        bool                                   trackWindowMotion = false;
+        bool                                   entire = false;
     };
 
     std::vector<SDamageOwner> owners;
@@ -270,14 +267,6 @@ void CHyprAnimationManager::tick(const Time::steady_tp& now) {
         }
     }
 
-    for (auto& owner : owners) {
-        if (!owner.window)
-            continue;
-
-        owner.previousFull      = owner.window->getFullWindowBoundingBox();
-        owner.trackWindowMotion = true;
-    }
-
     // pre-damage each owner once (old state)
     for (const auto& owner : owners) {
         if (owner.window)
@@ -316,13 +305,6 @@ void CHyprAnimationManager::tick(const Time::steady_tp& now) {
             } break;
             default: UNREACHABLE();
         }
-    }
-
-    for (const auto& owner : owners) {
-        if (!owner.window || !owner.trackWindowMotion)
-            continue;
-
-        owner.window->effects().onPositionUpdate(owner.previousFull, owner.window->getFullWindowBoundingBox(), Desktop::View::WINDOW_UPDATE_ANIMATION);
     }
 
     // post-damage each owner once (new state) + schedule frames

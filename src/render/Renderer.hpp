@@ -18,7 +18,6 @@
 #include "./pass/FramebufferElement.hpp"
 #include "./pass/RectPassElement.hpp"
 #include "./pass/RendererHintsPassElement.hpp"
-#include "./pass/ShadowPassElement.hpp"
 #include "./pass/SurfacePassElement.hpp"
 #include "./pass/TexPassElement.hpp"
 #include "./pass/TextureMatteElement.hpp"
@@ -152,7 +151,6 @@ namespace Render {
         void                         draw(const CFramebufferElement::SFramebufferElementData& data, const CRegion& damage = {});
         void                         draw(const CRectPassElement::SRectData& data, const CRegion& damage = {});
         void                         draw(const CRendererHintsPassElement::SData& data, const CRegion& damage = {});
-        void                         draw(const CShadowPassElement::SShadowData& data, const CRegion& damage = {});
         void                         draw(const CSurfacePassElement::SRenderData& data, const CRegion& damage = {});
         void                         draw(const CTexPassElement::SRenderData& data, const CRegion& damage = {});
         void                         draw(const CTextureMatteElement::STextureMatteData& data, const CRegion& damage = {});
@@ -175,39 +173,29 @@ namespace Render {
         virtual bool                 explicitSyncSupported() = 0;
         virtual std::vector<SDRMFormat> getDRMFormats()      = 0;
         // whether a framebuffer can be allocated in this format (a monitor's work and blur buffers)
-        virtual bool                  canRenderToFormat(DRMFormat format)                                                                                      = 0;
-        virtual std::vector<uint64_t> getDRMFormatModifiers(DRMFormat format)                                                                                  = 0;
-        virtual SP<IFramebuffer>      createFB(const std::string& name = "")                                                                                   = 0;
-        virtual void                  disableScissor()                                                                                                         = 0;
-        virtual void                  blend(bool enabled)                                                                                                      = 0;
-        virtual void                  drawShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a) = 0;
-        virtual void     drawShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2,
-                                    float lerp, float a)                                                                                                       = 0;
-        virtual void     drawGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a)                = 0;
-        virtual void     drawGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2,
-                                  float lerp, float a)                                                                                                         = 0;
-        virtual void     setViewport(int x, int y, int width, int height)                                                                                      = 0;
+        virtual bool                  canRenderToFormat(DRMFormat format)              = 0;
+        virtual std::vector<uint64_t> getDRMFormatModifiers(DRMFormat format)          = 0;
+        virtual SP<IFramebuffer>      createFB(const std::string& name = "")           = 0;
+        virtual void                  disableScissor()                                 = 0;
+        virtual void                  blend(bool enabled)                              = 0;
+        virtual void                  setViewport(int x, int y, int width, int height) = 0;
 
-        bool             preBlurQueued(PHLMONITORREF pMonitor);
-        void             sendFrameEventsToWorkspace(PHLMONITOR pMonitor, PHLWORKSPACE pWorkspace, const Time::steady_tp& now);
+        bool                          preBlurQueued(PHLMONITORREF pMonitor);
+        void                          sendFrameEventsToWorkspace(PHLMONITOR pMonitor, PHLWORKSPACE pWorkspace, const Time::steady_tp& now);
 
-        void             setProjectionType(const Vector2D& fbSize);
-        void             setProjectionType(eRenderProjectionType projectionType);
-        Mat3x3           getBoxProjection(const CBox& box, std::optional<eTransform> transform = std::nullopt);
-        Mat3x3           projectBoxToTarget(const CBox& box, std::optional<eTransform> transform = std::nullopt);
+        void                          setProjectionType(const Vector2D& fbSize);
+        void                          setProjectionType(eRenderProjectionType projectionType);
+        Mat3x3                        getBoxProjection(const CBox& box, std::optional<eTransform> transform = std::nullopt);
+        Mat3x3                        projectBoxToTarget(const CBox& box, std::optional<eTransform> transform = std::nullopt);
 
-        SP<IFramebuffer> blurMainFramebuffer(float strength, const CRegion& originalDamage, const Render::SBlurContext& context = {});
-        void             beginBackdropScope(SP<SBackdropScope> scope);
-        void             endBackdropScope(SP<SBackdropScope> scope);
-        virtual SP<IFramebuffer> blurFramebuffer(SP<IFramebuffer> source, float strength, const CRegion& originalDamage, const Render::SBlurContext& context = {}) = 0;
-        virtual void             refreshBlurProvider()                                                                                                             = 0;
-        virtual void             expandBlurDamage(CRegion& damage, float multiplier = 1.F) const                                                                   = 0;
-        virtual bool             blurProviderIsAnimated() const                                                                                                    = 0;
-        virtual bool             blurProviderRequiresLiveBlur() const                                                                                              = 0;
-        void                     scheduleFrameForAnimatedBlur(const CRegion& damage, bool usesPrecomputedBlur);
-        void                     preBlurForCurrentMonitor(const CRegion& fakeDamage);
+        SP<IFramebuffer>              blurMainFramebuffer(float strength, const CRegion& originalDamage);
+        void                          beginBackdropScope(SP<SBackdropScope> scope);
+        void                          endBackdropScope(SP<SBackdropScope> scope);
+        virtual SP<IFramebuffer>      blurFramebuffer(SP<IFramebuffer> source, float strength, const CRegion& originalDamage) = 0;
+        virtual void                  expandBlurDamage(CRegion& damage, float multiplier = 1.F) const                         = 0;
+        void                          preBlurForCurrentMonitor(const CRegion& fakeDamage);
 
-        virtual bool             reloadShaders(const std::string& path = "") = 0;
+        virtual bool                  reloadShaders(const std::string& path = "") = 0;
 
       protected:
         virtual void              renderOffToMain(SP<IFramebuffer> off)                                         = 0;

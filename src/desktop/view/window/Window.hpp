@@ -51,12 +51,6 @@ namespace Desktop::View {
     class CWindowStateEventTracker;
     class CWindowSwallowController;
 
-    enum eWindowUpdateSource : uint8_t {
-        WINDOW_UPDATE_ANIMATION = 0,
-        WINDOW_UPDATE_MOUSE,
-        WINDOW_UPDATE_LAYOUT,
-    };
-
     enum eGetWindowProperties : uint16_t {
         WINDOW_ONLY              = 0,
         RESERVED_EXTENTS         = 1 << 0,

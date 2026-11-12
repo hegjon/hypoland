@@ -6,11 +6,11 @@ CRectPassElement::CRectPassElement(const CRectPassElement::SRectData& data_) : m
 }
 
 bool CRectPassElement::needsLiveBlur() {
-    return m_data.color.a < 1.F && m_data.blur && (!m_data.xray || g_pHyprRenderer->blurProviderRequiresLiveBlur());
+    return m_data.color.a < 1.F && m_data.blur && !m_data.xray;
 }
 
 bool CRectPassElement::needsPrecomputeBlur() {
-    return m_data.color.a < 1.F && m_data.xray && m_data.blur && !g_pHyprRenderer->blurProviderRequiresLiveBlur();
+    return m_data.color.a < 1.F && m_data.xray && m_data.blur;
 }
 
 std::optional<CBox> CRectPassElement::boundingBox() {

@@ -1,8 +1,6 @@
 #include "GLElementRenderer.hpp"
 #include "../Renderer.hpp"
-#include "../decorations/CHyprDropShadowDecoration.hpp"
 #include "../OpenGL.hpp"
-#include "../decorations/CHyprInnerGlowDecoration.hpp"
 #include <cstdint>
 
 using namespace Render::GL;
@@ -91,29 +89,7 @@ void CGLElementRenderer::draw(WP<CRectPassElement> element, const CRegion& damag
         g_pHyprOpenGL->renderRect(m_data.box, m_data.color, {.damage = &damage, .round = m_data.round, .roundingPower = m_data.roundingPower});
     else
         g_pHyprOpenGL->renderRect(m_data.box, m_data.color,
-                                  {.round          = m_data.round,
-                                   .roundingPower  = m_data.roundingPower,
-                                   .blur           = true,
-                                   .blurA          = m_data.blurA,
-                                   .xray           = m_data.xray,
-                                   .blurPatternBox = m_data.blurPatternBox,
-                                   .blurOwner      = m_data.blurOwner});
-};
-
-void CGLElementRenderer::draw(WP<CShadowPassElement> element, const CRegion& damage) {
-    const auto& m_data = element->m_data;
-    const auto  DECO   = m_data.deco.lock();
-    if (!DECO)
-        return;
-    DECO->render(g_pHyprRenderer->m_renderData.pMonitor.lock(), m_data.a);
-};
-
-void CGLElementRenderer::draw(WP<CInnerGlowPassElement> element, const CRegion& damage) {
-    const auto& m_data = element->m_data;
-    const auto  DECO   = m_data.deco.lock();
-    if (!DECO)
-        return;
-    DECO->render(g_pHyprRenderer->m_renderData.pMonitor.lock(), m_data.a);
+                                  {.round = m_data.round, .roundingPower = m_data.roundingPower, .blur = true, .blurA = m_data.blurA, .xray = m_data.xray});
 };
 
 void CGLElementRenderer::draw(WP<CTexPassElement> element, const CRegion& damage) {

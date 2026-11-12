@@ -131,7 +131,15 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   - Shaders in `src/render/shaders/glsl` are native GLSL ES 1.00 (`#version 100`). There is no runtime translator.
     Color management, tonemapping, ICC, mirror and motion blur code is gone from the shaders; `color.glsl` keeps
     only the sRGB / gamma 2.2 transfer functions that gradients need.
-  - Blur variants ripple, water, fluid_jar, prism and acrylic are removed and fall back to dual Kawase.
+  - Blur is dual Kawase only (`CDualKawaseBlurProvider`). The variants ripple, water, fluid_jar, prism and acrylic
+    were never ported; frost, drops, heat_shimmer, aurora and haze were removed on 2026-11-12 with their shaders and
+    the blur material layer. `decoration:blur:variant` keeps its names and values and is ignored.
+  - Drop shadows, inner glow and wobble (with its mesh, `renderTextureMesh()` and the motion tracking that fed it) were
+    removed on 2026-11-12. `decoration:shadow:*`, `decoration:glow:*` and `decoration:wobble:*` stay registered and
+    are ignored; the `no_shadow`, `no_glow` and `no_wobble` window rules (and the workspace rule's `no_shadow`) are
+    still parsed, stored and read back by `getprop`, and change nothing. Turning on a removed feature's `enabled` (or a
+    blur variant) warns once in the log (`warnIgnoredOptions()` in `src/config/lua/ConfigManager.cpp`). The window
+    transformer framework (`src/render/transformer/`, `CTransformedWindowPassElement`) has no transformer left.
   - The embedded aquamarine is patched in-tree the same way (GLES2 context and ES 1.00 shaders only). It also
     creates its DRM renderer for the primary GPU only when a secondary GPU needs it.
   - Framebuffers have one color attachment. The stencil is a `GL_STENCIL_INDEX8` renderbuffer per framebuffer
@@ -150,8 +158,8 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
     now). Kept: the CTM control protocol (hyprsunset's night light) and an ICC profile's VCGT gamma ramps through KMS
     (`src/helpers/ICC.*`, lcms2 reads the profile, `CMonitor::updateVCGTRamps()`). The monitor rule's `cm`, `sdr*`,
     luminance and `supports_*` fields are parsed and ignored (a non-sRGB `cm` warns); `hyprctl monitors` shows
-    `colorManagementPreset: srgb` and the rule's sdr values, Lua's monitor `cm` is `srgb`. `render:cm_sdr_eotf` still
-    picks the transfer function of the aurora and haze blur variants (`NTransferFunction::shaderTF()`). The embedded
+    `colorManagementPreset: srgb` and the rule's sdr values, Lua's monitor `cm` is `srgb`. `render:cm_sdr_eotf` is
+    ignored since the aurora and haze blur variants, which read it, were removed (2026-11-12). The embedded
     aquamarine keeps its HDR and colour properties, unused.
 - The config is Lua in this Hyprland version (`~/.config/hypr/hyprland.lua`, Omarchy uses it). With a Lua config
   `hyprctl keyword` answers `unknown request`; use `hyprctl eval "hl.config({...})"`.
@@ -228,9 +236,10 @@ Remove/rewrite (GPU heavy): color management / HDR pipeline, screen shaders, per
 where avoidable. Done so far: color management is removed from the renderer, the shaders and the protocols, and the
 screen shaders (2026-11-12): `decoration:screen_shader` is accepted and ignored (Hyprland's are GLSL ES 3.00 and never
 compiled here), the final pass through a work buffer is gone, and `debug:manual_crash` counts down and aborts without
-its glitch shader. Shadows (default off) are still in the code.
+its glitch shader. Shadows, inner glow, wobble and the blur variants were removed on 2026-11-12 (options accepted and
+ignored).
 
-Keep: blur (dual Kawase and the GLES2-capable variants), default off. Decided by the user on 2026-09-27 after
+Keep: blur (dual Kawase), default off. Decided by the user on 2026-09-27 after
 measuring it on the X200: about 1% extra compositor CPU and 57-60 fps. Do not remove it.
 
 Optional, default off: animations (keep short slides only, no fades), animated/gradient borders,
@@ -378,7 +387,7 @@ Findings worth keeping:
 - `quirks:skip_non_kms_dmabuf_formats` must default to false. Gen4 primary planes have no alpha formats, so with
   the upstream default no client gets an EGL config with alpha and Quickshell's fullscreen overlay turns black.
 - Omarchy 4 locks with its Quickshell shell, `hyprlock` / `hypridle` are not installed.
-- Defaults changed: blur, shadows, animations, the splash text (`misc:disable_splash_rendering` is true, the option
+- Defaults changed: blur, shadows (removed since 2026-11-12), animations, the splash text (`misc:disable_splash_rendering` is true, the option
   still works) off and hyprcursor removed (XCursor only); the logo background is gone (`misc:disable_hyprland_logo`
   is a no-op); hyprpm is removed. The config written for new users (`example/hyprland.lua`, embedded in the binary) keeps the same
   defaults: effects and rounding off, a single-color border.

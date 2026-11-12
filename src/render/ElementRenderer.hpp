@@ -6,11 +6,9 @@
 #include "./pass/PreBlurElement.hpp"
 #include "./pass/RectPassElement.hpp"
 #include "./pass/RendererHintsPassElement.hpp"
-#include "./pass/ShadowPassElement.hpp"
 #include "./pass/SurfacePassElement.hpp"
 #include "./pass/TexPassElement.hpp"
 #include "./pass/TextureMatteElement.hpp"
-#include "./pass/InnerGlowPassElement.hpp"
 #include "./pass/TransformedWindowPassElement.hpp"
 #include <hyprutils/math/Region.hpp>
 
@@ -23,15 +21,13 @@ namespace Render {
         void drawElement(WP<IPassElement> element, const CRegion& damage);
 
       protected:
-        virtual void draw(WP<CBorderPassElement> element, const CRegion& damage)    = 0;
-        virtual void draw(WP<CClearPassElement> element, const CRegion& damage)     = 0;
-        virtual void draw(WP<CFramebufferElement> element, const CRegion& damage)   = 0;
-        virtual void draw(WP<CPreBlurElement> element, const CRegion& damage)       = 0;
-        virtual void draw(WP<CRectPassElement> element, const CRegion& damage)      = 0;
-        virtual void draw(WP<CShadowPassElement> element, const CRegion& damage)    = 0;
-        virtual void draw(WP<CInnerGlowPassElement> element, const CRegion& damage) = 0;
-        virtual void draw(WP<CTexPassElement> element, const CRegion& damage)       = 0;
-        virtual void draw(WP<CTextureMatteElement> element, const CRegion& damage)  = 0;
+        virtual void draw(WP<CBorderPassElement> element, const CRegion& damage)   = 0;
+        virtual void draw(WP<CClearPassElement> element, const CRegion& damage)    = 0;
+        virtual void draw(WP<CFramebufferElement> element, const CRegion& damage)  = 0;
+        virtual void draw(WP<CPreBlurElement> element, const CRegion& damage)      = 0;
+        virtual void draw(WP<CRectPassElement> element, const CRegion& damage)     = 0;
+        virtual void draw(WP<CTexPassElement> element, const CRegion& damage)      = 0;
+        virtual void draw(WP<CTextureMatteElement> element, const CRegion& damage) = 0;
 
       private:
         void calculateUVForSurface(PHLWINDOW, SP<CWLSurfaceResource>, PHLMONITOR pMonitor, bool main = false, const Vector2D& projSize = {}, const Vector2D& projSizeUnscaled = {},

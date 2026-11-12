@@ -33,8 +33,9 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
   so existing configs keep loading.
 - `bitdepth = 10` in a monitor rule is ignored with a warning and the monitor stays at 8 bit: OpenGL ES 2.0 has no
   10-bit framebuffer format.
-- The blur variants ripple, water, fluid_jar, prism and acrylic are removed, selecting one gives the normal
-  dual Kawase blur.
+- The blur variants are removed, selecting one gives the normal dual Kawase blur.
+- Drop shadows, inner glow and wobbly windows are removed. Their options and the `no_shadow`, `no_glow` and
+  `no_wobble` window rules are accepted and ignored.
 - Screen shaders are removed, `decoration:screen_shader` is ignored. Hyprland's are GLSL ES 3.00, which OpenGL ES
   2.0 cannot compile.
 - Plugins and hyprpm are not supported. Hyprland plugins are built against the exact Hyprland source they
@@ -65,7 +66,7 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
 
 ### Changed defaults
 
-- Blur, shadows and animations are off. The config Hypoland writes for new users (`example/hyprland.lua`)
+- Blur and animations are off. The config Hypoland writes for new users (`example/hyprland.lua`)
   keeps them off, with rounded corners off and a single-color border.
 - The splash text is off (`misc:disable_splash_rendering` is true).
 - `render:direct_scanout` is `auto` (Hyprland: off): a fullscreen window's buffers are shown on the screen directly,

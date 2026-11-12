@@ -683,14 +683,12 @@ void IHyprRenderer::renderWindow(PHLWINDOW pWindow, PHLMONITOR pMonitor, const T
             CBox wb = {renderdata.pos.x - pMonitor->m_position.x, renderdata.pos.y - pMonitor->m_position.y, renderdata.w, renderdata.h};
             wb.scale(pMonitor->m_scale).round();
             CRectPassElement::SRectData data;
-            data.color          = CHyprColor(0, 0, 0, 0);
-            data.box            = wb;
-            data.round          = renderdata.dontRound ? 0 : renderdata.rounding - 1;
-            data.blur           = true;
-            data.blurA          = renderdata.fadeAlpha;
-            data.xray           = shouldUseNewBlurOptimizations(nullptr, pWindow);
-            data.blurPatternBox = wb;
-            data.blurOwner      = pWindow;
+            data.color = CHyprColor(0, 0, 0, 0);
+            data.box   = wb;
+            data.round = renderdata.dontRound ? 0 : renderdata.rounding - 1;
+            data.blur  = true;
+            data.blurA = renderdata.fadeAlpha;
+            data.xray  = shouldUseNewBlurOptimizations(nullptr, pWindow);
             addPassElement(makeUnique<CRectPassElement>(data));
             renderdata.blur = false;
         }
@@ -857,10 +855,6 @@ void IHyprRenderer::draw(const CRectPassElement::SRectData& data, const CRegion&
 
 void IHyprRenderer::draw(const CRendererHintsPassElement::SData& data, const CRegion& damage) {
     elementRenderer()->drawElement(makeUnique<CRendererHintsPassElement>(data), damage);
-}
-
-void IHyprRenderer::draw(const CShadowPassElement::SShadowData& data, const CRegion& damage) {
-    elementRenderer()->drawElement(makeUnique<CShadowPassElement>(data), damage);
 }
 
 void IHyprRenderer::draw(const CSurfacePassElement::SRenderData& data, const CRegion& damage) {
@@ -1410,9 +1404,6 @@ bool IHyprRenderer::shouldUseNewBlurOptimizations(PHLLS pLayer, PHLWINDOW pWindo
     if (!getBlurTexture(m_renderData.pMonitor))
         return false;
 
-    if (blurProviderRequiresLiveBlur())
-        return false;
-
     if (pWindow && pWindow->m_ruleApplicator->xray().hasValue() && !pWindow->m_ruleApplicator->xray().valueOrDefault())
         return false;
 
@@ -1729,7 +1720,7 @@ Mat3x3 IHyprRenderer::projectBoxToTarget(const CBox& box, std::optional<eTransfo
     return OUTPUT_PROJECTION.copy().multiply(getBoxProjection(box, transform));
 }
 
-SP<IFramebuffer> IHyprRenderer::blurMainFramebuffer(float strength, const CRegion& originalDamage, const SBlurContext& context) {
+SP<IFramebuffer> IHyprRenderer::blurMainFramebuffer(float strength, const CRegion& originalDamage) {
     const auto renderTarget = m_renderData.currentFB;
     const auto blurSource   = !m_backdropCaptures.empty() && m_backdropCaptures.back().framebuffer ? m_backdropCaptures.back().framebuffer : renderTarget;
 
@@ -1739,7 +1730,7 @@ SP<IFramebuffer> IHyprRenderer::blurMainFramebuffer(float strength, const CRegio
     }
 
     auto guard = bindTempFB(renderTarget); // blurFramebuffer messes with FB bindings
-    return blurFramebuffer(blurSource, strength, originalDamage, context);
+    return blurFramebuffer(blurSource, strength, originalDamage);
 }
 
 void IHyprRenderer::beginBackdropScope(SP<SBackdropScope> scope) {
@@ -1784,17 +1775,6 @@ void IHyprRenderer::beginBackdropScope(SP<SBackdropScope> scope) {
 void IHyprRenderer::endBackdropScope(SP<SBackdropScope> scope) {
     RASSERT(!m_backdropCaptures.empty() && m_backdropCaptures.back().scope == scope, "Unbalanced runtime backdrop scope");
     m_backdropCaptures.pop_back();
-}
-
-void IHyprRenderer::scheduleFrameForAnimatedBlur(const CRegion& damage, bool usesPrecomputedBlur) {
-    const auto monitor = m_renderData.pMonitor;
-    if (m_renderMode != RENDER_MODE_NORMAL || !monitor || monitor->isMirror() || damage.empty())
-        return;
-
-    if (usesPrecomputedBlur)
-        monitor->m_blurFBDirty = true;
-
-    monitor->addDamage(damage);
 }
 
 void IHyprRenderer::preBlurForCurrentMonitor(const CRegion& fakeDamage) {
@@ -2918,7 +2898,6 @@ void IHyprRenderer::renderFadeouts(PHLMONITOR monitor, Desktop::eFadeoutPlane pl
         data.blur                  = EFFECTS.textureBlur.enabled;
         data.blurA                 = EFFECTS.textureBlur.alpha;
         data.forceBlurBlend        = EFFECTS.textureBlur.forceBlend;
-        data.blurShapeInvalid      = true;
         data.ignoreAlpha           = EFFECTS.textureBlur.ignoreAlpha;
         data.blockBlurOptimization = EFFECTS.textureBlur.blockBlurOptimization;
 

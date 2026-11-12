@@ -14,8 +14,6 @@ namespace Render::GL {
         void draw(WP<CFramebufferElement> element, const CRegion& damage) override;
         void draw(WP<CPreBlurElement> element, const CRegion& damage) override;
         void draw(WP<CRectPassElement> element, const CRegion& damage) override;
-        void draw(WP<CShadowPassElement> element, const CRegion& damage) override;
-        void draw(WP<CInnerGlowPassElement> element, const CRegion& damage) override;
         void draw(WP<CTexPassElement> element, const CRegion& damage) override;
         void draw(WP<CTextureMatteElement> element, const CRegion& damage) override;
     };

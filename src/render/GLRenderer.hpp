@@ -27,23 +27,13 @@ namespace Render::GL {
         SP<IFramebuffer>        createFB(const std::string& name = "") override;
         void                    disableScissor() override;
         void                    blend(bool enabled) override;
-        void                    drawShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a) override;
-        void drawShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2, float lerp,
-                        float a) override;
+        SP<IFramebuffer>        blurFramebuffer(SP<IFramebuffer> source, float strength, const CRegion& originalDamage) override;
+        void                    expandBlurDamage(CRegion& damage, float multiplier = 1.F) const override;
+        void                    setViewport(int x, int y, int width, int height) override;
+        bool                    reloadShaders(const std::string& path = "") override;
 
-        void drawGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a) override;
-        void drawGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2, float lerp,
-                      float a) override;
-        SP<IFramebuffer>     blurFramebuffer(SP<IFramebuffer> source, float strength, const CRegion& originalDamage, const Render::SBlurContext& context = {}) override;
-        void                 refreshBlurProvider() override;
-        void                 expandBlurDamage(CRegion& damage, float multiplier = 1.F) const override;
-        bool                 blurProviderIsAnimated() const override;
-        bool                 blurProviderRequiresLiveBlur() const override;
-        void                 setViewport(int x, int y, int width, int height) override;
-        bool                 reloadShaders(const std::string& path = "") override;
-
-        void                 unsetEGL();
-        WP<IElementRenderer> elementRenderer() override;
+        void                    unsetEGL();
+        WP<IElementRenderer>    elementRenderer() override;
 
       private:
         bool                 needsRenderFence(PHLMONITOR monitor, const std::function<void()>& renderingDoneCallback);

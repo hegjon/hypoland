@@ -341,35 +341,14 @@ class CDMABUFTestRenderer : public Render::IHyprRenderer {
     void blend(bool) override {
         ;
     }
-    void drawShadow(const CBox&, int, float, int, const Config::CGradientValueData&, float) override {
-        ;
-    }
-    void drawShadow(const CBox&, int, float, int, const Config::CGradientValueData&, const Config::CGradientValueData&, float, float) override {
-        ;
-    }
-    void drawGlow(const CBox&, int, float, int, const Config::CGradientValueData&, float) override {
-        ;
-    }
-    void drawGlow(const CBox&, int, float, int, const Config::CGradientValueData&, const Config::CGradientValueData&, float, float) override {
-        ;
-    }
     void setViewport(int, int, int, int) override {
         ;
     }
-    SP<Render::IFramebuffer> blurFramebuffer(SP<Render::IFramebuffer>, float, const CRegion&, const Render::SBlurContext&) override {
+    SP<Render::IFramebuffer> blurFramebuffer(SP<Render::IFramebuffer>, float, const CRegion&) override {
         return nullptr;
-    }
-    void refreshBlurProvider() override {
-        ;
     }
     void expandBlurDamage(CRegion&, float) const override {
         ;
-    }
-    bool blurProviderIsAnimated() const override {
-        return false;
-    }
-    bool blurProviderRequiresLiveBlur() const override {
-        return false;
     }
     bool reloadShaders(const std::string&) override {
         return false;

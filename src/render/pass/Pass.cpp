@@ -280,10 +280,6 @@ CRegion CRenderPass::render(const CRegion& damage_) {
     if (m_passElements.empty())
         return {};
 
-    const bool providerIsAnimated = g_pHyprRenderer->blurProviderIsAnimated();
-    CRegion    animatedBlurDamage;
-    bool       usesPrecomputedBlur = false;
-
     for (auto& el : m_passElements) {
         if (el.discard) {
             el.element->discard();
@@ -310,27 +306,10 @@ CRegion CRenderPass::render(const CRegion& damage_) {
             entry.area += regionArea(el.elementDamage.copy().intersect(CBox{{}, pMonitor->m_transformedSize}));
         } else
             g_pHyprRenderer->draw(el.element, el.elementDamage);
-
-        if (!providerIsAnimated || (!el.element->needsLiveBlurCached && !el.element->needsPrecomputeBlurCached))
-            continue;
-
-        const auto BB = el.element->boundingBox();
-        if (!BB)
-            animatedBlurDamage.add(CBox{{}, pMonitor->m_transformedSize});
-        else {
-            auto box = BB->copy().scale(pMonitor->m_scale);
-            g_pHyprRenderer->m_renderData.renderModif.applyToBox(box);
-            animatedBlurDamage.add(box);
-        }
-
-        usesPrecomputedBlur = usesPrecomputedBlur || el.element->needsPrecomputeBlurCached;
     }
 
     if (passProfilingEnabled() && ++passProfile().frames >= 120)
         logPassProfile(passProfile());
-
-    animatedBlurDamage.intersect(CBox{{}, pMonitor->m_transformedSize});
-    g_pHyprRenderer->scheduleFrameForAnimatedBlur(animatedBlurDamage, usesPrecomputedBlur);
 
     if (*PDEBUGPASS) {
         renderDebugData();

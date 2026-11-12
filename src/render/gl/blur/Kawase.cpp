@@ -5,30 +5,12 @@
 #include "../../../config/ConfigValue.hpp"
 
 #include <algorithm>
-#include <utility>
 
 using namespace Render;
 using namespace Render::GL;
 
-CDualKawaseBlurProvider::CDualKawaseBlurProvider(CHyprOpenGLImpl& impl) : CDualKawaseBlurProvider(impl, makeUnique<CDefaultBlurMaterial>()) {
+CDualKawaseBlurProvider::CDualKawaseBlurProvider(CHyprOpenGLImpl& impl) : m_impl(impl) {
     ;
-}
-
-CDualKawaseBlurProvider::CDualKawaseBlurProvider(CHyprOpenGLImpl& impl, UP<IGLBlurMaterial> material) : m_impl(impl), m_material(std::move(material)) {
-    RASSERT(m_material, "Cannot create a dual Kawase blur provider without a material");
-    ;
-}
-
-eBlurType CDualKawaseBlurProvider::type() const noexcept {
-    return m_material->type();
-}
-
-bool CDualKawaseBlurProvider::isAnimated() const noexcept {
-    return m_material->isAnimated();
-}
-
-bool CDualKawaseBlurProvider::requiresLiveBlur() const noexcept {
-    return m_material->requirements().liveBlur;
 }
 
 float Render::GL::dualKawaseDamageRadius(int64_t size, int64_t passes) {
@@ -45,48 +27,35 @@ float CDualKawaseBlurProvider::damageRadius() const {
     static auto PBLURSIZE   = CConfigValue<Config::INTEGER>("decoration:blur:size");
     static auto PBLURPASSES = CConfigValue<Config::INTEGER>("decoration:blur:passes");
 
-    return dualKawaseDamageRadius(m_material->blurSizeForDamage(*PBLURSIZE), *PBLURPASSES) + m_material->sampleRadius();
+    return dualKawaseDamageRadius(std::clamp<int64_t>(*PBLURSIZE, 1, 40), *PBLURPASSES);
 }
 
-SP<CGLFramebuffer> CDualKawaseBlurProvider::blurGL(SP<CGLFramebuffer> source, float strength, const CRegion& originalDamage, const SBlurContext& context) {
+SP<CGLFramebuffer> CDualKawaseBlurProvider::blurGL(SP<CGLFramebuffer> source, float strength, const CRegion& originalDamage) {
     auto&      m_renderData = g_pHyprRenderer->m_renderData;
 
     const auto BLENDBEFORE = m_impl.m_blend;
     m_impl.blend(false);
     m_impl.setCapStatus(GL_STENCIL_TEST, false);
 
-    CBox                       MONITORBOX = {0, 0, m_renderData.pMonitor->m_transformedSize.x, m_renderData.pMonitor->m_transformedSize.y};
+    CBox        MONITORBOX = {0, 0, m_renderData.pMonitor->m_transformedSize.x, m_renderData.pMonitor->m_transformedSize.y};
 
-    const auto&                glMatrix = g_pHyprRenderer->projectBoxToTarget(MONITORBOX);
+    const auto& glMatrix = g_pHyprRenderer->projectBoxToTarget(MONITORBOX);
 
-    static auto                PBLURSIZE             = CConfigValue<Config::INTEGER>("decoration:blur:size");
-    static auto                PBLURPASSES           = CConfigValue<Config::INTEGER>("decoration:blur:passes");
-    static auto                PBLURVIBRANCY         = CConfigValue<Config::FLOAT>("decoration:blur:vibrancy");
-    static auto                PBLURVIBRANCYDARKNESS = CConfigValue<Config::FLOAT>("decoration:blur:vibrancy_darkness");
+    static auto PBLURSIZE             = CConfigValue<Config::INTEGER>("decoration:blur:size");
+    static auto PBLURPASSES           = CConfigValue<Config::INTEGER>("decoration:blur:passes");
+    static auto PBLURVIBRANCY         = CConfigValue<Config::FLOAT>("decoration:blur:vibrancy");
+    static auto PBLURVIBRANCYDARKNESS = CConfigValue<Config::FLOAT>("decoration:blur:vibrancy_darkness");
 
-    const auto                 BLUR_PASSES = std::clamp(*PBLURPASSES, sc<int64_t>(1), sc<int64_t>(8));
+    const auto  BLUR_PASSES = std::clamp(*PBLURPASSES, sc<int64_t>(1), sc<int64_t>(8));
 
-    CRegion                    outputDamage{originalDamage};
+    CRegion     outputDamage{originalDamage};
 
-    const SBlurMaterialContext materialContext{
-        .blurContext  = context,
-        .outputDamage = outputDamage,
-        .strength     = strength,
-    };
-    m_material->prepare(materialContext);
-
-    CRegion workingDamage{outputDamage};
+    CRegion     workingDamage{outputDamage};
     expandDamage(workingDamage);
-
-    const auto MATERIAL_REQUIREMENTS   = m_material->requirements();
-    const bool REQUIRES_PREPARED_INPUT = MATERIAL_REQUIREMENTS.preparedInput;
 
     const auto PMIRRORFB     = dynamicPointerCast<CGLFramebuffer>(m_renderData.pMonitor->resources()->getUnusedWorkBuffer());
     const auto PMIRRORSWAPFB = dynamicPointerCast<CGLFramebuffer>(m_renderData.pMonitor->resources()->getUnusedWorkBuffer());
     RASSERT(PMIRRORFB && PMIRRORSWAPFB, "Failed to obtain GL work buffers for dual Kawase blur");
-
-    const auto PPREPAREDFB = REQUIRES_PREPARED_INPUT ? dynamicPointerCast<CGLFramebuffer>(m_renderData.pMonitor->resources()->getUnusedWorkBuffer()) : PMIRRORSWAPFB;
-    RASSERT(PPREPAREDFB, "Failed to obtain GL prepared work buffer for dual Kawase blur");
 
     auto currentRenderToFB = PMIRRORFB;
 
@@ -96,8 +65,8 @@ SP<CGLFramebuffer> CDualKawaseBlurProvider::blurGL(SP<CGLFramebuffer> source, fl
         static auto PBLURCONTRAST   = CConfigValue<Config::FLOAT>("decoration:blur:contrast");
         static auto PBLURBRIGHTNESS = CConfigValue<Config::FLOAT>("decoration:blur:brightness");
 
-        PPREPAREDFB->bind();
-        PPREPAREDFB->clearAfterInvalidation();
+        PMIRRORSWAPFB->bind();
+        PMIRRORSWAPFB->clearAfterInvalidation();
 
         m_impl.setActiveTexture(GL_TEXTURE0);
 
@@ -126,7 +95,7 @@ SP<CGLFramebuffer> CDualKawaseBlurProvider::blurGL(SP<CGLFramebuffer> source, fl
         }
 
         glBindVertexArray(0);
-        currentRenderToFB = PPREPAREDFB;
+        currentRenderToFB = PMIRRORSWAPFB;
     }
 
     auto drawPass = [&](WP<CShader> shader, ePreparedFragmentShader frag, CRegion* passDamage) {
@@ -206,24 +175,12 @@ SP<CGLFramebuffer> CDualKawaseBlurProvider::blurGL(SP<CGLFramebuffer> source, fl
         currentTex->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         currentTex->setTexParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        if (REQUIRES_PREPARED_INPUT) {
-            m_impl.setActiveTexture(GL_TEXTURE1);
-            auto preparedTex = PPREPAREDFB->getTexture();
-            preparedTex->bind();
-            preparedTex->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            preparedTex->setTexParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            m_impl.setActiveTexture(GL_TEXTURE0);
-        }
-
-        shader = m_impl.useShader(m_impl.getShaderVariant(MATERIAL_REQUIREMENTS.finishFragment));
+        shader = m_impl.useShader(m_impl.getShaderVariant(SH_FRAG_BLURFINISH));
 
         shader->setUniformMatrix3fv(SHADER_PROJ, 1, GL_TRUE, glMatrix.getMatrix());
         shader->setUniformFloat(SHADER_NOISE, *PBLURNOISE);
         shader->setUniformFloat(SHADER_BRIGHTNESS, *PBLURBRIGHTNESS);
         shader->setUniformInt(SHADER_TEX, 0);
-        if (REQUIRES_PREPARED_INPUT)
-            shader->setUniformInt(SHADER_SHARP_TEX, 1);
-        m_material->bindFinish(shader, materialContext);
 
         glBindVertexArray(shader->getUniformLocation(SHADER_SHADER_VAO));
 

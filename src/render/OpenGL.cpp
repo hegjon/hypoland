@@ -861,15 +861,12 @@ void CHyprOpenGLImpl::end() {
 }
 
 static const std::vector<std::string> SHADER_INCLUDES = {
-    "defines.h",       "constants.h",      "color.glsl", "rounding.glsl", "gain.glsl",       "border.glsl",   "shadow.glsl",
-    "inner_glow.glsl", "blurprepare.glsl", "blur1.glsl", "blur2.glsl",    "blurFinish.glsl", "gradient.glsl", "glassFinish.glsl",
+    "defines.h", "constants.h", "color.glsl", "rounding.glsl", "gain.glsl", "border.glsl", "blurprepare.glsl", "blur1.glsl", "blur2.glsl", "blurFinish.glsl", "gradient.glsl",
 };
 
 // order matters, see ePreparedFragmentShader
 const std::array<std::string, SH_FRAG_LAST> FRAG_SHADERS = {
-    "quad.frag",       "passthru.frag",   "rgbamatte.frag", "ext.frag",    "blur1.frag",       "blur2.frag",       "blurprepare.frag",       "blurfinish.frag",
-    "shadow.frag",     "inner_glow.frag", "surface.frag",   "border.frag", "frostfinish.frag", "dropsfinish.frag", "heatshimmerfinish.frag", "aurorafinish.frag",
-    "hazefinish.frag", "alphamax.frag",
+    "quad.frag", "passthru.frag", "rgbamatte.frag", "ext.frag", "blur1.frag", "blur2.frag", "blurprepare.frag", "blurfinish.frag", "surface.frag", "border.frag", "alphamax.frag",
 };
 
 bool CHyprOpenGLImpl::initShaders(const std::string& path) {
@@ -1051,20 +1048,7 @@ void CHyprOpenGLImpl::renderRectWithBlurInternal(const CBox& box, const CHyprCol
     CRegion damage{g_pHyprRenderer->m_renderData.damage};
     damage.intersect(box);
 
-    auto patternBox = data.blurPatternBox.value_or(box);
-    g_pHyprRenderer->m_renderData.renderModif.applyToBox(patternBox);
-    auto shapeBox = box;
-    g_pHyprRenderer->m_renderData.renderModif.applyToBox(shapeBox);
-    std::optional<SBlurShape> shape;
-    if (std::abs(shapeBox.rot) < 0.0001F)
-        shape = SBlurShape{
-            .box           = shapeBox,
-            .radius        = std::max(sc<float>(data.round), 0.F),
-            .roundingPower = data.roundingPower,
-        };
-    const bool usePrecomputedBlur = data.xray && !g_pHyprRenderer->blurProviderRequiresLiveBlur();
-    const auto blurredFB = usePrecomputedBlur ? g_pHyprRenderer->m_renderData.pMonitor->resources()->m_blurFB :
-                                                g_pHyprRenderer->blurMainFramebuffer(data.blurA, damage, {.patternBox = patternBox, .owner = data.blurOwner, .shape = shape});
+    const auto blurredFB = data.xray ? g_pHyprRenderer->m_renderData.pMonitor->resources()->m_blurFB : g_pHyprRenderer->blurMainFramebuffer(data.blurA, damage);
     const auto blurredBG = blurredFB->getTexture();
 
     const auto SAVEDRENDERMODIF               = g_pHyprRenderer->m_renderData.renderModif;
@@ -1369,73 +1353,6 @@ void CHyprOpenGLImpl::renderTextureInternal(SP<ITexture> tex, const CBox& box, c
         REGION.forEachRect([this](const auto& RECT) {
             scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        });
-    }
-
-    GLCALL(glBindVertexArray(0));
-    bindArrayBuffer(0);
-    tex->unbind();
-}
-
-void CHyprOpenGLImpl::renderTextureMesh(SP<ITexture> tex, const CBox& box, const std::vector<SMeshRenderVertex>& vertices, STextureRenderData data) {
-    RASSERT(g_pHyprRenderer->m_renderData.pMonitor, "Tried to render texture mesh without begin()!");
-    RASSERT(tex, "Attempted to draw nullptr texture mesh!");
-    RASSERT(tex->ok(), "Attempted to draw invalid texture mesh!");
-
-    if (!data.damage || data.damage->empty() || vertices.empty())
-        return;
-
-    CBox newBox = box;
-    g_pHyprRenderer->m_renderData.renderModif.applyToBox(newBox);
-
-    Hyprutils::Math::eTransform TRANSFORM = tex->m_transform;
-
-    const auto&                 glMatrix = g_pHyprRenderer->projectBoxToTarget(newBox, TRANSFORM);
-
-    setActiveTexture(GL_TEXTURE0);
-    tex->bind();
-
-    tex->setTexParameter(GL_TEXTURE_WRAP_S, wrapModeToGl(data.wrapX));
-    tex->setTexParameter(GL_TEXTURE_WRAP_T, wrapModeToGl(data.wrapY));
-
-    if (g_pHyprRenderer->m_renderData.useNearestNeighbor) {
-        tex->setTexParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        tex->setTexParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    } else {
-        tex->setTexParameter(GL_TEXTURE_MAG_FILTER, tex->magFilter);
-        tex->setTexParameter(GL_TEXTURE_MIN_FILTER, tex->minFilter);
-    }
-
-    auto shader = renderToFBInternal(tex, data, tex->m_type, newBox);
-
-    shader->setUniformMatrix3fv(SHADER_PROJ, 1, GL_TRUE, glMatrix.getMatrix());
-    shader->setUniformInt(SHADER_TEX, 0);
-    GLCALL(glBindVertexArray(shader->getUniformLocation(SHADER_SHADER_UV_VAO)));
-    bindArrayBuffer(shader->getUniformLocation(SHADER_SHADER_UV_VBO));
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(SMeshRenderVertex) * vertices.size(), nullptr, GL_DYNAMIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(SMeshRenderVertex) * vertices.size(), vertices.data());
-
-    if (!g_pHyprRenderer->m_renderData.clipBox.empty() || !data.clipRegion.empty()) {
-        CRegion damageClip = g_pHyprRenderer->m_renderData.clipBox;
-
-        if (!data.clipRegion.empty()) {
-            if (g_pHyprRenderer->m_renderData.clipBox.empty())
-                damageClip = data.clipRegion;
-            else
-                damageClip.intersect(data.clipRegion);
-        }
-
-        if (!damageClip.empty()) {
-            damageClip.forEachRect([this, &vertices](const auto& RECT) {
-                scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
-                glDrawArrays(GL_TRIANGLES, 0, sc<GLsizei>(vertices.size()));
-            });
-        }
-    } else {
-        data.damage->forEachRect([this, &vertices](const auto& RECT) {
-            scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
-            glDrawArrays(GL_TRIANGLES, 0, sc<GLsizei>(vertices.size()));
         });
     }
 
@@ -1791,198 +1708,6 @@ void CHyprOpenGLImpl::renderBorder(const CBox& box, const Config::CGradientValue
 
     glBindVertexArray(0);
     blend(BLEND);
-}
-
-void CHyprOpenGLImpl::renderRoundedShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad, float a) {
-    renderRoundedShadow(box, round, roundingPower, range, grad, Config::CGradientValueData{}, 0.f, a);
-}
-
-void CHyprOpenGLImpl::renderRoundedShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1,
-                                          const Config::CGradientValueData& grad2, float lerp, float a) {
-    auto& m_renderData = g_pHyprRenderer->m_renderData;
-    RASSERT(m_renderData.pMonitor, "Tried to render shadow without begin()!");
-    RASSERT((box.width > 0 && box.height > 0), "Tried to render shadow with width/height < 0!");
-
-    if (g_pHyprRenderer->m_renderData.damage.empty())
-        return;
-
-    CBox newBox = box;
-    g_pHyprRenderer->m_renderData.renderModif.applyToBox(newBox);
-
-    static auto PSHADOWPOWER = CConfigValue<Config::INTEGER>("decoration:shadow:render_power");
-
-    const auto  SHADOWPOWER = std::clamp(sc<int>(*PSHADOWPOWER), 1, 4);
-
-    const auto& glMatrix = g_pHyprRenderer->projectBoxToTarget(newBox);
-
-    blend(true);
-
-    auto shader = useShader(getShaderVariant(SH_FRAG_SHADOW));
-
-    shader->setUniformMatrix3fv(SHADER_PROJ, 1, GL_TRUE, glMatrix.getMatrix());
-
-    CHyprColor color;
-    if (!grad1.m_colors.empty())
-        color = grad1.m_colors[0];
-
-    const auto converted = g_pHyprRenderer->getConvertedColor(color.stripA());
-    shader->setUniformFloat4(SHADER_COLOR, converted.r, converted.g, converted.b, color.a);
-    shader->setUniformFloat4(SHADER_COLOR_SRGB, color.r, color.g, color.b, color.a);
-
-    shader->setUniform4fv(SHADER_GRADIENT, grad1.m_colorsOkLabA.size() / 4, grad1.m_colorsOkLabA);
-    shader->setUniformInt(SHADER_GRADIENT_LENGTH, grad1.m_colorsOkLabA.size() / 4);
-    shader->setUniformFloat(SHADER_ANGLE, sc<int>(grad1.m_angle / (std::numbers::pi / 180.0)) % 360 * (std::numbers::pi / 180.0));
-    if (!grad2.m_colorsOkLabA.empty())
-        shader->setUniform4fv(SHADER_GRADIENT2, grad2.m_colorsOkLabA.size() / 4, grad2.m_colorsOkLabA);
-    shader->setUniformInt(SHADER_GRADIENT2_LENGTH, grad2.m_colorsOkLabA.size() / 4);
-    shader->setUniformFloat(SHADER_ANGLE2, sc<int>(grad2.m_angle / (std::numbers::pi / 180.0)) % 360 * (std::numbers::pi / 180.0));
-    shader->setUniformFloat(SHADER_ALPHA, a);
-    shader->setUniformFloat(SHADER_GRADIENT_LERP, lerp);
-
-    const auto TOPLEFT     = Vector2D(range + round, range + round);
-    const auto BOTTOMRIGHT = Vector2D(newBox.width - (range + round), newBox.height - (range + round));
-    const auto FULLSIZE    = Vector2D(newBox.width, newBox.height);
-
-    // Rounded corners
-    shader->setUniformFloat2(SHADER_TOP_LEFT, sc<float>(TOPLEFT.x), sc<float>(TOPLEFT.y));
-    shader->setUniformFloat2(SHADER_BOTTOM_RIGHT, sc<float>(BOTTOMRIGHT.x), sc<float>(BOTTOMRIGHT.y));
-    shader->setUniformFloat2(SHADER_FULL_SIZE, sc<float>(FULLSIZE.x), sc<float>(FULLSIZE.y));
-    shader->setUniformFloat(SHADER_RADIUS, round);
-    shader->setUniformFloat(SHADER_ROUNDING_POWER, roundingPower);
-    shader->setUniformFloat(SHADER_RANGE, range);
-    shader->setUniformFloat(SHADER_SHADOW_POWER, SHADOWPOWER);
-    shader->setUniformFloat2(SHADER_WINDOW_TOP_LEFT, -1.F, -1.F);
-    shader->setUniformFloat2(SHADER_WINDOW_BOTTOM_RIGHT, -1.F, -1.F);
-    shader->setUniformFloat(SHADER_THICK, 0.F);
-
-    glBindVertexArray(shader->getUniformLocation(SHADER_SHADER_VAO));
-
-    CRegion drawRegion;
-
-    if (g_pHyprRenderer->m_renderData.clipBox.width != 0 && g_pHyprRenderer->m_renderData.clipBox.height != 0) {
-        drawRegion = {g_pHyprRenderer->m_renderData.clipBox.x, g_pHyprRenderer->m_renderData.clipBox.y, g_pHyprRenderer->m_renderData.clipBox.width,
-                      g_pHyprRenderer->m_renderData.clipBox.height};
-        drawRegion.intersect(g_pHyprRenderer->m_renderData.damage);
-    } else
-        drawRegion = g_pHyprRenderer->m_renderData.damage;
-
-    if (g_pHyprRenderer->m_renderData.currentWindow) {
-        const auto PWINDOW = g_pHyprRenderer->m_renderData.currentWindow.lock();
-        if (PWINDOW) {
-            if (const auto WINDOWBOX = PWINDOW->surfaceLogicalBox(); WINDOWBOX.has_value()) {
-                CBox       scaledWindowBox = WINDOWBOX.value();
-
-                const auto PWORKSPACE = PWINDOW->m_workspace;
-                if (PWORKSPACE && !(PWINDOW->m_state & WINDOW_STATE_PINNED))
-                    scaledWindowBox.translate(PWORKSPACE->m_renderOffset->value());
-
-                scaledWindowBox.translate(PWINDOW->presentation().floatingOffset());
-                scaledWindowBox.translate(-m_renderData.pMonitor->m_position);
-                scaledWindowBox.scale(m_renderData.pMonitor->m_scale).round();
-                m_renderData.renderModif.applyToBox(scaledWindowBox);
-
-                const auto cutoutTopLeft     = scaledWindowBox.pos() - newBox.pos();
-                const auto cutoutBottomRight = cutoutTopLeft + scaledWindowBox.size();
-
-                float      cutoutRadius = std::max(0.F, sc<float>(PWINDOW->presentation().rounding() * m_renderData.pMonitor->m_scale));
-                cutoutRadius            = std::round(cutoutRadius * m_renderData.renderModif.combinedScale());
-
-                shader->setUniformFloat2(SHADER_WINDOW_TOP_LEFT, sc<float>(cutoutTopLeft.x), sc<float>(cutoutTopLeft.y));
-                shader->setUniformFloat2(SHADER_WINDOW_BOTTOM_RIGHT, sc<float>(cutoutBottomRight.x), sc<float>(cutoutBottomRight.y));
-                shader->setUniformFloat(SHADER_THICK, cutoutRadius);
-
-                drawRegion.subtract(scaledWindowBox.copy().expand(-sc<int>(std::round(cutoutRadius))));
-            }
-        }
-    }
-
-    if (!drawRegion.empty())
-        drawRegion.forEachRect([this](const auto& RECT) {
-            scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        });
-
-    glBindVertexArray(0);
-}
-
-void CHyprOpenGLImpl::renderInnerGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad, int glowPower, float a) {
-    renderInnerGlow(box, round, roundingPower, range, grad, Config::CGradientValueData{}, 0.f, glowPower, a);
-}
-void CHyprOpenGLImpl::renderInnerGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2,
-                                      float lerp, int glowPower, float a) {
-    auto& m_renderData = g_pHyprRenderer->m_renderData;
-    RASSERT(m_renderData.pMonitor, "Tried to render inner glow without begin()!");
-    RASSERT((box.width > 0 && box.height > 0), "Tried to render inner glow with width/height < 0!");
-
-    if (g_pHyprRenderer->m_renderData.damage.empty())
-        return;
-
-    CBox newBox = box;
-    g_pHyprRenderer->m_renderData.renderModif.applyToBox(newBox);
-
-    static auto PGLOWPOWER = CConfigValue<Config::INTEGER>("decoration:glow:render_power");
-
-    const auto  GLOWPOWER = std::clamp(sc<int>(*PGLOWPOWER), 1, 4);
-
-    const auto& glMatrix = g_pHyprRenderer->projectBoxToTarget(newBox);
-
-    blend(true);
-
-    auto shader = useShader(getShaderVariant(SH_FRAG_INNER_GLOW));
-
-    shader->setUniformMatrix3fv(SHADER_PROJ, 1, GL_TRUE, glMatrix.getMatrix());
-
-    CHyprColor color;
-    if (!grad1.m_colors.empty())
-        color = grad1.m_colors[0];
-
-    const auto converted = g_pHyprRenderer->getConvertedColor(color.stripA());
-    shader->setUniformFloat4(SHADER_COLOR, converted.r, converted.g, converted.b, color.a * a);
-    shader->setUniformFloat4(SHADER_COLOR_SRGB, color.r, color.g, color.b, color.a * a);
-
-    shader->setUniform4fv(SHADER_GRADIENT, grad1.m_colorsOkLabA.size() / 4, grad1.m_colorsOkLabA);
-    shader->setUniformInt(SHADER_GRADIENT_LENGTH, grad1.m_colorsOkLabA.size() / 4);
-    shader->setUniformFloat(SHADER_ANGLE, sc<int>(grad1.m_angle / (std::numbers::pi / 180.0)) % 360 * (std::numbers::pi / 180.0));
-    if (!grad2.m_colorsOkLabA.empty())
-        shader->setUniform4fv(SHADER_GRADIENT2, grad2.m_colorsOkLabA.size() / 4, grad2.m_colorsOkLabA);
-    shader->setUniformInt(SHADER_GRADIENT2_LENGTH, grad2.m_colorsOkLabA.size() / 4);
-    shader->setUniformFloat(SHADER_ANGLE2, sc<int>(grad2.m_angle / (std::numbers::pi / 180.0)) % 360 * (std::numbers::pi / 180.0));
-    shader->setUniformFloat(SHADER_ALPHA, a);
-    shader->setUniformFloat(SHADER_GRADIENT_LERP, lerp);
-
-    const auto TOPLEFT     = Vector2D(round, round);
-    const auto BOTTOMRIGHT = Vector2D(newBox.width - round, newBox.height - round);
-    const auto FULLSIZE    = Vector2D(newBox.width, newBox.height);
-
-    shader->setUniformFloat2(SHADER_TOP_LEFT, sc<float>(TOPLEFT.x), sc<float>(TOPLEFT.y));
-    shader->setUniformFloat2(SHADER_BOTTOM_RIGHT, sc<float>(BOTTOMRIGHT.x), sc<float>(BOTTOMRIGHT.y));
-    shader->setUniformFloat2(SHADER_FULL_SIZE, sc<float>(FULLSIZE.x), sc<float>(FULLSIZE.y));
-    shader->setUniformFloat(SHADER_RADIUS, round);
-    shader->setUniformFloat(SHADER_ROUNDING_POWER, roundingPower);
-    shader->setUniformFloat(SHADER_RANGE, range);
-    shader->setUniformFloat(SHADER_SHADOW_POWER, GLOWPOWER);
-
-    glBindVertexArray(shader->getUniformLocation(SHADER_SHADER_VAO));
-
-    if (g_pHyprRenderer->m_renderData.clipBox.width != 0 && g_pHyprRenderer->m_renderData.clipBox.height != 0) {
-        CRegion damageClip{g_pHyprRenderer->m_renderData.clipBox.x, g_pHyprRenderer->m_renderData.clipBox.y, g_pHyprRenderer->m_renderData.clipBox.width,
-                           g_pHyprRenderer->m_renderData.clipBox.height};
-        damageClip.intersect(g_pHyprRenderer->m_renderData.damage);
-
-        if (!damageClip.empty()) {
-            damageClip.forEachRect([this](const auto& RECT) {
-                scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
-                glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            });
-        }
-    } else {
-        g_pHyprRenderer->m_renderData.damage.forEachRect([this](const auto& RECT) {
-            scissor(&RECT, g_pHyprRenderer->m_renderData.transformDamage);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        });
-    }
-
-    glBindVertexArray(0);
 }
 
 bool CHyprOpenGLImpl::saveBufferForMirror(const CBox& box) {

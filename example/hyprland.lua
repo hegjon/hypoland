@@ -84,7 +84,7 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -----------------------
 
 -- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
--- Hypoland's defaults are for old GPUs: rounded corners, gradient borders, shadows, blur and animations are off.
+-- Hypoland's defaults are for old GPUs: rounded corners, gradient borders, blur and animations are off.
 -- Each of them costs fill rate on every redraw, turn on what your GPU can afford.
 hl.config({
     general = {
@@ -116,13 +116,6 @@ hl.config({
         -- Change transparency of focused and unfocused windows
         active_opacity   = 1.0,
         inactive_opacity = 1.0,
-
-        shadow = {
-            enabled      = false,
-            range        = 4,
-            render_power = 3,
-            color        = 0xee1a1a1a,
-        },
 
         blur = {
             enabled   = false,

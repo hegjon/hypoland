@@ -72,8 +72,8 @@ the current state; the notes say what was tried, measured and dropped. Add new f
   1, 2 and 1.6) and with the blur of Omarchy's Glassy theme (`default/hypr/glass.lua`: size 4, 2 passes, noise; the
   dialog's half transparent band shows the blur there, so its translucent pixels are left out); `--selftest` fails 7 steps
   on both, so neither repaints everything. The configs are in `scripts/bench/render-configs/` since 2026-11-02 (`base.lua`:
-  gaps, borders, rounding 8 and Hyprland 0.57.0's example animations; `glassy.lua`, `shadows.lua` with a range of 20,
-  `dim.lua` with `dim_inactive` and an inactive opacity of 0.8, where translucent pixels are left out as under blur, and
+  gaps, borders, rounding 8 and Hyprland 0.57.0's example animations; `glassy.lua`, `shadows.lua` with a range of 20 (removed
+  with the shadows on 2026-11-12), `dim.lua` with `dim_inactive` and an inactive opacity of 0.8, where translucent pixels are left out as under blur, and
   `titlebars.lua` as Omarchy sets them up), `--config` can come more than once, and `scripts/bench/render-matrix.sh`
   runs the nested checks over the effects, scales 1, 2 and 1.6 and turned outputs in one go (`--quick`: scale 1 with each
   effect, about 13 minutes). The shadows and the titlebars found a bug of the fade-out (a closing window's fade below).

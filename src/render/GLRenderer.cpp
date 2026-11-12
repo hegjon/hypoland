@@ -1,5 +1,4 @@
 #include "GLRenderer.hpp"
-#include "decorations/CHyprInnerGlowDecoration.hpp"
 #include <aquamarine/output/Output.hpp>
 #include "../config/ConfigValue.hpp"
 #include "../pointer/cursor/CursorManager.hpp"
@@ -27,7 +26,7 @@
 #include "./gl/GLElementRenderer.hpp"
 #include "./gl/GLFramebuffer.hpp"
 #include "./gl/GLTexture.hpp"
-#include "./gl/blur/Factory.hpp"
+#include "./gl/blur/Kawase.hpp"
 #include "./gl/blur/Provider.hpp"
 
 #include <cstdint>
@@ -45,8 +44,7 @@ extern "C" {
 #include <xf86drm.h>
 }
 
-CHyprGLRenderer::CHyprGLRenderer() : IHyprRenderer(), m_elementRenderer(makeUnique<CGLElementRenderer>()) {
-    refreshBlurProvider();
+CHyprGLRenderer::CHyprGLRenderer() : IHyprRenderer(), m_elementRenderer(makeUnique<CGLElementRenderer>()), m_blur(makeUnique<CDualKawaseBlurProvider>(*g_pHyprOpenGL)) {
     m_preRenderListener = Event::bus()->m_events.render.pre.listen([this](PHLMONITOR monitor) { preRender(monitor); });
 }
 
@@ -326,50 +324,12 @@ void CHyprGLRenderer::blend(bool enabled) {
     g_pHyprOpenGL->blend(enabled);
 }
 
-void CHyprGLRenderer::drawShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a) {
-    g_pHyprOpenGL->renderRoundedShadow(box, round, roundingPower, range, color, a);
-}
-
-void CHyprGLRenderer::drawShadow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2,
-                                 float lerp, float a) {
-    g_pHyprOpenGL->renderRoundedShadow(box, round, roundingPower, range, grad1, grad2, lerp, a);
-}
-
-void CHyprGLRenderer::drawGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a) {
-    g_pHyprOpenGL->renderInnerGlow(box, round, roundingPower, range, color, 0, a);
-}
-
-void CHyprGLRenderer::drawGlow(const CBox& box, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2,
-                               float lerp, float a) {
-    g_pHyprOpenGL->renderInnerGlow(box, round, roundingPower, range, grad1, grad2, lerp, 0, a);
-}
-
-SP<IFramebuffer> CHyprGLRenderer::blurFramebuffer(SP<IFramebuffer> source, float strength, const CRegion& originalDamage, const SBlurContext& context) {
-    RASSERT(m_blur, "Cannot blur without a blur provider");
-    return m_blur->blur(source, strength, originalDamage, context);
-}
-
-void CHyprGLRenderer::refreshBlurProvider() {
-    static auto PBLURTYPE = CConfigValue<Config::INTEGER>("decoration:blur:variant");
-
-    const auto  type = sc<eBlurType>(*PBLURTYPE);
-    if (m_blur && m_blur->type() == type)
-        return;
-
-    m_blur = createBlurProvider(type, *g_pHyprOpenGL);
+SP<IFramebuffer> CHyprGLRenderer::blurFramebuffer(SP<IFramebuffer> source, float strength, const CRegion& originalDamage) {
+    return m_blur->blur(source, strength, originalDamage);
 }
 
 void CHyprGLRenderer::expandBlurDamage(CRegion& damage, float multiplier) const {
-    RASSERT(m_blur, "Cannot expand blur damage without a blur provider");
     m_blur->expandDamage(damage, multiplier);
-}
-
-bool CHyprGLRenderer::blurProviderIsAnimated() const {
-    return m_blur && m_blur->isAnimated();
-}
-
-bool CHyprGLRenderer::blurProviderRequiresLiveBlur() const {
-    return m_blur && m_blur->requiresLiveBlur();
 }
 
 void CHyprGLRenderer::preRender(PHLMONITOR pMonitor) {

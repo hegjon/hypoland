@@ -33,7 +33,6 @@ class CTexPassElement : public IPassElement {
         CBox                   clipBox;
         bool                   blur           = false;
         bool                   forceBlurBlend = false;
-        std::optional<CBox>    blurPatternBox;
         std::optional<float>   ignoreAlpha;
         std::optional<bool>    blockBlurOptimization;
         std::optional<bool>    liveBlurOverride;
@@ -54,7 +53,6 @@ class CTexPassElement : public IPassElement {
 
         SP<Render::ITexture>   blurredBG;
         SP<Render::ITexture>   blurAlphaMatte;
-        bool                   blurShapeInvalid = false;
     };
 
     CTexPassElement(const SRenderData& data);

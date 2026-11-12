@@ -1,6 +1,6 @@
 #!/bin/bash
 # render-matrix.sh [--binary PATH] [--out DIR] [--quick] : render-nested.sh over the scales, turns and effects Hypoland
-# keeps (configs in render-configs/: base.lua is gaps, borders, rounding and animations, the others add blur, shadows,
+# keeps (configs in render-configs/: base.lua is gaps, borders, rounding and animations, the others add blur,
 # dimmed and translucent unfocused windows and titlebars to it; omarchy.lua is Omarchy's own look on its own), one nested
 # compositor after the other, about two minutes each. --quick runs scale 1 without effects, the base with each effect
 # and Omarchy's look once. Prints a line per case and the failed checks, exits 1 when any case failed. Not a GM45: the
@@ -23,7 +23,6 @@ CASES=(
     "scale-1|--scale 1"
     "base|--config $C/base.lua"
     "blur|--config $C/base.lua --config $C/glassy.lua"
-    "shadows|--config $C/base.lua --config $C/shadows.lua"
     "dim|--config $C/base.lua --config $C/dim.lua"
     "titlebars|--config $C/base.lua --config $C/titlebars.lua"
     "omarchy|--config $C/omarchy.lua"

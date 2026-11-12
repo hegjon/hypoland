@@ -6,7 +6,6 @@
 #include "../helpers/time/Timer.hpp"
 #include "../helpers/math/Math.hpp"
 #include "../helpers/Format.hpp"
-#include "../helpers/DeformableMesh.hpp"
 #include "../helpers/sync/SyncTimeline.hpp"
 #include "gl/GLES2.hpp"
 #include <chrono>
@@ -156,14 +155,12 @@ namespace Render::GL {
         ~CHyprOpenGLImpl();
 
         struct SRectRenderData {
-            const CRegion*      damage        = nullptr;
-            int                 round         = 0;
-            float               roundingPower = 2.F;
-            bool                blur          = false;
-            float               blurA         = 1.F;
-            bool                xray          = false;
-            std::optional<CBox> blurPatternBox;
-            PHLWINDOWREF        blurOwner;
+            const CRegion* damage        = nullptr;
+            int            round         = 0;
+            float          roundingPower = 2.F;
+            bool           blur          = false;
+            float          blurA         = 1.F;
+            bool           xray          = false;
         };
 
         struct STextureRenderData {
@@ -209,13 +206,6 @@ namespace Render::GL {
 
         void renderRect(const CBox&, const CHyprColor&, SRectRenderData data);
         void renderTexture(SP<ITexture>, const CBox&, STextureRenderData data);
-        void renderTextureMesh(SP<ITexture>, const CBox&, const std::vector<SMeshRenderVertex>& vertices, STextureRenderData data);
-        void renderRoundedShadow(const CBox&, int round, float roundingPower, int range, const Config::CGradientValueData& color, float a = 1.0);
-        void renderRoundedShadow(const CBox&, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2,
-                                 float lerp, float a = 1.0);
-        void renderInnerGlow(const CBox&, int round, float roundingPower, int range, const Config::CGradientValueData& color, int glowPower, float a = 1.0);
-        void renderInnerGlow(const CBox&, int round, float roundingPower, int range, const Config::CGradientValueData& grad1, const Config::CGradientValueData& grad2, float lerp,
-                             int glowPower, float a = 1.0);
         void renderBorder(const CBox&, const Config::CGradientValueData&, SBorderRenderData data);
         void renderBorder(const CBox&, const Config::CGradientValueData&, const Config::CGradientValueData&, float lerp, SBorderRenderData data);
         void renderTextureMatte(SP<ITexture> tex, const CBox& pBox, SP<IFramebuffer> matte);

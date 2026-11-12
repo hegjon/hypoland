@@ -1,6 +1,4 @@
 #include "TransferFunction.hpp"
-#include "../config/ConfigValue.hpp"
-#include "../event/EventBus.hpp"
 #include <string>
 #include <unordered_map>
 #include <hyprlang.hpp>
@@ -24,25 +22,4 @@ std::string NTransferFunction::toString(eTF tf) {
             return key;
     }
     return "";
-}
-
-eTF NTransferFunction::fromConfig() {
-    static auto PSDREOTF = CConfigValue<Config::STRING>("render:cm_sdr_eotf");
-    static auto sdrEOTF  = NTransferFunction::fromString(*PSDREOTF);
-    static auto P        = Event::bus()->m_events.config.reloaded.listen([]() { sdrEOTF = NTransferFunction::fromString(*PSDREOTF); });
-
-    return sdrEOTF;
-}
-
-int NTransferFunction::shaderTF() {
-    // CM_TRANSFER_FUNCTION_GAMMA22 and CM_TRANSFER_FUNCTION_SRGB in src/render/shaders/glsl/constants.h
-    constexpr int SHADER_GAMMA22 = 2;
-    constexpr int SHADER_SRGB    = 9;
-
-    switch (fromConfig()) {
-        case TF_AUTO:
-        case TF_GAMMA22:
-        case TF_FORCED_GAMMA22: return SHADER_GAMMA22;
-        default: return SHADER_SRGB;
-    }
 }

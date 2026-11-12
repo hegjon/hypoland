@@ -9,8 +9,6 @@
 #include "../../../output/Monitor.hpp"
 #include "../../../protocols/core/Compositor.hpp"
 #include "../../../render/decorations/CHyprBorderDecoration.hpp"
-#include "../../../render/decorations/CHyprDropShadowDecoration.hpp"
-#include "../../../render/decorations/CHyprInnerGlowDecoration.hpp"
 #include "../../../render/decorations/DecorationPositioner.hpp"
 #include "../../state/FocusState.hpp"
 
@@ -45,8 +43,8 @@ class CDecorationSnapshot {
     }
 
   private:
-    // shadow, border, glow, group bar and titlebar
-    std::array<SP<IHyprWindowDecoration>, 5>   m_inline;
+    // border, group bar and titlebar
+    std::array<SP<IHyprWindowDecoration>, 3>   m_inline;
     std::vector<SP<IHyprWindowDecoration>>     m_fallback;
     std::span<const SP<IHyprWindowDecoration>> m_decorations;
 };
@@ -59,21 +57,15 @@ CWindowPresentation::~CWindowPresentation() = default;
 
 void CWindowPresentation::initialize() {
     const auto WINDOW  = m_window.m_self.lock();
-    m_shadowDecoration = makeShared<CHyprDropShadowDecoration>(WINDOW);
     m_borderDecoration = makeShared<CHyprBorderDecoration>(WINDOW);
-    m_glowDecoration   = makeShared<CHyprInnerGlowDecoration>(WINDOW);
 
-    addDecorationInternal(m_shadowDecoration);
     addDecorationInternal(m_borderDecoration);
-    addDecorationInternal(m_glowDecoration);
 
     m_borderDecoration->initializeAnimations();
     Animation::mgr()->createAnimation(1.F, alpha(WINDOW_ALPHA_FADE), Config::animationTree()->getAnimationPropertyConfig("fadeIn"), WINDOW, AVARDAMAGE_ENTIRE);
     Animation::mgr()->createAnimation(1.F, alpha(WINDOW_ALPHA_ACTIVE), Config::animationTree()->getAnimationPropertyConfig("fadeSwitch"), WINDOW, AVARDAMAGE_ENTIRE);
     Animation::mgr()->createAnimation(1.F, alpha(WINDOW_ALPHA_FULLSCREEN), Config::animationTree()->getAnimationPropertyConfig("fadeIn"), WINDOW, AVARDAMAGE_ENTIRE);
     Animation::mgr()->createAnimation(1.F, alpha(WINDOW_ALPHA_LAYOUT), Config::animationTree()->getAnimationPropertyConfig("fadeSwitch"), WINDOW, AVARDAMAGE_ENTIRE);
-    m_shadowDecoration->initializeAnimations();
-    m_glowDecoration->initializeAnimations();
     Animation::mgr()->createAnimation(0.F, m_dimPercent, Config::animationTree()->getAnimationPropertyConfig("fadeDim"), WINDOW, AVARDAMAGE_ENTIRE);
     Animation::mgr()->createAnimation(1.F, alpha(WINDOW_ALPHA_MOVE_TO_WORKSPACE), Config::animationTree()->getAnimationPropertyConfig("fadeOut"), WINDOW, AVARDAMAGE_ENTIRE);
     Animation::mgr()->createAnimation(1.F, alpha(WINDOW_ALPHA_MOVE_FROM_WORKSPACE), Config::animationTree()->getAnimationPropertyConfig("fadeIn"), WINDOW, AVARDAMAGE_ENTIRE);
@@ -116,7 +108,7 @@ void CWindowPresentation::addDecorationInternal(const SP<IHyprWindowDecoration>&
 }
 
 void CWindowPresentation::removeDecoration(IHyprWindowDecoration* decoration) {
-    if (!decoration || decoration == m_shadowDecoration.get() || decoration == m_borderDecoration.get() || decoration == m_glowDecoration.get())
+    if (!decoration || decoration == m_borderDecoration.get())
         return;
 
     m_decosToRemove.push_back(decoration);

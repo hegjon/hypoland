@@ -11,8 +11,6 @@
 #include "FloatingOffset.hpp"
 
 class CHyprBorderDecoration;
-class CHyprDropShadowDecoration;
-class CHyprInnerGlowDecoration;
 
 namespace Desktop::View {
     // An opacity of 0.98 or more is drawn fully opaque, see the definition.
@@ -91,9 +89,7 @@ namespace Desktop::View {
         CWindow&                                   m_window;
         std::vector<SP<IHyprWindowDecoration>>     m_windowDecorations;
         std::vector<IHyprWindowDecoration*>        m_decosToRemove;
-        SP<CHyprDropShadowDecoration>              m_shadowDecoration;
         SP<CHyprBorderDecoration>                  m_borderDecoration;
-        SP<CHyprInnerGlowDecoration>               m_glowDecoration;
         Types::CMultiAVarContainer<float, uint8_t> m_alpha;
         PHLANIMVAR<float>                          m_dimPercent;
         PHLANIMVAR<float>                          m_notRespondingTint;

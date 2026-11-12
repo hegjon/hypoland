@@ -44,6 +44,38 @@ TEST_CASE(removedOptionsAreAccepted) {
     ASSERT_CONTAINS(getFromSocket("/version"), "Hyprland");
 }
 
+// The blur variants (frost, drops, heat_shimmer, aurora, haze), shadows, inner glow and wobble are removed
+// (2026-11-12): their options and window rule effects stay registered and are accepted, blur stays dual Kawase
+TEST_CASE(removedEffectsAreAccepted) {
+    CScopeGuard guard = {[&]() {
+        OK(getFromSocket("/reload"));
+        Tests::killAllWindows();
+    }};
+
+    for (const auto& VARIANT : {"frost", "drops", "heat_shimmer", "aurora", "haze", "ripple", "kawase"}) {
+        OK(getFromSocket(std::format("/eval hl.config({{ decoration = {{ blur = {{ enabled = true, variant = '{}' }} }} }})", VARIANT)));
+    }
+    OK(getFromSocket("/eval hl.config({ decoration = { blur = { variant = 9 } } })"));
+    OK(getFromSocket("/eval hl.config({ decoration = { shadow = { enabled = true, range = 20, render_power = 2, sharp = true, color = 'rgba(ff0000ff)', "
+                     "color_inactive = 'rgba(00ff00ff)', offset = '5 5', scale = 0.9 } } })"));
+    OK(getFromSocket("/eval hl.config({ decoration = { glow = { enabled = true, range = 12, render_power = 2, color = 'rgba(33ccffee)', color_inactive = 'rgba(ffffffff)' } } })"));
+    OK(getFromSocket("/eval hl.config({ decoration = { wobble = { enabled = true, mesh = 8, stiffness = 150, damping = 10, mass = 2, intensity = 0.5, "
+                     "value_epsilon = 0.5, velocity_epsilon = 1 } } })"));
+    OK(getFromSocket("/eval hl.window_rule({ name = 'removed-effects', match = { class = 'removed_effects' }, no_shadow = true, no_glow = true, no_wobble = true })"));
+
+    ASSERT(noConfigErrors(), true);
+
+    // a window still opens and moves with every one of them set, and its rules still read back
+    ASSERT(!!Tests::spawnFoot("removed_effects"), true);
+    ASSERT_CONTAINS(getFromSocket("/activewindow"), "class: removed_effects");
+    OK(getFromSocket("/dispatch hl.dsp.window.float({ action = 'set' })"));
+    OK(getFromSocket("/dispatch hl.dsp.window.move({ x = 100, y = 100 })"));
+    EXPECT_CONTAINS(getFromSocket("/getprop activewindow no_shadow"), "true");
+    EXPECT_CONTAINS(getFromSocket("/getprop activewindow no_glow"), "true");
+    EXPECT_CONTAINS(getFromSocket("/getprop activewindow no_wobble"), "true");
+    ASSERT_CONTAINS(getFromSocket("/version"), "Hyprland");
+}
+
 // A monitor rule's cm, sdr and luminance settings are parsed and ignored: every output is sRGB, and hyprctl keeps
 // showing them in the same keys
 TEST_CASE(monitorColorSettingsAreIgnored) {

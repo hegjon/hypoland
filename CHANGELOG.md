@@ -54,6 +54,11 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   flag and colour conversion of fullscreen windows in KMS. An ICC profile in a monitor rule still applies its gamma
   ramps (VCGT) and night light (the CTM control protocol, hyprsunset) works as before; the monitor rule's `cm`, `sdr*`
   and luminance settings are accepted and ignored as before.
+- The blur variants frost, drops, heat_shimmer, aurora and haze, drop shadows, inner glow and wobbly windows are
+  removed, all off by default before. Their options (`decoration:blur:variant`, `decoration:shadow:*`,
+  `decoration:glow:*`, `decoration:wobble:*`) and the `no_shadow`, `no_glow` and `no_wobble` window rules are accepted
+  and ignored, with a warning in the log the first time one is turned on. Blur is dual Kawase, as with the variants
+  removed before. `render:cm_sdr_eotf`, which only the aurora and haze variants read, is ignored too.
 
 ### Fixed
 
