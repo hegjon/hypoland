@@ -156,6 +156,8 @@ th { font-family: var(--mono); font-size: 0.9em; color: var(--muted); font-weigh
 .yes { color: #3f7a2e; font-weight: 700; }
 .no { color: #a8402f; font-weight: 700; }
 td.yes, td.no { white-space: nowrap; }
+/* a table with many columns that scrolls sideways (energy.html): its values on one line each */
+table.wide td:not(:first-child) { white-space: nowrap; }
 .scroll { overflow-x: auto; }
 
 .pixel-list { list-style: none; padding: 0; }

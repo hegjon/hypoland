@@ -75,7 +75,7 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   `folio`) from `docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1/` (`FILES_RUN`, the night of 2026-11-11, the
   first with Folio on every machine); point it at a newer baseline that has them, and run it with the others.
   `web/energy.html` (since 2026-11-12, asked for by the user) is `scripts/web/energy.py`: the CPU package's power (RAPL),
-  the energy above the idle session per frame on the screen, the frames, and the whole machine (psys) on the T460s and
+  the energy above the idle session per frame on the screen, and the whole machine (psys) on the T460s and
   T490, from the energy run of 2026-11-12 (`ENERGY_RUN`, `docs/baseline/20261112-energy-r972-vs-hyprland-0.57.1/` once
   it ends; `test-results/energy-20261112/` has the runner). Named energy, not battery: watts on AC, not battery hours.
   Not linked from the other pages or the sitemap yet, by decision of the user; `ENERGY_PRELIMINARY=1` marks a run still

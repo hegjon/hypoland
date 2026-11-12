@@ -87,7 +87,7 @@ def section(sid, title, intro, table, note):
     return f"""  <section class="win full" id="{sid}" aria-labelledby="t-{sid}">
     <h2 class="title" id="t-{sid}">{E(title)}</h2>
     <div class="body">
-{intro}      <div class="scroll"><table>
+{intro}      <div class="scroll"><table class="wide">
 {table}
       </table></div>
       <p class="note">{note}</p>
@@ -109,44 +109,28 @@ def glance():
             + "</th><th>Under load: power</th><th>Under load: energy per frame</th></tr></thead>\n        <tbody>\n"
             + "\n".join(body) + "\n        </tbody>")
 
-def by_workload(value, unit, workloads, machines=None):
+def by_machine(value, unit, workloads, machines=None):
+    """A table with a row per machine and a column per workload."""
     machines = machines or rows
-    heads = "".join(f"<th>{E(m['name'])}</th>" for m in machines)
+    labels = [(w, label) for w, label, _ in WORKLOADS if w in workloads]
+    heads = "".join(f"<th>{E(label)}</th>" for _, label in labels)
     body = []
-    for w, label, _ in WORKLOADS:
-        if w not in workloads: continue
+    for m in machines:
         cells = "".join("<td>&ndash;</td>" if (m["alias"], w) in SKIP else cell(*value(m["alias"], w), unit, unit != "fps")
-                        for m in machines)
-        body.append(f"          <tr><td>{E(label)}</td>{cells}</tr>")
+                        for w, _ in labels)
+        body.append(f"          <tr><td>{E(m['name'])}</td>{cells}</tr>")
     return (f"        <thead><tr><th>Hypoland / Hyprland {HYPRLAND}</th>{heads}</tr></thead>\n        <tbody>\n"
             + "\n".join(body) + "\n        </tbody>")
 
 def watts(key):
     return lambda a, w: (data[a][0][0].get(f"power.{w}.{key}"), data[a][1][0].get(f"power.{w}.{key}"))
 
-def frames(a, w):
-    return data[a][0][0].get(f"fps.{w}.screen"), data[a][1][0].get(f"fps.{w}.screen")
-
 def joules(net):
     return lambda a, w: (per_frame(RAW[a][0], w, net), per_frame(RAW[a][1], w, net))
 
-def psys_table():
-    heads = "".join(f"<th>{E(m['name'])}: power</th><th>{E(m['name'])}: per frame</th>" for m in psys)
-    body = []
-    for w, label, _ in WORKLOADS:
-        cells = ""
-        for m in psys:
-            a = m["alias"]
-            p = (data[a][0][0].get("power.baseline.psys_W"), data[a][1][0].get("power.baseline.psys_W")) if w == "idle" else \
-                (data[a][0][0].get(f"power.{w}.psys_W"), data[a][1][0].get(f"power.{w}.psys_W"))
-            f = (None, None) if w in ("idle", "menu") else joules("psys_net_W")(a, w)
-            if (a, w) in SKIP:
-                cells += "<td>&ndash;</td><td>&ndash;</td>"
-                continue
-            cells += cell(*p, "W", True) + cell(*f, "mJ", True)
-        body.append(f"          <tr><td>{E(label)}</td>{cells}</tr>")
-    return (f"        <thead><tr><th>Hypoland / Hyprland {HYPRLAND}</th>{heads}</tr></thead>\n        <tbody>\n"
-            + "\n".join(body) + "\n        </tbody>")
+def psys_watts(a, w):
+    key = "power.baseline.psys_W" if w == "idle" else f"power.{w}.psys_W"
+    return data[a][0][0].get(key), data[a][1][0].get(key)
 
 sessions = [min(data[m["alias"]][0][1], data[m["alias"]][1][1]) for m in rows]
 SESSIONS = (f"{min(sessions)}" if min(sessions) == max(sessions) else f"{min(sessions)} to {max(sessions)}") + \
@@ -163,33 +147,32 @@ SECTIONS = [
      "the same for the energy above the idle session per frame on the screen (without the menu, see below)."),
     ("power", "The CPU package's power",
      "",
-     by_workload(lambda a, w: ((data[a][0][0].get("power.baseline.W"), data[a][1][0].get("power.baseline.W")) if w == "idle"
+     by_machine(lambda a, w: ((data[a][0][0].get("power.baseline.W"), data[a][1][0].get("power.baseline.W")) if w == "idle"
                                else watts("W")(a, w)), "W", [w for w, *_ in WORKLOADS]),
      "Watts over the workload's 30&nbsp;seconds: the cores, the GPU and the memory controller, which share the CPU "
-     "package on these machines. The idle row is the idle session between the workloads."),
+     "package on these machines. The idle column is the idle session between the workloads."),
     ("per-frame", "Energy per frame on the screen",
      "",
-     by_workload(joules("net_W"), "mJ", [w for w in LOAD if w != "menu"]),
+     by_machine(joules("net_W"), "mJ", [w for w in LOAD if w != "menu"]),
      "Millijoules above the idle session for each frame the compositor put on the screen, per session and then the "
      "median: a compositor that shows more frames has its clients draw more, which the power alone counts against it. "
      "The idle machine's power is taken off first, or spreading it over more frames would make any compositor that "
      "shows more of them look cheaper. Not the menu: it shows 5 to 10 frames a second, and its energy is the shell "
      "building the menu, not frames."),
-    ("frames", "Frames on the screen",
-     "",
-     by_workload(frames, "fps", LOAD),
-     "The compositor's page flips a second over the same 30&nbsp;seconds. Mostly the same under both: the clients draw "
-     "at the screen's rate or at the video's. Where Hypoland shows more, its client did more work for the power in the "
-     "tables above."),
 ]
 if psys:
-    SECTIONS.append(("platform", "The whole machine",
+    SECTIONS.append(("platform", "The whole machine's power",
                      f"      <p>{' and '.join(E(m['name']) for m in psys)} also have RAPL's platform zone (psys): what the "
                      "whole machine draws from its power supply, the screen and the rest of the board included. It is the "
                      "closest these figures come to a battery's.</p>\n",
-                     psys_table(),
-                     "Watts over the workload, and millijoules above the idle session per frame on the screen as above. "
-                     "The batteries were full or held at their charge limit throughout, so no charging is counted."))
+                     by_machine(psys_watts, "W", [w for w, *_ in WORKLOADS], psys),
+                     "Watts over the workload's 30&nbsp;seconds; the idle column is the idle session between the "
+                     "workloads. The batteries were full or held at their charge limit throughout, so no charging is "
+                     "counted."))
+    SECTIONS.append(("platform-frame", "The whole machine's energy per frame",
+                     "",
+                     by_machine(joules("psys_net_W"), "mJ", [w for w in LOAD if w != "menu"], psys),
+                     "Millijoules above the idle session per frame on the screen, as for the CPU package above."))
 
 RAW_LINK = ("The raw data, every session's values and the scripts go to "
             "<a href=\"https://github.com/hegjon/hypoland/tree/master/docs/baseline\">docs/baseline</a> when the run ends."
