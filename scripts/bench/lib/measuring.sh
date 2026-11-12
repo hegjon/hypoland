@@ -132,15 +132,18 @@ bench() { # name
             $1 ~ /^[0-9]+$/ {k = $3; sub(/:.*/, "", k); printf "@ %s perf.%s.M%s %.2f\n", r, n, k, $1 / 1e6}
         ' "$OUT/$name.perf"
         if [ "$METER" != none ]; then
-            local w wp=-
+            local w wp=- fps=-
             w=$(watts "$m0" "$m1")
             value "power.$name.W" "$w"
             if [ -n "$PSYS" ]; then
                 wp=$(watts "$m0" "$m1" 3)
                 value "power.$name.psys_W" "$wp"
             fi
+            # the frames on the screen, for the energy per frame
+            [ -n "$flipper" ] && fps=$(awk -F, -v s="$SECONDS_PER_RUN" -v e=$FLIP_EVENT '
+                $3 == e && $1 ~ /^[0-9]+$/ && $1 >= s {printf "%.3f", $1 / s}' "$OUT/$name.flips")
             # the net power needs the idle baseline after the workload, see baseline()
-            PENDING="$name $w $(((m1 - m0) / 1000000)) $wp"
+            PENDING="$name $w $(((m1 - m0) / 1000000)) $wp ${fps:--}"
         fi
     fi
     [ -n "$sampler" ] && awk -v r=$ROUND -v n="$name" -v p="$PROCESS" '

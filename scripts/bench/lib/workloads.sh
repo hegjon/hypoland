@@ -1308,6 +1308,10 @@ missing() { # programs, <program>>=<version> for a program at least as new as it
 # The power of the idle session, sampled between the workloads. A workload's net power is its power minus the
 # mean of the baselines before and after it, half their difference is how far off that mean can be.
 # With RAPL's platform zone (psys) the same again for the whole machine, as power.*.psys_W and power.*.psys_net_W.
+# Where the workload showed frames, the net energy per frame on the screen as well (energy.*.net_mJ_per_frame, asked
+# for by the user on 2026-11-12): a compositor that shows more frames makes its clients draw more, which the power
+# alone counts against it. The net, not the gross: the idle machine's power spread over more frames would make any
+# compositor that shows more of them look cheaper.
 PENDING="" BEFORE="" PBEFORE=""
 baseline() {
     if [ "$METER" = none ]; then
@@ -1316,7 +1320,7 @@ baseline() {
     fi
     sleep 2
     battery_check
-    local m0 m1 w wp="" name gross ms pgross
+    local m0 m1 w wp="" name gross ms pgross fps
     m0=$(mark)
     sleep "$IDLE"
     m1=$(mark)
@@ -1327,18 +1331,20 @@ baseline() {
         value power.baseline.psys_W "$wp"
     fi
     if [ -n "$PENDING" ] && [ -n "$BEFORE" ]; then
-        read -r name gross ms pgross <<<"$PENDING"
-        awk -v r=$ROUND -v n="$name" -v g="$gross" -v a="$BEFORE" -v b="$w" -v s="$ms" 'BEGIN {
+        read -r name gross ms pgross fps <<<"$PENDING"
+        awk -v r=$ROUND -v n="$name" -v g="$gross" -v a="$BEFORE" -v b="$w" -v s="$ms" -v f="${fps:--}" 'BEGIN {
             net = g - (a + b) / 2
             pm = (a > b ? a - b : b - a) / 2
             printf "@ %s power.%s.net_W %.3f\n@ %s power.%s.pm_W %.3f\n", r, n, net, r, n, pm
             printf "@ %s energy.%s.net_J %.2f\n", r, n, net * s / 1000
+            if (f != "-") printf "@ %s energy.%s.net_mJ_per_frame %.2f\n", r, n, net * 1000 / f
             printf "    %.2f W, %.2f W above the idle baseline (+-%.2f W)\n", g, net, pm
         }'
         [ -n "$wp" ] && [ -n "$PBEFORE" ] && [ "${pgross:--}" != - ] &&
-            awk -v r=$ROUND -v n="$name" -v g="$pgross" -v a="$PBEFORE" -v b="$wp" 'BEGIN {
+            awk -v r=$ROUND -v n="$name" -v g="$pgross" -v a="$PBEFORE" -v b="$wp" -v f="${fps:--}" 'BEGIN {
                 net = g - (a + b) / 2
                 printf "@ %s power.%s.psys_net_W %.3f\n@ %s power.%s.psys_pm_W %.3f\n", r, n, net, r, n, (a > b ? a - b : b - a) / 2
+                if (f != "-") printf "@ %s energy.%s.psys_net_mJ_per_frame %.2f\n", r, n, net * 1000 / f
                 printf "    the machine (psys) %.2f W, %.2f W above its idle baseline\n", g, net
             }'
     fi

@@ -46,10 +46,13 @@ compare() {
             # the power of the whole machine drifts, a guess until real runs show how much
             if ($1 ~ /^power\./ && noise < 0.3)
                 noise = 0.3
+            # the energy per frame on the screen: the power drift spread over the frames, a guess as well
+            if ($1 ~ /^energy\..*_mJ_per_frame$/ && noise < base[$1] / 20)
+                noise = base[$1] / 20
             # instructions repeat to about a percent
             if ($1 ~ /^perf\./ && noise < base[$1] / 50)
                 noise = base[$1] / 50
-            if ($1 ~ /^(cpu\..*[._]percent|cpu\..*\.ms_per_frame|gpu\..*\.busy_(percent|ms_per_frame)|mem\..*_kB|binary\.size_kB|power\.(baseline\.(psys_)?W|.*\.(psys_)?net_W)|perf\..*\.Minstructions|latency\..*_ms|startup\..*_ms)$/ && (d > noise || d < -noise) && d != 0)
+            if ($1 ~ /^(cpu\..*[._]percent|cpu\..*\.ms_per_frame|gpu\..*\.busy_(percent|ms_per_frame)|mem\..*_kB|binary\.size_kB|power\.(baseline\.(psys_)?W|.*\.(psys_)?net_W)|energy\..*_mJ_per_frame|perf\..*\.Minstructions|latency\..*_ms|startup\..*_ms)$/ && (d > noise || d < -noise) && d != 0)
                 mark = (d < 0) ? "better" : "WORSE"
             if ($1 ~ /^fps\./ && d < -1)
                 mark = "WORSE"
