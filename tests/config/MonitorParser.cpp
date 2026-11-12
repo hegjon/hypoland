@@ -1,4 +1,5 @@
 #include <config/shared/monitor/Parser.hpp>
+#include <helpers/memory/Memory.hpp>
 
 #include <gtest/gtest.h>
 

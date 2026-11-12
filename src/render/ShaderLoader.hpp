@@ -42,7 +42,6 @@ namespace Render {
         SH_FRAG_INNER_GLOW,
         SH_FRAG_SURFACE,
         SH_FRAG_BORDER1,
-        SH_FRAG_GLITCH,
         SH_FRAG_FROSTFINISH,
         SH_FRAG_DROPSFINISH,
         SH_FRAG_HEATSHIMMERFINISH,

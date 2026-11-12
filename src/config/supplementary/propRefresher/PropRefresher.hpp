@@ -9,7 +9,6 @@ namespace Config::Supplementary {
     enum ePropRefreshProp : uint16_t {
         REFRESH_LAYOUTS            = (1 << 0),
         REFRESH_INPUT_DEVICES      = (1 << 1),
-        REFRESH_SCREEN_SHADER      = (1 << 2),
         REFRESH_BLUR_FB            = (1 << 3),
         REFRESH_RULES              = (1 << 4),
         REFRESH_WINDOW_STATES      = (1 << 5) | REFRESH_RULES,

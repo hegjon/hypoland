@@ -2,7 +2,6 @@
 
 #include "Framebuffer.hpp"
 #include "../desktop/DesktopTypes.hpp"
-#include "../helpers/cm/ColorManagement.hpp"
 #include "../protocols/core/Compositor.hpp"
 #include <hyprgraphics/color/Color.hpp>
 #include <hyprutils/math/Box.hpp>
@@ -92,7 +91,6 @@ namespace Render {
         float                     mouseZoomFactor    = 1.f;
         bool                      mouseZoomUseMouse  = true; // true by default
         bool                      useNearestNeighbor = false;
-        bool                      blockScreenShader  = false;
 
         Vector2D                  primarySurfaceUVTopLeft     = Vector2D(-1, -1);
         Vector2D                  primarySurfaceUVBottomRight = Vector2D(-1, -1);

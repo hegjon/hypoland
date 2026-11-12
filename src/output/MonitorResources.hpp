@@ -12,7 +12,7 @@ class CEventLoopTimer;
 namespace Monitor {
     class CMonitorResources {
       public:
-        CMonitorResources(WP<CMonitor> monitor, DRMFormat format, Vector2D size, NColorManagement::PImageDescription imageDescription);
+        CMonitorResources(WP<CMonitor> monitor, DRMFormat format, Vector2D size);
         ~CMonitorResources();
 
         SP<Render::IFramebuffer> getUnusedWorkBuffer();
@@ -34,31 +34,28 @@ namespace Monitor {
         SP<Render::IFramebuffer> m_blurFB;
 
       private:
-        void                                initFB(SP<Render::IFramebuffer> fb);
-        void                                setImageDescription(NColorManagement::PImageDescription imageDescription);
-        NColorManagement::PImageDescription getMirrorTexImageDescription();
-        Vector2D                            mirrorFBDamageSize() const;
-        void                                scheduleCleanup();
-        void                                releaseUnusedWorkBuffers();
+        void     initFB(SP<Render::IFramebuffer> fb);
+        Vector2D mirrorFBDamageSize() const;
+        void     scheduleCleanup();
+        void     releaseUnusedWorkBuffers();
 
         struct SResource {
             SP<Render::IFramebuffer> buffer;
             CTimer                   lastUsed;
         };
 
-        SP<Render::IFramebuffer>            m_monitorMirrorFB;
-        CRegion                             m_mirrorFBStaleDamage;
-        WP<CMonitor>                        m_monitor;
-        DRMFormat                           m_drmFormat;
-        Vector2D                            m_size;
-        NColorManagement::PImageDescription m_imageDescription;
-        bool                                m_mirrorFBValid            = false;
-        bool                                m_mirrorFBNeedsFullRefresh = true;
+        SP<Render::IFramebuffer> m_monitorMirrorFB;
+        CRegion                  m_mirrorFBStaleDamage;
+        WP<CMonitor>             m_monitor;
+        DRMFormat                m_drmFormat;
+        Vector2D                 m_size;
+        bool                     m_mirrorFBValid            = false;
+        bool                     m_mirrorFBNeedsFullRefresh = true;
 
-        std::vector<SResource>              m_workBuffers;
-        std::vector<SResource>              m_sizedWorkBuffers;
-        std::vector<SResource>              m_snapshotBuffers;
-        SP<CEventLoopTimer>                 m_cleanupTimer;
+        std::vector<SResource>   m_workBuffers;
+        std::vector<SResource>   m_sizedWorkBuffers;
+        std::vector<SResource>   m_snapshotBuffers;
+        SP<CEventLoopTimer>      m_cleanupTimer;
 
         friend class CMonitor;
     };

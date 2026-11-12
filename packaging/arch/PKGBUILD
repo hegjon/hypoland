@@ -22,7 +22,6 @@ depends=(
   cairo
   glib2
   glibc
-  hyprcursor
   'hyprgraphics>=0.6.0'
   hyprlang
   'hyprutils>=0.14.3'

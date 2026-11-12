@@ -65,16 +65,6 @@ void CPropRefresher::refreshProp(const bool execdAsScheduled) {
         g_pInputManager->setTabletToolConfigs();  // update tablettools
     }
 
-    if (m_propsTripped & REFRESH_SCREEN_SHADER) {
-        g_pHyprRenderer->m_reloadScreenShader = true;
-        for (auto const& m : State::monitorState()->monitors()) {
-            if (!m)
-                continue;
-
-            g_pHyprRenderer->damageMonitor(m);
-        }
-    }
-
     if (m_propsTripped & REFRESH_BLUR_FB) {
         g_pHyprRenderer->refreshBlurProvider();
 

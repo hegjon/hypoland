@@ -46,27 +46,12 @@ enum eShaderUniform : uint8_t {
     SHADER_ANGLE2,
     SHADER_GRADIENT_LERP,
     SHADER_TIME,
-    SHADER_DISTORT,
-    SHADER_WL_OUTPUT,
     SHADER_CONTRAST,
     SHADER_PASSES,
     SHADER_VIBRANCY,
     SHADER_VIBRANCY_DARKNESS,
     SHADER_BRIGHTNESS,
     SHADER_NOISE,
-    SHADER_POINTER,
-    SHADER_POINTER_SHAPE,
-    SHADER_POINTER_SWITCH_TIME,
-    SHADER_POINTER_SHAPE_PREVIOUS,
-    SHADER_POINTER_PRESSED_POSITIONS,
-    SHADER_POINTER_HIDDEN,
-    SHADER_POINTER_KILLING,
-    SHADER_POINTER_PRESSED_TIMES,
-    SHADER_POINTER_PRESSED_KILLED,
-    SHADER_POINTER_PRESSED_TOUCHED,
-    SHADER_POINTER_INACTIVE_TIMEOUT,
-    SHADER_POINTER_LAST_ACTIVE,
-    SHADER_POINTER_SIZE,
     SHADER_BLURRED_BG,
     SHADER_UV_SIZE,
     SHADER_UV_OFFSET,
@@ -107,12 +92,9 @@ class CShader {
     void   destroy();
     GLuint program() const;
     GLint  getUniformLocation(eShaderUniform location) const;
-    int    getInitialTime() const;
-    void   setInitialTime(int time);
 
   private:
-    GLuint                         m_program     = 0;
-    float                          m_initialTime = 0;
+    GLuint                         m_program = 0;
     std::array<GLint, SHADER_LAST> m_uniformLocations;
 
     struct SUniformMatrix3Data {

@@ -116,7 +116,6 @@ namespace Render::GL {
         float                    mouseZoomFactor            = 1.f;
         bool                     mouseZoomUseMouse          = true; // true by default
         bool                     useNearestNeighbor         = false;
-        bool                     blockScreenShader          = false;
         bool                     simplePass                 = false;
         bool                     transformDamage            = true;
         bool                     noSimplify                 = false;
@@ -184,7 +183,6 @@ namespace Render::GL {
             bool                   allowDim      = true;
             bool                   noAA          = false; // unused
             uint8_t                wrapX = WRAP_CLAMP_TO_EDGE, wrapY = WRAP_CLAMP_TO_EDGE;
-            bool                   finalOutput = false; // the work buffer on its way to the output, always opaque
 
             uint8_t                discardMode    = DISCARD_OPAQUE;
             float                  discardOpacity = 0.f;
@@ -249,8 +247,6 @@ namespace Render::GL {
         void                              destroyMonitorResources(PHLMONITORREF);
 
         bool                              saveBufferForMirror(const CBox&);
-
-        void                              applyScreenShader(const std::string& path);
 
         void                              renderOffToMain(SP<IFramebuffer> off);
 
@@ -385,12 +381,10 @@ namespace Render::GL {
         std::string             m_extensions;
 
         bool                    m_fakeFrame            = false;
-        bool                    m_applyFinalShader     = false;
         bool                    m_blend                = false;
         bool                    m_offloadedFramebuffer = false;
         bool                    m_directRender         = false;
 
-        SP<CShader>             m_finalScreenShader;
         GLuint                  m_currentProgram;
 
         void                    initDRMFormats();
@@ -398,19 +392,12 @@ namespace Render::GL {
         void                    initEGL(bool gbm);
         EGLDeviceEXT            eglDeviceFromDRMFD(int drmFD);
 
-        // for the final shader
-        std::array<CTimer, POINTER_PRESSED_HISTORY_LENGTH>   m_pressedHistoryTimers    = {};
-        std::array<Vector2D, POINTER_PRESSED_HISTORY_LENGTH> m_pressedHistoryPositions = {};
-        GLint                                                m_pressedHistoryKilled    = 0;
-        GLint                                                m_pressedHistoryTouched   = 0;
-
         //
         std::optional<std::vector<uint64_t>> getModsForFormat(EGLint format);
 
         void                                 renderRectInternal(const CBox&, const CHyprColor&, const SRectRenderData& data);
         void                                 renderRectWithBlurInternal(const CBox&, const CHyprColor&, const SRectRenderData& data);
         void                                 renderRectWithDamageInternal(const CBox&, const CHyprColor&, const SRectRenderData& data);
-        WP<CShader>                          renderScreenShaderInternal();
         WP<CShader>                          renderToFBInternal(SP<ITexture> tex, const STextureRenderData& data, eTextureType texType, const CBox& newBox);
         void                                 renderTextureInternal(SP<ITexture>, const CBox&, const STextureRenderData& data);
         void                                 renderTextureWithBlurInternal(SP<ITexture>, const CBox&, const STextureRenderData& data);

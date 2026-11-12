@@ -55,6 +55,8 @@ local menu        = "hyprlauncher"
 
 -- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Environment-variables/
 
+-- Hypoland draws XCursor themes (XCURSOR_THEME, XCURSOR_SIZE). HYPRCURSOR_SIZE is only for programs that
+-- draw hyprcursor themes themselves.
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
 

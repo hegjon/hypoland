@@ -36,8 +36,8 @@ static const char* abiHash() {
         return std::string{v.substr(0, v.find_last_of('.'))};
     };
 
-    static const std::string ver = std::format("{}_aq_{}_hu_{}_hg_{}_hc_{}_hlg_{}", GIT_COMMIT_HASH, stripPatch(AQUAMARINE_VERSION), stripPatch(HYPRUTILS_VERSION),
-                                               stripPatch(HYPRGRAPHICS_VERSION), stripPatch(HYPRCURSOR_VERSION), stripPatch(HYPRLANG_VERSION));
+    static const std::string ver = std::format("{}_aq_{}_hu_{}_hg_{}_hlg_{}", GIT_COMMIT_HASH, stripPatch(AQUAMARINE_VERSION), stripPatch(HYPRUTILS_VERSION),
+                                               stripPatch(HYPRGRAPHICS_VERSION), stripPatch(HYPRLANG_VERSION));
 
     return ver.c_str();
 }
@@ -126,19 +126,19 @@ std::string SystemInfo::getVersion(eOutputFormat fmt) {
     "buildAquamarine": "{}",
     "buildHyprlang": "{}",
     "buildHyprutils": "{}",
-    "buildHyprcursor": "{}",
+    "buildHyprcursor": "",
     "buildHyprgraphics": "{}",
     "systemAquamarine": "{}",
     "systemHyprlang": "{}",
     "systemHyprutils": "{}",
-    "systemHyprcursor": "{}",
+    "systemHyprcursor": "",
     "systemHyprgraphics": "{}",
     "abiHash": "{}",
     "flags": [)#",
             GIT_BRANCH, GIT_COMMIT_HASH, HYPRLAND_VERSION, HYPOLAND_VERSION, (GIT_DIRTY == std::string_view{"dirty"} ? "true" : "false"), escapeJSONStrings(commitMsg),
-            GIT_COMMIT_DATE, GIT_TAG, GIT_COMMITS, AQUAMARINE_VERSION, HYPRLANG_VERSION, HYPRUTILS_VERSION, HYPRCURSOR_VERSION, HYPRGRAPHICS_VERSION,
-            getSystemLibraryVersion("aquamarine"), getSystemLibraryVersion("hyprlang"), getSystemLibraryVersion("hyprutils"), getSystemLibraryVersion("hyprcursor"),
-            getSystemLibraryVersion("hyprgraphics"), abiHash());
+            // the hyprcursor keys stay, empty, so the JSON keeps its form: Hypoland is built without hyprcursor
+            GIT_COMMIT_DATE, GIT_TAG, GIT_COMMITS, AQUAMARINE_VERSION, HYPRLANG_VERSION, HYPRUTILS_VERSION, HYPRGRAPHICS_VERSION, getSystemLibraryVersion("aquamarine"),
+            getSystemLibraryVersion("hyprlang"), getSystemLibraryVersion("hyprutils"), getSystemLibraryVersion("hyprgraphics"), abiHash());
 
 #if ISDEBUG
         result += "\"debug\",";

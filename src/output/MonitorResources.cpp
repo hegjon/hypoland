@@ -1,6 +1,5 @@
 #include "MonitorResources.hpp"
 #include "../managers/screenshare/ScreenshareManager.hpp"
-#include "../helpers/cm/ColorManagement.hpp"
 #include "../render/Renderer.hpp"
 #include "../managers/eventLoop/EventLoopManager.hpp"
 #include "../managers/eventLoop/EventLoopTimer.hpp"
@@ -9,15 +8,14 @@
 #include <format>
 
 using namespace Monitor;
-using namespace NColorManagement;
 
 static const int          MAX_WORK_BUFFERS             = 8;
 static const int          MAX_UNUSED_SECONDS           = 5;
 static constexpr uint64_t MAX_SIZED_WORK_BUFFER_PIXELS = 64ULL * 1024ULL * 1024ULL;
 
-CMonitorResources::CMonitorResources(WP<CMonitor> monitor, DRMFormat format, Vector2D size, NColorManagement::PImageDescription imageDescription) :
+CMonitorResources::CMonitorResources(WP<CMonitor> monitor, DRMFormat format, Vector2D size) :
     m_stencilTex(g_pHyprRenderer->createStencilTexture(size.x, size.y)), m_blurFB(g_pHyprRenderer->createFB(std::format("Monitor {} blur FB", monitor->m_name))),
-    m_monitor(monitor), m_drmFormat(format), m_size(size), m_imageDescription(imageDescription) {
+    m_monitor(monitor), m_drmFormat(format), m_size(size) {
     initFB(m_blurFB);
     monitor->m_blurFBDirty = true;
 }
@@ -56,21 +54,6 @@ void CMonitorResources::releaseUnusedWorkBuffers() {
 void CMonitorResources::initFB(SP<Render::IFramebuffer> fb) {
     fb->addStencil(m_stencilTex);
     fb->alloc(m_size.x, m_size.y, m_drmFormat);
-    fb->setImageDescription(m_imageDescription);
-}
-
-void CMonitorResources::setImageDescription(NColorManagement::PImageDescription imageDescription) {
-    if (m_imageDescription == imageDescription)
-        return;
-    m_imageDescription = imageDescription;
-    m_blurFB->setImageDescription(imageDescription);
-    for (const auto& res : m_workBuffers)
-        res.buffer->setImageDescription(imageDescription);
-    for (const auto& res : m_sizedWorkBuffers)
-        res.buffer->setImageDescription(imageDescription);
-    if (m_monitorMirrorFB)
-        m_monitorMirrorFB->setImageDescription(getMirrorTexImageDescription());
-    invalidateMirrorFB();
 }
 
 SP<Render::IFramebuffer> CMonitorResources::getUnusedWorkBuffer() {
@@ -133,7 +116,6 @@ SP<Render::IFramebuffer> CMonitorResources::getUnusedWorkBuffer(const Vector2D& 
             m_sizedWorkBuffers.pop_back();
             return nullptr;
         }
-        res.buffer->setImageDescription(m_imageDescription);
         res.lastUsed.reset();
         scheduleCleanup();
         return res.buffer;
@@ -143,7 +125,6 @@ SP<Render::IFramebuffer> CMonitorResources::getUnusedWorkBuffer(const Vector2D& 
     if (found == m_sizedWorkBuffers.end() || !found->buffer->alloc(size.x, size.y, m_drmFormat))
         return nullptr;
 
-    found->buffer->setImageDescription(m_imageDescription);
     found->lastUsed.reset();
     scheduleCleanup();
     return found->buffer;
@@ -245,25 +226,15 @@ SP<Render::IFramebuffer> CMonitorResources::mirrorFB() {
     if (!m_monitorMirrorFB)
         m_monitorMirrorFB = g_pHyprRenderer->createFB(std::format("Monitor {} mirror FB", m_monitor->m_name));
 
-    if (!m_monitorMirrorFB->isAllocated()) {
-        // the monitor's format, not the rule's wish: bitdepth 10 can be refused (CMonitor::applyMonitorRule())
+    // the monitor's format, not the rule's wish: bitdepth 10 can be refused (CMonitor::applyMonitorRule())
+    if (!m_monitorMirrorFB->isAllocated())
         m_monitorMirrorFB->alloc(m_size.x, m_size.y, m_drmFormat);
-        m_monitorMirrorFB->setImageDescription(getMirrorTexImageDescription());
-    }
 
     return m_monitorMirrorFB;
 }
 
 SP<Render::ITexture> CMonitorResources::getMirrorTexture() {
     return hasMirrorFB() ? mirrorFB()->getTexture() : nullptr;
-}
-
-NColorManagement::PImageDescription CMonitorResources::getMirrorTexImageDescription() {
-    const auto TF = m_imageDescription->value().transferFunction;
-    if (TF == CM_TRANSFER_FUNCTION_GAMMA22 || TF == CM_TRANSFER_FUNCTION_SRGB)
-        return m_imageDescription;
-
-    return DEFAULT_SRGB_IMAGE_DESCRIPTION;
 }
 
 Vector2D CMonitorResources::mirrorFBDamageSize() const {

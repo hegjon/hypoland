@@ -196,13 +196,13 @@ if [ -n "$ARM_HOST" ] && [ "$SKIP_BUILD" = 0 ]; then
     ARM_PKG=$(basename "$ARM_PKG") ARM_BENCH_PKG=$(basename "$ARM_BENCH_PKG")
     ARM_FILES=("packaging/arch/$ARM_PKG" "packaging/arch/$ARM_BENCH_PKG")
     echo "packaging/arch/$ARM_PKG ($(du -h "packaging/arch/$ARM_PKG" | cut -f1)), packaging/arch/$ARM_BENCH_PKG ($(du -h "packaging/arch/$ARM_BENCH_PKG" | cut -f1))"
-    ARM_LIBS=$(ssh -o BatchMode=yes "$ARM_HOST" 'pacman -Q hyprutils hyprlang hyprcursor hyprgraphics hyprwire 2>/dev/null' |
+    ARM_LIBS=$(ssh -o BatchMode=yes "$ARM_HOST" 'pacman -Q hyprutils hyprlang hyprgraphics hyprwire 2>/dev/null' |
         awk '{ sub(/-[0-9.]+$/, "", $2); printf "%s%s %s", sep, $1, $2; sep = ", " }')
 fi
 
 # --- 4. release notes
 step "Writing the release notes"
-libs=$(pacman -Q hyprutils hyprlang hyprcursor hyprgraphics hyprwire | awk '{ sub(/-[0-9]+$/, "", $2); printf "%s%s %s", sep, $1, $2; sep = ", " }')
+libs=$(pacman -Q hyprutils hyprlang hyprgraphics hyprwire | awk '{ sub(/-[0-9]+$/, "", $2); printf "%s%s %s", sep, $1, $2; sep = ", " }')
 ARM_NOTE=
 [ -z "$ARM_PKG" ] || ARM_NOTE="On aarch64 (Omarchy on a Snapdragon laptop, or on an Apple Silicon Mac through omarchy-mac), download \`$ARM_PKG\` instead and install it the same way. It is built on an aarch64 machine running Omarchy against the aarch64 packages of $TODAY ($ARM_LIBS).
 "

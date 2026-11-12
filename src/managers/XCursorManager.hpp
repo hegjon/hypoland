@@ -41,7 +41,7 @@ class CXCursorManager {
     float                      m_lastLoadScale = 0;
     std::string                m_themeName     = "";
     SP<SXCursors>              m_defaultCursor;
-    SP<SXCursors>              m_hyprCursor;
+    SP<SXCursors>              m_builtinCursor;
     std::vector<SP<SXCursors>> m_cursors; // the shapes loaded so far
     std::vector<std::string>   m_themeDirs;
     std::set<std::string>      m_missingShapes;

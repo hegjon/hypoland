@@ -37,7 +37,7 @@
 #include "../layout/space/Space.hpp"
 #include "../layout/algorithm/Algorithm.hpp"
 #include "../i18n/Engine.hpp"
-#include "../helpers/cm/ColorManagement.hpp"
+#include "../helpers/ICC.hpp"
 #include "../state/MonitorState.hpp"
 #include "../state/MonitorLayoutController.hpp"
 #include "../state/WorkspacePlacementController.hpp"
@@ -69,7 +69,6 @@ using namespace Hyprutils::String;
 using namespace Hyprutils::Utils;
 using namespace Hyprutils::OS;
 using enum NContentType::eContentType;
-using namespace NColorManagement;
 using namespace Desktop::View;
 using namespace Render::GL;
 using namespace Monitor;
@@ -84,7 +83,7 @@ constexpr const char* drmFormatToString(uint32_t drmFormat) {
     }
 }
 
-CMonitor::CMonitor(SP<Aquamarine::IOutput> output_) : m_name(output_->name), m_state(this), m_output(output_), m_imageDescription(getDefaultImageDescription()) {
+CMonitor::CMonitor(SP<Aquamarine::IOutput> output_) : m_name(output_->name), m_state(this), m_output(output_) {
     Animation::mgr()->createAnimation(0.f, m_specialFade, Config::animationTree()->getAnimationPropertyConfig("specialWorkspaceIn"), AVARDAMAGE_NONE);
     m_specialFade->setUpdateCallback([this](auto) { g_pHyprRenderer->damageMonitor(m_self.lock()); });
     Animation::mgr()->createAnimation(0.f, m_specialDim, Config::animationTree()->getAnimationPropertyConfig("specialWorkspaceIn"), AVARDAMAGE_NONE);
@@ -545,178 +544,25 @@ void CMonitor::onDisconnect(bool destroy) {
     }
 }
 
-static NColorManagement::eTransferFunction chooseTF(NTransferFunction::eTF tf) {
-    const auto sdrEOTF = NTransferFunction::fromConfig();
-
-    switch (tf) {
-        case NTransferFunction::TF_GAMMA22:
-        case NTransferFunction::TF_FORCED_GAMMA22: return NColorManagement::CM_TRANSFER_FUNCTION_GAMMA22;
-        case NTransferFunction::TF_DEFAULT:
-        case NTransferFunction::TF_SRGB: return NColorManagement::CM_TRANSFER_FUNCTION_SRGB;
-
-        case NTransferFunction::TF_AUTO: // use global setting
-            switch (sdrEOTF) {
-                case NTransferFunction::TF_AUTO: return NColorManagement::CM_TRANSFER_FUNCTION_GAMMA22;
-                default: return chooseTF(sdrEOTF);
-            }
-
-        default: UNREACHABLE();
-    }
-}
-
-void CMonitor::applyCMType(NCMType::eCMType cmType, NTransferFunction::eTF cmSdrEotf) {
-    auto                                                              oldImageDescription = m_imageDescription;
-    const auto                                                        chosenSdrEotf       = chooseTF(cmSdrEotf);
-
-    const auto                                                        masteringPrimaries  = getMasteringPrimaries();
-    const NColorManagement::SImageDescription::SPCMasteringLuminances masteringLuminances = getMasteringLuminances();
-
-    const auto                                                        maxFALL = this->maxFALL();
-    const auto                                                        maxCLL  = this->maxCLL();
-
-    switch (cmType) {
-        case NCMType::CM_SRGB:
-            m_imageDescription = CImageDescription::from({.transferFunction = chosenSdrEotf,
-                                                          .primariesNamed   = NColorManagement::CM_PRIMARIES_SRGB,
-                                                          .primaries        = NColorManagement::getPrimaries(NColorManagement::CM_PRIMARIES_SRGB)});
-            break; // assumes SImageDescription defaults to sRGB
-        case NCMType::CM_WIDE:
-            m_imageDescription = CImageDescription::from({.transferFunction    = chosenSdrEotf,
-                                                          .primariesNameSet    = true,
-                                                          .primariesNamed      = NColorManagement::CM_PRIMARIES_BT2020,
-                                                          .primaries           = NColorManagement::getPrimaries(NColorManagement::CM_PRIMARIES_BT2020),
-                                                          .masteringPrimaries  = masteringPrimaries,
-                                                          .masteringLuminances = masteringLuminances,
-                                                          .maxCLL              = maxCLL,
-                                                          .maxFALL             = maxFALL});
-            break;
-        case NCMType::CM_DCIP3:
-            m_imageDescription = CImageDescription::from({.transferFunction    = chosenSdrEotf,
-                                                          .primariesNameSet    = true,
-                                                          .primariesNamed      = NColorManagement::CM_PRIMARIES_DCI_P3,
-                                                          .primaries           = NColorManagement::getPrimaries(NColorManagement::CM_PRIMARIES_DCI_P3),
-                                                          .masteringPrimaries  = masteringPrimaries,
-                                                          .masteringLuminances = masteringLuminances,
-                                                          .maxCLL              = maxCLL,
-                                                          .maxFALL             = maxFALL});
-            break;
-        case NCMType::CM_DP3:
-            m_imageDescription = CImageDescription::from({.transferFunction    = chosenSdrEotf,
-                                                          .primariesNameSet    = true,
-                                                          .primariesNamed      = NColorManagement::CM_PRIMARIES_DISPLAY_P3,
-                                                          .primaries           = NColorManagement::getPrimaries(NColorManagement::CM_PRIMARIES_DISPLAY_P3),
-                                                          .masteringPrimaries  = masteringPrimaries,
-                                                          .masteringLuminances = masteringLuminances,
-                                                          .maxCLL              = maxCLL,
-                                                          .maxFALL             = maxFALL});
-            break;
-        case NCMType::CM_ADOBE:
-            m_imageDescription = CImageDescription::from({.transferFunction    = chosenSdrEotf,
-                                                          .primariesNameSet    = true,
-                                                          .primariesNamed      = NColorManagement::CM_PRIMARIES_ADOBE_RGB,
-                                                          .primaries           = NColorManagement::getPrimaries(NColorManagement::CM_PRIMARIES_ADOBE_RGB),
-                                                          .masteringPrimaries  = masteringPrimaries,
-                                                          .masteringLuminances = masteringLuminances,
-                                                          .maxCLL              = maxCLL,
-                                                          .maxFALL             = maxFALL});
-            break;
-        case NCMType::CM_EDID:
-            m_imageDescription = CImageDescription::from({.transferFunction    = chosenSdrEotf,
-                                                          .primariesNameSet    = false,
-                                                          .primariesNamed      = NColorManagement::CM_PRIMARIES_BT2020,
-                                                          .primaries           = masteringPrimaries,
-                                                          .masteringPrimaries  = masteringPrimaries,
-                                                          .masteringLuminances = masteringLuminances,
-                                                          .maxCLL              = maxCLL,
-                                                          .maxFALL             = maxFALL});
-            break;
-        case NCMType::CM_HDR:
-            m_imageDescription = CImageDescription::from({.transferFunction    = NColorManagement::CM_TRANSFER_FUNCTION_ST2084_PQ,
-                                                          .primariesNameSet    = true,
-                                                          .primariesNamed      = NColorManagement::CM_PRIMARIES_BT2020,
-                                                          .primaries           = NColorManagement::getPrimaries(NColorManagement::CM_PRIMARIES_BT2020),
-                                                          .masteringPrimaries  = masteringPrimaries,
-                                                          .luminances          = {.min       = DEFAULT_HDR_IMAGE_DESCRIPTION->value().getTFMinLuminance(),
-                                                                                  .max       = DEFAULT_HDR_IMAGE_DESCRIPTION->value().getTFMaxLuminance(),
-                                                                                  .reference = DEFAULT_HDR_IMAGE_DESCRIPTION->value().getTFRefLuminance()},
-                                                          .masteringLuminances = masteringLuminances,
-                                                          .maxCLL              = maxCLL,
-                                                          .maxFALL             = maxFALL});
-            break;
-        case NCMType::CM_HDR_EDID:
-            m_imageDescription = CImageDescription::from(
-                {.transferFunction = NColorManagement::CM_TRANSFER_FUNCTION_ST2084_PQ,
-                 .primariesNameSet = false,
-                 .primariesNamed   = NColorManagement::CM_PRIMARIES_BT2020,
-                 .primaries = m_output->parsedEDID.chromaticityCoords.has_value() ? masteringPrimaries : NColorManagement::getPrimaries(NColorManagement::CM_PRIMARIES_BT2020),
-                 .masteringPrimaries  = masteringPrimaries,
-                 .luminances          = {.min       = DEFAULT_HDR_IMAGE_DESCRIPTION->value().getTFMinLuminance(),
-                                         .max       = DEFAULT_HDR_IMAGE_DESCRIPTION->value().getTFMaxLuminance(),
-                                         .reference = DEFAULT_HDR_IMAGE_DESCRIPTION->value().getTFRefLuminance()},
-                 .masteringLuminances = masteringLuminances,
-                 .maxCLL              = maxCLL,
-                 .maxFALL             = maxFALL});
-
-            break;
-        default: UNREACHABLE();
-    }
-    if ((minLuminance() >= 0 || maxLuminance() > 0) && (cmType == NCMType::CM_HDR || cmType == NCMType::CM_HDR_EDID))
-        m_imageDescription = m_imageDescription->with({
-            .min       = minLuminance() >= 0 ? minLuminance() : m_imageDescription->value().luminances.min, //
-            .max       = maxLuminance() > 0 ? maxLuminance() : m_imageDescription->value().luminances.max,  //
-            .reference = m_imageDescription->value().luminances.reference                                   //
-        });
-
-    if (oldImageDescription != m_imageDescription) {
-        m_blurFBDirty = true;
-        // the output's colour transform changed, so everything already composited is stale
-        g_pHyprRenderer->damageMonitor(m_self.lock());
-    }
-}
-
 bool CMonitor::applyMonitorRuleSoft(Config::CMonitorRule&& pMonitorRule) {
     m_activeMonitorRule = std::move(pMonitorRule);
     m_reservedArea.setStatic(m_activeMonitorRule.m_reservedArea);
-    m_transform         = m_activeMonitorRule.m_transform;
-    m_supportsWideColor = m_activeMonitorRule.m_supportsWideColor;
-    m_supportsHDR       = m_activeMonitorRule.m_supportsHDR;
+    m_transform = m_activeMonitorRule.m_transform;
 
-    if (m_activeMonitorRule.m_iccFile.empty()) {
-        // only apply explicit cm settings if we have no icc file
+    // The renderer converts no colours, so every output is sRGB: the cm, sdr and luminance settings of the monitor rule are
+    // accepted and ignored. Of an ICC profile only the VCGT gamma ramps are applied, through KMS (updateVCGTRamps()).
+    if (m_activeMonitorRule.m_cmType != NCMType::CM_AUTO && m_activeMonitorRule.m_cmType != NCMType::CM_SRGB)
+        Log::logger->log(Log::WARN, "Monitor {}: the cm setting is ignored, color management is not available with GLES2", m_name);
 
-        // The renderer cannot convert colors, so every output is sRGB. The cm setting of the monitor
-        // rule is accepted and ignored.
-        if (m_activeMonitorRule.m_cmType != NCMType::CM_AUTO && m_activeMonitorRule.m_cmType != NCMType::CM_SRGB)
-            Log::logger->log(Log::WARN, "Monitor {}: the cm setting is ignored, color management is not available with GLES2", m_name);
-
-        m_cmType = NCMType::CM_SRGB;
-
-        m_sdrEotf = m_activeMonitorRule.m_sdrEotf;
-
-        m_sdrMinLuminance = m_activeMonitorRule.m_sdrMinLuminance;
-        m_sdrMaxLuminance = m_activeMonitorRule.m_sdrMaxLuminance;
-
-        m_minLuminance    = m_activeMonitorRule.m_minLuminance;
-        m_maxLuminance    = m_activeMonitorRule.m_maxLuminance;
-        m_maxAvgLuminance = m_activeMonitorRule.m_maxAvgLuminance;
-
-        applyCMType(m_cmType, m_sdrEotf);
-
-        m_sdrSaturation = m_activeMonitorRule.m_sdrSaturation;
-        m_sdrBrightness = m_activeMonitorRule.m_sdrBrightness;
-    } else {
-        auto image = NColorManagement::SImageDescription::fromICC(m_activeMonitorRule.m_iccFile);
-        if (!image) {
-            Log::logger->log(Log::ERR, "icc for {} ({}) failed: {}", m_name, m_activeMonitorRule.m_iccFile, image.error());
-            ErrorOverlay::overlay()->queueError(std::format("failed to apply icc {} to {}: {}", m_activeMonitorRule.m_iccFile, m_name, image.error()));
-        } else {
-            m_imageDescription = CImageDescription::from(*image);
-            if (!m_imageDescription) {
-                Log::logger->log(Log::ERR, "icc for {} ({}) failed 2: {}", m_name, m_activeMonitorRule.m_iccFile, image.error());
-                ErrorOverlay::overlay()->queueError(std::format("failed to apply icc {} to {}: {}", m_activeMonitorRule.m_iccFile, m_name, image.error()));
-                m_imageDescription = CImageDescription::from(SImageDescription{});
-            }
-        }
+    m_vcgt.reset();
+    if (!m_activeMonitorRule.m_iccFile.empty()) {
+        static auto PVCGTENABLED = CConfigValue<Config::INTEGER>("render:icc_vcgt_enabled");
+        auto        vcgt         = NICC::loadVCGT(m_activeMonitorRule.m_iccFile, *PVCGTENABLED);
+        if (!vcgt) {
+            Log::logger->log(Log::ERR, "icc for {} ({}) failed: {}", m_name, m_activeMonitorRule.m_iccFile, vcgt.error());
+            ErrorOverlay::overlay()->queueError(std::format("failed to apply icc {} to {}: {}", m_activeMonitorRule.m_iccFile, m_name, vcgt.error()));
+        } else
+            m_vcgt = std::move(*vcgt);
     }
 
     Vector2D xfmd     = m_transform % 2 == 1 ? Vector2D{m_pixelSize.y, m_pixelSize.x} : m_pixelSize;
@@ -2052,7 +1898,6 @@ bool CMonitor::updateTearing() {
 uint16_t CMonitor::isDSBlocked(bool full) {
     uint16_t    reasons        = 0;
     static auto PDIRECTSCANOUT = CConfigValue<Config::INTEGER>("render:direct_scanout");
-    static auto PNONSHADER     = CConfigValue<Config::INTEGER>("render:non_shader_cm");
     const auto  PWORKSPACE     = m_activeWorkspace;
 
     // Fast reject for the hot render path; full=true callers still collect
@@ -2127,13 +1972,6 @@ uint16_t CMonitor::isDSBlocked(bool full) {
     const auto params = PSURFACE->m_current.buffer->dmabuf();
     if (!params.success || !PSURFACE->m_current.texture->isDMA() /* dmabuf */) {
         reasons |= DS_BLOCK_DMA;
-        if (!full)
-            return reasons;
-    }
-
-    // no surface can carry an image description, only the output side can need CM
-    if (*PNONSHADER != CM_NS_IGNORE && needsCM() && !canNoShaderCM(true)) {
-        reasons |= DS_BLOCK_CM; // block SDR that needs CM while non-shader CM isn't available
         if (!full)
             return reasons;
     }
@@ -2355,7 +2193,6 @@ bool CMonitor::attemptDirectScanout() {
 void CMonitor::handleDSleave() {
     Log::logger->log(Log::DEBUG, "Left a direct scanout.");
     m_lastScanout.reset();
-    m_previousFSWindow.reset(); // recalc fs settings
     m_directScanoutIsActive = false;
 
     // reset DRM format, but only if needed since it might modeset
@@ -2536,86 +2373,6 @@ void CMonitor::onCursorMovedOnMonitor() {
     m_tearingState.frameScheduledWhileBusy = true;
 }
 
-bool CMonitor::supportsWideColor() {
-    switch (m_supportsWideColor) {
-        case -1: return false;
-        case 1: return true;
-        default: return m_output->parsedEDID.supportsBT2020;
-    }
-}
-
-bool CMonitor::supportsHDR() {
-    if (!supportsWideColor())
-        return false;
-
-    switch (m_supportsHDR) {
-        case -1: return false;
-        case 1: return true;
-        default: return m_output->parsedEDID.hdrMetadata.has_value() ? m_output->parsedEDID.hdrMetadata->supportsPQ : false;
-    }
-}
-
-float CMonitor::minLuminance(float defaultValue) {
-    return m_minLuminance >= 0 ? m_minLuminance : (m_output->parsedEDID.hdrMetadata.has_value() ? m_output->parsedEDID.hdrMetadata->desiredContentMinLuminance : defaultValue);
-}
-
-int CMonitor::maxLuminance(int defaultValue) {
-    return m_maxLuminance >= 0 ? m_maxLuminance : (m_output->parsedEDID.hdrMetadata.has_value() ? m_output->parsedEDID.hdrMetadata->desiredContentMaxLuminance : defaultValue);
-}
-
-int CMonitor::maxAvgLuminance(int defaultValue) {
-    return m_maxAvgLuminance >= 0 ? m_maxAvgLuminance :
-                                    (m_output->parsedEDID.hdrMetadata.has_value() ? m_output->parsedEDID.hdrMetadata->desiredMaxFrameAverageLuminance : defaultValue);
-}
-
-float CMonitor::maxFALL() {
-    return m_maxAvgLuminance >= 0 ? m_maxAvgLuminance : (m_output->parsedEDID.hdrMetadata.has_value() ? m_output->parsedEDID.hdrMetadata->desiredMaxFrameAverageLuminance : 0);
-}
-
-float CMonitor::maxCLL() {
-    return m_maxLuminance >= 0 ? m_maxLuminance : (m_output->parsedEDID.hdrMetadata.has_value() ? m_output->parsedEDID.hdrMetadata->desiredContentMaxLuminance : 0);
-}
-
-bool CMonitor::wantsWideColor() {
-    return supportsWideColor() && (wantsHDR() || m_imageDescription->value().primariesNamed == CM_PRIMARIES_BT2020);
-}
-
-bool CMonitor::wantsHDR() {
-    return supportsHDR() && inHDR();
-}
-
-bool CMonitor::inHDR() {
-    return m_output->state->state().hdrMetadata.hdmi_metadata_type1.eotf == 2;
-}
-
-std::optional<NColorManagement::PImageDescription> CMonitor::getFSImageDescription() {
-
-    const auto FS_WINDOW = Fullscreen::controller()->getFullscreenWindow(m_self.lock());
-
-    if (!FS_WINDOW)
-        return {};
-
-    return getDefaultImageDescription();
-}
-
-NColorManagement::SPCPRimaries CMonitor::getMasteringPrimaries() {
-    return m_output->parsedEDID.chromaticityCoords.has_value() ?
-        NColorManagement::SPCPRimaries{
-            .red   = {.x = m_output->parsedEDID.chromaticityCoords->red.x, .y = m_output->parsedEDID.chromaticityCoords->red.y},
-            .green = {.x = m_output->parsedEDID.chromaticityCoords->green.x, .y = m_output->parsedEDID.chromaticityCoords->green.y},
-            .blue  = {.x = m_output->parsedEDID.chromaticityCoords->blue.x, .y = m_output->parsedEDID.chromaticityCoords->blue.y},
-            .white = {.x = m_output->parsedEDID.chromaticityCoords->white.x, .y = m_output->parsedEDID.chromaticityCoords->white.y},
-        } :
-        NColorManagement::SPCPRimaries{};
-}
-
-NColorManagement::SImageDescription::SPCMasteringLuminances CMonitor::getMasteringLuminances() {
-    return {
-        .min = m_minLuminance >= 0 ? m_minLuminance : (m_output->parsedEDID.hdrMetadata.has_value() ? m_output->parsedEDID.hdrMetadata->desiredContentMinLuminance : 0),
-        .max = m_maxLuminance >= 0 ? m_maxLuminance : (m_output->parsedEDID.hdrMetadata.has_value() ? m_output->parsedEDID.hdrMetadata->desiredContentMaxLuminance : 0),
-    };
-}
-
 uint32_t CMonitor::getPreferredReadFormat() {
     static const auto PFORCE8BIT = CConfigValue<Config::INTEGER>("misc:screencopy_force_8b");
 
@@ -2629,55 +2386,7 @@ uint32_t CMonitor::getPreferredReadFormat() {
     return monFmt;
 }
 
-bool CMonitor::needsCM() {
-    const auto SRC_DESC = getFSImageDescription();
-    return SRC_DESC.has_value() && SRC_DESC.value() != m_imageDescription;
-}
-
-static bool isCompatibleTF(eTransferFunction sourceTF, eTransferFunction targetTF) {
-    static auto PNONSHADER = CConfigValue<Hyprlang::INT>("render:non_shader_cm");
-    const auto  sdrEOTF    = NTransferFunction::fromConfig();
-    return sourceTF == targetTF                                                                                                         // same
-        || (sdrEOTF == NTransferFunction::TF_FORCED_GAMMA22 && sourceTF == NColorManagement::CM_TRANSFER_FUNCTION_SRGB                  // forced source gamma22 to output gamma22
-            && targetTF == NColorManagement::CM_TRANSFER_FUNCTION_GAMMA22)                                                              //
-        || (*PNONSHADER == CM_NS_ONDEMAND                                                                                               // FIXME incorrect but good enough for DS
-            && (sourceTF == NColorManagement::CM_TRANSFER_FUNCTION_GAMMA22 || sourceTF == NColorManagement::CM_TRANSFER_FUNCTION_SRGB)  //
-            && (targetTF == NColorManagement::CM_TRANSFER_FUNCTION_GAMMA22 || targetTF == NColorManagement::CM_TRANSFER_FUNCTION_SRGB)) //
-        ;
-}
-
-// TODO support more drm properties
-bool CMonitor::canNoShaderCM(bool forDSmode) {
-    static auto PNONSHADER = CConfigValue<Config::INTEGER>("render:non_shader_cm");
-    if (*PNONSHADER == CM_NS_DISABLE)
-        return false;
-
-    const auto SRC_DESC = getFSImageDescription();
-    if (!SRC_DESC.has_value())
-        return false;
-
-    const auto& DST_DESC = forDSmode ? m_imageDescription : resources()->m_imageDescription;
-    if (SRC_DESC.value() == DST_DESC)
-        return true; // no CM needed
-
-    const auto& SRC_DESC_VALUE = SRC_DESC.value()->value();
-
-    if (m_imageDescription->value().icc.present)
-        return false;
-
-    Log::logger->log(Log::TRACE, "CM: can no shder compares src={} to output={}", SRC_DESC_VALUE, m_imageDescription->value());
-
-    // only primaries differ
-    return (
-        isCompatibleTF(SRC_DESC_VALUE.transferFunction, DST_DESC->value().transferFunction) //
-        && SRC_DESC_VALUE.transferFunctionPower == DST_DESC->value().transferFunctionPower  //
-        && (!inHDR() || SRC_DESC_VALUE.luminances == DST_DESC->value().luminances)
-        // not used by shaders atm
-        // && SRC_DESC_VALUE.masteringLuminances == m_imageDescription->value().masteringLuminances && SRC_DESC_VALUE.maxCLL == m_imageDescription->value().maxCLL && SRC_DESC_VALUE.maxFALL == m_imageDescription->value().maxFALL
-    );
-}
-
-static std::vector<uint16_t> resampleInterleavedToKms(const SVCGTTable16& t, size_t gammaSize) {
+static std::vector<uint16_t> resampleInterleavedToKms(const NICC::SVCGTTable16& t, size_t gammaSize) {
     const size_t entries = sc<size_t>(t.entries);
 
     if (gammaSize == 0 || entries == 0)
@@ -2743,7 +2452,7 @@ void CMonitor::updateVCGTRamps() {
         return;
     }
 
-    if (!m_imageDescription->value().icc.vcgt) {
+    if (!m_vcgt) {
         if (m_vcgtRampsSet)
             m_output->state->setGammaLut({});
 
@@ -2752,7 +2461,7 @@ void CMonitor::updateVCGTRamps() {
     }
 
     // build table
-    auto table = resampleInterleavedToKms(*m_imageDescription->value().icc.vcgt, gammaSize);
+    auto table = resampleInterleavedToKms(*m_vcgt, gammaSize);
 
     m_output->state->setGammaLut(table);
 
@@ -2852,11 +2561,6 @@ bool CMonitor::needsACopyFB() {
     return !m_mirrors.empty() || Screenshare::mgr()->outputNeedsCopyFB(m_self.lock());
 }
 
-PImageDescription CMonitor::workBufferImageDescription() {
-    // the work buffer is 8 bit and in the color space of the output
-    return m_imageDescription;
-}
-
 // the output takes the format of the buffer it scans out, and what is rendered into (the work buffers, the swapchain) has to stay
 // in one the renderer can render into: GLES 2 renders into no 10-bit format, and the X200 aborted a second into a scanout of
 // mpv's 10-bit video (XRGB2101010), allocating its work buffers in it (2026-11-09 and 10)
@@ -2866,13 +2570,9 @@ uint32_t CMonitor::renderableFormat(uint32_t format) const {
 
 WP<CMonitorResources> CMonitor::resources() {
     const auto DRM_FORMAT = renderableFormat(m_output->state->state().drmFormat);
-    const auto DESC       = workBufferImageDescription();
 
     if (!m_resources || m_resources->m_drmFormat != DRM_FORMAT || m_resources->m_size != m_transformedSize)
-        m_resources = makeUnique<CMonitorResources>(m_self, DRM_FORMAT, m_transformedSize, DESC);
-
-    if (m_resources->m_imageDescription != DESC)
-        m_resources->setImageDescription(DESC);
+        m_resources = makeUnique<CMonitorResources>(m_self, DRM_FORMAT, m_transformedSize);
 
     return m_resources;
 }

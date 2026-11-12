@@ -123,13 +123,11 @@ set(GLES_VERSION "GLES2")
 find_package(OpenGL REQUIRED COMPONENTS ${GLES_VERSION})
 
 set(HYPRLANG_MINIMUM_VERSION 0.6.7)
-set(HYPRCURSOR_MINIMUM_VERSION 0.1.7)
 set(HYPRUTILS_MINIMUM_VERSION 0.14.3)
 set(HYPRGRAPHICS_MINIMUM_VERSION 0.6.0)
 
 include(cmake/aquamarine.cmake)
 pkg_check_modules(hyprlang_dep REQUIRED IMPORTED_TARGET hyprlang>=${HYPRLANG_MINIMUM_VERSION})
-pkg_check_modules(hyprcursor_dep REQUIRED IMPORTED_TARGET hyprcursor>=${HYPRCURSOR_MINIMUM_VERSION})
 pkg_check_modules(hyprutils_dep REQUIRED IMPORTED_TARGET hyprutils>=${HYPRUTILS_MINIMUM_VERSION})
 pkg_check_modules(hyprgraphics_dep REQUIRED IMPORTED_TARGET hyprgraphics>=${HYPRGRAPHICS_MINIMUM_VERSION})
 
@@ -143,7 +141,6 @@ set(AQUAMARINE_VERSION_MINOR "${AQ_VERSION_MINOR}")
 set(AQUAMARINE_VERSION_PATCH "${AQ_VERSION_PATCH}")
 set(HYPRLANG_VERSION "${hyprlang_dep_VERSION}")
 set(HYPRUTILS_VERSION "${hyprutils_dep_VERSION}")
-set(HYPRCURSOR_VERSION "${hyprcursor_dep_VERSION}")
 set(HYPRGRAPHICS_VERSION "${hyprgraphics_dep_VERSION}")
 
 
@@ -405,7 +402,6 @@ target_link_libraries(
   aquamarine
   PkgConfig::hyprlang_dep
   PkgConfig::hyprutils_dep
-  PkgConfig::hyprcursor_dep
   PkgConfig::hyprgraphics_dep
   PkgConfig::deps
   PkgConfig::LUA
@@ -550,7 +546,6 @@ protocolnew("staging/xdg-dialog" "xdg-dialog-v1" false)
 protocolnew("staging/single-pixel-buffer" "single-pixel-buffer-v1" false)
 protocolnew("staging/security-context" "security-context-v1" false)
 protocolnew("staging/content-type" "content-type-v1" false)
-protocolnew("staging/color-management" "color-management-v1" false)
 protocolnew("staging/xdg-toplevel-tag" "xdg-toplevel-tag-v1" false)
 protocolnew("staging/xdg-system-bell" "xdg-system-bell-v1" false)
 protocolnew("staging/ext-workspace" "ext-workspace-v1" false)

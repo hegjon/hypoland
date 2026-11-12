@@ -183,10 +183,12 @@ $ <span class="w">hypoland</span>
     <div class="body">
       <ul class="pixel-list">
         <li>Color management and HDR</li>
+        <li>Screen shaders</li>
         <li>Motion blur</li>
         <li>Blur variants other than dual Kawase</li>
         <li>Plugins and <code>hyprpm</code></li>
         <li>Logo background and default wallpapers</li>
+        <li>hyprcursor themes: cursors are XCursor themes</li>
         <li>Hyprland's welcome app, update news and donation popup</li>
       </ul>
       <p class="note">Their config options stay registered and are ignored, so your config loads without errors.</p>
@@ -198,7 +200,6 @@ $ <span class="w">hypoland</span>
     <div class="body">
       <ul class="pixel-list">
         <li>Blur, shadows, animations and the splash text are off, turn them on if you like</li>
-        <li>XCursor themes instead of hyprcursor</li>
         <li><code>quirks:skip_non_kms_dmabuf_formats</code> is off, so transparent clients work on Gen4</li>
         <li>Windows at 98% opacity or more and the wallpaper are drawn opaque, which saves fill rate</li>
         <li>Xwayland starts when the first X11 program connects</li>
@@ -217,7 +218,7 @@ $ <span class="w">hypoland</span>
           <tr><td>Desktop name</td><td><code>XDG_CURRENT_DESKTOP=Hyprland</code>, so the portal and apps detect it</td><td class="yes">same</td></tr>
           <tr><td>Protocols</td><td>The Hyprland Wayland protocols (Quickshell, portals, global shortcuts)</td><td class="yes">same</td></tr>
           <tr><td>Binary</td><td><code>hypoland</code> and <code>start-hypoland</code>, there is no <code>Hyprland</code> command</td><td class="no">renamed</td></tr>
-          <tr><td>Screen shaders</td><td>Must be GLSL ES 1.00, Hyprland's GLSL ES 3.00 shaders do not compile</td><td class="no">differs</td></tr>
+          <tr><td>Screen shaders</td><td>Not supported, <code>decoration:screen_shader</code> is ignored: Hyprland's are GLSL ES 3.00</td><td class="no">removed</td></tr>
           <tr><td>Plugins</td><td>Not supported, <code>hl.plugin.load()</code> warns and does nothing. Omarchy's titlebars are built in after 0.2.0</td><td class="no">removed</td></tr>
         </tbody>
       </table></div>

@@ -32,7 +32,6 @@
 #define MIN_WINDOW_SIZE 20.0
 
 // max value 32 because killed is a int uniform
-#define POINTER_PRESSED_HISTORY_LENGTH 32
 
 #define VECINRECT(vec, x1, y1, x2, y2)    ((vec).x >= (x1) && (vec).x < (x2) && (vec).y >= (y1) && (vec).y < (y2))
 #define VECNOTINRECT(vec, x1, y1, x2, y2) ((vec).x < (x1) || (vec).x >= (x2) || (vec).y < (y1) || (vec).y >= (y2))

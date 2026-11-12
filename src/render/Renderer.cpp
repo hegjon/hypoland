@@ -38,7 +38,6 @@
 #include "../i18n/Engine.hpp"
 #include "../desktop/DesktopTypes.hpp"
 #include "../event/EventBus.hpp"
-#include "../helpers/CursorShapes.hpp"
 #include "../helpers/MainLoopExecutor.hpp"
 #include "../output/Monitor.hpp"
 #include "../state/MonitorState.hpp"
@@ -76,7 +75,6 @@
 using namespace Hyprutils::Utils;
 using namespace Hyprutils::OS;
 using enum NContentType::eContentType;
-using namespace NColorManagement;
 using namespace Desktop::View;
 using namespace Render;
 
@@ -91,8 +89,6 @@ static int cursorTicker(void* data) {
 }
 
 IHyprRenderer::IHyprRenderer() {
-    m_globalTimer.reset();
-
     if (g_pCompositor->m_aqBackend->hasSession()) {
         size_t drmDevices = 0;
         for (auto const& dev : g_pCompositor->m_aqBackend->session->sessionDevices) {
@@ -1913,10 +1909,7 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit, std::optiona
             if (!pMonitor->needsACopyFB())
                 pMonitor->resources()->markMirrorFBStale();
 
-            if (!pMonitor->m_directScanoutIsActive) {
-                pMonitor->m_previousFSWindow.reset(); // recalc fs settings
-                pMonitor->m_directScanoutIsActive = true;
-            }
+            pMonitor->m_directScanoutIsActive = true;
             handleFullscreenSettings(pMonitor);
             return;
         } else if (!pMonitor->m_lastScanout.expired() || pMonitor->m_directScanoutIsActive)
@@ -2155,181 +2148,19 @@ void IHyprRenderer::renderMonitor(PHLMONITOR pMonitor, bool commit, std::optiona
     }
 }
 
-static const hdr_output_metadata NO_HDR_METADATA = {.hdmi_metadata_type1 = hdr_metadata_infoframe{.eotf = 0}};
-
-static hdr_output_metadata       createHDRMetadata(SImageDescription settings, PHLMONITOR monitor) {
-    uint8_t eotf = 0;
-    switch (settings.transferFunction) {
-        case CM_TRANSFER_FUNCTION_GAMMA22:
-        case CM_TRANSFER_FUNCTION_SRGB: eotf = 0; break; // used to send primaries and luminances to AQ. ignored for now
-        case CM_TRANSFER_FUNCTION_ST2084_PQ: eotf = 2; break;
-        case CM_TRANSFER_FUNCTION_EXT_LINEAR:
-            eotf = 2;
-            break; // should be Windows scRGB
-        // case CM_TRANSFER_FUNCTION_HLG: eotf = 3; break; TODO check display capabilities first
-        default: return NO_HDR_METADATA; // empty metadata for SDR
-    }
-
-    const auto toNits  = [](uint32_t value) { return sc<uint16_t>(std::round(value)); };
-    const auto to16Bit = [](float value) { return sc<uint16_t>(std::round(value * 50000)); };
-
-    auto       colorimetry = settings.getPrimaries();
-    auto       luminances  = settings.masteringLuminances.max > 0 ? settings.masteringLuminances :
-                                                                    (settings.luminances != SImageDescription::SPCLuminances{} ?
-                                                                         SImageDescription::SPCMasteringLuminances{.min = settings.luminances.min, .max = settings.luminances.max} :
-                                                                         SImageDescription::SPCMasteringLuminances{.min = monitor->minLuminance(), .max = monitor->maxLuminance(10000)});
-
-    Log::logger->log(Log::TRACE, "ColorManagement primaries {},{} {},{} {},{} {},{}", colorimetry.red.x, colorimetry.red.y, colorimetry.green.x, colorimetry.green.y,
-                     colorimetry.blue.x, colorimetry.blue.y, colorimetry.white.x, colorimetry.white.y);
-    Log::logger->log(Log::TRACE, "ColorManagement min {}, max {}, cll {}, fall {}", luminances.min, luminances.max, settings.maxCLL, settings.maxFALL);
-    return hdr_output_metadata{
-        .metadata_type = 0,
-        .hdmi_metadata_type1 =
-            hdr_metadata_infoframe{
-                .eotf          = eotf,
-                .metadata_type = 0,
-                .display_primaries =
-                    {
-                        {.x = to16Bit(colorimetry.red.x), .y = to16Bit(colorimetry.red.y)},
-                        {.x = to16Bit(colorimetry.green.x), .y = to16Bit(colorimetry.green.y)},
-                        {.x = to16Bit(colorimetry.blue.x), .y = to16Bit(colorimetry.blue.y)},
-                    },
-                .white_point                     = {.x = to16Bit(colorimetry.white.x), .y = to16Bit(colorimetry.white.y)},
-                .max_display_mastering_luminance = toNits(luminances.max),
-                .min_display_mastering_luminance = toNits(luminances.min * 10000),
-                .max_cll                         = toNits(settings.maxCLL > 0 ? settings.maxCLL : monitor->maxCLL()),
-                .max_fall                        = toNits(settings.maxFALL > 0 ? settings.maxFALL : monitor->maxFALL()),
-            },
-    };
-}
-
-static bool hdrMetadataEqual(const hdr_output_metadata& a, const hdr_output_metadata& b) {
-    if (a.metadata_type != b.metadata_type)
-        return false;
-
-    static_assert(std::has_unique_object_representations_v<hdr_metadata_infoframe>);
-    return std::memcmp(&a.hdmi_metadata_type1, &b.hdmi_metadata_type1, sizeof(a.hdmi_metadata_type1)) == 0;
-}
-
 void IHyprRenderer::handleFullscreenSettings(PHLMONITOR pMonitor) {
-    static auto PCT        = CConfigValue<Config::INTEGER>("render:send_content_type");
-    static auto PAUTOHDR   = CConfigValue<Config::INTEGER>("render:cm_auto_hdr");
-    static auto PNONSHADER = CConfigValue<Config::INTEGER>("render:non_shader_cm");
-    static auto PNSINTEROP = CConfigValue<Config::INTEGER>("render:non_shader_cm_interop");
+    static auto PCT = CConfigValue<Config::INTEGER>("render:send_content_type");
 
-    const bool  configuredHDR = (pMonitor->m_cmType == NCMType::CM_HDR_EDID || pMonitor->m_cmType == NCMType::CM_HDR);
-    bool        wantHDR       = configuredHDR;
-
-    const auto  FULLSCREEN_WINDOW = Fullscreen::controller()->getFullscreenWindow(pMonitor);
-
-    if (pMonitor->supportsHDR()) {
-        // HDR metadata determined by
-        // HDR scRGB - monitor settings
-        // HDR PQ surface & DS is active - surface settings
-
-        // no surface can carry an image description, the HDR state only follows the monitor settings
-        bool hdrIsHandled = false;
-
-        // Do it here instead of disabling the block above to allow hdr -> hdr metadata changes in fullscreen
-        if (!*PAUTOHDR && !pMonitor->m_lastScanout)
-            wantHDR = configuredHDR;
-
-        if (!hdrIsHandled) {
-            const bool HDR_CHANGED = pMonitor->inHDR() != wantHDR;
-
-            if (HDR_CHANGED && *PAUTOHDR && !(pMonitor->inHDR() && configuredHDR)) {
-                const auto targetCM      = wantHDR ? (*PAUTOHDR == 2 ? NCMType::CM_HDR_EDID : NCMType::CM_HDR) : pMonitor->m_cmType;
-                const auto targetSDREOTF = pMonitor->m_sdrEotf;
-                Log::logger->log(Log::INFO, "[CM] Auto HDR: changing monitor cm to {}", sc<uint8_t>(targetCM));
-                pMonitor->applyCMType(targetCM, targetSDREOTF);
-                pMonitor->m_previousFSWindow.reset(); // trigger CTM update
-            }
-
-            const auto WANTED  = wantHDR ? createHDRMetadata(pMonitor->m_imageDescription->value(), pMonitor) : NO_HDR_METADATA;
-            const auto CURRENT = pMonitor->m_output->state->state().hdrMetadata;
-
-            if (HDR_CHANGED || pMonitor->m_hdrMetadataFromSurface || (wantHDR && !hdrMetadataEqual(WANTED, CURRENT))) {
-                Log::logger->log(Log::INFO, wantHDR ? "[CM] Updating HDR metadata from monitor" : "[CM] Restoring SDR mode");
-                pMonitor->m_output->state->setHDRMetadata(WANTED);
-                pMonitor->m_hdrMetadataFromSurface = false;
-            }
-            pMonitor->m_needsHDRupdate = true;
-        }
-    }
-
-    const bool needsWCG = pMonitor->wantsWideColor();
-    if (pMonitor->m_output->state->state().wideColorGamut != needsWCG) {
-        Log::logger->log(Log::TRACE, "Setting wide color gamut {}", needsWCG ? "on" : "off");
-        pMonitor->m_output->state->setWideColorGamut(needsWCG);
-
-        // FIXME do not trust enabled10bit, auto switch to 10bit and back if needed
-        if (needsWCG && !pMonitor->m_enabled10bit) {
-            Log::logger->log(Log::WARN, "Wide color gamut is enabled but the display is not in 10bit mode");
-            static bool shown = false;
-            if (!shown) {
-                Notification::overlay()->addNotification(I18n::i18nEngine()->localize(I18n::TXT_KEY_NOTIF_WIDE_COLOR_NOT_10B, {{"name", pMonitor->m_name}}), CHyprColor{}, 15000,
-                                                         ICON_WARNING);
-                shown = true;
-            }
-        }
-    }
-
-    if (*PCT)
+    if (*PCT) {
+        const auto FULLSCREEN_WINDOW = Fullscreen::controller()->getFullscreenWindow(pMonitor);
         pMonitor->m_output->state->setContentType(NContentType::toDRM(FULLSCREEN_WINDOW ? FULLSCREEN_WINDOW->getContentType() : CONTENT_TYPE_NONE));
-
-    if (FULLSCREEN_WINDOW != pMonitor->m_previousFSWindow || (!FULLSCREEN_WINDOW && pMonitor->m_noShaderCTM) || pMonitor->m_ctmUpdated) {
-        const bool INTEROP  = (*PNSINTEROP == 1 || (*PNSINTEROP == 2 && FULLSCREEN_WINDOW && FULLSCREEN_WINDOW->getContentType() == CONTENT_TYPE_NONE));
-        bool       resetCTM = !FULLSCREEN_WINDOW;
-        if (FULLSCREEN_WINDOW) {
-            if (*PNONSHADER == CM_NS_IGNORE)
-                resetCTM = true;
-            else if (const auto FS_DESC = pMonitor->getFSImageDescription(); pMonitor->needsCM() && pMonitor->canNoShaderCM(!pMonitor->m_lastScanout.expired()) &&
-                     FS_DESC.has_value() && (*PNONSHADER != CM_NS_ONDEMAND || !pMonitor->m_lastScanout.expired())) {
-                Log::logger->log(Log::INFO, "[CM] Updating fullscreen CTM");
-                pMonitor->m_noShaderCTM = true;
-                pMonitor->m_ctmUpdated  = false;
-                auto conversion         = FS_DESC.value()->getPrimaries()->convertMatrix(pMonitor->m_imageDescription->getPrimaries());
-                if (pMonitor->m_ctm != Mat3x3::identity() && INTEROP) {
-                    const auto&                          ctm    = pMonitor->m_ctm.getMatrix();
-                    std::array<std::array<double, 3>, 3> values = {
-                        {
-                            {ctm[0], ctm[1], ctm[2]},
-                            {ctm[3], ctm[4], ctm[5]},
-                            {ctm[6], ctm[7], ctm[8]},
-                        },
-                    };
-                    conversion = conversion * Hyprgraphics::CMatrix3(values);
-                }
-                const auto                 mat = conversion.mat();
-                const std::array<float, 9> CTM = {
-                    mat[0][0], mat[0][1], mat[0][2], //
-                    mat[1][0], mat[1][1], mat[1][2], //
-                    mat[2][0], mat[2][1], mat[2][2], //
-                };
-                pMonitor->m_output->state->setCTM(CTM);
-            } else if (!INTEROP && pMonitor->m_ctm != Mat3x3::identity()) {
-                Log::logger->log(Log::INFO, "[CM] Setting identity CTM");
-                pMonitor->m_noShaderCTM = true;
-                pMonitor->m_ctmUpdated  = false;
-
-                pMonitor->m_output->state->setCTM(Mat3x3::identity());
-            } else
-                resetCTM = true;
-        }
-
-        if (resetCTM && pMonitor->m_noShaderCTM) {
-            Log::logger->log(Log::INFO, "[CM] No fullscreen CTM, restoring previous one");
-            pMonitor->m_noShaderCTM = false;
-            pMonitor->m_ctmUpdated  = true;
-        }
     }
 
-    if (pMonitor->m_ctmUpdated && !pMonitor->m_noShaderCTM) {
+    // the CTM control protocol's matrix (CMonitor::setCTM()). Every output is sRGB, so there is no colour conversion to fold in
+    if (pMonitor->m_ctmUpdated) {
         pMonitor->m_ctmUpdated = false;
         pMonitor->m_output->state->setCTM(pMonitor->m_ctm);
     }
-
-    pMonitor->m_previousFSWindow = FULLSCREEN_WINDOW;
 }
 
 bool IHyprRenderer::commitPendingAndDoExplicitSync(PHLMONITOR pMonitor) {
@@ -2755,41 +2586,6 @@ void IHyprRenderer::setCursorFromName(const std::string& name, bool force) {
 
     m_lastCursorData.name = name;
 
-    static auto getShapeOrDefault = [](std::string_view name) -> wpCursorShapeDeviceV1Shape {
-        const auto it = std::ranges::find(CURSOR_SHAPE_NAMES, name);
-
-        if (it == CURSOR_SHAPE_NAMES.end()) {
-            // clang-format off
-            static const auto overrites = std::unordered_map<std::string_view, wpCursorShapeDeviceV1Shape> {
-              {"top_side",  WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_N_RESIZE},
-              {"bottom_side",  WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_S_RESIZE},
-              {"left_side",  WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_W_RESIZE},
-              {"right_side",  WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_E_RESIZE},
-              {"top_left_corner",  WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NW_RESIZE},
-              {"bottom_left_corner",  WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_SW_RESIZE},
-              {"top_right_corner",  WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NE_RESIZE},
-              {"bottom_right_corner",  WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_SE_RESIZE},
-            };
-            // clang-format on
-
-            if (overrites.contains(name))
-                return overrites.at(name);
-
-            return WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT;
-        }
-
-        return sc<wpCursorShapeDeviceV1Shape>(std::distance(CURSOR_SHAPE_NAMES.begin(), it));
-    };
-
-    const auto newShape = getShapeOrDefault(name);
-
-    if (newShape != m_lastCursorData.shape) {
-        m_lastCursorData.shapePrevious = m_lastCursorData.shape;
-        m_lastCursorData.switchedTimer.reset();
-    }
-
-    m_lastCursorData.shape = newShape;
-
     m_lastCursorData.surf.reset();
 
     if (m_cursorHidden && !force)
@@ -2900,12 +2696,7 @@ void IHyprRenderer::initiateManualCrash() {
     m_crashingLoop = wl_event_loop_add_timer(g_pCompositor->m_wlEventLoop, handleCrashLoop, nullptr);
     wl_event_source_timer_update(m_crashingLoop, 1000);
 
-    m_crashingInProgress = true;
-    m_crashingDistort    = 0.5;
-
-    m_globalTimer.reset();
-
-    **rc<Config::INTEGER* const*>(Config::mgr()->getConfigValue("debug:damage_tracking").dataptr) = 0;
+    m_crashingDistort = 0.5;
 }
 
 const SRenderData& IHyprRenderer::renderData() {
@@ -2977,7 +2768,6 @@ static SP<IFramebuffer> snapshotFB(PHLMONITOR monitor, const char* name) {
         fb = g_pHyprRenderer->createFB(name);
         fb->alloc(monitor->m_transformedSize.x, monitor->m_transformedSize.y, DRM_FORMAT_ABGR8888);
     }
-    fb->setImageDescription(monitor->workBufferImageDescription());
     return fb;
 }
 
@@ -3172,13 +2962,6 @@ void IHyprRenderer::renderFadeouts(PHLMONITOR monitor, Desktop::eFadeoutPlane pl
 
         m_renderPass.add(makeUnique<CTexPassElement>(std::move(data)));
     }
-}
-
-NColorManagement::PImageDescription IHyprRenderer::workBufferImageDescription() {
-    if (!m_renderData.pMonitor)
-        return LINEAR_IMAGE_DESCRIPTION;
-
-    return m_renderData.pMonitor->workBufferImageDescription();
 }
 
 SP<ITexture> IHyprRenderer::renderSplash(const std::function<SP<ITexture>(const int, const int, unsigned char* const)>& handleData, const int fontSize, const int maxWidth,

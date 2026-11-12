@@ -9,7 +9,6 @@
 
 using namespace Render;
 using namespace Render::GL;
-using namespace NColorManagement;
 
 CDualKawaseBlurProvider::CDualKawaseBlurProvider(CHyprOpenGLImpl& impl) : CDualKawaseBlurProvider(impl, makeUnique<CDefaultBlurMaterial>()) {
     ;

@@ -6,7 +6,6 @@
 #include <xf86drmMode.h>
 
 #include "../../../helpers/math/Math.hpp"
-#include "../../../helpers/cm/ColorManagement.hpp"
 #include "../../../helpers/CMType.hpp"
 #include "../../../helpers/TransferFunction.hpp"
 #include "../../../desktop/reserved/ReservedArea.hpp"

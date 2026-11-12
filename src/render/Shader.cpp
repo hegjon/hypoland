@@ -168,59 +168,44 @@ void CShader::getUniformLocations() {
         fullSize = getUniform("screenSize");
     m_uniformLocations[SHADER_FULL_SIZE] = fullSize;
 
-    m_uniformLocations[SHADER_FULL_SIZE_UNTRANSFORMED]   = getUniform("fullSizeUntransformed");
-    m_uniformLocations[SHADER_RADIUS]                    = getUniform("radius");
-    m_uniformLocations[SHADER_RADIUS_OUTER]              = getUniform("radiusOuter");
-    m_uniformLocations[SHADER_ROUNDING_POWER]            = getUniform("roundingPower");
-    m_uniformLocations[SHADER_THICK]                     = getUniform("thick");
-    m_uniformLocations[SHADER_HALFPIXEL]                 = getUniform("halfpixel");
-    m_uniformLocations[SHADER_RANGE]                     = getUniform("range");
-    m_uniformLocations[SHADER_SHADOW_POWER]              = getUniform("shadowPower");
-    m_uniformLocations[SHADER_USE_ALPHA_MATTE]           = getUniform("useAlphaMatte");
-    m_uniformLocations[SHADER_APPLY_TINT]                = getUniform("applyTint");
-    m_uniformLocations[SHADER_TINT]                      = getUniform("tint");
-    m_uniformLocations[SHADER_GRADIENT]                  = getUniform("gradient");
-    m_uniformLocations[SHADER_GRADIENT_LENGTH]           = getUniform("gradientLength");
-    m_uniformLocations[SHADER_GRADIENT2]                 = getUniform("gradient2");
-    m_uniformLocations[SHADER_GRADIENT2_LENGTH]          = getUniform("gradient2Length");
-    m_uniformLocations[SHADER_ANGLE]                     = getUniform("angle");
-    m_uniformLocations[SHADER_ANGLE2]                    = getUniform("angle2");
-    m_uniformLocations[SHADER_GRADIENT_LERP]             = getUniform("gradientLerp");
-    m_uniformLocations[SHADER_TIME]                      = getUniform("time");
-    m_uniformLocations[SHADER_DISTORT]                   = getUniform("distort");
-    m_uniformLocations[SHADER_WL_OUTPUT]                 = getUniform("wl_output");
-    m_uniformLocations[SHADER_CONTRAST]                  = getUniform("contrast");
-    m_uniformLocations[SHADER_PASSES]                    = getUniform("passes");
-    m_uniformLocations[SHADER_VIBRANCY]                  = getUniform("vibrancy");
-    m_uniformLocations[SHADER_VIBRANCY_DARKNESS]         = getUniform("vibrancy_darkness");
-    m_uniformLocations[SHADER_BRIGHTNESS]                = getUniform("brightness");
-    m_uniformLocations[SHADER_NOISE]                     = getUniform("noise");
-    m_uniformLocations[SHADER_GLASS_REFRACTION]          = getUniform("glassRefraction");
-    m_uniformLocations[SHADER_GLASS_SIZE]                = getUniform("glassSize");
-    m_uniformLocations[SHADER_GLASS_ROUGHNESS]           = getUniform("glassRoughness");
-    m_uniformLocations[SHADER_GLASS_POSITION]            = getUniform("glassPosition");
-    m_uniformLocations[SHADER_DROPS_POSITION]            = getUniform("dropsPosition");
-    m_uniformLocations[SHADER_SHARP_TEX]                 = getUniform("sharpTex");
-    m_uniformLocations[SHADER_AURORA_INTENSITY]          = getUniform("auroraIntensity");
-    m_uniformLocations[SHADER_AURORA_COLOR1]             = getUniform("auroraColor1");
-    m_uniformLocations[SHADER_AURORA_COLOR2]             = getUniform("auroraColor2");
-    m_uniformLocations[SHADER_AURORA_TRANSFER_FUNCTION]  = getUniform("auroraTransferFunction");
-    m_uniformLocations[SHADER_HAZE_INTENSITY]            = getUniform("hazeIntensity");
-    m_uniformLocations[SHADER_HAZE_IRIDESCENCE]          = getUniform("hazeIridescence");
-    m_uniformLocations[SHADER_HAZE_TRANSFER_FUNCTION]    = getUniform("hazeTransferFunction");
-    m_uniformLocations[SHADER_POINTER]                   = getUniform("pointer_position");
-    m_uniformLocations[SHADER_POINTER_SHAPE]             = getUniform("pointer_shape");
-    m_uniformLocations[SHADER_POINTER_SWITCH_TIME]       = getUniform("pointer_switch_time");
-    m_uniformLocations[SHADER_POINTER_SHAPE_PREVIOUS]    = getUniform("pointer_shape_previous");
-    m_uniformLocations[SHADER_POINTER_PRESSED_POSITIONS] = getUniform("pointer_pressed_positions");
-    m_uniformLocations[SHADER_POINTER_HIDDEN]            = getUniform("pointer_hidden");
-    m_uniformLocations[SHADER_POINTER_KILLING]           = getUniform("pointer_killing");
-    m_uniformLocations[SHADER_POINTER_PRESSED_TIMES]     = getUniform("pointer_pressed_times");
-    m_uniformLocations[SHADER_POINTER_PRESSED_KILLED]    = getUniform("pointer_pressed_killed");
-    m_uniformLocations[SHADER_POINTER_PRESSED_TOUCHED]   = getUniform("pointer_pressed_touched");
-    m_uniformLocations[SHADER_POINTER_INACTIVE_TIMEOUT]  = getUniform("pointer_inactive_timeout");
-    m_uniformLocations[SHADER_POINTER_LAST_ACTIVE]       = getUniform("pointer_last_active");
-    m_uniformLocations[SHADER_POINTER_SIZE]              = getUniform("pointer_size");
+    m_uniformLocations[SHADER_FULL_SIZE_UNTRANSFORMED]  = getUniform("fullSizeUntransformed");
+    m_uniformLocations[SHADER_RADIUS]                   = getUniform("radius");
+    m_uniformLocations[SHADER_RADIUS_OUTER]             = getUniform("radiusOuter");
+    m_uniformLocations[SHADER_ROUNDING_POWER]           = getUniform("roundingPower");
+    m_uniformLocations[SHADER_THICK]                    = getUniform("thick");
+    m_uniformLocations[SHADER_HALFPIXEL]                = getUniform("halfpixel");
+    m_uniformLocations[SHADER_RANGE]                    = getUniform("range");
+    m_uniformLocations[SHADER_SHADOW_POWER]             = getUniform("shadowPower");
+    m_uniformLocations[SHADER_USE_ALPHA_MATTE]          = getUniform("useAlphaMatte");
+    m_uniformLocations[SHADER_APPLY_TINT]               = getUniform("applyTint");
+    m_uniformLocations[SHADER_TINT]                     = getUniform("tint");
+    m_uniformLocations[SHADER_GRADIENT]                 = getUniform("gradient");
+    m_uniformLocations[SHADER_GRADIENT_LENGTH]          = getUniform("gradientLength");
+    m_uniformLocations[SHADER_GRADIENT2]                = getUniform("gradient2");
+    m_uniformLocations[SHADER_GRADIENT2_LENGTH]         = getUniform("gradient2Length");
+    m_uniformLocations[SHADER_ANGLE]                    = getUniform("angle");
+    m_uniformLocations[SHADER_ANGLE2]                   = getUniform("angle2");
+    m_uniformLocations[SHADER_GRADIENT_LERP]            = getUniform("gradientLerp");
+    m_uniformLocations[SHADER_TIME]                     = getUniform("time");
+    m_uniformLocations[SHADER_CONTRAST]                 = getUniform("contrast");
+    m_uniformLocations[SHADER_PASSES]                   = getUniform("passes");
+    m_uniformLocations[SHADER_VIBRANCY]                 = getUniform("vibrancy");
+    m_uniformLocations[SHADER_VIBRANCY_DARKNESS]        = getUniform("vibrancy_darkness");
+    m_uniformLocations[SHADER_BRIGHTNESS]               = getUniform("brightness");
+    m_uniformLocations[SHADER_NOISE]                    = getUniform("noise");
+    m_uniformLocations[SHADER_GLASS_REFRACTION]         = getUniform("glassRefraction");
+    m_uniformLocations[SHADER_GLASS_SIZE]               = getUniform("glassSize");
+    m_uniformLocations[SHADER_GLASS_ROUGHNESS]          = getUniform("glassRoughness");
+    m_uniformLocations[SHADER_GLASS_POSITION]           = getUniform("glassPosition");
+    m_uniformLocations[SHADER_DROPS_POSITION]           = getUniform("dropsPosition");
+    m_uniformLocations[SHADER_SHARP_TEX]                = getUniform("sharpTex");
+    m_uniformLocations[SHADER_AURORA_INTENSITY]         = getUniform("auroraIntensity");
+    m_uniformLocations[SHADER_AURORA_COLOR1]            = getUniform("auroraColor1");
+    m_uniformLocations[SHADER_AURORA_COLOR2]            = getUniform("auroraColor2");
+    m_uniformLocations[SHADER_AURORA_TRANSFER_FUNCTION] = getUniform("auroraTransferFunction");
+    m_uniformLocations[SHADER_HAZE_INTENSITY]           = getUniform("hazeIntensity");
+    m_uniformLocations[SHADER_HAZE_IRIDESCENCE]         = getUniform("hazeIridescence");
+    m_uniformLocations[SHADER_HAZE_TRANSFER_FUNCTION]   = getUniform("hazeTransferFunction");
 }
 
 void CShader::createVao() {
@@ -444,12 +429,4 @@ GLint CShader::getUniformLocation(eShaderUniform location) const {
 
 GLuint CShader::program() const {
     return m_program;
-}
-
-int CShader::getInitialTime() const {
-    return m_initialTime;
-}
-
-void CShader::setInitialTime(int time) {
-    m_initialTime = time;
 }

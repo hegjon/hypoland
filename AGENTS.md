@@ -143,13 +143,20 @@ Hypoland's renderer and shaders are GLES 2.0 / GLSL ES 1.00 only; that port is d
   - Removed as dead code: the color management render paths and protocol (`wp_color_manager_v1` is not
     advertised), the ICC 3D LUT, FP16 work buffers, the mirror texture (second color attachment), motion blur and
     `hyprpm/`. Their config options are still registered and ignored.
-  - Kept: the image description types in `src/helpers/cm/` and the KMS side in `Monitor.cpp` /
-    `handleFullscreenSettings()` (HDR metadata, CTM, wide gamut). They are inert, because every output is forced
-    to sRGB in `applyMonitorRuleSoft()`. ICC profiles still apply their VCGT gamma ramps through KMS.
+  - Removed on 2026-11-12, inert since every output was forced to sRGB: the image description types
+    (`src/helpers/cm/`) on monitors, framebuffers and textures, the monitor's HDR, wide gamut, luminance and SDR state,
+    and the KMS side of it (HDR metadata, the wide colour gamut flag, and the colour conversion CTM of a fullscreen
+    window in `handleFullscreenSettings()`, which sets the content type and the CTM control protocol's matrix only
+    now). Kept: the CTM control protocol (hyprsunset's night light) and an ICC profile's VCGT gamma ramps through KMS
+    (`src/helpers/ICC.*`, lcms2 reads the profile, `CMonitor::updateVCGTRamps()`). The monitor rule's `cm`, `sdr*`,
+    luminance and `supports_*` fields are parsed and ignored (a non-sRGB `cm` warns); `hyprctl monitors` shows
+    `colorManagementPreset: srgb` and the rule's sdr values, Lua's monitor `cm` is `srgb`. `render:cm_sdr_eotf` still
+    picks the transfer function of the aurora and haze blur variants (`NTransferFunction::shaderTF()`). The embedded
+    aquamarine keeps its HDR and colour properties, unused.
 - The config is Lua in this Hyprland version (`~/.config/hypr/hyprland.lua`, Omarchy uses it). With a Lua config
   `hyprctl keyword` answers `unknown request`; use `hyprctl eval "hl.config({...})"`.
 - The desktop and the machines have the same hypr* library versions, those of Arch's Hyprland 0.57.0 (hyprutils
-  0.14.3, hyprlang 0.6.8, hyprcursor 0.1.13, hyprgraphics 0.6.0, hyprwire 0.3.1, and hyprland-protocols 0.8.0 to
+  0.14.3, hyprlang 0.6.8, hyprgraphics 0.6.0, hyprwire 0.3.1, and hyprland-protocols 0.8.0 to
   build, a package as in 0.57.0 since 2026-11-03, the submodule before), so a desktop build links cleanly on every
   machine. Keep them in sync: hyprgraphics 0.6.0 (2026-11-03) changed its soname (`libhyprgraphics.so.4` -> `.so.5`),
   and a Hypoland built before it does not start after an Omarchy update brings it, nor one built after it on a machine
@@ -323,9 +330,10 @@ Ship `hyprctl` built from this fork so versions match. The Arch package should d
 ## Features to remove or default off
 
 Remove/rewrite (GPU heavy): color management / HDR pipeline, screen shaders, per-window offscreen rendering
-where avoidable. Done so far: color management is removed from the renderer, the shaders and the protocols.
-Screen shaders and shadows (default off) are still in the code; screen shaders written for Hyprland are
-GLSL ES 3.00 and do not compile here.
+where avoidable. Done so far: color management is removed from the renderer, the shaders and the protocols, and the
+screen shaders (2026-11-12): `decoration:screen_shader` is accepted and ignored (Hyprland's are GLSL ES 3.00 and never
+compiled here), the final pass through a work buffer is gone, and `debug:manual_crash` counts down and aborts without
+its glitch shader. Shadows (default off) are still in the code.
 
 Keep: blur (dual Kawase and the GLES2-capable variants), default off. Decided by the user on 2026-09-27 after
 measuring it on the X200: about 1% extra compositor CPU and 57-60 fps. Do not remove it.
@@ -333,7 +341,7 @@ measuring it on the X200: about 1% extra compositor CPU and 57-60 fps. Do not re
 Optional, default off: animations (keep short slides only, no fades), animated/gradient borders,
 rounded corners (radius 0 must skip the shader path), dim inactive, inactive opacity, fractional scaling.
 
-CPU/RAM: drop the plugin system and hyprpm; default to XCursor over hyprcursor SVG; keep Xwayland optional.
+CPU/RAM: drop the plugin system and hyprpm; XCursor only, no hyprcursor SVG; keep Xwayland optional.
 Window opacity of 0.98 or more is drawn as 1.0 (`Desktop::View::opaqueAlpha()`, decided by the user on 2026-09-29):
 Omarchy gives every window 0.985 active and 0.96 inactive, which lets 1.5% / 4% of the background through (1-2
 colour steps on a dark theme) but makes every window blended and unable to hide anything behind it.
@@ -350,7 +358,11 @@ stayed, the window manager's restart on the hangup (`CXWM::onEvent()`) never ran
 next session (the T550 on 2026-10-26, Xwayland killed with SIGKILL), and the window manager's writes, ANR pings among
 them, went into a socket nobody read until `xcb_flush()` blocked the compositor for good: stock Hyprland 0.57.0 on the
 X200 on 2026-11-01, after Xwayland aborted on a GPU hang in glamor (`Server.cpp` in upstream main is the same).
-Done so far: hyprpm is removed and hyprcursor is off by default. The plugin system is removed (2026-09-27): plugins
+Done so far: hyprpm and hyprcursor are removed. Cursors are XCursor themes only (2026-11-12): libhyprcursor is not
+linked, `cursor:enable_hyprcursor` is accepted and ignored (a warning in the log once), and `hyprctl version` /
+`systeminfo` list no hyprcursor version (the JSON fields `buildHyprcursor` / `systemHyprcursor` stay, empty, so the
+JSON keeps its form; the ABI hash lost its `_hc_` part). Configs keep exporting `HYPRCURSOR_SIZE` for clients that draw hyprcursor themes themselves;
+the compositor never set it and no longer reads it. The plugin system is removed (2026-09-27): plugins
 must be built against the exact Hyprland source they load into and most draw with GLES3 era renderer code, so
 keeping up was not worth it. `hl.plugin.load()` warns once and does nothing, `hl.get_loaded_plugins()` is empty,
 `hyprctl plugin list` answers `no plugins loaded` / `[]`, `plugin load` / `unload` fail, and `hyprctl version`
@@ -472,8 +484,8 @@ Findings worth keeping:
   the upstream default no client gets an EGL config with alpha and Quickshell's fullscreen overlay turns black.
 - Omarchy 4 locks with its Quickshell shell, `hyprlock` / `hypridle` are not installed.
 - Defaults changed: blur, shadows, animations, the splash text (`misc:disable_splash_rendering` is true, the option
-  still works) and hyprcursor off; the logo background is gone (`misc:disable_hyprland_logo` is a no-op); hyprpm is
-  removed. The config written for new users (`example/hyprland.lua`, embedded in the binary) keeps the same
+  still works) off and hyprcursor removed (XCursor only); the logo background is gone (`misc:disable_hyprland_logo`
+  is a no-op); hyprpm is removed. The config written for new users (`example/hyprland.lua`, embedded in the binary) keeps the same
   defaults: effects and rounding off, a single-color border.
 - Removed on 2026-09-28 so Hypoland does not speak for Hyprland: the welcome app, update news and donation popup
   (`WelcomeManager`, `VersionKeeperManager`, `DonationNagManager`; `ecosystem:no_update_news` and
@@ -1583,7 +1595,7 @@ Performance (X200, `HYPOLAND_PROFILE_PASS`, GPU time per frame, 4 windows plus a
 - Every frame used to clear the whole 1280x800 work buffer (1.4 ms, Gen4 has no fast clear). Now only the damage
   is cleared: the pass paints the background over its damage anyway (`clearRegionAfterInvalidation()`).
 - Frames are drawn straight into the screen buffer when nothing needs the work buffer (no zoom, no rotated output,
-  no screen shader, no mirror or screen sharing), `CHyprOpenGLImpl::canRenderDirectly()`. That removes the copy
+  no mirror or screen sharing), `CHyprOpenGLImpl::canRenderDirectly()`. That removes the copy
   from the work buffer to the screen. Screen buffers are imported twice: as a renderbuffer to render into and as a
   texture to sample from (blur), with a stencil renderbuffer. The screen buffer holds the frame from bufferAge
   frames ago and the damage covers everything since, so blur samples correct pixels outside the damage.
@@ -1840,8 +1852,7 @@ Known issues:
 
 ## Next steps
 
-Work that is left from the plan above:
-- Remove screen shaders.
+Nothing is left of the plan above: the screen shaders, its last item, were removed on 2026-11-12.
 
 # Code guidelines
 

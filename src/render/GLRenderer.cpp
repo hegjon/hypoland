@@ -38,7 +38,6 @@
 using namespace Hyprutils::Utils;
 using namespace Hyprutils::OS;
 using enum NContentType::eContentType;
-using namespace NColorManagement;
 using namespace Render;
 using namespace Render::GL;
 

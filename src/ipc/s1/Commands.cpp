@@ -277,9 +277,10 @@ std::string CCommandFormatter::getMonitorData(PHLMONITOR m, eHyprCtlOutputFormat
             tf(m->m_dpmsStatus), tf(m->m_output->state->state().adaptiveSync), rc<uint64_t>(m->m_solitaryClient.get()), getSolitaryBlockedReason(m, format),
             tf(m->m_tearingState.activelyTearing), getTearingBlockedReason(m, format), rc<uint64_t>(m->m_lastScanout.get()), getDSBlockedReason(m, format), tf(!m->m_enabled),
             formatToString(m->m_output->state->state().drmFormat), m->m_mirrorOf ? std::format("{}", m->m_mirrorOf->m_id) : "none", availableModesForOutput(m, format),
-            (NCMType::toString(m->m_cmType)), (m->m_sdrBrightness), (m->m_sdrSaturation), (m->m_sdrMinLuminance), (m->m_sdrMaxLuminance), tf(!m->shouldUseSoftwareCursors()),
-            StringUtils::backendStr(m->m_output->getBackend()->type()), tf(m->m_output->parsedEDID.hdrMetadata.has_value()),
-            tf(m->m_output->parsedEDID.chromaticityCoords.has_value()), tf(m->m_output->parsedEDID.supportsBT2020), tf(m->m_output->vrrCapable));
+            (NCMType::toString(NCMType::CM_SRGB)), (m->m_activeMonitorRule.m_sdrBrightness), (m->m_activeMonitorRule.m_sdrSaturation), (m->m_activeMonitorRule.m_sdrMinLuminance),
+            (m->m_activeMonitorRule.m_sdrMaxLuminance), tf(!m->shouldUseSoftwareCursors()), StringUtils::backendStr(m->m_output->getBackend()->type()),
+            tf(m->m_output->parsedEDID.hdrMetadata.has_value()), tf(m->m_output->parsedEDID.chromaticityCoords.has_value()), tf(m->m_output->parsedEDID.supportsBT2020),
+            tf(m->m_output->vrrCapable));
 
     } else {
         result += std::format(
@@ -297,8 +298,9 @@ std::string CCommandFormatter::getMonitorData(PHLMONITOR m, eHyprCtlOutputFormat
             sc<int>(m->m_transform), (m == Desktop::focusState()->monitor() ? "yes" : "no"), sc<int>(m->m_dpmsStatus), m->m_output->state->state().adaptiveSync,
             rc<uint64_t>(m->m_solitaryClient.get()), getSolitaryBlockedReason(m, format), m->m_tearingState.activelyTearing, getTearingBlockedReason(m, format),
             rc<uint64_t>(m->m_lastScanout.get()), getDSBlockedReason(m, format), !m->m_enabled, formatToString(m->m_output->state->state().drmFormat),
-            m->m_mirrorOf ? std::format("{}", m->m_mirrorOf->m_id) : "none", availableModesForOutput(m, format), (NCMType::toString(m->m_cmType)), (m->m_sdrBrightness),
-            (m->m_sdrSaturation), (m->m_sdrMinLuminance), (m->m_sdrMaxLuminance), (!m->shouldUseSoftwareCursors()), StringUtils::backendStr(m->m_output->getBackend()->type()),
+            m->m_mirrorOf ? std::format("{}", m->m_mirrorOf->m_id) : "none", availableModesForOutput(m, format), (NCMType::toString(NCMType::CM_SRGB)),
+            (m->m_activeMonitorRule.m_sdrBrightness), (m->m_activeMonitorRule.m_sdrSaturation), (m->m_activeMonitorRule.m_sdrMinLuminance),
+            (m->m_activeMonitorRule.m_sdrMaxLuminance), (!m->shouldUseSoftwareCursors()), StringUtils::backendStr(m->m_output->getBackend()->type()),
             yn(m->m_output->parsedEDID.hdrMetadata.has_value()), yn(m->m_output->parsedEDID.chromaticityCoords.has_value()), yn(m->m_output->parsedEDID.supportsBT2020),
             yn(m->m_output->vrrCapable));
     }
@@ -1949,8 +1951,6 @@ void IPC::Socket1::refreshState() {
     g_pInputManager->setPointerConfigs();
     g_pInputManager->setTouchDeviceConfigs();
     g_pInputManager->setTabletConfigs();
-
-    g_pHyprRenderer->m_reloadScreenShader = true;
 
     for (const auto& monitor : State::monitorState()->monitors()) {
         if (monitor)

@@ -4,13 +4,12 @@
 #include "../../Shader.hpp"
 #include "../../ShaderLoader.hpp"
 #include "../../../config/ConfigValue.hpp"
-#include "../../../helpers/cm/ColorManagement.hpp"
+#include "../../../helpers/TransferFunction.hpp"
 
 #include <algorithm>
 
 using namespace Render;
 using namespace Render::GL;
-using namespace NColorManagement;
 
 eBlurType CHazeBlurMaterial::type() const noexcept {
     return eBlurType::BLUR_HAZE;
@@ -32,7 +31,7 @@ void CHazeBlurMaterial::bindFinish(WP<CShader> shader, const SBlurMaterialContex
 
     shader->setUniformFloat(SHADER_HAZE_INTENSITY, std::clamp(*PHAZEINTENSITY, 0.F, 1.F) * std::clamp(context.strength, 0.F, 1.F));
     shader->setUniformFloat(SHADER_HAZE_IRIDESCENCE, std::clamp(*PHAZEIRIDESCENCE, 0.F, 1.F));
-    shader->setUniformInt(SHADER_HAZE_TRANSFER_FUNCTION, sc<int>(getDefaultImageDescription()->value().transferFunction));
+    shader->setUniformInt(SHADER_HAZE_TRANSFER_FUNCTION, NTransferFunction::shaderTF());
 }
 
 CHazeBlurProvider::CHazeBlurProvider(CHyprOpenGLImpl& impl) : CDualKawaseBlurProvider(impl, makeUnique<CHazeBlurMaterial>()) {

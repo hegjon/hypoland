@@ -12,7 +12,6 @@
 #include "../../desktop/state/FocusState.hpp"
 #include "../../render/pass/ClearPassElement.hpp"
 #include "../../render/pass/RectPassElement.hpp"
-#include "helpers/cm/ColorManagement.hpp"
 #include "../../managers/fullscreen/FullscreenController.hpp"
 #include <hyprutils/math/Region.hpp>
 #include <hyprgraphics/egl/Egl.hpp>
@@ -188,9 +187,6 @@ void CScreenshareFrame::renderMonitor() {
         LOGM(Log::ERR, "Invalid source texture");
         return;
     }
-
-    if (!TEXTURE->m_imageDescription)
-        Log::logger->log(Log::ERR, "CM: FIXME no source image description for screenshare");
 
     g_pHyprRenderer->m_renderData.fbSize = m_bufferSize;
     g_pHyprRenderer->setProjectionType(Render::RPT_EXPORT);
@@ -400,11 +396,8 @@ bool CScreenshareFrame::copyDmabuf() {
         LOGM(Log::ERR, "Can't copy: failed to begin rendering to dma frame");
         return false;
     }
-    g_pHyprRenderer->m_renderData.currentFB->setImageDescription(NColorManagement::DEFAULT_SRGB_IMAGE_DESCRIPTION);
 
     render();
-
-    g_pHyprRenderer->m_renderData.blockScreenShader = true;
 
     m_copyInFlight = true;
 
@@ -441,7 +434,6 @@ bool CScreenshareFrame::copyShm() {
 
     auto       outFB = g_pHyprRenderer->createFB();
     outFB->alloc(m_bufferSize.x, m_bufferSize.y, shm.format);
-    outFB->setImageDescription(NColorManagement::DEFAULT_SRGB_IMAGE_DESCRIPTION);
 
     if (!g_pHyprRenderer->beginFullFakeRender(PMONITOR, m_damage, outFB)) {
         LOGM(Log::ERR, "Can't copy: failed to begin rendering");
@@ -449,8 +441,6 @@ bool CScreenshareFrame::copyShm() {
     }
 
     render();
-
-    g_pHyprRenderer->m_renderData.blockScreenShader = true;
 
     g_pHyprRenderer->endRender();
 
@@ -485,7 +475,6 @@ void CScreenshareFrame::storeTempFB() {
     if (!m_session->m_tempFB)
         m_session->m_tempFB = g_pHyprRenderer->createFB();
     m_session->m_tempFB->alloc(m_bufferSize.x, m_bufferSize.y);
-    m_session->m_tempFB->setImageDescription(NColorManagement::DEFAULT_SRGB_IMAGE_DESCRIPTION);
 
     CRegion fakeDamage = {0, 0, m_bufferSize.x, m_bufferSize.y};
 

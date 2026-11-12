@@ -20,8 +20,6 @@
 #include "../Compositor.hpp"
 #include "../helpers/MiscFunctions.hpp"
 #include "../helpers/Format.hpp"
-#include "../helpers/CursorShapes.hpp"
-#include "../helpers/TransferFunction.hpp"
 #include "../config/ConfigValue.hpp"
 #include "../config/ConfigManager.hpp"
 #include "../pointer/PointerManager.hpp"
@@ -29,8 +27,6 @@
 #include "../desktop/state/FocusState.hpp"
 #include "../protocols/LayerShell.hpp"
 #include "../protocols/core/Compositor.hpp"
-#include "../helpers/cm/ColorManagement.hpp"
-#include "../managers/input/InputManager.hpp"
 #include "../managers/eventLoop/EventLoopManager.hpp"
 #include "../managers/eventLoop/EventLoopTimer.hpp"
 #include "../pointer/cursor/CursorManager.hpp"
@@ -42,7 +38,6 @@
 #include "../managers/screenshare/ScreenshareManager.hpp"
 #include "../notification/NotificationOverlay.hpp"
 #include "../state/MonitorState.hpp"
-#include "errorOverlay/Overlay.hpp"
 #include "helpers/Color.hpp"
 #include "macros.hpp"
 #include "pass/TexPassElement.hpp"
@@ -54,12 +49,10 @@
 #include "AsyncResourceGatherer.hpp"
 #include <ranges>
 #include <algorithm>
-#include <fstream>
 #include <string>
 #include <xf86drm.h>
 #include <fcntl.h>
 #include <gbm.h>
-#include <filesystem>
 #include <cstring>
 #include "./shaders/Shaders.hpp"
 #include "ShaderLoader.hpp"
@@ -68,7 +61,6 @@
 #include "gl/GLTexture.hpp"
 
 using namespace Hyprutils::OS;
-using namespace NColorManagement;
 using namespace Desktop::View;
 using namespace Render;
 using namespace Render::GL;
@@ -418,48 +410,6 @@ CHyprOpenGLImpl::CHyprOpenGLImpl() : m_drmFD(g_pCompositor->m_drmRenderNode.fd >
     initDRMFormats();
 
     RASSERT(eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT), "Couldn't unset current EGL!");
-
-    static auto addLastPressToHistory = [this](const Vector2D& pos, bool killing, bool touch) {
-        // shift the new pos and time in
-        std::ranges::rotate(m_pressedHistoryPositions, m_pressedHistoryPositions.end() - 1);
-        m_pressedHistoryPositions[0] = pos;
-
-        std::ranges::rotate(m_pressedHistoryTimers, m_pressedHistoryTimers.end() - 1);
-        m_pressedHistoryTimers[0].reset();
-
-        // shift killed flag in
-        m_pressedHistoryKilled <<= 1;
-        m_pressedHistoryKilled |= killing ? 1 : 0;
-#if POINTER_PRESSED_HISTORY_LENGTH < 32
-        m_pressedHistoryKilled &= (1U << POINTER_PRESSED_HISTORY_LENGTH) - 1;
-#endif
-
-        // shift touch flag in
-        m_pressedHistoryTouched <<= 1;
-        m_pressedHistoryTouched |= touch ? 1 : 0;
-#if POINTER_PRESSED_HISTORY_LENGTH < 32
-        m_pressedHistoryTouched &= (1U << POINTER_PRESSED_HISTORY_LENGTH) - 1;
-#endif
-    };
-
-    static auto P2 = Event::bus()->m_events.input.mouse.button.listen([](IPointer::SButtonEvent e, Event::SCallbackInfo&) {
-        if (e.state != WL_POINTER_BUTTON_STATE_PRESSED)
-            return;
-
-        addLastPressToHistory(g_pInputManager->getMouseCoordsInternal(), g_pInputManager->getClickMode() == CLICKMODE_KILL, false);
-    });
-
-    static auto P3 = Event::bus()->m_events.input.touch.down.listen([](ITouch::SDownEvent e, Event::SCallbackInfo&) {
-        auto PMONITOR = State::monitorState()->query().name(!e.device->m_boundOutput.empty() ? e.device->m_boundOutput : "").run();
-
-        PMONITOR = PMONITOR ? PMONITOR : Desktop::focusState()->monitor();
-
-        const auto TOUCH_COORDS = PMONITOR->m_position + (e.pos * PMONITOR->m_size);
-
-        addLastPressToHistory(TOUCH_COORDS, g_pInputManager->getClickMode() == CLICKMODE_KILL, true);
-    });
-
-    m_finalScreenShader = makeShared<CShader>();
 }
 
 CHyprOpenGLImpl::~CHyprOpenGLImpl() {
@@ -734,12 +684,6 @@ void CHyprOpenGLImpl::begin(PHLMONITOR pMonitor, const CRegion& damage_, SP<IFra
 
     m_fakeFrame = !!fb;
 
-    if (g_pHyprRenderer->m_reloadScreenShader) {
-        g_pHyprRenderer->m_reloadScreenShader = false;
-        static auto PSHADER                   = CConfigValue<std::string>("decoration:screen_shader");
-        applyScreenShader(*PSHADER);
-    }
-
     g_pHyprRenderer->m_renderData.outFB = fb ? fb : dc<CHyprGLRenderer*>(g_pHyprRenderer.get())->m_currentRenderbuffer->getFB();
 
     // Draw straight into the buffer that goes to the screen when nothing needs the frame in a separate work buffer.
@@ -798,9 +742,6 @@ bool CHyprOpenGLImpl::canRenderDirectly(PHLMONITOR pMonitor) {
     if (pMonitor->m_transform != WL_OUTPUT_TRANSFORM_NORMAL || g_pHyprRenderer->m_renderData.mouseZoomFactor != 1.F)
         return false;
 
-    if (m_finalScreenShader->program() >= 1 || g_pHyprRenderer->m_crashingInProgress)
-        return false;
-
     // mirrors and screen sharing take a copy of the finished frame
     if (pMonitor->needsACopyFB())
         return false;
@@ -852,8 +793,6 @@ void CHyprOpenGLImpl::end() {
             // Filtered linearly, freedreno puts the texel centers a hair off: one of the two triangles of a frame that went
             // through the work buffer came out up to two steps off, on the screen and in captures, and stayed so outside later
             // damage (the Galaxy Book after a grim screenshot, clients/render.py of the bench, 2026-11-01)
-            // The screen shader's pass below keeps the filter it had.
-            const bool FILTERNEAREST = g_pHyprRenderer->m_renderData.useNearestNeighbor;
             if (monbox == CBox{{}, m_renderData.pMonitor->m_transformedSize})
                 g_pHyprRenderer->m_renderData.useNearestNeighbor = true;
 
@@ -867,33 +806,6 @@ void CHyprOpenGLImpl::end() {
 
             blend(false);
 
-            const bool WANTS_FINAL_SHADER = !g_pHyprRenderer->m_renderData.blockScreenShader && (m_finalScreenShader->program() >= 1 || g_pHyprRenderer->m_crashingInProgress);
-
-            auto       finalTexture = g_pHyprRenderer->m_renderData.currentFB->getTexture();
-            CBox       finalBox     = monbox;
-            SP<IFramebuffer> postProcessFB;
-
-            if (WANTS_FINAL_SHADER) {
-                postProcessFB = g_pHyprRenderer->m_renderData.pMonitor->resources()->getUnusedWorkBuffer();
-                if (postProcessFB) {
-                    {
-                        auto guard = g_pHyprRenderer->bindTempFB(postProcessFB);
-                        GLFB(postProcessFB)->clearAfterInvalidation();
-                        g_pHyprRenderer->setProjectionType(RPT_MONITOR);
-                        g_pHyprRenderer->m_renderData.transformDamage = false;
-                        m_applyFinalShader                            = true;
-                        const bool COPYNEAREST                        = std::exchange(g_pHyprRenderer->m_renderData.useNearestNeighbor, FILTERNEAREST);
-                        renderTexture(finalTexture, finalBox, {.finalOutput = true});
-                        g_pHyprRenderer->m_renderData.useNearestNeighbor = COPYNEAREST;
-                        m_applyFinalShader                               = false;
-                    }
-
-                    finalTexture = postProcessFB->getTexture();
-                    finalBox     = CBox{{}, m_renderData.pMonitor->m_transformedSize};
-                } else
-                    Log::logger->log(Log::ERR, "Failed to acquire a work buffer for the final screen shader");
-            }
-
             g_pHyprRenderer->bindFB(g_pHyprRenderer->m_renderData.outFB);
             setViewport(0, 0, PMONITOR->m_pixelSize.x, PMONITOR->m_pixelSize.y);
             g_pHyprRenderer->setProjectionType(RPT_OUTPUT);
@@ -905,7 +817,7 @@ void CHyprOpenGLImpl::end() {
             if (PROFILE)
                 glFinish();
 
-            renderTexturePrimitive(finalTexture, finalBox);
+            renderTexturePrimitive(g_pHyprRenderer->m_renderData.currentFB->getTexture(), monbox);
 
             if (PROFILE) {
                 static uint64_t us = 0, frames = 0;
@@ -925,13 +837,11 @@ void CHyprOpenGLImpl::end() {
         }
 
         g_pHyprRenderer->m_renderData.useNearestNeighbor = false;
-        m_applyFinalShader                               = false;
     }
 
     // reset our data
     g_pHyprRenderer->m_renderData.mouseZoomFactor   = 1.f;
     g_pHyprRenderer->m_renderData.mouseZoomUseMouse = true;
-    g_pHyprRenderer->m_renderData.blockScreenShader = false;
     g_pHyprRenderer->m_renderData.currentFB.reset();
     g_pHyprRenderer->m_renderData.mainFB.reset();
     g_pHyprRenderer->m_renderData.outFB.reset();
@@ -963,9 +873,9 @@ static const std::vector<std::string> SHADER_INCLUDES = {
 
 // order matters, see ePreparedFragmentShader
 const std::array<std::string, SH_FRAG_LAST> FRAG_SHADERS = {
-    "quad.frag",         "passthru.frag",   "rgbamatte.frag", "ext.frag",    "blur1.frag",  "blur2.frag",       "blurprepare.frag", "blurfinish.frag",
-    "shadow.frag",       "inner_glow.frag", "surface.frag",   "border.frag", "glitch.frag", "frostfinish.frag", "dropsfinish.frag", "heatshimmerfinish.frag",
-    "aurorafinish.frag", "hazefinish.frag", "alphamax.frag",
+    "quad.frag",       "passthru.frag",   "rgbamatte.frag", "ext.frag",    "blur1.frag",       "blur2.frag",       "blurprepare.frag",       "blurfinish.frag",
+    "shadow.frag",     "inner_glow.frag", "surface.frag",   "border.frag", "frostfinish.frag", "dropsfinish.frag", "heatshimmerfinish.frag", "aurorafinish.frag",
+    "hazefinish.frag", "alphamax.frag",
 };
 
 bool CHyprOpenGLImpl::initShaders(const std::string& path) {
@@ -991,72 +901,6 @@ bool CHyprOpenGLImpl::initShaders(const std::string& path) {
 
     Log::logger->log(Log::DEBUG, "Shaders initialized successfully.");
     return true;
-}
-
-void CHyprOpenGLImpl::applyScreenShader(const std::string& path) {
-
-    static auto PDT = CConfigValue<Config::INTEGER>("debug:damage_tracking");
-
-    m_finalScreenShader->destroy();
-
-    if (path.empty() || path == STRVAL_EMPTY)
-        return;
-
-    std::string     absPath = absolutePath(path, Config::mgr()->getMainConfigPath());
-
-    std::error_code ec;
-    if (!std::filesystem::is_regular_file(absPath, ec)) {
-        if (ec)
-            ErrorOverlay::overlay()->queueError(std::format("Screen shader parser: Failed to check screen shader path: {}", ec.message()));
-        else
-            ErrorOverlay::overlay()->queueError("Screen shader parser: Screen shader path is not a regular file");
-        return;
-    }
-
-    std::ifstream infile(absPath);
-
-    if (!infile.good()) {
-        ErrorOverlay::overlay()->queueError("Screen shader parser: Failed to open screen shader");
-        return;
-    }
-
-    std::string fragmentShader((std::istreambuf_iterator<char>(infile)), (std::istreambuf_iterator<char>()));
-
-    if (!m_finalScreenShader->createProgram(m_shaders->TEXVERTSRC, fragmentShader, true)) {
-        // Error will have been sent by now by the underlying cause
-        return;
-    }
-
-    if (m_finalScreenShader->getUniformLocation(SHADER_TIME) != -1)
-        m_finalScreenShader->setInitialTime(g_pHyprRenderer->m_globalTimer.getSeconds());
-
-    static auto uniformRequireNoDamage = [this](eShaderUniform uniform, const std::string& name) {
-        if (*PDT == 0)
-            return;
-        if (m_finalScreenShader->getUniformLocation(uniform) == -1)
-            return;
-
-        // The screen shader uses the uniform
-        // Since the screen shader could change every frame, damage tracking *needs* to be disabled
-        ErrorOverlay::overlay()->queueError(std::format("Screen shader: Screen shader uses uniform '{}', which requires debug:damage_tracking to be switched off.\n"
-                                                        "WARNING:(Disabling damage tracking will *massively* increase GPU utilization!",
-                                                        name));
-    };
-
-    // Allow glitch shader to use time uniform whighout damage tracking
-    if (!g_pHyprRenderer->m_crashingInProgress)
-        uniformRequireNoDamage(SHADER_TIME, "time");
-
-    uniformRequireNoDamage(SHADER_POINTER, "pointer_position");
-    uniformRequireNoDamage(SHADER_POINTER_PRESSED_POSITIONS, "pointer_pressed_positions");
-    uniformRequireNoDamage(SHADER_POINTER_PRESSED_TIMES, "pointer_pressed_times");
-    uniformRequireNoDamage(SHADER_POINTER_PRESSED_KILLED, "pointer_pressed_killed");
-    uniformRequireNoDamage(SHADER_POINTER_PRESSED_TOUCHED, "pointer_pressed_touched");
-    uniformRequireNoDamage(SHADER_POINTER_LAST_ACTIVE, "pointer_last_active");
-    uniformRequireNoDamage(SHADER_POINTER_HIDDEN, "pointer_hidden");
-    uniformRequireNoDamage(SHADER_POINTER_KILLING, "pointer_killing");
-    uniformRequireNoDamage(SHADER_POINTER_SHAPE, "pointer_shape");
-    uniformRequireNoDamage(SHADER_POINTER_SHAPE_PREVIOUS, "pointer_shape_previous");
 }
 
 void CHyprOpenGLImpl::blend(bool enabled) {
@@ -1333,79 +1177,6 @@ void CHyprOpenGLImpl::renderTexture(SP<ITexture> tex, const CBox& box, STextureR
     scissor(nullptr);
 }
 
-static std::map<std::pair<uint32_t, uint32_t>, std::array<GLfloat, 9>> primariesConversionCache;
-
-WP<CShader>                                                            CHyprOpenGLImpl::renderScreenShaderInternal() {
-    static const auto PDT            = CConfigValue<Config::INTEGER>("debug:damage_tracking");
-    static const auto PCURSORTIMEOUT = CConfigValue<Config::FLOAT>("cursor:inactive_timeout");
-
-    auto&             m_renderData = g_pHyprRenderer->m_renderData;
-
-    WP<CShader>       shader =
-        g_pHyprRenderer->m_crashingInProgress ? getShaderVariant(SH_FRAG_GLITCH) : (m_finalScreenShader->program() ? m_finalScreenShader : getShaderVariant(SH_FRAG_PASSTHRURGBA));
-
-    shader = useShader(shader);
-
-    if (*PDT == 0 || g_pHyprRenderer->m_crashingInProgress)
-        shader->setUniformFloat(SHADER_TIME, g_pHyprRenderer->m_globalTimer.getSeconds() - shader->getInitialTime());
-    else
-        shader->setUniformFloat(SHADER_TIME, 0.f);
-
-    shader->setUniformInt(SHADER_WL_OUTPUT, m_renderData.pMonitor->m_id);
-    shader->setUniformFloat2(SHADER_FULL_SIZE, m_renderData.pMonitor->m_transformedSize.x, m_renderData.pMonitor->m_transformedSize.y);
-    shader->setUniformFloat(SHADER_POINTER_INACTIVE_TIMEOUT, *PCURSORTIMEOUT);
-    shader->setUniformInt(SHADER_POINTER_HIDDEN, g_pHyprRenderer->m_cursorHiddenByCondition);
-    shader->setUniformInt(SHADER_POINTER_KILLING, g_pInputManager->getClickMode() == CLICKMODE_KILL);
-    shader->setUniformInt(SHADER_POINTER_SHAPE, g_pHyprRenderer->m_lastCursorData.shape);
-    shader->setUniformInt(SHADER_POINTER_SHAPE_PREVIOUS, g_pHyprRenderer->m_lastCursorData.shapePrevious);
-    shader->setUniformFloat(SHADER_POINTER_SIZE, Pointer::Cursor::mgr()->getScaledSize());
-
-    if (*PDT == 0) {
-        PHLMONITORREF pMonitor = m_renderData.pMonitor;
-        Vector2D      p        = ((g_pInputManager->getMouseCoordsInternal() - pMonitor->m_position) * pMonitor->m_scale);
-        shader->setUniformFloat2(SHADER_POINTER, p.x / pMonitor->m_transformedSize.x, p.y / pMonitor->m_transformedSize.y);
-
-        std::vector<float> pressedPos = m_pressedHistoryPositions | std::views::transform([&](const Vector2D& vec) {
-                                            Vector2D pPressed = ((vec - pMonitor->m_position) * pMonitor->m_scale);
-                                            return std::array<float, 2>{pPressed.x / pMonitor->m_transformedSize.x, pPressed.y / pMonitor->m_transformedSize.y};
-                                        }) |
-            std::views::join | std::ranges::to<std::vector<float>>();
-
-        shader->setUniform2fv(SHADER_POINTER_PRESSED_POSITIONS, pressedPos.size(), pressedPos);
-
-        std::vector<float> pressedTime =
-            m_pressedHistoryTimers | std::views::transform([](const CTimer& timer) { return timer.getSeconds(); }) | std::ranges::to<std::vector<float>>();
-
-        shader->setUniform1fv(SHADER_POINTER_PRESSED_TIMES, pressedTime.size(), pressedTime);
-
-        shader->setUniformInt(SHADER_POINTER_PRESSED_KILLED, m_pressedHistoryKilled);
-        shader->setUniformInt(SHADER_POINTER_PRESSED_TOUCHED, m_pressedHistoryTouched);
-
-        shader->setUniformFloat(SHADER_POINTER_LAST_ACTIVE, g_pInputManager->m_lastCursorMovement.getSeconds());
-        shader->setUniformFloat(SHADER_POINTER_SWITCH_TIME, g_pHyprRenderer->m_lastCursorData.switchedTimer.getSeconds());
-
-    } else {
-        shader->setUniformFloat2(SHADER_POINTER, 0.f, 0.f);
-
-        static const std::vector<float> pressedPosDefault(POINTER_PRESSED_HISTORY_LENGTH * 2uz, 0.f);
-        static const std::vector<float> pressedTimeDefault(POINTER_PRESSED_HISTORY_LENGTH, 0.f);
-
-        shader->setUniform2fv(SHADER_POINTER_PRESSED_POSITIONS, pressedPosDefault.size(), pressedPosDefault);
-        shader->setUniform1fv(SHADER_POINTER_PRESSED_TIMES, pressedTimeDefault.size(), pressedTimeDefault);
-        shader->setUniformInt(SHADER_POINTER_PRESSED_KILLED, 0);
-
-        shader->setUniformFloat(SHADER_POINTER_LAST_ACTIVE, 0.f);
-        shader->setUniformFloat(SHADER_POINTER_SWITCH_TIME, 0.f);
-    }
-
-    if (g_pHyprRenderer->m_crashingInProgress) {
-        shader->setUniformFloat(SHADER_DISTORT, g_pHyprRenderer->m_crashingDistort);
-        shader->setUniformFloat2(SHADER_FULL_SIZE, m_renderData.pMonitor->m_transformedSize.x, m_renderData.pMonitor->m_transformedSize.y);
-    }
-
-    return shader;
-}
-
 WP<CShader> CHyprOpenGLImpl::renderToFBInternal(SP<ITexture> tex, const STextureRenderData& data, eTextureType texType, const CBox& newBox) {
     static auto        PBLEND = CConfigValue<Config::INTEGER>("render:use_shader_blur_blend");
 
@@ -1423,7 +1194,7 @@ WP<CShader> CHyprOpenGLImpl::renderToFBInternal(SP<ITexture> tex, const STexture
         default: RASSERT(false, "tex->m_iTarget unsupported!");
     }
 
-    if (data.finalOutput || (g_pHyprRenderer->m_renderData.currentWindow && g_pHyprRenderer->m_renderData.currentWindow->m_ruleApplicator->RGBX().valueOrDefault()))
+    if (g_pHyprRenderer->m_renderData.currentWindow && g_pHyprRenderer->m_renderData.currentWindow->m_ruleApplicator->RGBX().valueOrDefault())
         shaderFeatures &= ~SH_FEAT_RGBA;
 
     static auto PPROPORTIONAL = CConfigValue<Config::INTEGER>("decoration:blur:proportional");
@@ -1537,8 +1308,6 @@ void CHyprOpenGLImpl::renderTextureInternal(SP<ITexture> tex, const CBox& box, c
 
     const auto&                 glMatrix = g_pHyprRenderer->projectBoxToTarget(newBox, TRANSFORM);
 
-    const bool                  useScreenShader = m_applyFinalShader;
-
     setActiveTexture(GL_TEXTURE0);
     tex->bind();
 
@@ -1556,7 +1325,7 @@ void CHyprOpenGLImpl::renderTextureInternal(SP<ITexture> tex, const CBox& box, c
     // coordinates of a smaller triangle round differently and a pixel can come out a step off from a full repaint
     const bool NEAREST = g_pHyprRenderer->m_renderData.useNearestNeighbor || (tex->magFilter == GL_NEAREST && tex->minFilter == GL_NEAREST);
 
-    auto       shader = useScreenShader ? renderScreenShaderInternal() : renderToFBInternal(tex, data, tex->m_type, newBox);
+    auto       shader = renderToFBInternal(tex, data, tex->m_type, newBox);
 
     shader->setUniformMatrix3fv(SHADER_PROJ, 1, GL_TRUE, glMatrix.getMatrix());
     shader->setUniformInt(SHADER_TEX, 0);

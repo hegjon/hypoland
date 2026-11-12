@@ -35,8 +35,8 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
   10-bit framebuffer format.
 - The blur variants ripple, water, fluid_jar, prism and acrylic are removed, selecting one gives the normal
   dual Kawase blur.
-- Screen shaders (`decoration:screen_shader`) must be written in GLSL ES 1.00. Shaders written for Hyprland
-  are GLSL ES 3.00 and fail to compile.
+- Screen shaders are removed, `decoration:screen_shader` is ignored. Hyprland's are GLSL ES 3.00, which OpenGL ES
+  2.0 cannot compile.
 - Plugins and hyprpm are not supported. Hyprland plugins are built against the exact Hyprland source they
   load into, and Hypoland's renderer is GLES2 only. `hl.plugin.load()` is ignored with a warning,
   `hyprctl plugin list` reports no plugins and `hyprctl plugin load` fails. No headers or `hyprland.pc`
@@ -57,6 +57,8 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
   hidden over it as over any fullscreen window. `xwayland:legacy_fullscreen = false` switches this off.
 - The logo background and the default wallpapers are removed, `misc:disable_hyprland_logo` and
   `misc:force_default_wallpaper` are ignored.
+- hyprcursor support is removed, cursors are XCursor themes (`XCURSOR_THEME`, `XCURSOR_SIZE`).
+  `cursor:enable_hyprcursor` is ignored.
 - Hypoland does not start Hyprland's welcome app, update news or donation popup
   (`hyprland-welcome`, `hyprland-update-screen`, `hyprland-donate-screen`). `ecosystem:no_update_news` and
   `ecosystem:no_donation_nag` are ignored.
@@ -66,7 +68,6 @@ Omarchy 4 running on Hypoland on a ThinkPad X200 (Core 2 Duo P8400, GMA 4500MHD,
 - Blur, shadows and animations are off. The config Hypoland writes for new users (`example/hyprland.lua`)
   keeps them off, with rounded corners off and a single-color border.
 - The splash text is off (`misc:disable_splash_rendering` is true).
-- `cursor:enable_hyprcursor` is off, XCursor themes are used.
 - `render:direct_scanout` is `auto` (Hyprland: off): a fullscreen window's buffers are shown on the screen directly,
   without the compositor drawing them, when that shows the window better. Hypoland measures both ways, by the frames that
   reach the screen and then by the frames the window draws, and checks again now and then. Hyprland's `auto` only did

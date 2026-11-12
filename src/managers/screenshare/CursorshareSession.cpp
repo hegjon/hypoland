@@ -136,8 +136,6 @@ void CCursorshareSession::render() {
             .box = {{}, cursorImage.bufferTex->m_size},
         });
     }
-
-    g_pHyprRenderer->m_renderData.blockScreenShader = true;
 }
 
 bool CCursorshareSession::copy() {

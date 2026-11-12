@@ -31,7 +31,6 @@
 #include "../helpers/time/Timer.hpp"
 #include "../helpers/math/Math.hpp"
 #include "../helpers/time/Time.hpp"
-#include "../../protocols/cursor-shape-v1.hpp"
 #include "desktop/view/Popup.hpp"
 #include "Framebuffer.hpp"
 #include "Texture.hpp"
@@ -74,63 +73,58 @@ namespace Render {
         WP<Render::GL::CHyprOpenGLImpl> glBackend();
 
         // now: the frame's clock read when the caller has one (the frame scheduler), shared with the animation tick
-        void                                renderMonitor(PHLMONITOR pMonitor, bool commit = true, std::optional<Time::steady_tp> now = std::nullopt);
-        void                                arrangeLayersForMonitor(const MONITORID&);
-        void                                damageSurface(SP<CWLSurfaceResource>, double, double, double scale = 1.0);
-        void                                damageWindow(PHLWINDOW, bool forceFull = false);
-        void                                damageBox(const CBox&, bool skipFrameSchedule = false);
-        void                                damageBox(const int& x, const int& y, const int& w, const int& h);
-        void                                damageRegion(const CRegion&);
-        void                                damageMonitor(PHLMONITOR);
-        void                                damageMirrorsWith(PHLMONITOR, const CRegion&);
-        bool                                shouldRenderWindow(PHLWINDOW, PHLMONITOR);
-        bool                                shouldRenderWindow(PHLWINDOW);
-        bool                                shouldRenderMonitor(PHLMONITOR);
-        void                                ensureCursorRenderingMode();
-        bool                                shouldRenderCursor();
-        void                                setCursorHidden(bool hide);
+        void                            renderMonitor(PHLMONITOR pMonitor, bool commit = true, std::optional<Time::steady_tp> now = std::nullopt);
+        void                            arrangeLayersForMonitor(const MONITORID&);
+        void                            damageSurface(SP<CWLSurfaceResource>, double, double, double scale = 1.0);
+        void                            damageWindow(PHLWINDOW, bool forceFull = false);
+        void                            damageBox(const CBox&, bool skipFrameSchedule = false);
+        void                            damageBox(const int& x, const int& y, const int& w, const int& h);
+        void                            damageRegion(const CRegion&);
+        void                            damageMonitor(PHLMONITOR);
+        void                            damageMirrorsWith(PHLMONITOR, const CRegion&);
+        bool                            shouldRenderWindow(PHLWINDOW, PHLMONITOR);
+        bool                            shouldRenderWindow(PHLWINDOW);
+        bool                            shouldRenderMonitor(PHLMONITOR);
+        void                            ensureCursorRenderingMode();
+        bool                            shouldRenderCursor();
+        void                            setCursorHidden(bool hide);
 
-        std::tuple<float, float, float>     getRenderTimes(PHLMONITOR pMonitor); // avg max min
-        void                                ensureLockTexturesRendered(bool load);
-        void                                renderLockscreen(PHLMONITOR pMonitor, const Time::steady_tp& now, const CBox& geometry);
-        void                                setCursorSurface(SP<Desktop::View::CWLSurface> surf, int hotspotX, int hotspotY, bool force = false);
-        void                                setCursorFromName(const std::string& name, bool force = false);
-        void                                onRenderbufferDestroy(IRenderbuffer* rb);
-        bool                                isNvidia();
-        bool                                isIntel();
-        bool                                isSoftware();
-        bool                                isMgpu();
-        void                                addWindowToRenderUnfocused(PHLWINDOW window);
-        SP<IFramebuffer>                    makeSnapshotFB(PHLWINDOW);
-        SP<IFramebuffer>                    makeSnapshotFB(PHLLS);
-        SP<IFramebuffer>                    makeSnapshotFB(WP<Desktop::View::CPopup>);
-        void                                renderFadeouts(PHLMONITOR monitor, Desktop::eFadeoutPlane plane, PHLWORKSPACE workspace = nullptr);
-        bool                                beginFullFakeRender(PHLMONITOR pMonitor, CRegion& damage, SP<IFramebuffer> fb);
-        bool                                beginRenderToBuffer(PHLMONITOR pMonitor, CRegion& damage, SP<IHLBuffer> buffer, bool simple = false);
-        virtual void                        startRenderPass() {};
-        virtual void                        endRender(const std::function<void()>& renderingDoneCallback = {}) = 0;
+        std::tuple<float, float, float> getRenderTimes(PHLMONITOR pMonitor); // avg max min
+        void                            ensureLockTexturesRendered(bool load);
+        void                            renderLockscreen(PHLMONITOR pMonitor, const Time::steady_tp& now, const CBox& geometry);
+        void                            setCursorSurface(SP<Desktop::View::CWLSurface> surf, int hotspotX, int hotspotY, bool force = false);
+        void                            setCursorFromName(const std::string& name, bool force = false);
+        void                            onRenderbufferDestroy(IRenderbuffer* rb);
+        bool                            isNvidia();
+        bool                            isIntel();
+        bool                            isSoftware();
+        bool                            isMgpu();
+        void                            addWindowToRenderUnfocused(PHLWINDOW window);
+        SP<IFramebuffer>                makeSnapshotFB(PHLWINDOW);
+        SP<IFramebuffer>                makeSnapshotFB(PHLLS);
+        SP<IFramebuffer>                makeSnapshotFB(WP<Desktop::View::CPopup>);
+        void                            renderFadeouts(PHLMONITOR monitor, Desktop::eFadeoutPlane plane, PHLWORKSPACE workspace = nullptr);
+        bool                            beginFullFakeRender(PHLMONITOR pMonitor, CRegion& damage, SP<IFramebuffer> fb);
+        bool                            beginRenderToBuffer(PHLMONITOR pMonitor, CRegion& damage, SP<IHLBuffer> buffer, bool simple = false);
+        virtual void                    startRenderPass() {};
+        virtual void                    endRender(const std::function<void()>& renderingDoneCallback = {}) = 0;
 
-        NColorManagement::PImageDescription workBufferImageDescription();
-        bool                                m_bBlockSurfaceFeedback = false;
-        bool                                m_bRenderingSnapshot    = false;
-        PHLMONITORREF                       m_mostHzMonitor;
+        bool                            m_bBlockSurfaceFeedback = false;
+        bool                            m_bRenderingSnapshot    = false;
+        PHLMONITORREF                   m_mostHzMonitor;
 
-        void                                setSurfaceScanoutMode(SP<CWLSurfaceResource> surface, PHLMONITOR monitor); // nullptr monitor resets
+        void                            setSurfaceScanoutMode(SP<CWLSurfaceResource> surface, PHLMONITOR monitor); // nullptr monitor resets
 
-        void                                initiateManualCrash();
-        const SRenderData&                  renderData();
+        void                            initiateManualCrash();
+        const SRenderData&              renderData();
 
-        bool                                m_crashingInProgress = false;
-        float                               m_crashingDistort    = 0.5f;
-        wl_event_source*                    m_crashingLoop       = nullptr;
-        wl_event_source*                    m_cursorTicker       = nullptr;
+        float                           m_crashingDistort = 0.5f;
+        wl_event_source*                m_crashingLoop    = nullptr;
+        wl_event_source*                m_cursorTicker    = nullptr;
 
         struct {
-            int                                          hotspotX      = 0;
-            int                                          hotspotY      = 0;
-            wpCursorShapeDeviceV1Shape                   shape         = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT;
-            wpCursorShapeDeviceV1Shape                   shapePrevious = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT;
-            CTimer                                       switchedTimer;
+            int                                          hotspotX = 0;
+            int                                          hotspotY = 0;
             std::optional<SP<Desktop::View::CWLSurface>> surf;
             std::string                                  name;
         } m_lastCursorData;
@@ -150,9 +144,7 @@ namespace Render {
         bool                         commitPendingAndDoExplicitSync(PHLMONITOR pMonitor);  // TODO? move to protected and fix CMonitorFrameScheduler::onPresented
         SRenderData                  m_renderData;                                         // TODO? move to protected and fix CRenderPass
         SP<ITexture>                 screencopyDeniedTexture();
-        uint                         m_failedAssetsNo     = 0;    // TODO? make readonly
-        bool                         m_reloadScreenShader = true; // at launch it can be set
-        CTimer                       m_globalTimer;
+        uint                         m_failedAssetsNo = 0; // TODO? make readonly
 
         void                         draw(WP<IPassElement> element, const CRegion& damage = {});
         void                         draw(const CBorderPassElement::SBorderData& data, const CRegion& damage = {});

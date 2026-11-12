@@ -23,7 +23,7 @@
 #include "../helpers/math/Math.hpp"
 #include "../desktop/reserved/ReservedArea.hpp"
 #include <optional>
-#include "../helpers/cm/ColorManagement.hpp"
+#include "../helpers/ICC.hpp"
 #include "../helpers/signal/Signal.hpp"
 #include "DamageRing.hpp"
 #include "ScanoutAuto.hpp"
@@ -32,7 +32,6 @@
 #include <hyprutils/os/FileDescriptor.hpp>
 #include <sys/types.h>
 
-#include "../helpers/TransferFunction.hpp"
 #include "../config/shared/monitor/MonitorRule.hpp"
 
 class CSyncTimeline;
@@ -107,12 +106,6 @@ namespace Monitor {
         bool                        m_dpmsStatus       = true;
         bool                        m_vrrActive        = false; // this can be TRUE even if VRR is not active in the case that this display does not support it.
         bool                        m_enabled10bit     = false; // as above, this can be TRUE even if 10 bit failed.
-        NCMType::eCMType            m_cmType           = NCMType::CM_SRGB;
-        NTransferFunction::eTF      m_sdrEotf          = NTransferFunction::TF_DEFAULT;
-        float                       m_sdrSaturation    = 1.0f;
-        float                       m_sdrBrightness    = 1.0f;
-        float                       m_sdrMinLuminance  = 0.2f;
-        int                         m_sdrMaxLuminance  = 80;
         bool                        m_createdByUser    = false;
         bool                        m_isUnsafeFallback = false;
 
@@ -143,7 +136,7 @@ namespace Monitor {
         PHLMONITORREF              m_mirrorOf;
         std::vector<PHLMONITORREF> m_mirrors;
 
-        // ctm
+        // the colour transform of the CTM control protocol (hyprsunset's night light), set in KMS
         Mat3x3 m_ctm        = Mat3x3::identity();
         bool   m_ctmUpdated = false;
 
@@ -223,7 +216,7 @@ namespace Monitor {
             DS_BLOCK_TRANSFORM = (1 << 9),
             DS_BLOCK_DMA       = (1 << 10),
             DS_BLOCK_FAILED    = (1 << 11),
-            DS_BLOCK_CM        = (1 << 12),
+            DS_BLOCK_CM        = (1 << 12), // never set: the renderer converts no colours
             DS_BLOCK_RATE      = (1 << 13), // render:direct_scanout auto: the candidate shows better composited (CScanoutAuto)
 
             DS_CHECKS_COUNT = 14,
@@ -274,7 +267,6 @@ namespace Monitor {
         // methods
         void         onConnect(bool noRule);
         void         onDisconnect(bool destroy = false);
-        void         applyCMType(NCMType::eCMType cmType, NTransferFunction::eTF cmSdrEotf);
         void         addDamage(const pixman_region32_t* rg);
         void         addDamage(const CRegion& rg);
         void         addDamage(const CBox& box);
@@ -338,52 +330,24 @@ namespace Monitor {
         bool applyMonitorRuleSoft(Config::CMonitorRule&& pMonitorRule);
 
         //
-        const Mat3x3&                                               getTransformMatrix();
-        const Mat3x3&                                               getScaleMatrix();
+        const Mat3x3&                                                      getTransformMatrix();
+        const Mat3x3&                                                      getScaleMatrix();
 
-        void                                                        debugLastPresentation(const std::string& message);
-        Time::steady_tp                                             nextPresentation(const Time::steady_tp& now);
+        void                                                               debugLastPresentation(const std::string& message);
+        Time::steady_tp                                                    nextPresentation(const Time::steady_tp& now);
 
-        bool                                                        supportsWideColor();
-        bool                                                        supportsHDR();
-        float                                                       minLuminance(float defaultValue = 0);
-        int                                                         maxLuminance(int defaultValue = 80);
-        int                                                         maxAvgLuminance(int defaultValue = 80);
-        float                                                       maxFALL();
-        float                                                       maxCLL();
+        bool                                                               gammaRampsInUse();
 
-        bool                                                        wantsWideColor();
-        bool                                                        wantsHDR();
-
-        bool                                                        inHDR();
-        bool                                                        gammaRampsInUse();
-
-        std::optional<NColorManagement::PImageDescription>          getFSImageDescription();
-
-        NColorManagement::SPCPRimaries                              getMasteringPrimaries();
-        NColorManagement::SImageDescription::SPCMasteringLuminances getMasteringLuminances();
-
-        uint32_t                                                    getPreferredReadFormat();
-
-        bool                                                        needsCM();
-        /// Can do CM without shader (forDSmode ? check output image description : check workbuffer image description)
-        bool                                                               canNoShaderCM(bool forDSmode = false);
+        uint32_t                                                           getPreferredReadFormat();
 
         bool                                                               m_enabled             = false;
         bool                                                               m_renderingInitPassed = false;
-
-        PHLWINDOWREF                                                       m_previousFSWindow;
-        bool                                                               m_needsHDRupdate         = false;
-        bool                                                               m_hdrMetadataFromSurface = false;
 
         std::optional<dev_t>                                               m_cachedAllocatorDRMDev;
         std::optional<dev_t>                                               m_cachedCompositorDRMDev;
         int                                                                m_cachedAllocatorDRMFD  = -1;
         int                                                                m_cachedCompositorDRMFD = -1;
         std::optional<bool>                                                m_cachedSameGPU;
-
-        NColorManagement::PImageDescription                                m_imageDescription = NColorManagement::CImageDescription::from(NColorManagement::SImageDescription{});
-        bool                                                               m_noShaderCTM      = false; // sets drm CTM, restore needed
 
         bool                                                               m_blurFBDirty        = true;
         bool                                                               m_blurFBShouldRender = false;
@@ -395,34 +359,35 @@ namespace Monitor {
             return m_position == rhs.m_position && m_size == rhs.m_size && m_name == rhs.m_name;
         }
 
-        bool                                needsACopyFB();
-        NColorManagement::PImageDescription workBufferImageDescription();
-        WP<Monitor::CMonitorResources>      resources();
+        bool                           needsACopyFB();
+        WP<Monitor::CMonitorResources> resources();
         // the resources if they are allocated, without allocating them: a monitor's first commit comes before it has a size
         WP<Monitor::CMonitorResources> allocatedResources() const;
         // FORMAT if the renderer can render into it, else the format of the frames composited before a scanout in it
         uint32_t renderableFormat(uint32_t format) const;
 
       private:
-        void                    updateMatrix();
-        Mat3x3                  m_projMatrix;
-        Mat3x3                  m_projOutputMatrix;
+        void        updateMatrix();
+        Mat3x3      m_projMatrix;
+        Mat3x3      m_projOutputMatrix;
 
-        void                    setupDefaultWS(const Config::CMonitorRule&);
-        WORKSPACEID             findAvailableDefaultWS();
-        void                    setSpecialWorkspaceVisualState(bool active);
-        void                    commitDPMSState(bool state);
-        void                    scheduleModeRetry();
-        void                    clearModeRetry();
-        void                    updateVCGTRamps();
-        bool                    trySetFormat(std::span<const uint32_t> formats);
+        void        setupDefaultWS(const Config::CMonitorRule&);
+        WORKSPACEID findAvailableDefaultWS();
+        void        setSpecialWorkspaceVisualState(bool active);
+        void        commitDPMSState(bool state);
+        void        scheduleModeRetry();
+        void        clearModeRetry();
+        void        updateVCGTRamps();
+        bool        trySetFormat(std::span<const uint32_t> formats);
 
-        bool                    m_doneScheduled  = false;
-        bool                    m_vcgtRampsSet   = false;
-        int                     m_modeRetryCount = 0;
-        SP<CEventLoopTimer>     m_modeRetryTimer;
+        bool        m_doneScheduled = false;
+        bool        m_vcgtRampsSet  = false;
+        // the VCGT gamma ramps of the monitor rule's ICC profile
+        std::optional<NICC::SVCGTTable16> m_vcgt;
+        int                               m_modeRetryCount = 0;
+        SP<CEventLoopTimer>               m_modeRetryTimer;
 
-        std::stack<WORKSPACEID> m_prevWorkSpaces;
+        std::stack<WORKSPACEID>           m_prevWorkSpaces;
 
         // Resources
         UP<Monitor::CMonitorResources> m_resources;
@@ -435,11 +400,5 @@ namespace Monitor {
             CHyprSignalListener presented;
             CHyprSignalListener commit;
         } m_listeners;
-
-        int   m_supportsWideColor = 0;
-        int   m_supportsHDR       = 0;
-        float m_minLuminance      = -1.0f;
-        int   m_maxLuminance      = -1;
-        int   m_maxAvgLuminance   = -1;
     };
 }

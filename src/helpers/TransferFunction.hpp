@@ -15,5 +15,10 @@ namespace NTransferFunction {
     eTF         fromString(const std::string tfName);
     std::string toString(eTF tf);
 
-    eTF         fromConfig(bool useICC = false);
+    // render:cm_sdr_eotf
+    eTF fromConfig();
+
+    // the transfer function the aurora and haze blur variants decode and encode the work buffer with, a
+    // CM_TRANSFER_FUNCTION_* of the shaders' constants.h: gamma 2.2 for auto and gamma22, sRGB otherwise
+    int shaderTF();
 }

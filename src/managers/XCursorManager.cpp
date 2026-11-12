@@ -98,16 +98,16 @@ static std::vector<uint32_t> HYPR_XCURSOR_PIXELS = {
 // clang-format on
 
 CXCursorManager::CXCursorManager() {
-    m_hyprCursor = makeShared<SXCursors>();
+    m_builtinCursor = makeShared<SXCursors>();
     SXCursorImage image;
     image.size    = {32, 32};
     image.hotspot = {3, 2};
     image.pixels  = HYPR_XCURSOR_PIXELS;
     image.delay   = 0;
 
-    m_hyprCursor->images.push_back(image);
-    m_hyprCursor->shape = "left_ptr";
-    m_defaultCursor     = m_hyprCursor;
+    m_builtinCursor->images.push_back(image);
+    m_builtinCursor->shape = "left_ptr";
+    m_defaultCursor        = m_builtinCursor;
 }
 
 void CXCursorManager::loadTheme(std::string const& name, int size, float scale) {
@@ -159,7 +159,7 @@ void CXCursorManager::loadTheme(std::string const& name, int size, float scale) 
 
     if (!m_defaultCursor) {
         Log::logger->log(Log::ERR, "XCursor failed finding any shapes in theme \"{}\".", m_themeName);
-        m_defaultCursor = m_hyprCursor;
+        m_defaultCursor = m_builtinCursor;
         return;
     }
 

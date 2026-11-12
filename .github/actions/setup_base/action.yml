@@ -25,7 +25,6 @@ runs:
           go \
           gtest \
           hwdata \
-          hyprcursor \
           hyprgraphics \
           hyprlang \
           hyprland-protocols \

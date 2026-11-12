@@ -1,6 +1,5 @@
 #include "Framebuffer.hpp"
 #include "helpers/Format.hpp"
-#include "helpers/cm/ColorManagement.hpp"
 
 using namespace Render;
 
@@ -34,16 +33,4 @@ SP<ITexture> IFramebuffer::getTexture() {
 
 SP<ITexture> IFramebuffer::getStencilTex() {
     return m_stencilTex;
-}
-
-NColorManagement::PImageDescription IFramebuffer::imageDescription() {
-    return m_tex ? m_tex->m_imageDescription : m_imageDescription;
-}
-
-void IFramebuffer::setImageDescription(NColorManagement::PImageDescription desc) {
-    m_imageDescription = desc;
-    if (m_tex)
-        m_tex->m_imageDescription = desc;
-    else
-        Log::logger->log(Log::TRACE, "CM: FIXME no framebuffer texture");
 }

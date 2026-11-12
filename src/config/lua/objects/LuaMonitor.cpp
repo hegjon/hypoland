@@ -193,7 +193,7 @@ static int monitorIndex(lua_State* L) {
     } else if (key == "focused")
         lua_pushboolean(L, mon == Desktop::focusState()->monitor());
     else if (key == "cm")
-        lua_pushstring(L, NCMType::toString(mon->m_cmType).c_str());
+        lua_pushstring(L, NCMType::toString(NCMType::CM_SRGB).c_str()); // every output is sRGB
     else if (key == "reserved") {
         lua_newtable(L);
         lua_pushnumber(L, mon->m_reservedArea.top());

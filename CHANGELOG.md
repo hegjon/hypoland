@@ -44,6 +44,16 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 - `render:direct_scanout = auto` means any fullscreen window, when it shows better scanned out than composited, measured;
   Hyprland's auto only scans out windows that say they are games. `1` (on) and `0` (off) work as before.
   `HYPOLAND_SCANOUT_DEBUG=1` prints the choices to the session's journal.
+- hyprcursor support is removed, cursors are always XCursor themes (`XCURSOR_THEME`, `XCURSOR_SIZE`, `hyprctl
+  setcursor`), as they were by default: Hypoland no longer links libhyprcursor. `cursor:enable_hyprcursor` is accepted
+  and ignored, and `hyprctl version` no longer lists a hyprcursor version. An animated XCursor theme animates now also
+  where a hyprcursor theme is installed.
+- Screen shaders are removed: `decoration:screen_shader` is accepted and ignored. Hyprland's are GLSL ES 3.00 and never
+  compiled here. `debug:manual_crash` still crashes the compositor after its countdown, without the glitch effect.
+- The colour management that had no effect since every output is sRGB is removed: HDR metadata, the wide colour gamut
+  flag and colour conversion of fullscreen windows in KMS. An ICC profile in a monitor rule still applies its gamma
+  ramps (VCGT) and night light (the CTM control protocol, hyprsunset) works as before; the monitor rule's `cm`, `sdr*`
+  and luminance settings are accepted and ignored as before.
 
 ### Fixed
 
