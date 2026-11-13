@@ -73,7 +73,10 @@ Vector2D CWLSurface::correctSmallVec() const {
     const auto SIZE = m_resource->m_current.size; // logical, as the reported size: the buffer's size is that only at buffer scale 1
     const auto REP  = O->backend().reportedSize();
 
-    return Vector2D{(REP.x - SIZE.x) / 2, (REP.y - SIZE.y) / 2}.clamp({}, {INFINITY, INFINITY}) * (O->size(Desktop::View::IGeometric::GEOMETRIC_CURRENT) / REP);
+    // whole logical pixels, as a window's position: the surface's damage is a region of whole pixels, and a half pixel
+    // (a 1200x675 surface in a 1600x900 window at scale 2, the XPS) was cut off there but not when drawing, so every
+    // damaged rectangle missed its last row of physical pixels on the screen
+    return (Vector2D{(REP.x - SIZE.x) / 2, (REP.y - SIZE.y) / 2}.clamp({}, {INFINITY, INFINITY}) * (O->size(Desktop::View::IGeometric::GEOMETRIC_CURRENT) / REP)).floor();
 }
 
 Vector2D CWLSurface::correctSmallVecBuf() const {
