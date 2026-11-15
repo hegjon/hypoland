@@ -4,7 +4,9 @@ Hypoland master r957 (`29b9f86a9`, after 0.3.0: the measured direct scanout, fra
 buffers on the plane) against stock Hyprland 0.57.1-2: every workload of `scripts/bench/measure.sh` with the games and
 ElectroBench, on every test machine, 8 to 10 fresh sessions of each per machine (macmini-intel 5 to 6, see the caveats),
 alternating from 23:09 on 2026-11-10 to 07:30 on 2026-11-11 (macmini-m1 from 23:38). The lab page (`web/lab.html`,
-`scripts/web/lab.py`) and the terminals page take their numbers from here. Compare a later build with
+`scripts/web/lab.py`) and the terminals page took their numbers from here from 2026-11-11 to 11-13 (since then
+Hyprland's from `../20261111-all-machines-r966-vs-hyprland-0.57.1/` and Hypoland's from
+`../20261112-all-machines-r991-realtime-off-vs-on/`). Compare a later build with
 `<machine>/hypoland/values.txt` to see whether it got slower, and with `<machine>/hyprland/values.txt` to see where it
 stands against Hyprland 0.57.1. It follows `../20261103-all-machines-0.3.0-vs-hyprland-0.57.0/`, made the same way, and
 adds macmini-m1 (Apple M1, asahi).

@@ -1,0 +1,149 @@
+2026-11-14 14:39:04 until 2026-11-15 07:30:00 on macmini-intel, user a, hypoland /root/abnight/hypoland-0.3.0.r992.g92942ceba-1-x86_64.pkg.tar.zst, hyprland /var/cache/pacman/pkg/hyprland-0.57.2-2-x86_64.pkg.tar.zst /var/cache/pacman/pkg/omarchy-hyprland-titlebars-0.4.0-1-x86_64.pkg.tar.zst 
+2026-11-14 14:39:04 stopped timers: archlinux-keyring-wkd-sync.timer man-db.timer plocate-updatedb.timer shadow.timer snapper-cleanup.timer systemd-tmpfiles-clean.timer 
+2026-11-14 14:39:08 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-14 14:39:14 stopped an update check
+2026-11-14 14:40:19 stopped an update check
+2026-11-14 14:40:46 hypoland round 1 startup: 54 values
+2026-11-14 15:12:53 hypoland round 1: 702 values
+2026-11-14 15:16:55 hypoland check: 103 passed, 0 failed
+2026-11-14 15:17:03 hyprland up: hyprland 0.57.2-2
+2026-11-14 15:17:09 stopped an update check
+2026-11-14 15:18:14 stopped an update check
+2026-11-14 15:18:41 hyprland round 1 startup: 54 values
+2026-11-14 15:50:44 hyprland round 1: 702 values
+2026-11-14 15:54:53 hyprland check: 99 passed, 4 failed
+2026-11-14 15:54:59 hyprland up: hyprland 0.57.2-2
+2026-11-14 15:55:04 stopped an update check
+2026-11-14 15:56:14 stopped an update check
+2026-11-14 15:56:37 hyprland round 2 startup: 54 values
+2026-11-14 16:28:39 hyprland round 2: 702 values
+2026-11-14 16:28:46 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-14 16:28:54 stopped an update check
+2026-11-14 16:29:59 stopped an update check
+2026-11-14 16:30:23 hypoland round 2 startup: 54 values
+2026-11-14 17:02:20 hypoland round 2: 702 values
+2026-11-14 17:02:25 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-14 17:02:33 stopped an update check
+2026-11-14 17:03:38 stopped an update check
+2026-11-14 17:04:02 hypoland round 3 startup: 54 values
+2026-11-14 17:35:53 hypoland round 3: 702 values
+2026-11-14 17:36:00 hyprland up: hyprland 0.57.2-2
+2026-11-14 17:36:07 stopped an update check
+2026-11-14 17:37:13 stopped an update check
+2026-11-14 17:37:38 hyprland round 3 startup: 54 values
+2026-11-14 18:09:43 hyprland round 3: 702 values
+2026-11-14 18:09:49 hyprland up: hyprland 0.57.2-2
+2026-11-14 18:09:53 stopped an update check
+2026-11-14 18:11:03 stopped an update check
+2026-11-14 18:11:27 hyprland round 4 startup: 54 values
+2026-11-14 18:43:29 hyprland round 4: 702 values
+2026-11-14 18:43:35 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-14 18:43:43 stopped an update check
+2026-11-14 18:44:49 stopped an update check
+2026-11-14 18:45:13 hypoland round 4 startup: 54 values
+2026-11-14 19:17:05 hypoland round 4: 702 values
+2026-11-14 19:17:10 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-14 19:17:19 stopped an update check
+2026-11-14 19:18:24 stopped an update check
+2026-11-14 19:18:47 hypoland round 5 startup: 54 values
+2026-11-14 19:50:36 hypoland round 5: 702 values
+2026-11-14 19:50:43 hyprland up: hyprland 0.57.2-2
+2026-11-14 19:50:48 stopped an update check
+2026-11-14 19:51:54 stopped an update check
+2026-11-14 19:52:21 hyprland round 5 startup: 54 values
+2026-11-14 20:24:20 hyprland round 5: 702 values
+2026-11-14 20:24:26 hyprland up: hyprland 0.57.2-2
+2026-11-14 20:24:35 stopped an update check
+2026-11-14 20:25:40 stopped an update check
+2026-11-14 20:26:04 hyprland round 6 startup: 54 values
+2026-11-14 20:58:12 hyprland round 6: 702 values
+2026-11-14 20:58:19 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-14 20:58:27 stopped an update check
+2026-11-14 20:59:32 stopped an update check
+2026-11-14 20:59:56 hypoland round 6 startup: 54 values
+2026-11-14 21:31:47 hypoland round 6: 702 values
+2026-11-14 21:31:52 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-14 21:31:57 stopped an update check
+2026-11-14 21:33:03 stopped an update check
+2026-11-14 21:33:29 hypoland round 7 startup: 54 values
+2026-11-14 22:05:25 hypoland round 7: 702 values
+2026-11-14 22:05:33 hyprland up: hyprland 0.57.2-2
+2026-11-14 22:05:38 stopped an update check
+2026-11-14 22:06:48 stopped an update check
+2026-11-14 22:07:11 hyprland round 7 startup: 54 values
+2026-11-14 22:39:16 hyprland round 7: 702 values
+2026-11-14 22:39:23 hyprland up: hyprland 0.57.2-2
+2026-11-14 22:39:30 stopped an update check
+2026-11-14 22:40:35 stopped an update check
+2026-11-14 22:41:01 hyprland round 8 startup: 54 values
+2026-11-14 23:13:04 hyprland round 8: 702 values
+2026-11-14 23:13:11 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-14 23:13:16 stopped an update check
+2026-11-14 23:14:22 stopped an update check
+2026-11-14 23:14:48 hypoland round 8 startup: 54 values
+2026-11-14 23:46:39 hypoland round 8: 702 values
+2026-11-14 23:46:44 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-14 23:46:52 stopped an update check
+2026-11-14 23:47:58 stopped an update check
+2026-11-14 23:48:21 hypoland round 9 startup: 54 values
+2026-11-15 00:20:16 hypoland round 9: 702 values
+2026-11-15 00:20:23 hyprland up: hyprland 0.57.2-2
+2026-11-15 00:20:28 stopped an update check
+2026-11-15 00:22:01 hyprland round 9 startup: 54 values
+2026-11-15 00:54:11 hyprland round 9: 702 values
+2026-11-15 00:54:18 hyprland up: hyprland 0.57.2-2
+2026-11-15 00:54:26 stopped an update check
+2026-11-15 00:55:32 stopped an update check
+2026-11-15 00:55:56 hyprland round 10 startup: 54 values
+2026-11-15 01:28:02 hyprland round 10: 702 values
+2026-11-15 01:28:09 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-15 01:28:14 stopped an update check
+2026-11-15 01:29:19 stopped an update check
+2026-11-15 01:29:46 hypoland round 10 startup: 54 values
+2026-11-15 02:01:40 hypoland round 10: 702 values
+2026-11-15 02:01:45 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-15 02:01:51 stopped an update check
+2026-11-15 02:02:56 stopped an update check
+2026-11-15 02:03:22 hypoland round 11 startup: 54 values
+2026-11-15 02:35:15 hypoland round 11: 702 values
+2026-11-15 02:35:22 hyprland up: hyprland 0.57.2-2
+2026-11-15 02:35:28 stopped an update check
+2026-11-15 02:36:33 stopped an update check
+2026-11-15 02:37:00 hyprland round 11 startup: 54 values
+2026-11-15 03:09:08 hyprland round 11: 702 values
+2026-11-15 03:09:14 hyprland up: hyprland 0.57.2-2
+2026-11-15 03:09:21 stopped an update check
+2026-11-15 03:10:26 stopped an update check
+2026-11-15 03:10:52 hyprland round 12 startup: 54 values
+2026-11-15 03:42:56 hyprland round 12: 702 values
+2026-11-15 03:43:03 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-15 03:43:09 stopped an update check
+2026-11-15 03:44:14 stopped an update check
+2026-11-15 03:44:40 hypoland round 12 startup: 54 values
+2026-11-15 04:16:31 hypoland round 12: 702 values
+2026-11-15 04:16:36 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-15 04:16:41 stopped an update check
+2026-11-15 04:17:47 stopped an update check
+2026-11-15 04:18:13 hypoland round 13 startup: 54 values
+2026-11-15 04:50:03 hypoland round 13: 702 values
+2026-11-15 04:50:12 hyprland up: hyprland 0.57.2-2
+2026-11-15 04:50:19 stopped an update check
+2026-11-15 04:51:24 stopped an update check
+2026-11-15 04:51:50 hyprland round 13 startup: 54 values
+2026-11-15 05:23:58 hyprland round 13: 702 values
+2026-11-15 05:24:05 hyprland up: hyprland 0.57.2-2
+2026-11-15 05:24:12 stopped an update check
+2026-11-15 05:25:18 stopped an update check
+2026-11-15 05:25:43 hyprland round 14 startup: 54 values
+2026-11-15 05:57:45 hyprland round 14: 702 values
+2026-11-15 05:57:52 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-15 05:57:57 stopped an update check
+2026-11-15 05:59:02 stopped an update check
+2026-11-15 05:59:29 hypoland round 14 startup: 54 values
+2026-11-15 06:31:19 hypoland round 14: 702 values
+2026-11-15 06:31:19 no time for round 15
+2026-11-15 06:31:19 back to hypoland
+2026-11-15 06:31:24 hypoland up: hypoland 0.3.0.r992.g92942ceba-1
+2026-11-15 06:31:30 stopped an update check
+2026-11-15 06:32:24 started the timers again
+2026-11-15 06:32:24 done

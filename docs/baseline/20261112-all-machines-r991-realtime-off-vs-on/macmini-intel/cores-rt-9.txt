@@ -1,0 +1,2 @@
+TIME                            PID  UID  GID SIG     COREFILE EXE                 SIZE
+Fri 2026-11-13 06:42:26 EET 2456816 1000 1000 SIGABRT present  /usr/bin/Xwayland 404.1K

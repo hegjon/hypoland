@@ -3,18 +3,31 @@
 import html, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BASELINE = "docs/baseline/20261110-all-machines-r957-vs-hyprland-0.57.1"
-HYPRLAND = "0.57.1"
-# the run the numbers come from, for the pages' notes
-RUN = "alternating from 2026-11-10 23:09 to 11-11 07:30, Hypoland master r957 (after 0.3.0) against Hyprland " + HYPRLAND + "-2"
+HYPRLAND = "0.57.2"
+# Since 2026-11-15 the numbers come from one baseline of alternating sessions again: the night of 2026-11-14 to 15,
+# Hypoland master r992 against Hyprland 0.57.2-2 on twelve machines (BASELINE). From 2026-11-13 to 15 they came from two
+# nights in a row: Hypoland's from docs/baseline/20261112-all-machines-r991-realtime-off-vs-on (r991 alone, its sessions
+# with realtime as Omarchy has it), Hyprland's from docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1; before,
+# from one baseline. HYPOLAND_RUN and HYPOLAND_BLOCKS stay for such a pair of nights: Hypoland's blocks are
+# HYPOLAND_RUN/<machine>/<HYPOLAND_BLOCKS.get(machine, "hypoland")>.
+BASELINE = "docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2"
+HYPOLAND_RUN = BASELINE
+HYPOLAND_BLOCKS = {}
+# the night the numbers come from, for the pages' notes
+RUN = ("Hypoland master r992 (after 0.3.0) against Hyprland " + HYPRLAND + "-2, alternating through the night of "
+       "2026-11-14 to 15")
+# what that means for reading them (the pages' notes had a warning here while the numbers came from two nights)
+TWO_NIGHTS = "The two alternated, a fresh session each, so a drift of the machine hits both the same."
+# the raw data of the night, for the pages' notes
+RAW = (f'Raw data, every session\'s values and the scripts: <a href="https://github.com/hegjon/hypoland/tree/master/{BASELINE}">'
+       f'{BASELINE.split("/")[-1]}</a>.')
 
 # alias, machine, year, CPU, GPU, Mesa driver and GLES level, screen, RAM, what it stands for; baseline: has a column
 MACHINES = [
     dict(alias="x200", name="Lenovo ThinkPad X200", year=2008, cpu="Core 2 Duo P8400, 2 cores", gpu="Intel GMA 4500MHD (GM45, Gen 4.5)",
          driver="crocus, GLES 2.0 only", screen="1280x800", ram="6 GB", role="The target and the main test machine: stock Hyprland does not start on it.", baseline=True),
     dict(alias="macmini-intel", name="Apple Mac mini Late 2014", year=2014, cpu="Core i5-4260U, 4 threads", gpu="Intel HD Graphics 5000 (Haswell GT3)",
-         driver="crocus, GLES 3.0", screen="1920x1200 over HDMI", ram="4 GB", role="Haswell, the last crocus generation: Mesa copies shm windows through a tiled temporary here.", baseline=False,
-         nodata="had no monitor in the night of the baseline (its HDMI went to a KVM), so its numbers are left out"),
+         driver="crocus, GLES 3.0", screen="1920x1200 over HDMI", ram="4 GB", role="Haswell, the last crocus generation: Mesa copies shm windows through a tiled temporary here.", baseline=True),
     dict(alias="chromebook", name="Dell Chromebook 11 3120", year=2015, cpu="Celeron N2840, 2 cores", gpu="Intel Bay Trail",
          driver="crocus, GLES 3.0", screen="1366x768", ram="4 GB, 16 GB eMMC", role="The low end with GLES 3: two slow cores, little memory, wifi only.", baseline=True),
     dict(alias="t550", name="Lenovo ThinkPad T550", year=2015, cpu="Core i5-5300U, 4 threads", gpu="Intel HD Graphics 5500 (Broadwell)",
@@ -33,13 +46,25 @@ MACHINES = [
          driver="crocus, GLES 3.0", screen="1920x1080", ram="4 GB", role="Joined on 2026-10-31, Ivy Bridge: the crocus generation between Bay Trail and Haswell.", baseline=True),
     dict(alias="macmini-m1", name="Apple Mac mini M1", year=2020, cpu="Apple M1, 8 cores, aarch64", gpu="Apple M1 GPU (G13)",
          driver="asahi, GLES 3.2", screen="1920x1080 over HDMI", ram="8 GB", role="Apple Silicon with the Asahi kernel and Mesa, joined on 2026-11-10; no cursor plane, and its display driver reports no page flips to count.", baseline=True),
+    dict(alias="hp-amd", name="HP Notebook (A6-7310)", year=2016, cpu="AMD A6-7310, 4 cores", gpu="AMD Radeon R4 (Carrizo-L, GCN 2)",
+         driver="radeonsi on amdgpu, GLES 3.2", screen="1920x1080 at scale 1.5", ram="8 GB, 1 GB of it for the GPU", role="Joined on 2026-11-14: the oldest GPU on radeonsi, the driver every newer Radeon uses.", baseline=False,
+         nodata="joined on 2026-11-14 and has no numbers yet: its first night ended after 20 minutes in a GPU hang under GravityMark"),
+    dict(alias="p14s", name="Lenovo ThinkPad P14s Gen 2a", year=2021, cpu="Ryzen 7 PRO 5850U, 16 threads", gpu="AMD Radeon Vega 8 (Cezanne)",
+         driver="radeonsi, GLES 3.2", screen="3840x2160 at scale 2", ram="16 GB, 4 GB of it for the GPU", role="Joined on 2026-11-14, the newest x86 machine: radeonsi on a Zen 3 APU and the lab's first 4K screen.", baseline=True),
 ]
 # both tables list the machines by year, the oldest first (sorted is stable: same-year machines keep the order above)
 MACHINES.sort(key=lambda m: m["year"])
 RETIRED = "An HP EliteBook 8560p (2011, Radeon HD 6470M, r600) was in the lab from 2026-10-22 until its GPU failed on 2026-10-27."
 
-def values(alias, compositor, baseline=BASELINE):
-    d = os.path.join(ROOT, baseline, alias, compositor)
+def values(alias, compositor, baseline=None):
+    """A machine's medians and its count of sessions: by default Hypoland's from HYPOLAND_RUN and Hyprland's from
+    BASELINE, with a baseline directory the compositor's from there."""
+    if baseline is not None:
+        d = os.path.join(ROOT, baseline, alias, compositor)
+    elif compositor == "hypoland":
+        d = os.path.join(ROOT, HYPOLAND_RUN, alias, HYPOLAND_BLOCKS.get(alias, "hypoland"))
+    else:
+        d = os.path.join(ROOT, BASELINE, alias, compositor)
     v = {}
     for line in open(os.path.join(d, "values.txt")):
         parts = line.split()
@@ -48,6 +73,18 @@ def values(alias, compositor, baseline=BASELINE):
             except ValueError: pass
     sessions = sum(1 for line in open(os.path.join(d, "raw.txt")) if re.match(r"@ \d+ cpu\.gpu-client\.percent ", line))
     return v, sessions
+
+def has(alias):
+    """Whether the night (or both nights) has the machine."""
+    return (os.path.isdir(os.path.join(ROOT, HYPOLAND_RUN, alias, HYPOLAND_BLOCKS.get(alias, "hypoland")))
+            and os.path.isdir(os.path.join(ROOT, BASELINE, alias, "hyprland")))
+
+def sessions_text(pairs, few):
+    """'8 to 12 fresh sessions of Hypoland and 13 to 18 of Hyprland' over the (Hypoland, Hyprland) session counts of the
+    machines that have at least few of each."""
+    full = [p for p in pairs if min(p) >= few]
+    span = lambda xs: f"{min(xs)}" if min(xs) == max(xs) else f"{min(xs)} to {max(xs)}"
+    return f"{span([h for h, _ in full])} fresh sessions of Hypoland and {span([s for _, s in full])} of Hyprland"
 
 def fmt(x, unit):
     if unit == "%": return f"{x:.1f}%"

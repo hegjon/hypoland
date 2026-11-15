@@ -1,0 +1,1 @@
+Nov 12 23:04:15 xps uwsm_hyprland.desktop[1432722]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling

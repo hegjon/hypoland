@@ -1,0 +1,2 @@
+TIME                            PID  UID  GID SIG     COREFILE EXE                      SIZE
+Fri 2026-11-13 04:19:01 EET 2690324 1000 1000 SIGABRT present  /usr/bin/hyprland-dialog 1.3M

@@ -1,0 +1,4 @@
+Nov 13 05:12:25 macmini-intel uwsm_hyprland.desktop[2216788]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling
+Nov 13 05:12:39 macmini-intel uwsm_hyprland.desktop[2216788]: Realtime: realtime scheduling again
+Nov 13 05:22:05 macmini-intel uwsm_hyprland.desktop[2216788]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling
+Nov 13 05:22:07 macmini-intel uwsm_hyprland.desktop[2216788]: Realtime: realtime scheduling again

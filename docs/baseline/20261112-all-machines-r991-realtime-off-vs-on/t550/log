@@ -1,0 +1,151 @@
+2026-11-12 21:09:57 until 2026-11-13 07:30:00 on t550, user a, /root/abrt/hypoland-0.3.0.r991.ge5a1c2d8e-1-x86_64.pkg.tar.zst
+2026-11-12 21:09:57 stopped timers: archlinux-keyring-wkd-sync.timer man-db.timer plocate-updatedb.timer shadow.timer snapper-cleanup.timer systemd-tmpfiles-clean.timer 
+2026-11-12 21:10:02 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1380847, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 21:10:08 stopped an update check
+2026-11-12 21:11:13 stopped an update check
+2026-11-12 21:11:39 nort round 1 startup: 54 values
+2026-11-12 21:11:39 nort round 1 measuring: pid 1383199, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 21:41:41 nort round 1: 728 values
+2026-11-12 21:45:42 nort check: 76 passed, 0 failed
+2026-11-12 21:45:42 nort round 1: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-12 21:45:42 nort round 1 after: pid 1383199, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 21:45:47 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1480343, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 21:47:24 rt round 1 startup: 54 values
+2026-11-12 21:47:24 rt round 1 measuring: pid 1482684, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:18:12 rt round 1: 739 values
+2026-11-12 22:22:14 rt check: 76 passed, 0 failed
+2026-11-12 22:22:14 rt round 1: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-12 22:22:14 rt round 1: 2 realtime lines from the compositor (realtime-rt-1.txt)
+2026-11-12 22:22:14 rt round 1 after: pid 1482684, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:22:19 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1577507, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:22:25 stopped an update check
+2026-11-12 22:23:30 stopped an update check
+2026-11-12 22:23:55 rt round 2 startup: 54 values
+2026-11-12 22:23:55 rt round 2 measuring: pid 1579852, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:54:44 rt round 2: 739 values
+2026-11-12 22:54:45 rt round 2: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-12 22:54:45 rt round 2 after: pid 1579852, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:54:49 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1672461, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 22:56:27 nort round 2 startup: 54 values
+2026-11-12 22:56:27 nort round 2 measuring: pid 1674822, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 23:27:12 nort round 2: 739 values
+2026-11-12 23:27:12 nort round 2: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-12 23:27:12 nort round 2 after: pid 1674822, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 23:27:16 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1768110, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 23:27:21 stopped an update check
+2026-11-12 23:28:27 stopped an update check
+2026-11-12 23:28:53 nort round 3 startup: 54 values
+2026-11-12 23:28:53 nort round 3 measuring: pid 1770460, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 23:59:40 nort round 3: 739 values
+2026-11-12 23:59:40 nort round 3: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-12 23:59:40 nort round 3 after: pid 1770460, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 23:59:44 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1863632, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 23:59:50 stopped an update check
+2026-11-13 00:00:56 stopped an update check
+2026-11-13 00:01:20 rt round 3 startup: 54 values
+2026-11-13 00:01:20 rt round 3 measuring: pid 1865992, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 00:32:10 rt round 3: 739 values
+2026-11-13 00:32:10 rt round 3: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 00:32:10 rt round 3: 2 realtime lines from the compositor (realtime-rt-3.txt)
+2026-11-13 00:32:10 rt round 3 after: pid 1865992, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 00:32:15 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1959616, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 00:32:19 stopped an update check
+2026-11-13 00:33:24 stopped an update check
+2026-11-13 00:33:52 rt round 4 startup: 54 values
+2026-11-13 00:33:52 rt round 4 measuring: pid 1961971, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 01:04:40 rt round 4: 739 values
+2026-11-13 01:04:40 rt round 4: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 01:04:40 rt round 4 after: pid 1961971, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 01:04:45 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2055847, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 01:06:22 nort round 4 startup: 54 values
+2026-11-13 01:06:22 nort round 4 measuring: pid 2058195, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 01:37:15 nort round 4: 739 values
+2026-11-13 01:37:15 nort round 4: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 01:37:15 nort round 4 after: pid 2058195, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 01:37:20 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2151095, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 01:37:27 stopped an update check
+2026-11-13 01:38:33 stopped an update check
+2026-11-13 01:38:57 nort round 5 startup: 54 values
+2026-11-13 01:38:57 nort round 5 measuring: pid 2153445, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 02:09:42 nort round 5: 739 values
+2026-11-13 02:09:42 nort round 5: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 02:09:42 nort round 5 after: pid 2153445, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 02:09:46 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2246367, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 02:09:52 stopped an update check
+2026-11-13 02:10:57 stopped an update check
+2026-11-13 02:11:24 rt round 5 startup: 54 values
+2026-11-13 02:11:24 rt round 5 measuring: pid 2248716, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 02:42:10 rt round 5: 739 values
+2026-11-13 02:42:10 rt round 5: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 02:42:10 rt round 5: 2 realtime lines from the compositor (realtime-rt-5.txt)
+2026-11-13 02:42:10 rt round 5 after: pid 2248716, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 02:42:15 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2341098, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 02:42:21 stopped an update check
+2026-11-13 02:43:27 stopped an update check
+2026-11-13 02:43:51 rt round 6 startup: 54 values
+2026-11-13 02:43:51 rt round 6 measuring: pid 2343452, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 03:14:42 rt round 6: 739 values
+2026-11-13 03:14:42 rt round 6: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 03:14:42 rt round 6 after: pid 2343452, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 03:14:47 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2436858, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 03:14:51 stopped an update check
+2026-11-13 03:15:57 stopped an update check
+2026-11-13 03:16:23 nort round 6 startup: 54 values
+2026-11-13 03:16:23 nort round 6 measuring: pid 2439214, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 03:47:11 nort round 6: 739 values
+2026-11-13 03:47:11 nort round 6: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 03:47:11 nort round 6 after: pid 2439214, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 03:47:15 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2531971, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 03:47:20 stopped an update check
+2026-11-13 03:48:25 stopped an update check
+2026-11-13 03:48:53 nort round 7 startup: 54 values
+2026-11-13 03:48:53 nort round 7 measuring: pid 2534331, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 04:19:39 nort round 7: 739 values
+2026-11-13 04:19:39 nort round 7: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 04:19:39 nort round 7 after: pid 2534331, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 04:19:44 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2627442, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 04:19:50 stopped an update check
+2026-11-13 04:20:55 stopped an update check
+2026-11-13 04:21:20 rt round 7 startup: 54 values
+2026-11-13 04:21:20 rt round 7 measuring: pid 2629807, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 04:52:19 rt round 7: 740 values, some invalid
+2026-11-13 04:52:19 rt round 7: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 04:52:19 rt round 7 after: pid 2629807, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 04:52:24 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2722830, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 04:52:30 stopped an update check
+2026-11-13 04:53:36 stopped an update check
+2026-11-13 04:54:00 rt round 8 startup: 54 values
+2026-11-13 04:54:00 rt round 8 measuring: pid 2725177, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 05:24:46 rt round 8: 739 values
+2026-11-13 05:24:46 rt round 8: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 05:24:46 rt round 8: 2 realtime lines from the compositor (realtime-rt-8.txt)
+2026-11-13 05:24:46 rt round 8 after: pid 2725177, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 05:24:51 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2817698, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 05:24:56 stopped an update check
+2026-11-13 05:26:02 stopped an update check
+2026-11-13 05:26:28 nort round 8 startup: 54 values
+2026-11-13 05:26:28 nort round 8 measuring: pid 2820050, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 05:57:24 nort round 8: 739 values
+2026-11-13 05:57:24 nort round 8: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 05:57:24 nort round 8 after: pid 2820050, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 05:57:29 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2913333, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 05:58:42 stopped an update check
+2026-11-13 05:59:06 nort round 9 startup: 54 values
+2026-11-13 05:59:06 nort round 9 measuring: pid 2915682, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 06:29:56 nort round 9: 739 values
+2026-11-13 06:29:56 nort round 9: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 06:29:56 nort round 9 after: pid 2915682, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 06:30:01 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 3009183, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 06:30:07 stopped an update check
+2026-11-13 06:31:12 stopped an update check
+2026-11-13 06:31:38 rt round 9 startup: 54 values
+2026-11-13 06:31:38 rt round 9 measuring: pid 3011544, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 07:02:32 rt round 9: 739 values
+2026-11-13 07:02:32 rt round 9: core dumps:       1 /opt/gravitymark/bin/GravityMark.x64 
+2026-11-13 07:02:32 rt round 9: 2 realtime lines from the compositor (realtime-rt-9.txt)
+2026-11-13 07:02:32 rt round 9 after: pid 3011544, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 07:02:32 no time for round 10
+2026-11-13 07:02:32 back to Omarchy's realtime setting
+2026-11-13 07:02:37 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 3103909, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 07:02:37 started the timers again
+2026-11-13 07:02:37 done

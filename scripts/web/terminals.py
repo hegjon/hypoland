@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # Writes web/terminals.html: the terminals of the benchmark (foot, Alacritty, Ghostty, kitty) under Hypoland and stock
-# Hyprland on every machine, one table per measure, from the same baseline as the lab page (labdata.py), so no number on
+# Hyprland on every machine, one table per measure, from the same night as the lab page (labdata.py), so no number on
 # the page is typed by hand. Run it again after a new baseline, from anywhere: scripts/web/terminals.py
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from labdata import ROOT, BASELINE, HYPRLAND, RUN, MACHINES, values, cell, E, head, FOOTER
+from labdata import ROOT, HYPRLAND, RUN, TWO_NIGHTS, RAW, MACHINES, values, sessions_text, cell, E, head, FOOTER
 
 OUT = os.path.join(ROOT, "web", "terminals.html")
 
@@ -66,8 +66,7 @@ def tables():
 """)
     return "\n".join(out)
 
-sessions = [min(data[m["alias"]][0][1], data[m["alias"]][1][1]) for m in rows]
-full = [s for s in sessions if s >= FEW]
+sessions = [(data[m["alias"]][0][1], data[m["alias"]][1][1]) for m in rows]
 term_rows = "\n".join(f"          <tr><td>{E(n)}</td><td>{E(v)}</td><td>{E(d)}</td></tr>" for _, n, v, d in TERMINALS)
 nav = "".join(f'\n    <li><a href="#m{i + 1}">{i + 2}</a></li>' for i in range(len(MEASURES)))
 
@@ -105,12 +104,12 @@ page = f"""{head("Hypoland: terminals", "foot, Alacritty, Ghostty and kitty scro
         </tbody>
       </table></div>
       <p class="note">
-        Medians of {min(full)} to {max(full)} fresh sessions of each compositor per machine, {RUN}. The Mac mini 2014 had no
-        monitor that night and is left out; the Mac mini M1's display driver reports no page flips, so it has no frames on
+        Medians of {sessions_text(sessions, FEW)} per machine, {RUN}. {TWO_NIGHTS} The Mac mini M1's display
+        driver reports no page flips, so it has no frames on
         the screen. Ghostty and kitty need OpenGL&nbsp;3.3: not on the X200, and Ghostty does not start on the Chromebook and
         the Samsung (Bay Trail and Ivy Bridge). On the X200 Hyprland runs with Omarchy's GLES&nbsp;3 override
         (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which the terminals get too.
-        <a href="https://github.com/hegjon/hypoland/tree/master/{BASELINE}">Raw data, every session's values and the scripts</a>.
+        {RAW}
       </p>
     </div>
   </section>

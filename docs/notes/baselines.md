@@ -97,8 +97,8 @@ The baselines and A/B nights, oldest first. The raw values are in `docs/baseline
   Master r957 (29b9f86a9: the measured direct scanout, merged frame damage, 10-bit buffers on the plane) against Hyprland
   0.57.1-2 is `docs/baseline/20261110-all-machines-r957-vs-hyprland-0.57.1/` (2026-11-10 23:09 to 11-11 07:30, eleven
   machines with macmini-m1, 8 to 10 fresh sessions of each, every workload with the games and ElectroBench; Omarchy-dev
-  r7677 sets `HYPRLAND_NO_RT=1`, so both ran without realtime except on the Galaxy Book); the lab and terminals pages use
-  it since 2026-11-11, without macmini-intel, which had no monitor that night (headless later blocks). No Hypoland
+  r7677 sets `HYPRLAND_NO_RT=1`, so both ran without realtime except on the Galaxy Book); the lab and terminals pages used
+  it from 2026-11-11 to 11-13 (two nights since, below), without macmini-intel, which had no monitor that night (headless later blocks). No Hypoland
   compositor died; Hypoland passed every session check on ten machines, the M1's 31 render failures were Omarchy's pointer
   warp (fixed in the checks, c8c87f613). Hypoland's compositor costs less per frame in 15 to 41 workloads a machine and
   more in none of the comparable ones except: the M1's Qt software sprites (80 against 70% at 39 against 55 fps: the second
@@ -109,8 +109,9 @@ The baselines and A/B nights, oldest first. The raw values are in `docs/baseline
   check's screencopy) made its framebuffers at 0x0 in `CScreenshareManager::onOutputCommit()`, which asserted; it takes
   only allocated resources now (`CMonitor::allocatedResources()`, a31250872, hyprtester `monitorConnectsWhileCaptured`).
   The night of 2026-11-11 to 12 repeated it with master r966 (with the game workloads) on all eleven machines, 13 to 18
-  fresh sessions of each (`test-results/night-20261111/`, `summary.txt`; not a baseline directory; macmini-m1 ran r967,
-  r966 with the dmabuf fix below): Hypoland's compositor cheaper a frame in 23 to 45 workloads a machine and dearer in six
+  fresh sessions of each (`docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1/`, which the files page used from 2026-11-12 and
+  the web pages take Hyprland's numbers from since 2026-11-13; `test-results/night-20261111/summary.txt`;
+  macmini-m1 ran r967, r966 with the dmabuf fix below): Hypoland's compositor cheaper a frame in 23 to 45 workloads a machine and dearer in six
   (the Galaxy Book's menu, Flea and Xonotic, the Mac mini 2014's vkmark and Xonotic at its highest effects), the games
   drawing as fast or faster (vkmark samsung-i5 235 against 364, Mac mini 2014 447 against 759, Galaxy Book 2652 against
   3721), every session check passed on ten machines. It found the two direct scanout bugs fixed the next morning (fullscreen
@@ -120,3 +121,22 @@ The baselines and A/B nights, oldest first. The raw values are in `docs/baseline
   r957's night, while the X200's GPU also hung in Xwayland (twice under stock, which then hung both times, once under
   Hypoland) and in Xonotic; open. The i915 error state (`/sys/class/drm/card1/error`) keeps the first hang until it is
   cleared (`echo 1 >` it), and held a day-old Xwayland hang then.
+  The night of 2026-11-12 to 13 ran master r991 (e5a1c2d8e: after the dead code and effects removal, with the centred
+  small fullscreen surface) alone on all eleven, realtime off (`HYPRLAND_NO_RT=1`, as Omarchy sets it) against on, 8 to
+  12 fresh sessions of each (`docs/baseline/20261112-all-machines-r991-realtime-off-vs-on/`, its README has the
+  realtime results). Since 2026-11-13 the web pages take Hypoland's numbers from its realtime-off sessions (the Galaxy
+  Book's realtime-on ones, as Hyprland ran there) against Hyprland's of the night before: two nights in a row with the
+  same packages but Folio, so Folio stays on the r966 night and the Mac mini 2014 (headless in one, on its monitor in
+  the other) is left out. Against r966 of the night before, r991's memory is lower on every machine (Pss and Rss, the
+  binary smaller) and the rest about the same; no compositor died, every check passed but `render fullscreen smaller
+  rectangles` on the XPS and the Galaxy Book (scale 2), a regression of e5a1c2d8e fixed on `wip/rt-fixes` (r992).
+  The night of 2026-11-14 to 15 ran master r992 (92942ceba) against Hyprland 0.57.2-2 on twelve machines, the new
+  ThinkPad P14s Gen 2a (radeonsi, 4K at scale 2) among them, 14 to 22 fresh sessions of each
+  (`docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2/`, which the web pages take their numbers from since
+  2026-11-15, Nautilus's from the r966 night: Omarchy's update of 2026-11-13 removed Nautilus; `test-results/night-20261114/summary.txt`).
+  The new hp-amd (A6-7310, radeonsi) gave no numbers: its GPU hung under GravityMark 20 minutes in. Hypoland's compositor
+  cheaper a frame in 24 to 43 workloads a machine and dearer in three, all on the Galaxy Book (the menu, Flea and GTK 3
+  scrolling); 40 to 57 MiB Pss at the start against 115 to 145; every session check passed, Hyprland's failed 4 to 60;
+  no compositor crash of Hypoland (Hyprland hit a GPU hang on the X200). Against r966 most changes moved Hyprland too (the
+  Mac mini 2014 on its monitor now, Omarchy's update); Hypoland's alone: lianli's workspace switch, 7 to 10 ms in about
+  half the sessions against 2 before and under Hyprland, open.

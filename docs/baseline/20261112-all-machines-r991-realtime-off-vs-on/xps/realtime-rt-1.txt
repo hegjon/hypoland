@@ -1,0 +1,4 @@
+Nov 12 22:01:35 xps uwsm_hyprland.desktop[1326480]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling
+Nov 12 22:01:46 xps uwsm_hyprland.desktop[1326480]: Realtime: realtime scheduling again
+Nov 12 22:17:44 xps uwsm_hyprland.desktop[1326480]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling
+Nov 12 22:18:02 xps uwsm_hyprland.desktop[1326480]: Realtime: realtime scheduling again

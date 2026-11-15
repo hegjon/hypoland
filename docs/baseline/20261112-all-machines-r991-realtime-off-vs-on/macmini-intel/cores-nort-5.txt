@@ -1,0 +1,2 @@
+TIME                            PID  UID  GID SIG     COREFILE EXE                  SIZE
+Fri 2026-11-13 02:14:10 EET 1608653 1000 1000 SIGSEGV present  /opt/yquake2/quake2 20.9M

@@ -1,0 +1,1 @@
+Nov 13 00:49:17 chromebook uwsm_hyprland.desktop[1015030]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling

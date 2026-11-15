@@ -6,7 +6,9 @@ Every median in `values.txt` over two values is the lower one. The full regressi
 code is `../20261110-all-machines-r957-vs-hyprland-0.57.1/` (8 to 10 sessions). This directory is kept for the
 benchmarks that night did not have: Phoronix's graphics benchmarks of its first Snapdragon X2 Elite article
 (SuperTuxKart, Yamagi Quake II, vkmark) and Folio (`folio`). The games page (`web/games.html`, `scripts/web/games.py`)
-takes those from here and Xonotic, GravityMark and ElectroBench from the r957 baseline.
+took those from here and Xonotic, GravityMark and ElectroBench from the r957 baseline until 2026-11-13; since then it takes
+every game from the lab page's nights, which have them all: Hyprland's from
+`../20261111-all-machines-r966-vs-hyprland-0.57.1/`, Hypoland's from `../20261112-all-machines-r991-realtime-off-vs-on/`.
 
 ## Setup
 

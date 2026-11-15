@@ -1,0 +1,2 @@
+TIME                            PID  UID  GID SIG     COREFILE EXE                                    SIZE
+Fri 2026-11-13 01:43:38 EET 1718845 1000 1000 SIGSEGV present  /opt/gravitymark/bin/GravityMark.arm64 1.9M

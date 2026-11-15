@@ -1,0 +1,2 @@
+Nov 13 00:10:15 galaxybook uwsm_hyprland.desktop[1219700]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling
+Nov 13 00:10:18 galaxybook uwsm_hyprland.desktop[1219700]: Realtime: realtime scheduling again

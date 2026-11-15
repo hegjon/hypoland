@@ -3,9 +3,13 @@
 Hypoland master r966 (`136e12ff8`) against stock Hyprland 0.57.1-2: every workload of `scripts/bench/measure.sh` with the
 games, ElectroBench and the file managers (Nautilus, Flea and Folio), on every test machine, 13 to 18 fresh sessions of
 each per machine, alternating from 17:04 on 2026-11-11 to 08:59 on 2026-11-12. It was made the same way as
-`../20261110-all-machines-r957-vs-hyprland-0.57.1/`, which the lab, terminals and games pages take their numbers from;
-the file manager page (`web/files.html`, `scripts/web/files.py`) takes its numbers from here, since this is the first
-night with Folio (`folio`) on every machine. Compare a later build with `<machine>/hypoland/values.txt` to see whether
+`../20261110-all-machines-r957-vs-hyprland-0.57.1/`. The file manager page (`web/files.html`, `scripts/web/files.py`)
+took its numbers from here from 2026-11-12, the first night with Folio (`folio`) on every machine, Folio's until
+2026-11-15 (Folio went to 0.4.0 the next day), and still takes Nautilus's (Omarchy's update of 2026-11-13 removed
+Nautilus from the machines). From 2026-11-13 to 15 the lab, terminals, games and file manager pages
+(`scripts/web/labdata.py`) took Hyprland's numbers from here and Hypoland's from the next night,
+`../20261112-all-machines-r991-realtime-off-vs-on/` (r991 alone); they took both from the r957 night before and from
+`../20261114-all-machines-r992-vs-hyprland-0.57.2/` after. Compare a later build with `<machine>/hypoland/values.txt` to see whether
 it got slower, and with `<machine>/hyprland/values.txt` to see where it stands against Hyprland 0.57.1.
 
 ## Setup

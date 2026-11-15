@@ -1,0 +1,2 @@
+Nov 12 22:05:11 samsung-i5 uwsm_hyprland.desktop[639572]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling
+Nov 12 22:05:13 samsung-i5 uwsm_hyprland.desktop[639572]: Realtime: realtime scheduling again

@@ -1,0 +1,1 @@
+machine: p14s, 7.2.15-2-omarchy, 16 cores, 11764 MiB

@@ -1,0 +1,2 @@
+Nov 13 00:17:40 t550 uwsm_hyprland.desktop[1865992]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling
+Nov 13 00:17:43 t550 uwsm_hyprland.desktop[1865992]: Realtime: realtime scheduling again

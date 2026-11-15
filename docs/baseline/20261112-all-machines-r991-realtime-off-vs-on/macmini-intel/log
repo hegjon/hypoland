@@ -1,0 +1,141 @@
+2026-11-12 21:10:26 until 2026-11-13 07:30:00 on macmini-intel, user a, /root/abrt/hypoland-0.3.0.r991.ge5a1c2d8e-1-x86_64.pkg.tar.zst
+2026-11-12 21:10:26 stopped timers: archlinux-keyring-wkd-sync.timer man-db.timer plocate-updatedb.timer shadow.timer snapper-cleanup.timer systemd-tmpfiles-clean.timer 
+2026-11-12 21:10:30 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 534071, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 21:10:36 stopped an update check
+2026-11-12 21:11:41 stopped an update check
+2026-11-12 21:12:07 nort round 1 startup: 54 values
+2026-11-12 21:12:08 nort round 1 measuring: pid 536799, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 21:43:34 nort round 1: 741 values
+2026-11-12 21:47:32 nort check: 103 passed, 0 failed
+2026-11-12 21:47:32 nort round 1 after: pid 536799, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 21:47:37 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 657968, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 21:47:45 stopped an update check
+2026-11-12 21:48:50 stopped an update check
+2026-11-12 21:49:13 rt round 1 startup: 54 values
+2026-11-12 21:49:13 rt round 1 measuring: pid 660693, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:20:40 rt round 1: 741 values
+2026-11-12 22:24:40 rt check: 103 passed, 0 failed
+2026-11-12 22:24:40 rt round 1 after: pid 660693, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:24:45 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 781867, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:24:50 stopped an update check
+2026-11-12 22:25:55 stopped an update check
+2026-11-12 22:26:22 rt round 2 startup: 54 values
+2026-11-12 22:26:22 rt round 2 measuring: pid 784582, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:57:51 rt round 2: 741 values
+2026-11-12 22:57:52 rt round 2 after: pid 784582, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-12 22:57:57 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 901109, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 22:58:02 stopped an update check
+2026-11-12 22:59:08 stopped an update check
+2026-11-12 22:59:33 nort round 2 startup: 54 values
+2026-11-12 22:59:33 nort round 2 measuring: pid 903823, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 23:31:02 nort round 2: 741 values
+2026-11-12 23:31:03 nort round 2 after: pid 903823, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 23:31:08 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1020736, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-12 23:31:15 stopped an update check
+2026-11-12 23:32:20 stopped an update check
+2026-11-12 23:32:45 nort round 3 startup: 54 values
+2026-11-12 23:32:46 nort round 3 measuring: pid 1023454, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 00:04:14 nort round 3: 741 values
+2026-11-13 00:04:15 nort round 3 after: pid 1023454, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 00:04:20 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1140448, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 00:04:28 stopped an update check
+2026-11-13 00:05:56 rt round 3 startup: 54 values
+2026-11-13 00:05:56 rt round 3 measuring: pid 1143170, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 00:37:25 rt round 3: 741 values
+2026-11-13 00:37:26 rt round 3 after: pid 1143170, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 00:37:31 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1259355, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 00:37:35 stopped an update check
+2026-11-13 00:38:41 stopped an update check
+2026-11-13 00:39:07 rt round 4 startup: 54 values
+2026-11-13 00:39:07 rt round 4 measuring: pid 1262078, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 01:10:37 rt round 4: 741 values
+2026-11-13 01:10:37 rt round 4 after: pid 1262078, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 01:10:42 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1378858, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 01:10:49 stopped an update check
+2026-11-13 01:11:54 stopped an update check
+2026-11-13 01:12:19 nort round 4 startup: 54 values
+2026-11-13 01:12:19 nort round 4 measuring: pid 1381586, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 01:43:49 nort round 4: 741 values
+2026-11-13 01:43:50 nort round 4: core dumps:       1 /usr/bin/Xwayland 
+2026-11-13 01:43:50 nort round 4 after: pid 1381586, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 01:43:54 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1498401, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 01:44:02 stopped an update check
+2026-11-13 01:45:07 stopped an update check
+2026-11-13 01:45:30 nort round 5 startup: 54 values
+2026-11-13 01:45:30 nort round 5 measuring: pid 1501123, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 02:17:00 nort round 5: 741 values
+2026-11-13 02:17:01 nort round 5: core dumps:       1 /opt/yquake2/quake2 
+2026-11-13 02:17:01 nort round 5 after: pid 1501123, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 02:17:05 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1618209, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 02:17:10 stopped an update check
+2026-11-13 02:18:16 stopped an update check
+2026-11-13 02:18:42 rt round 5 startup: 54 values
+2026-11-13 02:18:42 rt round 5 measuring: pid 1620921, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 02:50:11 rt round 5: 741 values
+2026-11-13 02:50:11 rt round 5: 2 realtime lines from the compositor (realtime-rt-5.txt)
+2026-11-13 02:50:11 rt round 5 after: pid 1620921, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 02:50:16 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1737218, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 02:50:24 stopped an update check
+2026-11-13 02:51:52 rt round 6 startup: 54 values
+2026-11-13 02:51:52 rt round 6 measuring: pid 1739929, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 03:23:22 rt round 6: 741 values
+2026-11-13 03:23:23 rt round 6: 4 realtime lines from the compositor (realtime-rt-6.txt)
+2026-11-13 03:23:23 rt round 6 after: pid 1739929, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 03:23:27 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1856456, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 03:23:32 stopped an update check
+2026-11-13 03:24:38 stopped an update check
+2026-11-13 03:25:04 nort round 6 startup: 54 values
+2026-11-13 03:25:04 nort round 6 measuring: pid 1859180, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 03:56:31 nort round 6: 741 values
+2026-11-13 03:56:32 nort round 6 after: pid 1859180, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 03:56:37 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 1975578, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 03:57:47 stopped an update check
+2026-11-13 03:58:13 nort round 7 startup: 54 values
+2026-11-13 03:58:13 nort round 7 measuring: pid 1978301, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 04:29:43 nort round 7: 741 values
+2026-11-13 04:29:43 nort round 7: core dumps:       1 /usr/bin/Xwayland 
+2026-11-13 04:29:43 nort round 7 after: pid 1978301, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 04:29:48 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2094846, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 04:29:54 stopped an update check
+2026-11-13 04:31:00 stopped an update check
+2026-11-13 04:31:25 rt round 7 startup: 54 values
+2026-11-13 04:31:25 rt round 7 measuring: pid 2097570, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 05:02:52 rt round 7: 741 values
+2026-11-13 05:02:53 rt round 7 after: pid 2097570, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 05:02:58 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2214065, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 05:03:04 stopped an update check
+2026-11-13 05:04:10 stopped an update check
+2026-11-13 05:04:34 rt round 8 startup: 54 values
+2026-11-13 05:04:35 rt round 8 measuring: pid 2216788, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 05:36:10 rt round 8: 741 values
+2026-11-13 05:36:11 rt round 8: 4 realtime lines from the compositor (realtime-rt-8.txt)
+2026-11-13 05:36:11 rt round 8 after: pid 2216788, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 05:36:15 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2334870, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 05:36:24 stopped an update check
+2026-11-13 05:37:24 stopped an update check
+2026-11-13 05:37:52 nort round 8 startup: 54 values
+2026-11-13 05:37:52 nort round 8 measuring: pid 2337588, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 06:09:19 nort round 8: 741 values
+2026-11-13 06:09:20 nort round 8 after: pid 2337588, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 06:09:25 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2453927, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 06:09:33 stopped an update check
+2026-11-13 06:10:34 stopped an update check
+2026-11-13 06:11:02 nort round 9 startup: 54 values
+2026-11-13 06:11:02 nort round 9 measuring: pid 2456649, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 06:42:25 nort round 9: 741 values
+2026-11-13 06:42:25 nort round 9: core dumps:       1 /usr/bin/Xwayland 
+2026-11-13 06:42:25 nort round 9 after: pid 2456649, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 06:42:30 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2573037, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 06:42:37 stopped an update check
+2026-11-13 06:43:43 stopped an update check
+2026-11-13 06:44:07 rt round 9 startup: 54 values
+2026-11-13 06:44:08 rt round 9 measuring: pid 2575761, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 07:15:37 rt round 9: 741 values
+2026-11-13 07:15:38 rt round 9: core dumps:       1 /usr/bin/Xwayland 
+2026-11-13 07:15:38 rt round 9: 4 realtime lines from the compositor (realtime-rt-9.txt)
+2026-11-13 07:15:38 rt round 9 after: pid 2575761, HYPRLAND_NO_RT=0, SCHED_RR|SCHED_RESET_ON_FORK
+2026-11-13 07:15:38 no time for round 10
+2026-11-13 07:15:38 back to Omarchy's realtime setting
+2026-11-13 07:15:42 up: hypoland 0.3.0.r991.ge5a1c2d8e-1, pid 2693126, HYPRLAND_NO_RT=1, SCHED_OTHER
+2026-11-13 07:15:42 started the timers again
+2026-11-13 07:15:42 done

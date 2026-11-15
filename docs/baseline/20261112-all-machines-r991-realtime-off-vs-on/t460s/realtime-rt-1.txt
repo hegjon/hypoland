@@ -1,0 +1,2 @@
+Nov 12 22:10:19 t460s uwsm_hyprland.desktop[734315]: Realtime: the main thread did not sleep for 80 ms, dropping realtime scheduling
+Nov 12 22:10:21 t460s uwsm_hyprland.desktop[734315]: Realtime: realtime scheduling again
