@@ -224,3 +224,35 @@ startup and CPU time with animations. Measured on the X200 with the SDDM session
 - Measuring from the desktop: long ssh sessions end early, run measurements detached on the X200. `tl2.sh` (one
   startup timeline with instructions) and `abrun.sh` (A/B of packages with page flips) are in the journal's
   directory, they call `scripts/bench/measure.sh` copied to the X200.
+
+## Profile guided builds (2026-11-12 and 2026-11-15)
+
+`scripts/pgo/pgo.sh` builds the compositor with GCC's profile feedback (x86-64 only, the packages `scripts/deploy.sh`
+and `scripts/release.sh` build are plain): `train DIR HOST...` builds an instrumented package, runs the session check
+and one round of the benchmark with it on the machines and merges their counters; `build DIR` compiles with them
+(`-fprofile-use`) and links the functions in the order of the training: the ones that ran first, the hottest in front,
+their cold parts after them (`order.py`, the linker's `--section-ordering-file`), so the code a session uses is in few
+pages. The PKGBUILD takes it all from the environment (`HYPOLAND_PGO`, `HYPOLAND_PGO_PROFILE`, `HYPOLAND_PGO_ORDER`)
+and gives CMake `HYPOLAND_PGO_FLAGS`, which reach the compositor and the embedded aquamarine only.
+
+Measured in the night of 2026-11-15 against the plain build of the same source (r992), alternating in fresh sessions,
+9 to 14 sessions each on ten x86 machines, the profile from six of them (`test-results/night-20261115/summary.txt`):
+
+- compositor CPU a frame: 4 to 6.5% less on every machine (median over the workloads, lianli most, samsung-i5 least)
+- the binary's code in memory at the start of a session: 5.3 to 5.6 MiB against 8.7 to 8.9; Pss 5 to 7% lower
+- latencies 0 to 2.5% lower, frame rates the same, every session check passed
+
+Without the ordering, the profile alone gave the CPU but less of the memory (2026-11-12: 9.0 MiB of code to 5.4 - 6.0
+with it, `test-results/pgo-20261112/summary.txt`).
+
+- A profile belongs to its source: a function changed since the training is compiled without one (`build` says when
+  the tree has moved on), so train again before building a release with it.
+- A profile also belongs to its paths: GCC finds a function's counters by a checksum with the source file's path in
+  it, and some sources are generated into the build directory (a build elsewhere stops with `source locations for
+  function ... have changed`). So `pgo.sh` builds both the instrumented and the final package in one build directory
+  of its own, `~/.cache/hypoland-pgo`. The instrumented compositor writes its counters to `/var/tmp/hypoland-pgo` when
+  its session ends; its package has the release 0.1, and the training puts the machine's package back when the
+  machine's pacman cache has it.
+- CMake caches `CMAKE_EXE_LINKER_FLAGS`, so the PKGBUILD passes it on every build, with or without an order file.
+- `gcovnames.py` reads which function each counter record belongs to from the instrumented binary (the profile only
+  has checksums), `executed.py` lists the functions that ran with their counts and the order they first ran in.

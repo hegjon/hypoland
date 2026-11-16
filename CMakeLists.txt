@@ -277,6 +277,17 @@ target_link_libraries(Hyprland hyprland_lib)
 # only the binary is renamed, the cmake target keeps its upstream name
 set_target_properties(Hyprland PROPERTIES OUTPUT_NAME hypoland)
 
+# profile feedback for the compositor and the embedded aquamarine only (not hyprctl or start-hypoland), for
+# -fprofile-generate / -fprofile-use builds of the package
+set(HYPOLAND_PGO_FLAGS "" CACHE STRING "profile feedback flags of the compositor")
+if(HYPOLAND_PGO_FLAGS)
+  separate_arguments(_pgo_flags UNIX_COMMAND "${HYPOLAND_PGO_FLAGS}")
+  target_compile_options(hyprland_lib PRIVATE ${_pgo_flags})
+  target_compile_options(aquamarine PRIVATE ${_pgo_flags})
+  target_compile_options(Hyprland PRIVATE ${_pgo_flags})
+  target_link_options(Hyprland PRIVATE ${_pgo_flags})
+endif()
+
 target_include_directories(hyprland_lib PUBLIC ${deps_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
 target_include_directories(Hyprland PUBLIC ${deps_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
 

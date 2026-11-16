@@ -28,6 +28,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Added
 
+- Profile guided builds: `scripts/pgo/pgo.sh` trains a profile on the test machines and builds the package with it and
+  with the code a session runs laid out together. Measured on ten machines against the plain build: 4 to 6.5% less
+  compositor CPU a frame and 3.3 MiB less of the binary in memory (`docs/notes/performance.md`). The packages of the
+  deploy and the release are plain builds as before.
 - Games in `hypoland-bench`: `xonotic-low` and `xonotic-ultimate` play Xonotic's benchmark demo, `gravitymark-gl` and
   `gravitymark-vk` run GravityMark, all fullscreen without vsync, reporting the game's own frame rate. They come last in
   the default list; the games are optional dependencies.

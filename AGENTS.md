@@ -482,6 +482,10 @@ Tools:
 - Also in `docs/notes/renderer.md`: the keymap sharing for fcitx5's focus changes, animations computed for the next
   vblank, realtime and its guard, the fence experiment that was taken out, and a closing window's fade.
 
+Profile guided builds (2026-11-16): `scripts/pgo/pgo.sh train DIR HOST...` and `build DIR` make a package with GCC's
+profile feedback and the training's function order, 4 to 6.5% less compositor CPU a frame and 3.3 MiB less code in
+memory in the night of 2026-11-15; the deploy's and the release's packages stay plain. See `docs/notes/performance.md`.
+
 Performance and memory: `docs/notes/performance.md` has the GPU time per frame on the X200, the CPU profiles
 (`./profile.sh` installs the package with `hypoland-debug`, records five workloads with `perf` and prints the report to
 `test-results/profile-*/profile.txt`), the memory breakdown and the overnight runs of 2026-09-28 and 29, with what was

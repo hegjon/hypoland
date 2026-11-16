@@ -14,6 +14,8 @@ pkgbase=hypoland
 pkgname=(hypoland hypoland-bench)
 pkgver=0.1.0.r606.gc1517a245
 pkgrel=1
+# the instrumented training build of scripts/pgo/pgo.sh is no package to keep: its release sorts before the real one
+[ "$HYPOLAND_PGO" = generate ] && pkgrel=0.1
 pkgdesc='A fork of the Hyprland Wayland compositor for OpenGL ES 2.0 hardware'
 arch=(x86_64 aarch64)
 url='https://github.com/hegjon/hypoland'
@@ -92,12 +94,23 @@ build() {
   # baseline x86-64: the target machines are much older than the build machine
   local flags=''
   [ "$CARCH" = x86_64 ] && flags='-march=x86-64 -mtune=core2'
+  # profile feedback (scripts/pgo/pgo.sh sets these, a plain build has none): HYPOLAND_PGO=generate builds the
+  # instrumented compositor, which writes its counters to /var/tmp/hypoland-pgo when it exits; HYPOLAND_PGO_PROFILE is
+  # the directory of a training's merged counters, HYPOLAND_PGO_ORDER the linker's section order made from them. The
+  # counters' file names are relative to the build directory; the profile still only fits a build of the same source
+  # at the same paths (the checksum GCC finds a function's counters by has its file's path in it).
+  local pgo='' order=''
+  [ "$HYPOLAND_PGO" = generate ] && pgo="-fprofile-generate=/var/tmp/hypoland-pgo -fprofile-update=prefer-atomic -fprofile-prefix-path=$srcdir/build"
+  [ -n "$HYPOLAND_PGO_PROFILE" ] && pgo="-fprofile-use=$HYPOLAND_PGO_PROFILE -fprofile-correction -Wno-missing-profile -fprofile-prefix-path=$srcdir/build"
+  [ -n "$HYPOLAND_PGO_ORDER" ] && order="-Wl,--section-ordering-file=$HYPOLAND_PGO_ORDER"
   cmake -S "$_root" -B "$srcdir/build" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_C_FLAGS="$CFLAGS $flags" \
     -DCMAKE_CXX_FLAGS="$CXXFLAGS $flags" \
-    -DCMAKE_SKIP_RPATH=ON
+    -DCMAKE_SKIP_RPATH=ON \
+    -DHYPOLAND_PGO_FLAGS="$pgo" \
+    -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS $order"
   cmake --build "$srcdir/build" --parallel "$(nproc)"
 
   # the benchmark's look at the buffer the screen scans out, root only (scripts/machines/kmsgrab.c)
