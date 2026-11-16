@@ -25,7 +25,7 @@ is on the branch with upstream's subject and author.
 | 134e971ee | picked, its hyprtester test left out (test plugin) | keybinds: do not shadow mouse event inputs (#16788) |
 | 253924bb3 | ignore: needs the output state's max bpc of aquamarine 0.15 (the embedded aquamarine has no `setMaxBpc()`), and Hypoland ignores `bitdepth = 10` (GLES 2 cannot render into 10-bit buffers), so it would only ever ask for 8 | monitor: set max_bpc based on configured bitdepth (#16708) |
 | 31af0bbba | picked, its hyprtester test left out (test plugin) | keybinds: fix _consuming exceptions for chord resolving (#16806) |
-| d530c26f5 | ignore: upstream's VERSION; `VERSION_HYPRLAND` stays 0.57.0 until the user decides | VERSION: bump to 0.57.1 |
+| d530c26f5 | ignore: upstream's VERSION | VERSION: bump to 0.57.1 |
 | acc1aa0bf | ignore: Nix, removed in Hypoland | [gha] Nix: update inputs |
 | 5c076e645 | picked, only the early return at shutdown (the erase of expired targets next to it came with 04615f9af, not taken) | algo/scroll: remove redundant cleanup of FS lists when compositor shutdown requested (#16792) |
 | a66bc70fb | picked, its unit test taken, the hyprtester change left out (test plugin) | keybinds: fix modifier resolution when remapped (#16820) |
@@ -48,11 +48,11 @@ is on the branch with upstream's subject and author.
 | 680866d61 | picked | protocols/subcompositor: fix nested ancestor traversal |
 | 86688ae74 | picked, without its image description parts (`getPreferredImageDescription()` went with colour management, and its two tests) | protocols/subcompositor: handle expired ancestry during teardown |
 | c44c4be61 | ignore: Nix, removed in Hypoland | flake: update inputs |
-| 11cbc6c57 | ignore: upstream's VERSION | VERSION: bump to 0.57.2 |
+| 11cbc6c57 | by hand: `VERSION_HYPRLAND` is 0.57.2 since 2026-11-16, decided by the user | VERSION: bump to 0.57.2 |
 
 - 25 picked
-- 7 ignore
-- 2 by hand
+- 6 ignore
+- 3 by hand
 - 1 tests only
 - 1 later
 - 1 already in master

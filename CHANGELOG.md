@@ -45,6 +45,8 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
 
 ### Changed
 
+- Hypoland reports Hyprland 0.57.2 as the version it is based on (the first line of `hyprctl version`, its JSON
+  `version`, `hl.version()` and the package's `provides=hyprland=`), now that the fixes of 0.57.1 and 0.57.2 are in.
 - `render:direct_scanout = auto` means any fullscreen window, when it shows better scanned out than composited, measured;
   Hyprland's auto only scans out windows that say they are games. `1` (on) and `0` (off) work as before.
   `HYPOLAND_SCANOUT_DEBUG=1` prints the choices to the session's journal.
