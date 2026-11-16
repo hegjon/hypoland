@@ -261,7 +261,10 @@ w_nautilus() {
 # Folio, Omarchy's file manager since omacom/omarchy#18378 (2026-11-10): C++ and Qt Quick, a process and a
 # window per launch. The icon folder in its grid with fullscreen toggles as Nautilus', its three views (CTRL 1 grid,
 # 2 list, 3 columns) and new windows (CTRL N). It remembers its view in ~/.config/folio/folio.conf, which the
-# workloads set and put back as it was.
+# workloads set and put back as it was. Since 2026-11-16 the commit of Folio the benchmark runs (FOLIO_COMMIT in
+# scripts/bench/lib/workloads.sh, built into /opt/folio/<commit>/ by scripts/machines/folio.sh), skipped without it.
+FOLIO_COMMIT=2e2a71633b7617418d0832905af6ea650d766897
+FOLIO=${FOLIO:-/opt/folio/$FOLIO_COMMIT/folio}
 FOLIOCONF=$HOME/.config/folio/folio.conf
 FOLIOSAVED=$OUT/clients/folio.conf
 folio_view() { # grid or list
@@ -284,9 +287,9 @@ folio_restore() { # after stop_clients
     fi
 }
 w_folio() {
-    command -v folio >/dev/null || return 0
+    [ -x "$FOLIO" ] || return 0
     folio_view grid
-    client "exec folio /usr/share/icons/Adwaita/symbolic/actions" folio
+    client "exec $FOLIO /usr/share/icons/Adwaita/symbolic/actions" folio
     sleep 5
     local _ v
     for _ in $(seq 1 20); do dispatch 'hl.dsp.window.fullscreen({action="toggle"})'; sleep 1; done
@@ -318,10 +321,11 @@ w_flea() {
 # Nautilus, flea and Files on the same 25000 files in list view (CTRL 1 in the first two, CTRL 2 in Files), every
 # 10 s: 64 rows down one at a time with Down, 8 a second (once the selection reaches the bottom every key scrolls by
 # one row, so all go through the same files on every screen; Page_Down moves by as many rows as the window shows),
-# then End to the last file and Home back to the first. Folio's list has no End and Home and does not scroll to the
-# cursor on Down (folio 0.1.1 to 0.4.0, fixed in omacom/folio#18): the cursor walks off the bottom and only the cursor
-# and the details pane redraw. The window opens before and closes after the measurement (measured() runs
-# <workload>_start and <workload>_stop around it), so the costs compare by the scrolling alone.
+# then End to the last file and Home back to the first. Folio's list has no End and Home. Folio 0.1.1 to 0.5.0 did
+# not scroll it to the cursor on Down (the cursor walked off the bottom and only the cursor and the details pane
+# redrew); 2e2a716 (omacom/folio#79), the commit $FOLIO is built from, does. The window opens before and closes after
+# the measurement (measured() runs <workload>_start and <workload>_stop around it), so the costs compare by the
+# scrolling alone.
 scroll_files() { # [the key that shows the list, with CTRL]
     local _
     key CTRL "${1:-1}" 1
@@ -348,13 +352,13 @@ w_files_flea_start() {
 w_files_flea() { command -v flea >/dev/null || return 0; scroll_files; }
 w_files_flea_stop() { stop_clients; pkill -f "[q]s -p /usr/share/flea"; pkill -x flea; sleep 1; }
 w_files_folio_start() {
-    command -v folio >/dev/null || return 0
+    [ -x "$FOLIO" ] || return 0
     make_files
     folio_view list
-    client "exec folio '$FILES'" files-folio
+    client "exec $FOLIO '$FILES'" files-folio
     sleep 8
 }
-w_files_folio() { command -v folio >/dev/null || return 0; scroll_files 2; }
+w_files_folio() { [ -x "$FOLIO" ] || return 0; scroll_files 2; }
 w_files_folio_stop() { stop_clients; folio_restore; }
 # The same files searched by name: open the search (CTRL F in Nautilus, / in flea, whose CTRL F searches the whole
 # home directory), type five digits, look at the one match, clear with Escape, about one name every 5 s. The names
@@ -379,7 +383,7 @@ w_search_flea_start() { w_files_flea_start; }
 w_search_flea() { command -v flea >/dev/null || return 0; search_files "" slash; }
 w_search_flea_stop() { w_files_flea_stop; }
 w_search_folio_start() { w_files_folio_start; }
-w_search_folio() { command -v folio >/dev/null || return 0; search_files "" slash 2; }
+w_search_folio() { [ -x "$FOLIO" ] || return 0; search_files "" slash 2; }
 w_search_folio_stop() { w_files_folio_stop; }
 # Omarchy's screensaver: ttfx in foot or alacritty with the screensaver's config, frame rate and text, but a fixed
 # list of effects and seed instead of random ones, and a class of its own (the sampler takes

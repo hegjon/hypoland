@@ -614,10 +614,14 @@ workload_nautilus_scroll() {
 # a process and a window per launch (app id folio). The same two workloads as Nautilus': `folio` the icon folder in its
 # grid with fullscreen toggled twice a second, `folio-scroll` the 5000 files in its list with Down held. It remembers
 # its view (grid, list or columns) in ~/.config/folio/folio.conf; the workloads set it before the start and put the
-# user's file back afterwards. Added 2026-11-11, asked for by the user. Both need Folio 0.4.0 or later (2026-11-12, the
-# version on every machine since), so results compare across machines. Folio 0.1.1 to 0.4.0 do not scroll the list to
-# the cursor on Down (the cursor walks off the bottom, the view stays; fixed in omacom/folio#18, still open), so until a
-# release has the fix `folio-scroll` measures the cursor and the details pane, not scrolling.
+# user's file back afterwards. Added 2026-11-11, asked for by the user. Since 2026-11-16 both run one commit of Folio,
+# FOLIO_COMMIT, built by scripts/machines/folio.sh into /opt/folio/<commit>/ on every machine, not Omarchy's package, so
+# results compare across machines and Omarchy's updates; they are skipped where it is not built. Folio 0.1.1 to 0.5.0 do
+# not scroll the list to the cursor on Down (the cursor walks off the bottom, the view stays), so `folio-scroll` with
+# them (Omarchy's 0.4.0 from 2026-11-12 to 16) measured the cursor and the details pane, not scrolling. 2e2a716 of
+# 2026-11-16 (omacom/folio#79, after 0.5.0) has the fix. soak.sh has the same FOLIO_COMMIT (folio.sh checks it).
+FOLIO_COMMIT=2e2a71633b7617418d0832905af6ea650d766897
+FOLIO=${FOLIO:-/opt/folio/$FOLIO_COMMIT/folio}
 FOLIOCONF=$USERHOME/.config/folio/folio.conf
 folio_view() { # view: grid or list. Keeps the user's settings for folio_restore
     if [ -e "$FOLIOCONF" ] && [ ! -e "$CLIENTDIR/folio.conf" ]; then
@@ -637,10 +641,10 @@ folio_restore() { # after stop_clients: each launch is a process of its own, so 
         rm -f "$FOLIOCONF" "$CLIENTDIR/folio.conf.none"
     fi
 }
-needs_folio="folio>=0.4.0"
+needs_folio="$FOLIO"
 workload_folio() { # Qt Quick redrawing a full window of icons, fullscreen toggled twice a second
     folio_view grid
-    client $((SECONDS_PER_RUN + 15)) "exec folio /usr/share/icons/Adwaita/symbolic/actions"
+    client $((SECONDS_PER_RUN + 15)) "exec $FOLIO /usr/share/icons/Adwaita/symbolic/actions"
     sleep 5
     (for i in $(seq 1 "$SECONDS_PER_RUN"); do
         dispatch 'hl.dsp.window.fullscreen({action="toggle"})' "fullscreen"; sleep 0.5
@@ -651,11 +655,11 @@ workload_folio() { # Qt Quick redrawing a full window of icons, fullscreen toggl
     stop_clients
     folio_restore
 }
-needs_folio_scroll="folio>=0.4.0 root"
+needs_folio_scroll="$FOLIO root"
 workload_folio_scroll() {
     # the list, one file per Down; the grid moves a row
     folio_view list
-    scroll_folder folio-scroll 5 "exec folio 'FOLDER'"
+    scroll_folder folio-scroll 5 "exec $FOLIO 'FOLDER'"
     folio_restore
     return 0
 }

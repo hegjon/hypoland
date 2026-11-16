@@ -134,7 +134,12 @@ the current state; the notes say what was tried, measured and dropped. Add new f
   not scroll the list to the cursor on Down: the cursor walks off the bottom and the view stays (XPS, screenshots), so
   until that is fixed `folio-scroll` measures the cursor and the details pane redrawn, not scrolling, and does not
   compare with `nautilus-scroll`. The fix is in omacom/folio#18, open on 2026-11-11 and tested on the XPS (the report,
-  a headless test and the screenshots are in `test-results/folio-scroll-bug-20261111/`). First run, one round of each
+  a headless test and the screenshots are in `test-results/folio-scroll-bug-20261111/`). Since 2026-11-16 (asked for by
+  the user) both workloads and the soak's run one commit of Folio, `FOLIO_COMMIT` in `scripts/bench/lib/workloads.sh`
+  (and in `scripts/machines/soak.sh`), not Omarchy's package: 2e2a716 of 2026-11-16 (omacom/folio#79, after 0.5.0),
+  which keeps the cursor in sight on Down, so `folio-scroll` scrolls from then on and its numbers before do not compare.
+  `scripts/machines/folio.sh <host>...` builds it on the machines into `/opt/folio/<commit>/folio`; without it the
+  workloads are skipped. First run, one round of each
   in a fresh session (compositor CPU / frames on the screen, the client):
   T460s `folio` 1.41% / 18.9 fps, `folio-scroll` 4.11% / 58.5 fps, client 22.3%, its Pss 88 MB (Nautilus 2.16% / 27.8,
   3.10% / 40.5, 28.5%, 119 MB); XPS `folio` 1.79% / 17.9, `folio-scroll` 4.73% / 58.5, 30.5%, 91 MB (Nautilus 2.78% /
