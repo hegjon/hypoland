@@ -160,6 +160,32 @@ the current state; the notes say what was tried, measured and dropped. Add new f
   compositor put on the screen, in milliseconds (percent times ten over `fps.<workload>.screen`), so a build that shows
   more frames is not read as one that costs more: on the X200 `gtk3-scroll` went from 14.4% at 40 fps to 18.2% at 55
   with the alpha bounds, which is 3.6 to 3.3 ms of compositor CPU a frame.
+- OpenMetrics (2026-11-16, asked for by the user): next to `values.txt`, `bench.sh` writes `results.om` and a night's
+  `report.sh` (from `test-results/night-20261116/`) one per compositor, with every value of every round or block instead
+  of the medians, labelled with what it was measured on, so that a file says what it holds without its directory and
+  loads into Prometheus or VictoriaMetrics as it is (`promtool tsdb create-blocks-from openmetrics`).
+  `scripts/bench/openmetrics.py` writes and reads it, standard library only: a key's first part is the group, its last
+  the statistic and the middle the `workload` label (`phase` for `mem.start` / `mem.end`), so
+  `cpu.folio-scroll.ms_per_frame` in round 2 is
+  `hypoland_cpu_ms_per_frame{machine="t490",compositor="hypoland",version="0.3.0.r1025.g...-1",run="bench-...",block="2",workload="folio-scroll"}`,
+  `fps.<workload>`, `flips.<workload>` and `invalid.<workload>` are `hypoland_fps` and so on with only the label, and
+  `hypoland_run_info` has the machine's kernel, cores and memory, the binary, its instance, the clocksource and the
+  governor. A metric whose statistic ends in a unit (`kB`, `ms`, `ms_per_frame`, `percent`, `W`, ...) declares it.
+  `openmetrics.py values FILE [--label compositor=hyprland]` prints `values.txt` from it (the same medians, the lower
+  middle one with an even count), `openmetrics.py keys FILE` every sample. The version label is the package (`package:`,
+  a line `measure.sh` prints since that day), for older runs `g<commit>` from the compositor's instance signature; the
+  time of every sample is the compositor's start. A night's file is 4 to 5 times its `raw.txt` (2.4 MB for one
+  compositor on the X200 for the 11-14 night), plain all the same: the desktop's btrfs compresses it (zstd). The files
+  are not committed, by decision of the user: `.gitignore`'s `result*` keeps them out, also in `docs/baseline/`, whose
+  `values.txt` and `raw.txt` stay what is in git. Every older result was converted the same day
+  (`test-results/om-convert-20261116/convert.sh`): the 180 compositors of `docs/baseline/` (versions from their READMEs,
+  the time the start the README gives, else the day; the two A/Bs of 2026-10-22 with both compositors in one `raw.txt`),
+  598 `bench.sh` runs and 226 nights' compositors in `test-results/`. Read back, each gives its `values.txt` exactly,
+  except 9 bench runs of September and October with 2 to 5 lines that two writers interleaved (`@ 1
+  cpu.terminal-scroll.stddev 0@ 1 @ 1 mem.end.Rss_kB 81740`), which are left out. The `prometheus_client` parser (strict
+  about the format) accepts all 1004 files. Not converted: the shmtex night in `test-results/abnight-20261028-shmtex/`
+  has no `raw.txt` (its copy in `docs/baseline/` has). `bench.sh --compare`, the nights' `table.py` and `scripts/web/`
+  still read `values.txt` and `raw.txt`.
 - `bench.sh` and `profile.sh` are not tied to the X200 (they were `bench-x200.sh` and `profile-x200.sh` until
   2026-09-28). `--host <ssh host>` or `--host local` picks the machine, `--login` the ssh login (root by default,
   without root the governor is left alone), `--no-deploy` measures the compositor that is running,

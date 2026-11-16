@@ -19,7 +19,9 @@
 #                      where the meters are on the machine under test (default /sys/class/...)
 # TARGET_HELP
 #
-# Writes test-results/bench-<time>-<label>/values.txt with "<key> <median> <min> <max>" per line.
+# Writes test-results/bench-<time>-<label>/values.txt with "<key> <median> <min> <max>" per line, and results.om with
+# every value of every round in OpenMetrics, labelled with the machine, the compositor and its package
+# (scripts/bench/openmetrics.py, which also reads it).
 
 set -u
 cd "$(dirname "$(readlink -f "$0")")" || exit 1
@@ -122,7 +124,9 @@ grep "^@" "$OUT/bench.txt" | sort -k3,3 -k4,4g | awk '
     END {flush()}
 ' >"$OUT/values.txt"
 
+python3 scripts/bench/openmetrics.py write "$OUT" || echo "results.om not written"
+
 echo
 column -t -N key,median,min,max "$OUT/values.txt"
 grep -q "^invalid" "$OUT/values.txt" && echo "NOT VALID: a screensaver, a lock, a compositor restart, the charger or a low battery got in the way"
-echo "values: $OUT/values.txt"
+echo "values: $OUT/values.txt, $OUT/results.om"

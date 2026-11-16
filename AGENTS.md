@@ -451,6 +451,10 @@ Tools:
 - `./bench.sh <label>` measures a build on a machine (`--host`, `--workloads a,b`, `--no-deploy`, `--energy`, `--help`
   lists the workloads) into `test-results/bench-<time>-<label>/values.txt`: memory, the compositor's CPU time and its
   milliseconds per frame on the screen, the clients', the session's, frames, GPU busy time and latencies.
+  Every value of every round is also in `results.om` there, OpenMetrics labelled with machine, compositor, version,
+  run and round (since 2026-11-16, asked for by the user; a night's `report.sh` writes one per compositor, and every
+  result before was converted; never committed, `.gitignore`'s `result*` keeps them out of `docs/baseline/` too).
+  `scripts/bench/openmetrics.py` writes and reads it (`values FILE` prints `values.txt` from it).
   `./bench.sh --compare <dir> <dir>` prints the difference. The work on the machine is `scripts/bench/measure.sh`
   (`hypoland-measure` from the `hypoland-bench` package) with its parts in `scripts/bench/lib/` and its clients in
   `scripts/bench/clients/`. What every workload does, how its numbers are to be read and their first results:

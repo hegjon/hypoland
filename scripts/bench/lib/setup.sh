@@ -57,6 +57,9 @@ mkdir -m 700 "$CLIENTDIR"
 
 echo "machine: $(uname -n), $(uname -r), $(nproc) cores, $(awk '/MemTotal/ {printf "%d MiB", $2 / 1024}' /proc/meminfo)"
 echo "compositor: $BINARY, pid $P, user $TESTUSER, instance $SIG"
+# the package the compositor came from, the version label of results.om (scripts/bench/openmetrics.py)
+PACKAGE=$(pacman -Qo "$BINARY" 2>/dev/null | awk '{print $(NF - 1), $NF}')
+[ -n "$PACKAGE" ] && echo "package: $PACKAGE"
 echo "clocksource: $(cat /sys/devices/system/clocksource/clocksource0/current_clocksource 2>/dev/null)"
 [ "$MODE" = energy ] && echo "meter: $(meter_describe)"
 meter_start
