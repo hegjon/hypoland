@@ -280,6 +280,9 @@ void CCompositor::initServer(std::string socketName, int socketFd) {
     if (m_onlyConfigVerification) {
         Keybinds::mgr();
         Animation::mgr();
+        // the titlebars register their window rule effects (hyprbars:no_bar...), which Omarchy's config uses: without
+        // them --verify-config called those fields unknown, though a session, which makes them first too, takes them
+        TitleBars::state();
         Config::initConfigManager();
         Config::mgr()->init();
 

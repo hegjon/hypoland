@@ -109,6 +109,9 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   on it changed (Hypoland 0.3.0 and since): when a window's picture changed size, the area of its old size was redrawn
   at the window's new place, which reached past the window by as much as it had moved. It is redrawn where the window was
   now. A ThinkPad P14s with a second screen showed 60 instead of 72 frames a second while resizing, as Hyprland does.
+- `hypoland --verify-config` called the titlebars' window rule effects (`hyprbars:no_bar`, `hyprbars:bar_color`,
+  `hyprbars:title_color`) unknown fields, which Omarchy's config uses since r7840 (`hyprbars:no_bar` for its self-framed
+  apps). A session always accepted them; the check skipped the titlebars, which register them.
 
 ## 0.3.0 - 2026-11-03
 
