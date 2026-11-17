@@ -1147,9 +1147,10 @@ void CWindow::mapWindow() {
     m_workspace     = PWORKSPACE;
     m_isMapped      = true;
     m_presentation->setAnimatingIn(true);
-    m_lastCommitSize    = wlSurface() && wlSurface()->resource() ? wlSurface()->resource()->m_current.size : Vector2D{};
-    const auto METADATA = m_backend->metadata();
-    const auto TRAITS   = m_backend->traits();
+    m_lastCommitSize      = wlSurface() && wlSurface()->resource() ? wlSurface()->resource()->m_current.size : Vector2D{};
+    m_lastCommitWindowBox = {};
+    const auto METADATA   = m_backend->metadata();
+    const auto TRAITS     = m_backend->traits();
     m_metadata->initializeOnFirstMap(METADATA.title, METADATA.appID);
     m_state |= WINDOW_STATE_FIRST_MAP;
 
@@ -1768,12 +1769,22 @@ void CWindow::commitWindow(bool initialCommit) {
     const bool HADDAMAGE = !wlSurface()->resource()->m_current.damage.empty() || !wlSurface()->resource()->m_current.bufferDamage.empty();
 
     // a surface that changed its size by itself leaves pixels its damage does not cover: a floating dialog that shrank
-    // stayed on the screen where it was larger (render checks)
+    // stayed on the screen where it was larger (render checks). The old size is damaged where the window was at that
+    // commit and cut at the window's box then, as it was drawn: at the new position a window resized from its left or
+    // top edge reached past its other edge by as much as it moved, over its neighbour or onto the next monitor (a drag
+    // resize on the P14s redrew its second output 8 times a second)
     const auto SIZE = wlSurface()->resource()->m_current.size;
     if (SIZE != m_lastCommitSize) {
         if (m_lastCommitSize.x > 0 && m_lastCommitSize.y > 0) {
             g_pHyprRenderer->damageWindow(m_self.lock());
-            g_pHyprRenderer->damageBox(CBox{m_realPosition->goal(), m_lastCommitSize / m_backend->surfaceScale()}.expand(1));
+            if (m_lastCommitWindowBox.empty())
+                g_pHyprRenderer->damageBox(CBox{m_realPosition->goal(), m_lastCommitSize / m_backend->surfaceScale()}.expand(1));
+            else {
+                const auto OLDBOX =
+                    CBox{m_lastCommitWindowBox.pos() + m_lastCommitOffset, m_lastCommitSize / m_backend->surfaceScale()}.expand(1).intersection(m_lastCommitWindowBox);
+                if (!OLDBOX.empty())
+                    g_pHyprRenderer->damageBox(OLDBOX);
+            }
         }
         m_lastCommitSize = SIZE;
     }
@@ -1791,8 +1802,9 @@ void CWindow::commitWindow(bool initialCommit) {
     const auto OFFSET = wlSurface()->correctSmallVec();
     if (STRETCHED || OWNSIZE != m_lastCommitOwnSize || OFFSET != m_lastCommitOffset)
         g_pHyprRenderer->damageWindow(m_self.lock());
-    m_lastCommitOwnSize = OWNSIZE;
-    m_lastCommitOffset  = OFFSET;
+    m_lastCommitOwnSize   = OWNSIZE;
+    m_lastCommitOffset    = OFFSET;
+    m_lastCommitWindowBox = CBox{m_realPosition->goal(), m_realSize->goal()};
 
     g_pHyprRenderer->damageSurface(wlSurface()->resource(), m_realPosition->goal().x + OFFSET.x, m_realPosition->goal().y + OFFSET.y, 1.0 / m_backend->surfaceScale());
 

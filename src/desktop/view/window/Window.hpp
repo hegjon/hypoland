@@ -166,6 +166,7 @@ namespace Desktop::View {
         Vector2D      m_lastCommitSize;
         bool          m_lastCommitOwnSize = false;
         Vector2D      m_lastCommitOffset;
+        CBox          m_lastCommitWindowBox; // the window's box (goal) at that commit, empty until the first after the map
 
         PHLWORKSPACE  m_workspace;
         PHLMONITORREF m_monitor, m_prevMonitor;

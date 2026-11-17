@@ -105,6 +105,10 @@ GMA 4500MHD, 1280x800) running Omarchy 4.
   without a serial (foot's bell) is marked urgent instead of being ignored; dialogs keep their place relative to their
   parent window instead of being centred on the screen. Hypoland keeps realtime scheduling with its guard, which 0.57.2
   gave up.
+- With a second monitor, resizing a window next to it by mouse redrew that monitor about 8 times a second though nothing
+  on it changed (Hypoland 0.3.0 and since): when a window's picture changed size, the area of its old size was redrawn
+  at the window's new place, which reached past the window by as much as it had moved. It is redrawn where the window was
+  now. A ThinkPad P14s with a second screen showed 60 instead of 72 frames a second while resizing, as Hyprland does.
 
 ## 0.3.0 - 2026-11-03
 
