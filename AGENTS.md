@@ -489,7 +489,10 @@ Tools:
 
 Profile guided builds (2026-11-16): `scripts/pgo/pgo.sh train DIR HOST...` and `build DIR` make a package with GCC's
 profile feedback and the training's function order, 4 to 6.5% less compositor CPU a frame and 3.3 MiB less code in
-memory in the night of 2026-11-15; the deploy's and the release's packages stay plain. See `docs/notes/performance.md`.
+memory in the night of 2026-11-15; the deploy's and the release's packages stay plain. The flags come from the makepkg
+plugin `packaging/makepkg-pgo/pgo.sh` (since 2026-11-18, `PGO_GENERATE`, `PGO_PROFILE`, `PGO_ORDER`), which has to be
+installed as `/usr/share/makepkg/buildenv/pgo.sh` (root) for `pgo.sh`; a plain build does not need it. See
+`docs/notes/performance.md`.
 
 Performance and memory: `docs/notes/performance.md` has the GPU time per frame on the X200, the CPU profiles
 (`./profile.sh` installs the package with `hypoland-debug`, records five workloads with `perf` and prints the report to

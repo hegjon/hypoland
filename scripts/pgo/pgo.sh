@@ -21,6 +21,11 @@ CMD=${1:-}; DIR=${2:-}
 mkdir -p "$DIR" && DIR=$(readlink -f "$DIR") || exit 1
 CACHE=${HYPOLAND_PGO_BUILDDIR:-${XDG_CACHE_HOME:-$HOME/.cache}/hypoland-pgo}
 T=$ROOT/scripts/pgo
+# the flags come from the makepkg plugin packaging/makepkg-pgo/pgo.sh
+[ -f "${MAKEPKG_LIBRARY:-/usr/share/makepkg}/buildenv/pgo.sh" ] || {
+    echo "the makepkg plugin is not installed: install -Dm644 packaging/makepkg-pgo/pgo.sh /usr/share/makepkg/buildenv/pgo.sh (as root)"
+    exit 1
+}
 
 # makepkg_in LOG [VAR=value...]: a build in the profile builds' directory, its packages listed in DIR/packages, the
 # committed pkgver line back after it
@@ -56,7 +61,7 @@ case $CMD in
 train)
     shift 2; [ $# -gt 0 ] || { echo "train needs machines"; exit 1; }
     echo "building the instrumented package..."
-    makepkg_in "$DIR/build-generate.log" HYPOLAND_PGO=generate PKGDEST="$DIR"
+    makepkg_in "$DIR/build-generate.log" PGO_GENERATE=/var/tmp/hypoland-pgo PKGDEST="$DIR"
     pkg=$(grep -m1 '/hypoland-[0-9]' "$DIR/packages")
     # every counter's function, read from the instrumented binary while it is there
     python3 "$T/gcovnames.py" "$CACHE/hypoland/src/build/hypoland" "$CACHE/hypoland/src/build/hypoland" >"$DIR/gcovnames.txt"
@@ -73,11 +78,11 @@ build)
     [ -d "$DIR/profile" ] && [ -s "$DIR/executed.txt" ] || { echo "$DIR has no profile, train first"; exit 1; }
     [ "$(cat "$DIR/commit" 2>/dev/null)" = "$(git rev-parse HEAD)" ] || echo "note: the profile was trained on $(cut -c1-9 "$DIR/commit" 2>/dev/null), the tree is at $(git rev-parse --short HEAD)"
     echo "building with the profile..."
-    makepkg_in "$DIR/build-use.log" HYPOLAND_PGO_PROFILE="$DIR/profile"
+    makepkg_in "$DIR/build-use.log" PGO_PROFILE="$DIR/profile"
     nm -S "$CACHE/hypoland/src/build/hypoland" >"$DIR/syms.txt"
     python3 "$T/order.py" "$DIR/executed.txt" "$DIR/syms.txt" >"$DIR/order.ld" || exit 1
     echo "linking in the training's order..."
-    makepkg_in "$DIR/build-order.log" HYPOLAND_PGO_PROFILE="$DIR/profile" HYPOLAND_PGO_ORDER="$DIR/order.ld"
+    makepkg_in "$DIR/build-order.log" PGO_PROFILE="$DIR/profile" PGO_ORDER="$DIR/order.ld"
     cp "$DIR/packages" packaging/arch/.last-build
     grep -v -- -debug- packaging/arch/.last-build
     ;;

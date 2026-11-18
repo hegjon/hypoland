@@ -232,8 +232,18 @@ and `scripts/release.sh` build are plain): `train DIR HOST...` builds an instrum
 and one round of the benchmark with it on the machines and merges their counters; `build DIR` compiles with them
 (`-fprofile-use`) and links the functions in the order of the training: the ones that ran first, the hottest in front,
 their cold parts after them (`order.py`, the linker's `--section-ordering-file`), so the code a session uses is in few
-pages. The PKGBUILD takes it all from the environment (`HYPOLAND_PGO`, `HYPOLAND_PGO_PROFILE`, `HYPOLAND_PGO_ORDER`)
-and gives CMake `HYPOLAND_PGO_FLAGS`, which reach the compositor and the embedded aquamarine only.
+pages.
+
+The flags come from a makepkg plugin, `packaging/makepkg-pgo/pgo.sh` (since 2026-11-18), installed as root as
+`/usr/share/makepkg/buildenv/pgo.sh`; `pgo.sh` stops when it is missing. It reads `PGO_GENERATE=DIR` (the instrumented
+build, counters into DIR), `PGO_PROFILE=DIR` (the build with them) and `PGO_ORDER=FILE` (the section order) from the
+environment and adds the flags to `CFLAGS`, `CXXFLAGS` and `LDFLAGS` of a package with `pgo` in its options. The
+PKGBUILD asks for the option only when one of the variables is set, since makepkg refuses an option it does not know:
+a plain build needs no plugin. Until then the PKGBUILD passed the flags to CMake (`HYPOLAND_PGO_FLAGS`), which gave
+them to the compositor and the embedded aquamarine only; now hyprctl, start-hypoland and hypoland-kmsgrab are
+instrumented and built with the profile too. The counter files are named after the object files' paths below makepkg's
+`src/` instead of `src/build/`, so a profile trained before 2026-11-18 has `build#` in front of its names (rename them,
+or train again).
 
 Measured in the night of 2026-11-15 against the plain build of the same source (r992), alternating in fresh sessions,
 9 to 14 sessions each on ten x86 machines, the profile from six of them (`test-results/night-20261115/summary.txt`):
