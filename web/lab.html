@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hypoland: the lab</title>
-<meta name="description" content="The test machines Hypoland is measured on, from a 2008 ThinkPad X200 to a Snapdragon X Elite laptop, and every machine's numbers against stock Hyprland.">
+<meta name="description" content="The test machines Hypoland is measured on, from a 2006 Core 2 Duo laptop to a Snapdragon X Elite laptop, and every machine's numbers against stock Hyprland.">
 <meta name="theme-color" content="#efe6d2">
 <meta property="og:site_name" content="Hypoland">
 <meta property="og:title" content="Hypoland: the lab">
@@ -46,12 +46,13 @@
     <div class="body">
       <p>
         Hypoland is measured on real machines, each with Omarchy installed and its full session running, reached over
-        ssh from one desktop. The oldest one is the target; the others make sure that what helps the X200 costs nothing
+        ssh from one desktop. The X200 is the target; the others make sure that what helps it costs nothing
         on the GPUs and drivers people actually have.
       </p>
       <div class="scroll"><table>
         <thead><tr><th>Machine</th><th>Year</th><th>CPU</th><th>GPU, Mesa driver</th><th>Screen</th><th>RAM</th><th>What it stands for</th></tr></thead>
         <tbody>
+          <tr><td>Turbo-X Sirus Duo</td><td>2006</td><td>Core 2 Duo T5500, 2 cores</td><td>ATI Mobility Radeon X1600 (RV530, R500)<br><code>r300, GLES 2.0 only</code></td><td>1280x800</td><td>1 GB, 120 GB hard disk</td><td>Joined on 2026-11-20, the oldest machine and the only R500: GLES 2.0 like the X200, on 1 GB and a hard disk; stock Hyprland does not start on it.</td></tr>
           <tr><td>Lenovo ThinkPad X200</td><td>2008</td><td>Core 2 Duo P8400, 2 cores</td><td>Intel GMA 4500MHD (GM45, Gen 4.5)<br><code>crocus, GLES 2.0 only</code></td><td>1280x800</td><td>6 GB</td><td>The target and the main test machine: stock Hyprland does not start on it.</td></tr>
           <tr><td>Desktop, AMD A8-6600K APU</td><td>2013</td><td>A8-6600K, 4 cores</td><td>AMD Radeon HD 8570D (TeraScale 3)<br><code>r600, GLES 3.1</code></td><td>1920x1200</td><td>8 GB</td><td>The AMD machine: the r600 driver with legacy modesetting.</td></tr>
           <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td>2013</td><td>Core i5-3337U, 4 threads</td><td>Intel HD Graphics 4000 (Ivy Bridge)<br><code>crocus, GLES 3.0</code></td><td>1920x1080</td><td>4 GB</td><td>Joined on 2026-10-31, Ivy Bridge: the crocus generation between Bay Trail and Haswell.</td></tr>
@@ -96,7 +97,7 @@
       </table></div>
       <p class="note">
         Compositor CPU in percent of one core, medians of 14 to 22 fresh sessions of Hypoland and 14 to 22 of Hyprland per machine, Hypoland master r992 (after 0.3.0) against Hyprland 0.57.2-2, alternating through the night of 2026-11-14 to 15.
-        The two alternated, a fresh session each, so a drift of the machine hits both the same. HP Notebook (A6-7310): not in the table, it joined on 2026-11-14 and has no numbers yet: its first night ended after 20 minutes in a GPU hang under GravityMark. Both ran without realtime scheduling, which Omarchy turns off for Hyprland now
+        The two alternated, a fresh session each, so a drift of the machine hits both the same. Turbo-X Sirus Duo: not in the table, it joined on 2026-11-20 and has not been through a night yet. HP Notebook (A6-7310): not in the table, it joined on 2026-11-14 and has no numbers yet: its first night ended after 20 minutes in a GPU hang under GravityMark. Both ran without realtime scheduling, which Omarchy turns off for Hyprland now
         (<code>HYPRLAND_NO_RT=1</code>), except on the Galaxy Book. Green where
         Hypoland is at least 5% better, red where it is at least 5% worse. On the X200, Hyprland ran with Omarchy's
         GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), since it does

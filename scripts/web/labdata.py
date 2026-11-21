@@ -51,6 +51,9 @@ MACHINES = [
          nodata="joined on 2026-11-14 and has no numbers yet: its first night ended after 20 minutes in a GPU hang under GravityMark"),
     dict(alias="p14s", name="Lenovo ThinkPad P14s Gen 2a", year=2021, cpu="Ryzen 7 PRO 5850U, 16 threads", gpu="AMD Radeon Vega 8 (Cezanne)",
          driver="radeonsi, GLES 3.2", screen="3840x2160 at scale 2", ram="16 GB, 4 GB of it for the GPU", role="Joined on 2026-11-14, the newest x86 machine: radeonsi on a Zen 3 APU and the lab's first 4K screen.", baseline=True),
+    dict(alias="turbox", name="Turbo-X Sirus Duo", year=2006, cpu="Core 2 Duo T5500, 2 cores", gpu="ATI Mobility Radeon X1600 (RV530, R500)",
+         driver="r300, GLES 2.0 only", screen="1280x800", ram="1 GB, 120 GB hard disk", role="Joined on 2026-11-20, the oldest machine and the only R500: GLES 2.0 like the X200, on 1 GB and a hard disk; stock Hyprland does not start on it.", baseline=False,
+         nodata="joined on 2026-11-20 and has not been through a night yet"),
 ]
 # both tables list the machines by year, the oldest first (sorted is stable: same-year machines keep the order above)
 MACHINES.sort(key=lambda m: m["year"])
