@@ -69,6 +69,8 @@ memory() { # name
         /^(Rss|Pss|Pss_Anon|Pss_File|Anonymous|AnonHugePages|Private_Clean|Private_Dirty):/ {sub(":", "", $1); printf "@ %s mem.%s.%s_kB %s\n", r, n, $1, $2}
     ' /proc/$P/smaps_rollup
     value "mem.$1.heap_kB" "$(awk '/\[heap\]/ {h = 1; next} h && /^Rss:/ {print $2; exit}' /proc/$P/smaps)"
+    # the compositor's own code: the executable mapping of its binary, resident pages
+    value "mem.$1.text_kB" "$(awk -v exe="$(readlink /proc/$P/exe)" '$2 ~ /x/ && $6 == exe {t = 1; next} /^[0-9a-f]+-/ {t = 0} t && /^Rss:/ {print $2; exit}' /proc/$P/smaps)"
     read -r gpu shared purgeable < <(gpu_memory)
     value "mem.$1.gpu_kB" "$gpu"
     value "mem.$1.gpu_private_kB" "$((gpu - shared))"
