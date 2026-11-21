@@ -60,6 +60,9 @@ echo "compositor: $BINARY, pid $P, user $TESTUSER, instance $SIG"
 # the package the compositor came from, the version label of results.om (scripts/bench/openmetrics.py)
 PACKAGE=$(pacman -Qo "$BINARY" 2>/dev/null | awk '{print $(NF - 1), $NF}')
 [ -n "$PACKAGE" ] && echo "package: $PACKAGE"
+# client programs that come from Omarchy's packages and change with its updates (Folio since 2026-11-18, Flea always)
+APPS=$(pacman -Q folio flea 2>/dev/null | paste -sd, - | sed 's/,/, /g')
+[ -n "$APPS" ] && echo "apps: $APPS"
 echo "clocksource: $(cat /sys/devices/system/clocksource/clocksource0/current_clocksource 2>/dev/null)"
 [ "$MODE" = energy ] && echo "meter: $(meter_describe)"
 meter_start

@@ -125,7 +125,9 @@ the current state; the notes say what was tried, measured and dropped. Add new f
   (GM45: OpenGL 2.1, no Vulkan), and the shell's critical notification "No graphics driver could open Flea" stayed over
   the windows for the rest of the session (every later workload of the X200's blocks in the night of 2026-11-10, a deploy
   check's render steps): since 2026-11-12 both Flea workloads check for its window (`flea_opened()`) and are skipped
-  without it, the notification dismissed. `folio` and `folio-scroll` (added 2026-11-11, asked for by the user) are the same two as
+  without it, the notification dismissed. Flea is Omarchy's package, not pinned like Folio: 0.4.3-1 on every machine
+  but macmini-intel since 2026-11-18 17:52 (the user's request; 0.4.2-2 on most before, galaxybook and hp-amd had
+  0.4.3 already), so Flea's numbers across that date compare only with that in mind. `folio` and `folio-scroll` (added 2026-11-11, asked for by the user) are the same two as
   Nautilus' in Folio (`folio`, C++ and Qt Quick), Omarchy's file manager in place of Nautilus since omacom/omarchy#18378
   of 2026-11-10; the soak has it too (`w_folio`, `w_files_folio`, `w_search_folio`). Folio keeps its view in
   `~/.config/folio/folio.conf`, which they set and put back. Since 2026-11-12 the two workloads need Folio 0.4.0 or later
@@ -134,12 +136,19 @@ the current state; the notes say what was tried, measured and dropped. Add new f
   not scroll the list to the cursor on Down: the cursor walks off the bottom and the view stays (XPS, screenshots), so
   until that is fixed `folio-scroll` measures the cursor and the details pane redrawn, not scrolling, and does not
   compare with `nautilus-scroll`. The fix is in omacom/folio#18, open on 2026-11-11 and tested on the XPS (the report,
-  a headless test and the screenshots are in `test-results/folio-scroll-bug-20261111/`). Since 2026-11-16 (asked for by
-  the user) both workloads and the soak's run one commit of Folio, `FOLIO_COMMIT` in `scripts/bench/lib/workloads.sh`
-  (and in `scripts/machines/soak.sh`), not Omarchy's package: 2e2a716 of 2026-11-16 (omacom/folio#79, after 0.5.0),
-  which keeps the cursor in sight on Down, so `folio-scroll` scrolls from then on and its numbers before do not compare.
-  `scripts/machines/folio.sh <host>...` builds it on the machines into `/opt/folio/<commit>/folio`; without it the
-  workloads are skipped. First run, one round of each
+  a headless test and the screenshots are in `test-results/folio-scroll-bug-20261111/`). From 2026-11-16 (asked for by
+  the user) both workloads and the soak's ran one commit of Folio built on each machine into `/opt/folio/<commit>/`
+  (`FOLIO_COMMIT`, `scripts/machines/folio.sh`, both gone since), not Omarchy's package: 2e2a716 of 2026-11-16
+  (omacom/folio#79, after 0.5.0), which keeps the cursor in sight on Down, so `folio-scroll` scrolls from then on and its
+  numbers before do not compare; on 2026-11-18 briefly bf947e6 (tag v0.6.1).
+  Since 2026-11-18 (asked for by the user) they run Omarchy's package again, `/usr/bin/folio` (`FOLIO` overrides it),
+  and need 0.6.1 or later (`folio>=0.6.1` in `missing()`; the soak's `folio_ok`), from Omarchy's edge repository on
+  every machine that day. 0.6.1 (tag of 2026-11-17): its list is a tree (omacom/folio#160), an idle window no longer
+  draws every refresh (omacom/folio#100), and CTRL 1, 2, 3 are columns, list and grid (grid, list, columns before; the
+  soak's `w_folio` keys follow), so Folio's numbers before do not compare either. The workloads still set the view by
+  `viewMode=` in `folio.conf`, which 0.6.1 reads the same way. The package follows Omarchy's updates, so a later
+  version can move the numbers: `bench.txt`'s header line `apps:` has the Folio and Flea packages of the run. First run,
+  one round of each
   in a fresh session (compositor CPU / frames on the screen, the client):
   T460s `folio` 1.41% / 18.9 fps, `folio-scroll` 4.11% / 58.5 fps, client 22.3%, its Pss 88 MB (Nautilus 2.16% / 27.8,
   3.10% / 40.5, 28.5%, 119 MB); XPS `folio` 1.79% / 17.9, `folio-scroll` 4.73% / 58.5, 30.5%, 91 MB (Nautilus 2.78% /

@@ -614,14 +614,14 @@ workload_nautilus_scroll() {
 # a process and a window per launch (app id folio). The same two workloads as Nautilus': `folio` the icon folder in its
 # grid with fullscreen toggled twice a second, `folio-scroll` the 5000 files in its list with Down held. It remembers
 # its view (grid, list or columns) in ~/.config/folio/folio.conf; the workloads set it before the start and put the
-# user's file back afterwards. Added 2026-11-11, asked for by the user. Since 2026-11-16 both run one commit of Folio,
-# FOLIO_COMMIT, built by scripts/machines/folio.sh into /opt/folio/<commit>/ on every machine, not Omarchy's package, so
-# results compare across machines and Omarchy's updates; they are skipped where it is not built. Folio 0.1.1 to 0.5.0 do
-# not scroll the list to the cursor on Down (the cursor walks off the bottom, the view stays), so `folio-scroll` with
-# them (Omarchy's 0.4.0 from 2026-11-12 to 16) measured the cursor and the details pane, not scrolling. 2e2a716 of
-# 2026-11-16 (omacom/folio#79, after 0.5.0) has the fix. soak.sh has the same FOLIO_COMMIT (folio.sh checks it).
-FOLIO_COMMIT=2e2a71633b7617418d0832905af6ea650d766897
-FOLIO=${FOLIO:-/opt/folio/$FOLIO_COMMIT/folio}
+# user's file back afterwards. Added 2026-11-11, asked for by the user. Folio 0.1.1 to 0.5.0 do not scroll the list to
+# the cursor on Down (the cursor walks off the bottom, the view stays), so `folio-scroll` with them (Omarchy's 0.4.0 from
+# 2026-11-12 to 16) measured the cursor and the details pane, not scrolling. From 2026-11-16 to 18 both ran one commit
+# built on each machine into /opt/folio/<commit>/ (2e2a716, omacom/folio#79, which has the fix; then bf947e6 = v0.6.1).
+# Since 2026-11-18 (asked for by the user) they run Omarchy's package again, /usr/bin/folio, and need 0.6.1 or later
+# (the first release with the fix; its list is a tree and an idle window no longer draws every refresh, omacom/folio#100),
+# so Folio's numbers from before do not compare. A newer package can move them: bench.txt's header has its version.
+FOLIO=${FOLIO:-/usr/bin/folio}
 FOLIOCONF=$USERHOME/.config/folio/folio.conf
 folio_view() { # view: grid or list. Keeps the user's settings for folio_restore
     if [ -e "$FOLIOCONF" ] && [ ! -e "$CLIENTDIR/folio.conf" ]; then
@@ -641,7 +641,7 @@ folio_restore() { # after stop_clients: each launch is a process of its own, so 
         rm -f "$FOLIOCONF" "$CLIENTDIR/folio.conf.none"
     fi
 }
-needs_folio="$FOLIO"
+needs_folio="folio>=0.6.1"
 workload_folio() { # Qt Quick redrawing a full window of icons, fullscreen toggled twice a second
     folio_view grid
     client $((SECONDS_PER_RUN + 15)) "exec $FOLIO /usr/share/icons/Adwaita/symbolic/actions"
@@ -655,7 +655,7 @@ workload_folio() { # Qt Quick redrawing a full window of icons, fullscreen toggl
     stop_clients
     folio_restore
 }
-needs_folio_scroll="$FOLIO root"
+needs_folio_scroll="folio>=0.6.1 root"
 workload_folio_scroll() {
     # the list, one file per Down; the grid moves a row
     folio_view list
