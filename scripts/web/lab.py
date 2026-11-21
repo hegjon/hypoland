@@ -12,6 +12,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from labdata import ROOT, HYPRLAND, RUN, TWO_NIGHTS, RAW, MACHINES, RETIRED, values, sessions_text, cell, E, head, FOOTER
 
 OUT = os.path.join(ROOT, "web", "lab.html")
+# machines left off this page (the user, 2026-11-21): the AMD A8-6600K desktop and the T550; the other pages keep them
+HIDDEN = {"lianli", "t550"}
+MACHINES = [m for m in MACHINES if m["alias"] not in HIDDEN]
 
 # key in values.txt, label, unit, whether lower is better, scale
 METRICS = [
@@ -105,7 +108,7 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
         Hypoland is at least 5% better, red where it is at least 5% worse. On the X200, Hyprland ran with Omarchy's
         GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), since it does
         not start there otherwise. Hyprland ran with <code>quirks:skip_non_kms_dmabuf_formats = false</code>,
-        Hypoland's default: with its own default the T550's session came up without a wallpaper and GL clients that ask
+        Hypoland's default: with its own default one machine's session came up without a wallpaper and GL clients that ask
         for alpha got no config. The frames are the compositor's own page flips; the Galaxy Book's screen runs at
         120&nbsp;Hz, and the Mac mini M1's display driver reports none. The memory holds the shell's shared pages too.
         Four terminals side by side on every machine: <a href="terminals.html">terminals</a>; games and 3D
