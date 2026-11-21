@@ -1,10 +1,20 @@
 # shellcheck shell=bash
 # Part of measure.sh: the compositor under test, its session, and the clients started in it.
 
+# the newest one that is not SDDM's greeter: Omarchy's greeter runs the same compositor as user sddm, and after a failed
+# autologin (2026-11-12 on the X200, two SDDM restarts at once) it is the only one, which a check took for the session
 for name in ${PROCESS:-hypoland Hypoland Hyprland}; do
-    P=$(pgrep -n -x "$name" 2>/dev/null) && PROCESS=$name && break
+    P=$(ps -o pid=,user= --sort=start_time -C "$name" 2>/dev/null | awk '$2 != "sddm" {p = $1} END {print p}')
+    [ -n "$P" ] && PROCESS=$name && break
 done
-[ -n "${P:-}" ] || { echo "no compositor is running (looked for ${PROCESS:-hypoland, Hypoland, Hyprland})"; exit 1; }
+if [ -z "${P:-}" ]; then
+    if pgrep -u sddm -x 'hypoland|Hypoland|Hyprland' >/dev/null 2>&1; then
+        echo "only SDDM's greeter runs a compositor: no user session (did the autologin fail? systemctl restart sddm as root)"
+    else
+        echo "no compositor is running (looked for ${PROCESS:-hypoland, Hypoland, Hyprland})"
+    fi
+    exit 1
+fi
 
 TESTUSER=$(stat -c %U /proc/$P)
 USERHOME=$(getent passwd "$TESTUSER" | cut -d: -f6)

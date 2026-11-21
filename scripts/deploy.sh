@@ -79,11 +79,13 @@ fi
 # ---- one host, its output goes into its log
 
 new_session() { # host: restarts SDDM, which logs in again, and waits until a new compositor holds the lock of its instance
-    local h=$1 old
-    old=$("${SSH[@]}" "root@$h" "pgrep -n -x hypoland")
+    # the user's compositor, not SDDM's greeter: Omarchy's greeter runs hypoland as user sddm with an instance lock of
+    # its own, and when the autologin fails it is all there is (2026-11-12, the X200's check ran on the greeter)
+    local h=$1 old user="ps -o pid=,user= --sort=start_time -C hypoland | awk '\$2 != \"sddm\" {p = \$1} END {print p}'"
+    old=$("${SSH[@]}" "root@$h" "$user")
     "${SSH[@]}" "root@$h" "systemctl restart sddm"
     "${SSH[@]}" "root@$h" "for i in \$(seq 1 60); do
-            P=\$(pgrep -n -x hypoland)
+            P=\$($user)
             [ -n \"\$P\" ] && [ \"\$P\" != '$old' ] && grep -qx \"\$P\" /run/user/*/hypr/*/hyprland.lock 2>/dev/null && exit 0
             sleep 1
         done; exit 1"
