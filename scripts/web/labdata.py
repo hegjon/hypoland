@@ -52,7 +52,7 @@ MACHINES = [
     dict(alias="p14s", name="Lenovo ThinkPad P14s Gen 2a", year=2021, cpu="Ryzen 7 PRO 5850U, 16 threads", gpu="AMD Radeon Vega 8 (Cezanne)",
          driver="radeonsi, GLES 3.2", screen="3840x2160 at scale 2", ram="16 GB, 4 GB of it for the GPU", role="The newest x86 machine: radeonsi on a Zen 3 APU and the lab's first 4K screen.", baseline=True),
     dict(alias="turbox", name="Turbo-X Sirus Duo", year=2006, cpu="Core 2 Duo T5500, 2 cores", gpu="ATI Mobility Radeon X1600 (RV530, R500)",
-         driver="r300, GLES 2.0 only", screen="1280x800", ram="1 GB, spinning disk", role="The oldest machine and the only R500: GLES 2.0 like the X200, with 1 GB of RAM and a spinning disk; stock Hyprland does not start on it.", baseline=False,
+         driver="r300, GLES 2.0 only", screen="1280x800", ram="1 GB", role="The oldest machine and the only R500: GLES 2.0 like the X200, with 1 GB of RAM and a spinning disk; stock Hyprland does not start on it.", baseline=False,
          nodata="has not been through a night yet"),
 ]
 # both tables list the machines by year, the oldest first (sorted is stable: same-year machines keep the order above)
