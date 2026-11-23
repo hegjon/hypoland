@@ -45,7 +45,7 @@ MACHINES = [
     dict(alias="t460s", name="Lenovo ThinkPad T460s", year=2016, cpu="Core i7-6600U, 4 threads", gpu="Intel HD Graphics 520 (Skylake)",
          driver="iris, GLES 3.2", screen="1920x1080 at scale 1.5", ram="20 GB", role="The fractional scale, and the only Skylake: its scanout buffers are render compressed.", baseline=True),
     dict(alias="t490", name="Lenovo ThinkPad T490", year=2019, cpu="Core i5-8265U, 8 threads", gpu="Intel UHD Graphics 620 (Whiskey Lake)",
-         driver="iris, GLES 3.2", screen="1920x1080", ram="8 GB", role="The newest Intel GPU of the lab.", baseline=True),
+         driver="iris, GLES 3.2", screen="1920x1080", ram="8 GB", role="Whiskey Lake, the newest of the lab's Gen 9 Intel GPUs.", baseline=True),
     dict(alias="lianli", name="Desktop, AMD A8-6600K APU", year=2013, cpu="A8-6600K, 4 cores", gpu="AMD Radeon HD 8570D (TeraScale 3)",
          driver="r600, GLES 3.1", screen="1920x1200", ram="8 GB", role="The AMD machine: the r600 driver with legacy modesetting.", baseline=True),
     dict(alias="galaxybook", name="Samsung Galaxy Book4 Edge 14\"", year=2024, cpu="Snapdragon X Elite, 12 cores, aarch64", gpu="Qualcomm Adreno X1-85",
@@ -57,9 +57,12 @@ MACHINES = [
     dict(alias="hp-amd", name="HP Notebook (A6-7310)", year=2016, cpu="AMD A6-7310, 4 cores", gpu="AMD Radeon R4 (Carrizo-L, GCN 2)",
          driver="radeonsi on amdgpu, GLES 3.2", screen="1920x1080 at scale 1.5", ram="8 GB, 1 GB of it for the GPU", role="The oldest GPU on radeonsi, the driver every newer Radeon uses.", baseline=True),
     dict(alias="p14s", name="Lenovo ThinkPad P14s Gen 2a", year=2021, cpu="Ryzen 7 PRO 5850U, 16 threads", gpu="AMD Radeon Vega 8 (Cezanne)",
-         driver="radeonsi, GLES 3.2", screen="3840x2160 at scale 2", ram="16 GB, 4 GB of it for the GPU", role="The newest x86 machine: radeonsi on a Zen 3 APU and the lab's first 4K screen.", baseline=True),
+         driver="radeonsi, GLES 3.2", screen="3840x2160 at scale 2", ram="16 GB, 4 GB of it for the GPU", role="Radeonsi on a Zen 3 APU, and the lab's first 4K screen.", baseline=True),
     dict(alias="turbox", name="Turbo-X Sirus Duo", year=2006, cpu="Core 2 Duo T5500, 2 cores", gpu="ATI Mobility Radeon X1600 (RV530, R500)",
          driver="r300, GLES 2.0 only", screen="1280x800", ram="1 GB", role="The oldest machine and the only R500: GLES 2.0 like the X200, with 1 GB of RAM and a spinning disk; stock Hyprland does not start on it.", baseline=False,
+         nodata="has not been through a night yet"),
+    dict(alias="msi-claw", name="MSI Claw A1M", year=2024, cpu="Core Ultra 7 155H, 22 threads", gpu="Intel Arc Graphics (Meteor Lake, Xe-LPG)",
+         driver="iris, GLES 3.2", screen="1920x1080 at scale 2, 120 Hz", ram="16 GB", role="The handheld, and the newest Intel GPU of the lab: Arc on Meteor Lake; 120 Hz.", baseline=False,
          nodata="has not been through a night yet"),
 ]
 # both tables list the machines by year, the oldest first (sorted is stable: same-year machines keep the order above)
