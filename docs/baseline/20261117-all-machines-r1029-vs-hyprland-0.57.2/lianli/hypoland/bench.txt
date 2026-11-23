@@ -1,0 +1,4 @@
+machine: lianli, 7.2.15-2-omarchy, 4 cores, 7375 MiB
+compositor: /usr/bin/hypoland, pid 3490394, user a, instance 5078f26de61b6ba8aea8799269500801dab39f43_1794972920_1574190583
+package: hypoland 0.3.0.r1029.g5078f26de-1
+clocksource: tsc

@@ -1,0 +1,130 @@
+blocks per machine (r1029 / stock 11-17, r1025 / stock 11-16):
+  x200         15 /  15    23 /  23
+  t550         11 /  11    16 /  16
+  xps          10 /  10    15 /  15
+  lianli       13 /  13    20 /  20
+  chromebook    9 /   9    14 /  13
+  t460s        10 /  10    15 /  15
+  t490         10 /  10    15 /  15
+  samsung-i5   11 /  11    17 /  17
+  macmini-m1   13 /  13    20 /  20
+  hp-amd       15 /  15    19 /  19
+  p14s         13 /  13    20 /  20
+
+### cpu %: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    r1029/r1025         stock drift     hyp/stock 11-17     hyp/stock 11-16
+x200                 1.002 (29)          1.000 (27)          0.775 (27)          0.799 (27)
+t550                 1.003 (44)          1.003 (44)          0.594 (44)          0.599 (44)
+xps                  1.008 (44)          1.007 (44)          0.613 (44)          0.611 (44)
+lianli               1.000 (38)          1.000 (38)          0.869 (38)          0.864 (38)
+chromebook           1.002 (43)          1.000 (43)          0.727 (43)          0.730 (43)
+t460s                1.000 (45)          1.010 (45)          0.625 (45)          0.626 (45)
+t490                 1.000 (45)          1.002 (45)          0.618 (45)          0.627 (45)
+samsung-i5           1.000 (42)          1.011 (42)          0.568 (42)          0.613 (42)
+macmini-m1           1.000 (39)          0.998 (39)          0.791 (39)          0.791 (39)
+hp-amd               1.004 (33)          1.007 (33)          0.756 (33)          0.744 (33)
+p14s                 1.000 (37)          0.999 (37)          0.832 (37)          0.831 (37)
+
+### cpu ms/frame: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    r1029/r1025         stock drift     hyp/stock 11-17     hyp/stock 11-16
+x200                 1.000 (27)          1.000 (25)          0.649 (25)          0.649 (25)
+t550                 1.000 (43)          1.003 (43)          0.604 (43)          0.621 (43)
+xps                  1.008 (43)          1.009 (43)          0.555 (43)          0.554 (43)
+lianli               1.000 (38)          1.000 (38)          0.828 (38)          0.837 (38)
+chromebook           1.004 (40)          1.002 (40)          0.692 (40)          0.697 (40)
+t460s                1.006 (45)          1.011 (45)          0.626 (45)          0.632 (45)
+t490                 1.000 (45)          1.000 (45)          0.634 (45)          0.629 (45)
+samsung-i5           1.000 (42)          1.003 (42)          0.552 (42)          0.545 (42)
+macmini-m1                    -                   -                   -                   -
+hp-amd               1.006 (33)          1.006 (33)          0.710 (33)          0.706 (33)
+p14s                 1.000 (35)          1.000 (35)          0.809 (35)          0.792 (35)
+
+### latency: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    r1029/r1025         stock drift     hyp/stock 11-17     hyp/stock 11-16
+x200                 1.009 (26)          0.998 (26)          0.929 (26)          0.933 (26)
+t550                 1.012 (26)          1.018 (26)          0.379 (26)          0.390 (26)
+xps                  1.002 (26)          0.993 (26)          0.283 (26)          0.286 (26)
+lianli               1.000 (26)          1.000 (26)          0.947 (26)          0.961 (26)
+chromebook           1.010 (26)          1.023 (26)          0.948 (26)          0.945 (26)
+t460s                1.011 (26)          0.984 (26)          0.340 (26)          0.304 (26)
+t490                 1.000 (26)          1.006 (26)          0.280 (26)          0.262 (26)
+samsung-i5           1.000 (26)          1.012 (26)          0.324 (26)          0.318 (26)
+macmini-m1           1.031 (26)          1.001 (26)          0.936 (26)          0.937 (26)
+hp-amd               1.000 (26)          1.000 (26)          0.376 (26)          0.362 (26)
+p14s                 1.000 (26)          1.001 (26)          0.322 (26)          0.347 (26)
+
+### fps: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    r1029/r1025         stock drift     hyp/stock 11-17     hyp/stock 11-16
+x200                 1.000 (42)          1.000 (40)          1.127 (40)          1.123 (40)
+t550                 1.000 (68)          1.000 (68)          1.000 (68)          1.000 (68)
+xps                  1.000 (68)          1.000 (68)          1.014 (68)          1.013 (68)
+lianli               1.000 (56)          1.000 (56)          1.000 (56)          1.000 (56)
+chromebook           1.000 (65)          1.000 (66)          1.008 (65)          1.009 (66)
+t460s                1.000 (70)          1.000 (70)          1.002 (70)          1.003 (70)
+t490                 1.000 (70)          1.000 (70)          1.000 (70)          1.000 (70)
+samsung-i5           1.000 (65)          1.000 (65)          1.017 (65)          1.014 (65)
+macmini-m1           1.000 (21)          1.000 (21)          1.023 (21)          1.014 (21)
+hp-amd               1.000 (46)          1.000 (46)          1.001 (46)          1.003 (46)
+p14s                 1.000 (50)          1.000 (50)          1.000 (50)          1.000 (50)
+
+### pss start: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    r1029/r1025         stock drift     hyp/stock 11-17     hyp/stock 11-16
+x200                  0.999 (1)           1.000 (1)           0.346 (1)           0.347 (1)
+t550                  0.999 (1)           1.000 (1)           0.342 (1)           0.343 (1)
+xps                   0.994 (1)           0.999 (1)           0.344 (1)           0.345 (1)
+lianli                1.000 (1)           1.000 (1)           0.350 (1)           0.350 (1)
+chromebook            1.000 (1)           1.002 (1)           0.350 (1)           0.351 (1)
+t460s                 1.000 (1)           0.999 (1)           0.341 (1)           0.341 (1)
+t490                  1.001 (1)           0.999 (1)           0.342 (1)           0.341 (1)
+samsung-i5            1.003 (1)           0.999 (1)           0.346 (1)           0.344 (1)
+macmini-m1            0.997 (1)           1.000 (1)           0.379 (1)           0.380 (1)
+hp-amd                0.997 (1)           0.998 (1)           0.397 (1)           0.397 (1)
+p14s                  0.999 (1)           1.000 (1)           0.442 (1)           0.442 (1)
+
+### startup: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    r1029/r1025         stock drift     hyp/stock 11-17     hyp/stock 11-16
+x200                  1.016 (9)           1.010 (9)           0.732 (9)           0.725 (9)
+t550                  1.005 (9)           1.002 (9)           0.876 (9)           0.883 (9)
+xps                   1.011 (9)           0.997 (9)           0.957 (9)           0.958 (9)
+lianli                1.003 (9)           0.998 (9)           0.944 (9)           0.944 (9)
+chromebook            1.025 (9)           1.000 (9)           0.913 (9)           0.887 (9)
+t460s                 0.997 (9)           1.004 (9)           0.831 (9)           0.838 (9)
+t490                  1.002 (9)           1.000 (9)           0.984 (9)           0.961 (9)
+samsung-i5            1.034 (9)           1.002 (9)           0.920 (9)           0.878 (9)
+macmini-m1            0.994 (9)           1.009 (9)           0.965 (9)           1.007 (9)
+hp-amd                1.006 (9)           1.011 (9)           0.895 (9)           0.906 (9)
+p14s                  1.006 (9)           1.008 (9)           0.812 (9)           0.819 (9)
+
+### metrics where r1029 moved against r1025 by more than 10%, stock moved less than half as much,
+### and r1029's median is outside r1025's per-block range (out=yes)
+machine     metric                                              r1025      r1029    ratio    stock        r1025 range  out
+x200        fps.many-windows-40.screen                          59.50      40.80    0.686    0.861    57.80..60.00     yes
+x200        cpu.many-windows-40.ms_per_frame                     3.24       3.99    1.231    1.099     3.21..3.29      yes
+p14s        cpu.resize.ms_per_frame                              1.97       2.42    1.228    0.994     1.89..2.07      yes
+p14s        fps.resize.screen                                   73.85      60.00    0.812    1.000    72.20..76.90     yes
+x200        cpu.many-windows-40.percent                         19.29      16.44    0.852    0.937    19.03..19.50     yes
+p14s        latency.notifications.toast_ms                      12.20      26.40    2.164    1.046    10.50..26.70      no
+x200        latency.notifications.toast_ms                      26.10      12.10    0.464    0.936    11.30..55.00      no
+chromebook  gpu.shm-fullwindow.busy_ms_per_frame                 2.79       4.02    1.438    1.016     1.77..6.59       no
+lianli      latency.workspace-switch.workspace_ms                7.70       4.80    0.623    0.909     1.50..10.50      no
+chromebook  gpu.menu.busy_ms_per_frame                           4.14       5.67    1.368    0.975     3.02..9.36       no
+macmini-m1  latency.resize.redrawn_ms                           18.15      24.60    1.355    0.923    11.30..28.20      no
+t550        latency.many-windows-40.workspace_ms                 4.90       6.60    1.347    1.148     3.60..10.80      no
+chromebook  gpu.xonotic-low.busy_ms_per_frame                   10.95       8.06    0.736    1.010     7.45..11.68      no
+samsung-i5  gpu.gpu-client.busy_ms_per_frame                     4.45       3.53    0.793    1.019     3.32..4.97       no
+chromebook  cpu.electrobench-ocean-window.ms_per_frame           2.13       1.72    0.808    1.036     1.68..2.38       no
+samsung-i5  cpu.gtk3-x11-scroll.percent                          8.26       6.77    0.820    1.037     5.90..12.81      no
+xps         cpu.electrobench-guns.ms_per_frame                   0.73       0.84    1.158    1.002     0.68..0.98       no
+macmini-m1  latency.menu.close_ms                                2.00       2.30    1.150    0.957     1.80..2.50       no
+chromebook  cpu.xonotic-low.ms_per_frame                         1.21       1.06    0.876    0.994     0.99..1.31       no
+chromebook  fps.video.screen                                    13.20      14.80    1.121    1.000    13.20..15.10      no
+chromebook  cpu.xonotic-low.percent                              6.79       5.97    0.879    0.994     5.51..7.13       no
+t550        latency.many-windows-20.workspace_ms                 3.05       3.40    1.115    1.009     2.60..3.50       no
+lianli      latency.resize.resize_ms                             1.90       1.70    0.895    1.000     1.10..3.20       no
+t460s       startup.wallpaper_ms                              3689.00    4076.00    1.105    1.002  3617.00..4660.00    no
+macmini-m1  cpu.gtk4-spinner.percent                             2.10       1.89    0.898    0.983     1.60..2.35       no
+lianli      fps.electrobench-guns-window                         1.00       1.10    1.100    1.000     1.00..1.10       no
+chromebook  fps.menu.screen                                      8.55       7.70    0.901    1.012     5.60..9.60       no
+macmini-m1  latency.dev.jump_ms                                 17.40      15.80    0.908    1.000    14.80..21.10      no
+samsung-i5  latency.many-windows-10.workspace_ms                 3.30       3.00    0.909    0.985     2.40..4.30       no
+x200        latency.dev.type_ms                                 10.00       9.10    0.910    1.033     7.90..11.50      no

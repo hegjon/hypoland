@@ -1,0 +1,4 @@
+machine: t460s, 7.2.15-2-omarchy, 4 cores, 19843 MiB
+compositor: /usr/bin/hypoland, pid 855537, user a, instance 5078f26de61b6ba8aea8799269500801dab39f43_1794982246_1922659601
+package: hypoland 0.3.0.r1029.g5078f26de-1
+clocksource: tsc

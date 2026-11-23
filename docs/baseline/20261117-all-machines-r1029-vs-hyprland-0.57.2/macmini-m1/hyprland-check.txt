@@ -1,0 +1,113 @@
+machine: macmini-m1, 7.2.11-16-1-ARCH, 8 cores, 7573 MiB
+compositor: /usr/bin/Hyprland, pid 674163, user a, instance 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947_1794944448_675095655
+package: hyprland 0.57.2-2
+clocksource: arch_sys_counter
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.57.2 built from branch v0.57.2 at commit 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947 clean
+INFO  
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output HDMI-A-1: 2560x1440@59.95100
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+FAIL  the screen does not show the window: 0% of the scanned-out buffer is the test color
+PASS  test window drawn (91% of the screen is the test color)
+FAIL  render whole: 3503339 pixels of hypoland-render-a differ from what it drew, first at 2,2: (249, 71, 210) shown as (233, 93, 207)
+PASS  render whole: the screen is what a full repaint shows (kmsgrab)
+PASS  render screenshot: hypoland-render-a shows every pixel it drew (kmsgrab)
+PASS  render screenshot again: hypoland-render-a shows every pixel it drew (kmsgrab)
+FAIL  render rectangles: 3498824 pixels of hypoland-render-a differ from what it drew, first at 2,2: (100, 30, 132) shown as (92, 40, 129)
+PASS  render rectangles: the screen is what a full repaint shows (kmsgrab)
+FAIL  render new buffers: 3499992 pixels of hypoland-render-a differ from what it drew, first at 2,2: (100, 30, 132) shown as (92, 40, 129)
+PASS  render new buffers: the screen is what a full repaint shows (kmsgrab)
+FAIL  render subsurface: 3499780 pixels of hypoland-render-a differ from what it drew, first at 2,2: (100, 30, 132) shown as (92, 40, 129)
+PASS  render subsurface: the screen is what a full repaint shows (kmsgrab)
+FAIL  render subsurface moved: 3499829 pixels of hypoland-render-a differ from what it drew, first at 2,2: (100, 30, 132) shown as (92, 40, 129)
+PASS  render subsurface moved: the screen is what a full repaint shows (kmsgrab)
+FAIL  render subsurface closed: 3499992 pixels of hypoland-render-a differ from what it drew, first at 2,2: (100, 30, 132) shown as (92, 40, 129)
+PASS  render subsurface closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render viewport: the screen is what a full repaint shows (kmsgrab)
+FAIL  render viewport rectangles: 3730 pixels differ from a full repaint, in 412,80 to 724,307 (screens in /tmp/hypoland-measure.yz3h1g/clients/render)
+FAIL  render viewports closed: 3499992 pixels of hypoland-render-a differ from what it drew, first at 2,2: (100, 30, 132) shown as (92, 40, 129)
+PASS  render viewports closed: the screen is what a full repaint shows (kmsgrab)
+FAIL  render popup: 21600 pixels of the popup differ from what it drew, first at 0,0: (194, 6, 153) shown as (180, 49, 150)
+PASS  render popup: the screen is what a full repaint shows (kmsgrab)
+PASS  render popup moved: the screen is what a full repaint shows (kmsgrab)
+FAIL  render popup closed: 3499992 pixels of hypoland-render-a differ from what it drew, first at 2,2: (100, 30, 132) shown as (92, 40, 129)
+PASS  render popup closed: the screen is what a full repaint shows (kmsgrab)
+FAIL  render layer: 31951 pixels of the layer differ from what it drew, first at 0,0: (85, 184, 14) shown as (109, 180, 46)
+PASS  render layer: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer drawn: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer settled: the screen is what a full repaint shows (kmsgrab)
+FAIL  render layer popup: 16000 pixels of the layer's popup differ from what it drew, first at 0,0: (174, 142, 108) shown as (170, 143, 111)
+PASS  render layer popup: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer popup closed: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer moved: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer shrunk: the screen is what a full repaint shows (kmsgrab)
+PASS  render layer closed: the screen is what a full repaint shows (kmsgrab)
+FAIL  render floating: 122233 pixels of hypoland-render-b differ from what it drew, first at 2,2: (108, 121, 57) shown as (111, 120, 63)
+PASS  render floating: the screen is what a full repaint shows (kmsgrab)
+PASS  render moved: the screen is what a full repaint shows (kmsgrab)
+FAIL  render resized: 90496 pixels of hypoland-render-b differ from what it drew, first at 2,2: (170, 220, 7) shown as (180, 217, 56)
+PASS  render resized: the screen is what a full repaint shows (kmsgrab)
+PASS  render retitled: the screen is what a full repaint shows (kmsgrab)
+FAIL  render opaque region: 90940 pixels of hypoland-render-b differ from what it drew, first at 2,2: (87, 71, 54) shown as (85, 72, 55)
+PASS  render opaque region: the screen is what a full repaint shows (kmsgrab)
+FAIL  render opaque region shrunk: 91045 pixels of hypoland-render-b differ from what it drew, first at 2,2: (87, 71, 54) shown as (85, 72, 55)
+PASS  render opaque region shrunk: the screen is what a full repaint shows (kmsgrab)
+PASS  render shrunk: the screen is what a full repaint shows (kmsgrab)
+PASS  render closed: the screen is what a full repaint shows (kmsgrab)
+FAIL  render grouped: 3431806 pixels of hypoland-render-a differ from what it drew, first at 2,2: (85, 246, 199) shown as (127, 241, 201)
+PASS  render grouped: the screen is what a full repaint shows (kmsgrab)
+FAIL  render group added: 3432380 pixels of hypoland-render-c differ from what it drew, first at 2,2: (135, 43, 182) shown as (125, 57, 178)
+PASS  render group added: the screen is what a full repaint shows (kmsgrab)
+FAIL  render group switched: 3431806 pixels of hypoland-render-a differ from what it drew, first at 2,2: (85, 246, 199) shown as (127, 241, 201)
+PASS  render group switched: the screen is what a full repaint shows (kmsgrab)
+FAIL  render group switched back: 3432380 pixels of hypoland-render-c differ from what it drew, first at 2,2: (135, 43, 182) shown as (125, 57, 178)
+FAIL  render group closed: 3431806 pixels of hypoland-render-a differ from what it drew, first at 2,2: (85, 246, 199) shown as (127, 241, 201)
+PASS  render group closed: the screen is what a full repaint shows (kmsgrab)
+FAIL  render ungrouped: 3503556 pixels of hypoland-render-a differ from what it drew, first at 2,2: (3, 112, 28) shown as (45, 109, 37)
+PASS  render ungrouped: the screen is what a full repaint shows (kmsgrab)
+FAIL  render scratchpad stored: 3503556 pixels of hypoland-render-a differ from what it drew, first at 2,2: (3, 112, 28) shown as (45, 109, 37)
+PASS  render scratchpad stored: the screen is what a full repaint shows (kmsgrab)
+FAIL  render scratchpad: 117062 pixels of hypoland-render-d differ from what it drew, first at 2,2: (8, 89, 173) shown as (27, 89, 169)
+PASS  render scratchpad: the screen is what a full repaint shows (kmsgrab)
+FAIL  render scratchpad rectangles: 117174 pixels of hypoland-render-d differ from what it drew, first at 2,2: (8, 89, 173) shown as (27, 89, 169)
+PASS  render scratchpad rectangles: the screen is what a full repaint shows (kmsgrab)
+FAIL  render scratchpad hidden: 3503556 pixels of hypoland-render-a differ from what it drew, first at 2,2: (3, 112, 28) shown as (45, 109, 37)
+PASS  render scratchpad hidden: the screen is what a full repaint shows (kmsgrab)
+FAIL  render fullscreen: 3663535 pixels of hypoland-render-a differ from what it drew, first at 2,2: (144, 183, 82) shown as (152, 180, 91)
+PASS  render fullscreen: the screen is what a full repaint shows (kmsgrab)
+PASS  render fullscreen smaller: the screen is what a full repaint shows (kmsgrab)
+FAIL  render fullscreen smaller centred: 399172 sampled pixels wrong around a 1920x1080 surface expected at 320,180, first at 0,0 (screen in /tmp/hypoland-measure.yz3h1g/clients/render)
+PASS  render fullscreen smaller rectangles: the screen is what a full repaint shows (kmsgrab)
+FAIL  render fullscreen left: 3503129 pixels of hypoland-render-a differ from what it drew, first at 2,2: (203, 20, 21) shown as (190, 51, 33)
+PASS  render fullscreen left: the screen is what a full repaint shows (kmsgrab)
+FAIL  render fullscreen not followed: 42092 pixels differ from a full repaint, in 15,75 to 2559,1439 (screens in /tmp/hypoland-measure.yz3h1g/clients/render)
+PASS  render fullscreen not followed left: the screen is what a full repaint shows (kmsgrab)
+PASS  Chromium draws its page (89% of the screen is the test color, after 3 s)
+PASS  GTK 3 window drawn (92% of the screen is the test color, after 4 s)
+PASS  GTK 3 window at 60 fps (renderer cairo)
+PASS  GTK 4 window drawn (92% of the screen is the test color, after 4 s)
+PASS  GTK 4 window at 60 fps (renderer vulkan)
+PASS  GTK 3 (Xwayland) window drawn (92% of the screen is the test color, after 4 s)
+PASS  GTK 3 (Xwayland) window at 60 fps (renderer cairo)
+PASS  Qt Quick window drawn (91% of the screen is the test color, after 4 s)
+PASS  Qt Quick window at 60 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (92% of the screen is the test color, after 4 s)
+PASS  Qt Quick (software) window at 60 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (93% of the screen is the test color, after 4 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 60 fps
+PASS  X11 client through Xwayland (glxgears) at 60 fps
+INFO  compositor memory: Rss: 166 MiB, Pss: 124 MiB, Anonymous: 90 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+PASS  no core dumps
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.yz3h1g on macmini-m1
+RESULT: FAIL

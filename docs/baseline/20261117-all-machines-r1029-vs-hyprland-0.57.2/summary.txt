@@ -1,0 +1,55 @@
+Night 2026-11-17/18: master r1029 (5078f26de; aarch64 r1029.g5078f26 built on macmini-m1) against stock Hyprland 0.57.2-2,
+alternating fresh sessions 21:03 until 09:00, on eleven machines (galaxybook left out: stock Omarchy reinstall of 11-17;
+macmini-intel left out: sshd off). hp-amd without GravityMark. Same runner as night-20261116 (r1025 against the same stock),
+so r1029/r1025 is read next to stock's own drift between the two nights. r1025 -> r1029 is four commits: 33e5ea66f (bench:
+results.om), 82dd782ff (render: damage a resized surface's old size where it was, cut at its window), efd5f7ddb (style),
+5078f26de (config: titlebar rule effects for --verify-config).
+Collected with report.sh (report.log), table.py (table.txt), compare.py (compare.txt). All machines DONE by 08:53; every
+machine ends with r1029 installed, a session up, its governor as before the run.
+
+Blocks (Hypoland / stock): x200 15/15, t550 11/11, xps 10/10, lianli 13/13, chromebook 9/9, t460s 10/10, t490 10/10,
+samsung-i5 11/11, macmini-m1 13/13, hp-amd 15/15, p14s 13/13. No machine stopped, no skipped block, no GPU hang, no
+"no session" or "killing" line in any log. (report.log's "== host: N blocks" lines count the -startup files too, so they
+show twice the blocks.)
+
+r1029 against r1025 (median ratio per metric group; stock drift between the nights in brackets):
+  compositor CPU %          1.000 to 1.008 on every machine (stock 0.998 to 1.011)
+  compositor CPU ms/frame   1.000 to 1.008 (stock 1.000 to 1.011)
+  latencies                 1.000 to 1.012, macmini-m1 1.031 (stock 0.984 to 1.023; the M1's are sub-millisecond)
+  fps                       1.000 everywhere
+  Pss at the start          0.994 to 1.003
+  startup times             0.994 to 1.034 (stock 0.997 to 1.011)
+  => r1029 is r1025 within each machine's night-to-night noise.
+Hypoland against stock, as on 11-16: compositor CPU 0.57 to 0.87 of stock's, CPU per frame 0.55 to 0.83, latencies 0.28 to
+0.95, Pss at the start 0.34 to 0.44 (40 to 57 MiB against 115 to 129), fps equal or higher (X200 1.13).
+
+Single metrics that moved, outside r1025's per-block range (compare.txt, last section):
+- p14s resize: page flips 73.9 -> 60.0 /s (every block 59.9 to 60.1; r1025 72.2 to 76.9), stock 59.8 both nights. Compositor
+  CPU % unchanged (14.5 both nights), so ms per frame 1.97 -> 2.42 is the same CPU over fewer frames. The extra flips noted
+  on 11-16 are gone; most likely 82dd782ff (the resize damage), not proven. Not a regression.
+- x200 many-windows-40: Hypoland 59.5 -> 40.8 fps (blocks 28 to 60, bimodal; r1025 57.8 to 60.0), CPU 19.3 -> 16.4 %. Stock
+  moved the same way: 59.3 -> 51.2 fps (blocks 29 to 59; 11-16: 58.0 to 60.0). Both compositors, so the machine or the
+  session (this night ran 21:03-09:00, last night 13:42-07:30), not r1029. many-windows-10/20 unchanged. To watch.
+- Everything else that moved more than 10% is inside r1025's per-block range (toasts, lianli's workspace switch 7.7 -> 4.8 ms,
+  chromebook GPU times).
+
+X200 resize and shm-fullwindow: Hypoland 17.9 % (blocks 17.3 to 18.2) and 8.5 % (8.3 to 9.2), the same as r1025 on 11-16
+(17.8 / 8.6). The 22 % and 10.5 % of the single bench run of 11-17 do not show in fresh night sessions: that run's setup,
+not the build. Stock: 14.2 % at 30 fps, Hypoland at 59.8 fps (ms per frame 4.7 -> 3.0).
+
+Session checks (one per compositor, round 1): Hypoland passed everything on all eleven (76 to 103 checks per machine),
+including "render fullscreen smaller centred" on the chromebook and samsung-i5. One pass each does not settle that
+intermittent failure (r1025 failed it 3 times in 13 runs on the chromebook). Stock failed as on 11-16 (its own render-check
+failures): x200 5 (and GTK 4 did not map), t550 8, xps 3, lianli 4, chromebook 4, t460s 8, t490 38, samsung-i5 8,
+macmini-m1 31, hp-amd 8, p14s 1.
+
+Core dumps, no compositor:
+- GravityMark (OpenGL run) SIGSEGV on t550 (22) and xps (20): every block of both compositors; no gravitymark-gl numbers on
+  those two, as on 11-16.
+- x200: 31 python3 SIGFPE (the GTK 4 toolkit client, toolkit.py 4.0), all in stock blocks: stock's GTK 4 gives no numbers
+  there; one hyprland-dialog under Hypoland (06:21, block 12: the ANR dialog for Xonotic, old).
+- SuperTuxKart: samsung-i5 2 (one per compositor), hp-amd 1 under Hypoland (05:10, SIGABRT).
+- Xwayland SIGABRT at session end (seconds after a block's last value, as Xwayland restarts while the compositor exits):
+  x200 2, chromebook 2, samsung-i5 4, under both compositors, as before.
+
+Claims released at about 09:18 on 11-18 (LAB_WHO=hermes); lab status shows all eleven free.
