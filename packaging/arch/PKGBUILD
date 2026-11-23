@@ -170,7 +170,7 @@ package_hypoland-bench() {
     'supertuxkart: the supertuxkart-* workloads'
     'vkmark: the vkmark workload'
     'libnotify: the notifications workload (notify-send)'
-    'glmark2: the soak'
+    'glmark2: the glmark2 workload, the soak'
     'ttfx: the soak'
     'wf-recorder: the soak'
     'jq: the soak'

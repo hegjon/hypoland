@@ -106,7 +106,15 @@ the current state; the notes say what was tried, measured and dropped. Add new f
   `render:direct_scanout = auto` (its Steady and Mostly stable FPS 0; the night of 2026-11-11: 15 of 15 races on the
   Galaxy Book, 7 of 13 on the T460s, 3 of 13 on the T490, never under stock), and on macmini-m1 it gave no result
   (`vkCreateSwapchainKHR failed`). The T460s's four invalid results and macmini-intel's missing ones of that day did not
-  come back in that night (macmini-intel on a headless output). `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
+  come back in that night (macmini-intel on a headless output). `glmark2` (added 2026-11-23, asked for by the user; the
+  `glmark2` package, already on every machine for the soak) runs glmark2-es2-wayland's 33 default scenes of 10 s, fullscreen
+  at the monitor's size (its own default is an 800x600 window, which a tiling layout resizes), last in the default list,
+  about 6 minutes a round; `fps.glmark2` is its score, the window 300 s from 2 s into the first scene. OpenGL ES 2.0 only,
+  so it is the one GL benchmark of the list the X200 and turbox run too. glmark2 does not wait for frames, so the score is
+  what it draws and `fps.glmark2.screen` what reached the screen. First run, X200, r1040 (3 rounds, fresh session after
+  deploy.sh): score 165 / 166 / 166, 51.1 fps on the screen, compositor 3.8% CPU (0.74 ms a frame), GPU 97.8% busy
+  (`test-results/bench-20261123-095930-x200-glmark2-47ea1d721`). The 127 on the web page since 2026-09-28 was an
+  800x600 window under an early build, so the two do not compare. `flea-scroll` and `nautilus-scroll` (added 2026-10-29, asked for by the
   user) scroll a folder of 5000 empty files in Flea (a keyboard-first file manager for Omarchy, thisisgm/flea, in
   Omarchy's package repository but never its default; a Quickshell window in 0.3.12, a GPUI window in 0.4.1) and in
   Nautilus (GTK 4, its list view,

@@ -476,6 +476,37 @@ workload_vkmark() {
     [ "$MODE" != perf ] && value "fps.vkmark" "$result"
 }
 
+# glmark2 (the glmark2 package) runs its 33 default scenes of 10 s each through OpenGL ES 2.0, fullscreen at the
+# monitor's size (its own default is an 800x600 window, which a tiling layout would resize), and prints its score, the
+# mean of the scenes' frame rates, which is fps.glmark2. It does not wait for the compositor's frames, so the score is
+# what the client draws and fps.glmark2.screen what reached the screen. The only GL benchmark here that every machine
+# runs, GLES 2 ones included (X200, turbox). The window is the run, from 2 s into the first scene for 300 s, whatever
+# --seconds says; a whole run takes about 6 minutes (the scenes load in between).
+needs_glmark2="glmark2-es2-wayland"
+workload_glmark2() {
+    local log=$CLIENTDIR/glmark2.log result watcher window
+    rm -f "$log"
+    client 600 "exec glmark2-es2-wayland --fullscreen >$log 2>&1"
+    if ! await_log "$log" '^\[build\]' 60 running; then
+        echo "    skipped, glmark2 did not start: $(grep -a -v -E '^\s*$|^=+$' "$log" | tail -n 1)"
+        stop_clients
+        return
+    fi
+    sleep 2
+    window=$(window_of com.github.glmark2.glmark2)
+    watcher=$(watch_for_line "$log" 'glmark2 Score: [0-9]+' "$log.ended")
+    WINDOW_END=
+    SECONDS_PER_RUN=300 rec glmark2
+    await_log "$log" 'glmark2 Score: [0-9]+' 180 running
+    sleep 0.2
+    ended_inside_window "$watcher" "$log.ended" glmark2
+    stop_clients
+    result=$(sed -n -E 's/.*glmark2 Score: ([0-9]+).*/\1/p' "$log" | head -n 1)
+    echo "    glmark2: window $window, $(sed -n -E 's/^ *GL_RENDERER: *//p' "$log" | head -n 1), score ${result:-none}"
+    [ -n "$result" ] || { value "invalid.glmark2" 1; return; }
+    [ "$MODE" != perf ] && value "fps.glmark2" "$result"
+}
+
 needs_nautilus="nautilus"
 workload_nautilus() { # GTK 4 redrawing a full window of icons, fullscreen toggled twice a second
     client $((SECONDS_PER_RUN + 15)) "exec nautilus --new-window /usr/share/icons/Adwaita/symbolic/actions"
