@@ -23,7 +23,7 @@ MANAGERS = [
      "with cairo into shared memory.", "nautilus-scroll", "nautilus", NAUTILUS_RUN),
     ("Flea", "0.4.2", "A keyboard-first file manager for Omarchy, written in Rust with GPUI (the Zed editor's UI "
      "toolkit) and drawn on the GPU through wgpu.", "flea-scroll", "flea", None),
-    ("Folio", "0.4.0", "Omarchy's own file manager, written in C++ with Qt Quick.",
+    ("Folio", "2e2a716 (after 0.5.0)", "Omarchy's own file manager, written in C++ with Qt Quick.",
      "folio-scroll", "folio", None),
 ]
 
@@ -153,10 +153,11 @@ page = f"""{head("Hypoland: file managers", "Nautilus, Flea and Folio scrolling 
         Flea and Folio: medians of {sessions_text(sessions, 1)} per machine, {RUN}. {TWO_NIGHTS} Nautilus: medians of
         {min(nautilus_sessions)} to {max(nautilus_sessions)} fresh sessions of each compositor per machine,
         {NAUTILUS_RUN_TEXT}; {E(" and ".join(nautilus_missing)) or "no machine"} joined after it, and the Mac mini 2014
-        ran on a headless output then. Folio 0.4.0 does not scroll the list to the cursor on Down
-        (<a href="https://github.com/omacom/folio/pull/18">folio#18</a>): the cursor walks off the bottom and the view
-        stays, so for Folio the scrolling tables measure the cursor and the details pane redrawn, and do not compare with
-        the other two. Flea opens no window on the X200 (it needs more than OpenGL&nbsp;2.1) and is not installed on the
+        ran on a headless output then. Folio is commit 2e2a716 (<a
+        href="https://github.com/omacom/folio/pull/79">folio#79</a>, after 0.5.0), built on every machine, which scrolls
+        the list to the cursor on Down. The Galaxy Book's and the Mac mini 2014's night had Omarchy's Folio 0.4.0, which
+        does not (<a href="https://github.com/omacom/folio/pull/18">folio#18</a>): the cursor walks off the bottom and the
+        view stays, so their Folio scrolling cells measure the cursor and the details pane redrawn. Flea opens no window on the X200 (it needs more than OpenGL&nbsp;2.1) and is not installed on the
         Mac mini M1. Under Hyprland Nautilus opened no window on the X200 in its night. On the X200 Hyprland runs with
         Omarchy's GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which
         the file managers get too. The Mac mini M1's display driver reports no page flips, so it has no frames on the

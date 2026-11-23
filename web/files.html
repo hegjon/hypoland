@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hypoland: file managers</title>
-<meta name="description" content="Nautilus, Flea and Folio scrolling a folder of 5000 files under Hypoland and under Hyprland 0.57.2 on 12 machines: the compositor's CPU, its frames and the memory.">
+<meta name="description" content="Nautilus, Flea and Folio scrolling a folder of 5000 files under Hypoland and under Hyprland 0.57.2 on 13 machines: the compositor's CPU, its frames and the memory.">
 <meta name="theme-color" content="#efe6d2">
 <meta property="og:site_name" content="Hypoland">
 <meta property="og:title" content="Hypoland: file managers">
-<meta property="og:description" content="Nautilus, Flea and Folio under Hypoland and Hyprland 0.57.2, on 12 machines.">
+<meta property="og:description" content="Nautilus, Flea and Folio under Hypoland and Hyprland 0.57.2, on 13 machines.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hypoland.org/files.html">
 <meta property="og:image" content="https://hypoland.org/og.png">
@@ -59,22 +59,23 @@
         <tbody>
           <tr><td>Nautilus</td><td>51.1</td><td>GNOME's file manager, GTK&nbsp;4: drawn with Vulkan or OpenGL into GPU buffers, on the X200 with cairo into shared memory.</td></tr>
           <tr><td>Flea</td><td>0.4.2</td><td>A keyboard-first file manager for Omarchy, written in Rust with GPUI (the Zed editor's UI toolkit) and drawn on the GPU through wgpu.</td></tr>
-          <tr><td>Folio</td><td>0.4.0</td><td>Omarchy's own file manager, written in C++ with Qt Quick.</td></tr>
+          <tr><td>Folio</td><td>2e2a716 (after 0.5.0)</td><td>Omarchy's own file manager, written in C++ with Qt Quick.</td></tr>
         </tbody>
       </table></div>
       <p class="note">
-        Flea and Folio: medians of 14 to 22 fresh sessions of Hypoland and 14 to 22 of Hyprland per machine, Hypoland master r992 (after 0.3.0) against Hyprland 0.57.2-2, alternating through the night of 2026-11-14 to 15. The two alternated, a fresh session each, so a drift of the machine hits both the same. Nautilus: medians of
+        Flea and Folio: medians of 9 to 16 fresh sessions of Hypoland and 9 to 16 of Hyprland per machine, Hypoland master r1029 (after 0.3.0) against Hyprland 0.57.2-2, alternating through the night of 2026-11-17 to 18. The two alternated, a fresh session each, so a drift of the machine hits both the same. The Samsung Galaxy Book4 Edge and the Mac mini Late 2014 were not in that night: theirs are from the night of 2026-11-14 to 15, Hypoland master r992 against the same Hyprland 0.57.2-2. Nautilus: medians of
         13 to 17 fresh sessions of each compositor per machine,
-        the night of 2026-11-11 to 12, alternating Hypoland master r966 with Hyprland 0.57.1-2, the last night with Nautilus on the machines (Omarchy's update of 2026-11-13 removed it); Lenovo ThinkPad P14s Gen 2a joined after it, and the Mac mini 2014
-        ran on a headless output then. Folio 0.4.0 does not scroll the list to the cursor on Down
-        (<a href="https://github.com/omacom/folio/pull/18">folio#18</a>): the cursor walks off the bottom and the view
-        stays, so for Folio the scrolling tables measure the cursor and the details pane redrawn, and do not compare with
-        the other two. Flea opens no window on the X200 (it needs more than OpenGL&nbsp;2.1) and is not installed on the
+        the night of 2026-11-11 to 12, alternating Hypoland master r966 with Hyprland 0.57.1-2, the last night with Nautilus on the machines (Omarchy's update of 2026-11-13 removed it); HP Notebook (A6-7310) and Lenovo ThinkPad P14s Gen 2a joined after it, and the Mac mini 2014
+        ran on a headless output then. Folio is commit 2e2a716 (<a
+        href="https://github.com/omacom/folio/pull/79">folio#79</a>, after 0.5.0), built on every machine, which scrolls
+        the list to the cursor on Down. The Galaxy Book's and the Mac mini 2014's night had Omarchy's Folio 0.4.0, which
+        does not (<a href="https://github.com/omacom/folio/pull/18">folio#18</a>): the cursor walks off the bottom and the
+        view stays, so their Folio scrolling cells measure the cursor and the details pane redrawn. Flea opens no window on the X200 (it needs more than OpenGL&nbsp;2.1) and is not installed on the
         Mac mini M1. Under Hyprland Nautilus opened no window on the X200 in its night. On the X200 Hyprland runs with
         Omarchy's GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which
         the file managers get too. The Mac mini M1's display driver reports no page flips, so it has no frames on the
         screen.
-        Raw data, every session's values and the scripts: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2">20261114-all-machines-r992-vs-hyprland-0.57.2</a>. Nautilus's night: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1">20261111-all-machines-r966-vs-hyprland-0.57.1</a>.
+        Raw data, every session's values and the scripts: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2">20261117-all-machines-r1029-vs-hyprland-0.57.2</a>, and for those two <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2">20261114-all-machines-r992-vs-hyprland-0.57.2</a>. Nautilus's night: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1">20261111-all-machines-r966-vs-hyprland-0.57.1</a>.
       </p>
     </div>
   </section>
@@ -85,17 +86,18 @@
       <div class="scroll"><table>
         <thead><tr><th>Hypoland / Hyprland 0.57.2</th><th>Nautilus</th><th>Flea</th><th>Folio</th></tr></thead>
         <tbody>
-          <tr><td>Lenovo ThinkPad X200</td><td class="yes">4.0% / no window</td><td>&ndash;</td><td class="no">5.1% / 3.9%</td></tr>
+          <tr><td>Lenovo ThinkPad X200</td><td class="yes">4.0% / no window</td><td>&ndash;</td><td class="no">5.2% / 3.8%</td></tr>
           <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">2.8% / 3.4%</td><td class="yes">3.3% / 4.1%</td><td class="yes">4.0% / 5.7%</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="no">4.3% / 3.9%</td><td class="yes">2.5% / 3.4%</td><td class="yes">4.5% / 7.8%</td></tr>
+          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="no">4.3% / 3.9%</td><td class="yes">2.6% / 3.5%</td><td class="yes">4.8% / 8.4%</td></tr>
           <tr><td>Apple Mac mini Late 2014</td><td class="yes">3.7% / 4.6%</td><td class="yes">3.6% / 5.3%</td><td class="yes">4.0% / 8.7%</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td class="yes">5.7% / 6.7%</td><td class="yes">3.3% / 4.9%</td><td class="yes">6.6% / 9.8%</td></tr>
-          <tr><td>Lenovo ThinkPad T550</td><td class="yes">3.7% / 4.3%</td><td class="yes">3.8% / 4.6%</td><td class="yes">4.5% / 6.4%</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td class="yes">3.6% / 5.3%</td><td class="yes">4.1% / 5.6%</td><td class="yes">5.3% / 9.1%</td></tr>
-          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">3.5% / 4.0%</td><td class="yes">3.2% / 3.9%</td><td class="yes">4.0% / 4.9%</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td class="yes">2.7% / 3.0%</td><td class="yes">3.0% / 3.3%</td><td>3.9% / 3.8%</td></tr>
-          <tr><td>Apple Mac mini M1</td><td class="yes">1.7% / 2.5%</td><td>&ndash;</td><td class="yes">1.7% / 2.7%</td></tr>
-          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td class="yes">1.9% / 2.2%</td><td class="yes">2.3% / 2.7%</td></tr>
+          <tr><td>Dell Chromebook 11 3120</td><td class="yes">5.7% / 6.7%</td><td class="yes">3.3% / 4.9%</td><td class="yes">6.9% / 9.8%</td></tr>
+          <tr><td>Lenovo ThinkPad T550</td><td class="yes">3.7% / 4.3%</td><td class="yes">3.7% / 4.7%</td><td class="yes">4.5% / 6.4%</td></tr>
+          <tr><td>Dell XPS 13 9343</td><td class="yes">3.6% / 5.3%</td><td class="yes">4.3% / 5.7%</td><td class="yes">5.2% / 10.2%</td></tr>
+          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">3.5% / 4.0%</td><td class="yes">3.1% / 3.9%</td><td class="yes">4.1% / 5.0%</td></tr>
+          <tr><td>HP Notebook (A6-7310)</td><td>&ndash;</td><td class="yes">6.2% / 7.5%</td><td class="yes">9.5% / 10.9%</td></tr>
+          <tr><td>Lenovo ThinkPad T490</td><td class="yes">2.7% / 3.0%</td><td class="yes">3.0% / 3.3%</td><td class="no">3.9% / 3.8%</td></tr>
+          <tr><td>Apple Mac mini M1</td><td class="yes">1.7% / 2.5%</td><td>&ndash;</td><td class="yes">1.9% / 2.9%</td></tr>
+          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td class="yes">1.9% / 2.3%</td><td class="yes">2.4% / 2.9%</td></tr>
           <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td class="yes">2.5% / 3.1%</td><td class="no">1.9% / 1.5%</td><td class="yes">2.6% / 3.1%</td></tr>
         </tbody>
       </table></div>
@@ -109,17 +111,18 @@
       <div class="scroll"><table>
         <thead><tr><th>Hypoland / Hyprland 0.57.2</th><th>Nautilus</th><th>Flea</th><th>Folio</th></tr></thead>
         <tbody>
-          <tr><td>Lenovo ThinkPad X200</td><td class="yes">1.06 ms / no window</td><td>&ndash;</td><td class="yes">0.88 ms / 1.27 ms</td></tr>
-          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">0.69 ms / 0.83 ms</td><td class="yes">0.70 ms / 0.88 ms</td><td class="yes">0.69 ms / 0.99 ms</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">1.06 ms / 1.31 ms</td><td class="yes">0.89 ms / 1.43 ms</td><td class="yes">0.77 ms / 1.35 ms</td></tr>
+          <tr><td>Lenovo ThinkPad X200</td><td class="yes">1.06 ms / no window</td><td>&ndash;</td><td class="yes">0.90 ms / 1.29 ms</td></tr>
+          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">0.69 ms / 0.83 ms</td><td class="yes">0.71 ms / 0.88 ms</td><td class="yes">0.70 ms / 0.99 ms</td></tr>
+          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">1.06 ms / 1.31 ms</td><td class="yes">0.92 ms / 1.45 ms</td><td class="yes">0.82 ms / 1.46 ms</td></tr>
           <tr><td>Apple Mac mini Late 2014</td><td class="yes">0.91 ms / 1.12 ms</td><td class="yes">0.89 ms / 1.50 ms</td><td class="yes">0.71 ms / 1.54 ms</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td class="yes">1.52 ms / 1.90 ms</td><td class="yes">1.27 ms / 1.78 ms</td><td class="yes">1.15 ms / 1.69 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T550</td><td class="yes">0.91 ms / 1.07 ms</td><td class="yes">0.94 ms / 1.15 ms</td><td class="yes">0.78 ms / 1.10 ms</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td class="yes">0.89 ms / 1.30 ms</td><td class="yes">1.01 ms / 1.42 ms</td><td class="yes">0.92 ms / 1.59 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">0.86 ms / 0.98 ms</td><td class="yes">0.78 ms / 0.97 ms</td><td class="yes">0.69 ms / 0.85 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td class="yes">0.66 ms / 0.75 ms</td><td class="yes">0.73 ms / 0.82 ms</td><td>0.67 ms / 0.65 ms</td></tr>
+          <tr><td>Dell Chromebook 11 3120</td><td class="yes">1.52 ms / 1.90 ms</td><td class="yes">1.28 ms / 1.82 ms</td><td class="yes">1.19 ms / 1.74 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T550</td><td class="yes">0.91 ms / 1.07 ms</td><td class="yes">0.91 ms / 1.16 ms</td><td class="yes">0.77 ms / 1.10 ms</td></tr>
+          <tr><td>Dell XPS 13 9343</td><td class="yes">0.89 ms / 1.30 ms</td><td class="yes">1.06 ms / 1.45 ms</td><td class="yes">0.90 ms / 1.76 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">0.86 ms / 0.98 ms</td><td class="yes">0.77 ms / 0.95 ms</td><td class="yes">0.70 ms / 0.86 ms</td></tr>
+          <tr><td>HP Notebook (A6-7310)</td><td>&ndash;</td><td class="yes">1.54 ms / 1.88 ms</td><td class="yes">1.62 ms / 1.87 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T490</td><td class="yes">0.66 ms / 0.75 ms</td><td class="yes">0.74 ms / 0.82 ms</td><td class="no">0.68 ms / 0.64 ms</td></tr>
           <tr><td>Apple Mac mini M1</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td class="yes">0.47 ms / 0.55 ms</td><td class="yes">0.40 ms / 0.48 ms</td></tr>
+          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td class="yes">0.48 ms / 0.56 ms</td><td class="yes">0.42 ms / 0.50 ms</td></tr>
           <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td class="yes">0.55 ms / 0.69 ms</td><td class="no">0.48 ms / 0.37 ms</td><td class="yes">0.35 ms / 0.41 ms</td></tr>
         </tbody>
       </table></div>
@@ -133,17 +136,18 @@
       <div class="scroll"><table>
         <thead><tr><th>Hypoland / Hyprland 0.57.2</th><th>Nautilus</th><th>Flea</th><th>Folio</th></tr></thead>
         <tbody>
-          <tr><td>Lenovo ThinkPad X200</td><td class="yes">38 fps / no window</td><td>&ndash;</td><td class="yes">58 fps / 31 fps</td></tr>
-          <tr><td>Desktop, AMD A8-6600K APU</td><td>41 fps / 41 fps</td><td>47 fps / 47 fps</td><td>57 fps / 57 fps</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">41 fps / 30 fps</td><td class="yes">28 fps / 24 fps</td><td>58 fps / 57 fps</td></tr>
+          <tr><td>Lenovo ThinkPad X200</td><td class="yes">38 fps / no window</td><td>&ndash;</td><td class="yes">58 fps / 30 fps</td></tr>
+          <tr><td>Desktop, AMD A8-6600K APU</td><td>41 fps / 41 fps</td><td>47 fps / 47 fps</td><td>58 fps / 58 fps</td></tr>
+          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">41 fps / 30 fps</td><td class="yes">28 fps / 24 fps</td><td>58 fps / 58 fps</td></tr>
           <tr><td>Apple Mac mini Late 2014</td><td>41 fps / 41 fps</td><td class="yes">40 fps / 36 fps</td><td>57 fps / 56 fps</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td class="yes">37 fps / 35 fps</td><td>26 fps / 27 fps</td><td>58 fps / 57 fps</td></tr>
+          <tr><td>Dell Chromebook 11 3120</td><td class="yes">37 fps / 35 fps</td><td>26 fps / 27 fps</td><td>58 fps / 56 fps</td></tr>
           <tr><td>Lenovo ThinkPad T550</td><td>41 fps / 41 fps</td><td>40 fps / 40 fps</td><td>58 fps / 58 fps</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td>41 fps / 40 fps</td><td>40 fps / 39 fps</td><td>58 fps / 57 fps</td></tr>
+          <tr><td>Dell XPS 13 9343</td><td>41 fps / 40 fps</td><td>40 fps / 39 fps</td><td>58 fps / 58 fps</td></tr>
           <tr><td>Lenovo ThinkPad T460s</td><td>41 fps / 41 fps</td><td>40 fps / 40 fps</td><td>58 fps / 58 fps</td></tr>
+          <tr><td>HP Notebook (A6-7310)</td><td>&ndash;</td><td>40 fps / 40 fps</td><td>58 fps / 58 fps</td></tr>
           <tr><td>Lenovo ThinkPad T490</td><td>41 fps / 41 fps</td><td>40 fps / 40 fps</td><td>58 fps / 58 fps</td></tr>
           <tr><td>Apple Mac mini M1</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td>40 fps / 40 fps</td><td>57 fps / 57 fps</td></tr>
+          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td>40 fps / 40 fps</td><td>58 fps / 58 fps</td></tr>
           <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td>44 fps / 44 fps</td><td>40 fps / 40 fps</td><td>76 fps / 76 fps</td></tr>
         </tbody>
       </table></div>
@@ -157,17 +161,18 @@
       <div class="scroll"><table>
         <thead><tr><th>Hypoland / Hyprland 0.57.2</th><th>Nautilus</th><th>Flea</th><th>Folio</th></tr></thead>
         <tbody>
-          <tr><td>Lenovo ThinkPad X200</td><td class="yes">1.63 ms / no window</td><td>&ndash;</td><td class="yes">1.00 ms / 2.57 ms</td></tr>
-          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">0.70 ms / 1.49 ms</td><td class="yes">0.95 ms / 1.05 ms</td><td class="yes">0.72 ms / 1.64 ms</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">1.09 ms / 2.32 ms</td><td class="yes">1.15 ms / 1.57 ms</td><td class="yes">0.92 ms / 2.39 ms</td></tr>
+          <tr><td>Lenovo ThinkPad X200</td><td class="yes">1.63 ms / no window</td><td>&ndash;</td><td class="yes">1.03 ms / 2.56 ms</td></tr>
+          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">0.70 ms / 1.49 ms</td><td class="yes">0.95 ms / 1.05 ms</td><td class="yes">0.72 ms / 1.62 ms</td></tr>
+          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">1.09 ms / 2.32 ms</td><td class="yes">1.18 ms / 1.57 ms</td><td class="yes">0.91 ms / 2.49 ms</td></tr>
           <tr><td>Apple Mac mini Late 2014</td><td class="yes">1.18 ms / 1.92 ms</td><td class="yes">1.14 ms / 1.48 ms</td><td class="yes">1.03 ms / 2.36 ms</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td class="yes">1.58 ms / 2.59 ms</td><td class="yes">1.65 ms / 2.15 ms</td><td class="yes">1.34 ms / 2.64 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T550</td><td class="yes">0.95 ms / 1.59 ms</td><td class="yes">1.13 ms / 1.40 ms</td><td class="yes">0.82 ms / 1.54 ms</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td class="yes">1.34 ms / 2.34 ms</td><td class="yes">1.18 ms / 1.52 ms</td><td class="yes">1.03 ms / 2.39 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">0.80 ms / 1.49 ms</td><td class="yes">0.98 ms / 1.20 ms</td><td class="yes">0.72 ms / 1.47 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td class="yes">0.73 ms / 1.13 ms</td><td class="yes">0.86 ms / 0.96 ms</td><td class="yes">0.72 ms / 1.21 ms</td></tr>
+          <tr><td>Dell Chromebook 11 3120</td><td class="yes">1.58 ms / 2.59 ms</td><td class="yes">1.68 ms / 2.17 ms</td><td class="yes">1.35 ms / 2.72 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T550</td><td class="yes">0.95 ms / 1.59 ms</td><td class="yes">1.13 ms / 1.40 ms</td><td class="yes">0.83 ms / 1.52 ms</td></tr>
+          <tr><td>Dell XPS 13 9343</td><td class="yes">1.34 ms / 2.34 ms</td><td class="yes">1.22 ms / 1.63 ms</td><td class="yes">1.08 ms / 2.45 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">0.80 ms / 1.49 ms</td><td class="yes">0.98 ms / 1.18 ms</td><td class="yes">0.73 ms / 1.49 ms</td></tr>
+          <tr><td>HP Notebook (A6-7310)</td><td>&ndash;</td><td class="yes">1.97 ms / 2.28 ms</td><td class="yes">1.63 ms / 2.53 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T490</td><td class="yes">0.73 ms / 1.13 ms</td><td class="yes">0.88 ms / 0.99 ms</td><td class="yes">0.74 ms / 1.20 ms</td></tr>
           <tr><td>Apple Mac mini M1</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td class="yes">0.73 ms / 0.83 ms</td><td class="yes">0.43 ms / 0.59 ms</td></tr>
+          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td class="yes">0.83 ms / 0.94 ms</td><td class="yes">0.39 ms / 0.54 ms</td></tr>
           <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td class="yes">0.65 ms / 0.70 ms</td><td>1.02 ms / 1.02 ms</td><td class="yes">0.53 ms / 0.61 ms</td></tr>
         </tbody>
       </table></div>
@@ -189,9 +194,10 @@
           <tr><td>Lenovo ThinkPad T550</td><td>25 fps / 26 fps</td><td>4 fps / 4 fps</td><td class="no">19 fps / 20 fps</td></tr>
           <tr><td>Dell XPS 13 9343</td><td>23 fps / 24 fps</td><td>4 fps / 4 fps</td><td>18 fps / 19 fps</td></tr>
           <tr><td>Lenovo ThinkPad T460s</td><td>27 fps / 28 fps</td><td>4 fps / 4 fps</td><td class="no">19 fps / 20 fps</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td>25 fps / 25 fps</td><td>5 fps / 5 fps</td><td class="no">19 fps / 20 fps</td></tr>
+          <tr><td>HP Notebook (A6-7310)</td><td>&ndash;</td><td>4 fps / 4 fps</td><td>19 fps / 19 fps</td></tr>
+          <tr><td>Lenovo ThinkPad T490</td><td>25 fps / 25 fps</td><td>5 fps / 5 fps</td><td>19 fps / 20 fps</td></tr>
           <tr><td>Apple Mac mini M1</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td>5 fps / 5 fps</td><td>19 fps / 20 fps</td></tr>
+          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td>5 fps / 5 fps</td><td class="no">24 fps / 26 fps</td></tr>
           <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td>52 fps / 53 fps</td><td>5 fps / 5 fps</td><td>45 fps / 46 fps</td></tr>
         </tbody>
       </table></div>
@@ -205,17 +211,18 @@
       <div class="scroll"><table>
         <thead><tr><th>Hypoland / Hyprland 0.57.2</th><th>Nautilus</th><th>Flea</th><th>Folio</th></tr></thead>
         <tbody>
-          <tr><td>Lenovo ThinkPad X200</td><td class="yes">119 MiB / no window</td><td>&ndash;</td><td>83 MiB / 83 MiB</td></tr>
-          <tr><td>Desktop, AMD A8-6600K APU</td><td>132 MiB / 132 MiB</td><td>104 MiB / 104 MiB</td><td>85 MiB / 85 MiB</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td>118 MiB / 117 MiB</td><td>73 MiB / 73 MiB</td><td>84 MiB / 83 MiB</td></tr>
+          <tr><td>Lenovo ThinkPad X200</td><td class="yes">119 MiB / no window</td><td>&ndash;</td><td>86 MiB / 86 MiB</td></tr>
+          <tr><td>Desktop, AMD A8-6600K APU</td><td>132 MiB / 132 MiB</td><td>104 MiB / 104 MiB</td><td>89 MiB / 89 MiB</td></tr>
+          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td>118 MiB / 117 MiB</td><td>73 MiB / 73 MiB</td><td>86 MiB / 85 MiB</td></tr>
           <tr><td>Apple Mac mini Late 2014</td><td>117 MiB / 117 MiB</td><td>75 MiB / 75 MiB</td><td>88 MiB / 88 MiB</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td>112 MiB / 111 MiB</td><td>72 MiB / 72 MiB</td><td>84 MiB / 84 MiB</td></tr>
-          <tr><td>Lenovo ThinkPad T550</td><td>111 MiB / 110 MiB</td><td>56 MiB / 56 MiB</td><td>84 MiB / 82 MiB</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td>111 MiB / 111 MiB</td><td>55 MiB / 55 MiB</td><td>85 MiB / 85 MiB</td></tr>
-          <tr><td>Lenovo ThinkPad T460s</td><td>118 MiB / 118 MiB</td><td>62 MiB / 62 MiB</td><td>84 MiB / 83 MiB</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td>118 MiB / 118 MiB</td><td>61 MiB / 61 MiB</td><td>83 MiB / 84 MiB</td></tr>
-          <tr><td>Apple Mac mini M1</td><td>123 MiB / 122 MiB</td><td>&ndash;</td><td>98 MiB / 98 MiB</td></tr>
-          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td>69 MiB / 69 MiB</td><td>95 MiB / 95 MiB</td></tr>
+          <tr><td>Dell Chromebook 11 3120</td><td>112 MiB / 111 MiB</td><td>73 MiB / 72 MiB</td><td>85 MiB / 85 MiB</td></tr>
+          <tr><td>Lenovo ThinkPad T550</td><td>111 MiB / 110 MiB</td><td>56 MiB / 56 MiB</td><td>87 MiB / 87 MiB</td></tr>
+          <tr><td>Dell XPS 13 9343</td><td>111 MiB / 111 MiB</td><td>56 MiB / 56 MiB</td><td>88 MiB / 87 MiB</td></tr>
+          <tr><td>Lenovo ThinkPad T460s</td><td>118 MiB / 118 MiB</td><td>61 MiB / 62 MiB</td><td>87 MiB / 88 MiB</td></tr>
+          <tr><td>HP Notebook (A6-7310)</td><td>&ndash;</td><td>65 MiB / 65 MiB</td><td>94 MiB / 95 MiB</td></tr>
+          <tr><td>Lenovo ThinkPad T490</td><td>118 MiB / 118 MiB</td><td>61 MiB / 61 MiB</td><td>86 MiB / 86 MiB</td></tr>
+          <tr><td>Apple Mac mini M1</td><td>123 MiB / 122 MiB</td><td>&ndash;</td><td>101 MiB / 100 MiB</td></tr>
+          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>&ndash;</td><td>66 MiB / 66 MiB</td><td>98 MiB / 98 MiB</td></tr>
           <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td>162 MiB / 162 MiB</td><td>67 MiB / 68 MiB</td><td>129 MiB / 130 MiB</td></tr>
         </tbody>
       </table></div>

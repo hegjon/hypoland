@@ -122,10 +122,12 @@ def tables():
     return "\n".join(out)
 
 NOTES = {
+    "gravitymark-gl": " The HP Notebook (A6-7310) ran without GravityMark: its GPU hung under it (an amdgpu ring timeout that needs a power cycle).",
+    "gravitymark-vk": " The HP Notebook (A6-7310) ran without GravityMark: its GPU hung under it (an amdgpu ring timeout that needs a power cycle).",
     "supertuxkart-vk": " Under Hypoland r966 (the night of 2026-11-11) the race stalled in some sessions (a Steady FPS of 0), "
                        "in every one on the Galaxy Book: its measured direct scanout (<code>render:direct_scanout = auto</code>, "
                        "the default) changed the fullscreen window's buffer formats, and every change made the game rebuild "
-                       "its Vulkan swapchain. Fixed since (<code>f934dd1ea</code>); in this night one race of 14 on the "
+                       "its Vulkan swapchain. Fixed since (<code>f934dd1ea</code>); in this night one race of 10 on the "
                        "T460s still had a Steady FPS of 0 under Hypoland, none under Hyprland.",
 }
 

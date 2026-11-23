@@ -10,17 +10,25 @@ HYPRLAND = "0.57.2"
 # with realtime as Omarchy has it), Hyprland's from docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1; before,
 # from one baseline. HYPOLAND_RUN and HYPOLAND_BLOCKS stay for such a pair of nights: Hypoland's blocks are
 # HYPOLAND_RUN/<machine>/<HYPOLAND_BLOCKS.get(machine, "hypoland")>.
-BASELINE = "docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2"
+# Since 2026-11-21 BASELINE is the night of 2026-11-17 to 18, Hypoland master r1029 (plain build, as released; the night of
+# 11-18 ran a PGO build) against Hyprland 0.57.2-2 on eleven machines. The two it did not have keep the night of 11-14 to 15
+# (r992 against the same Hyprland), in FALLBACK: the Galaxy Book (reinstalled as stock Omarchy on 11-17) and the Mac mini
+# 2014 (sshd off).
+BASELINE = "docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2"
+FALLBACK_RUN = "docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2"
+FALLBACK = {"galaxybook": FALLBACK_RUN, "macmini-intel": FALLBACK_RUN}
 HYPOLAND_RUN = BASELINE
 HYPOLAND_BLOCKS = {}
 # the night the numbers come from, for the pages' notes
-RUN = ("Hypoland master r992 (after 0.3.0) against Hyprland " + HYPRLAND + "-2, alternating through the night of "
-       "2026-11-14 to 15")
-# what that means for reading them (the pages' notes had a warning here while the numbers came from two nights)
-TWO_NIGHTS = "The two alternated, a fresh session each, so a drift of the machine hits both the same."
-# the raw data of the night, for the pages' notes
-RAW = (f'Raw data, every session\'s values and the scripts: <a href="https://github.com/hegjon/hypoland/tree/master/{BASELINE}">'
-       f'{BASELINE.split("/")[-1]}</a>.')
+RUN = ("Hypoland master r1029 (after 0.3.0) against Hyprland " + HYPRLAND + "-2, alternating through the night of "
+       "2026-11-17 to 18")
+# what that means for reading them, and the machines from the night before
+TWO_NIGHTS = ("The two alternated, a fresh session each, so a drift of the machine hits both the same. The Samsung Galaxy "
+              "Book4 Edge and the Mac mini Late 2014 were not in that night: theirs are from the night of 2026-11-14 to 15, "
+              "Hypoland master r992 against the same Hyprland " + HYPRLAND + "-2.")
+# the raw data of the nights, for the pages' notes
+_link = lambda d: f'<a href="https://github.com/hegjon/hypoland/tree/master/{d}">{d.split("/")[-1]}</a>'
+RAW = f"Raw data, every session's values and the scripts: {_link(BASELINE)}, and for those two {_link(FALLBACK_RUN)}."
 
 # alias, machine, year, CPU, GPU, Mesa driver and GLES level, screen, RAM, what it stands for; baseline: has a column
 MACHINES = [
@@ -47,8 +55,7 @@ MACHINES = [
     dict(alias="macmini-m1", name="Apple Mac mini M1", year=2020, cpu="Apple M1, 8 cores, aarch64", gpu="Apple M1 GPU (G13)",
          driver="asahi, GLES 3.2", screen="1920x1080 over HDMI", ram="8 GB", role="Apple Silicon with the Asahi kernel and Mesa; no cursor plane, and its display driver reports no page flips to count.", baseline=True),
     dict(alias="hp-amd", name="HP Notebook (A6-7310)", year=2016, cpu="AMD A6-7310, 4 cores", gpu="AMD Radeon R4 (Carrizo-L, GCN 2)",
-         driver="radeonsi on amdgpu, GLES 3.2", screen="1920x1080 at scale 1.5", ram="8 GB, 1 GB of it for the GPU", role="The oldest GPU on radeonsi, the driver every newer Radeon uses.", baseline=False,
-         nodata="has no numbers yet: its first night ended after 20 minutes in a GPU hang under GravityMark"),
+         driver="radeonsi on amdgpu, GLES 3.2", screen="1920x1080 at scale 1.5", ram="8 GB, 1 GB of it for the GPU", role="The oldest GPU on radeonsi, the driver every newer Radeon uses.", baseline=True),
     dict(alias="p14s", name="Lenovo ThinkPad P14s Gen 2a", year=2021, cpu="Ryzen 7 PRO 5850U, 16 threads", gpu="AMD Radeon Vega 8 (Cezanne)",
          driver="radeonsi, GLES 3.2", screen="3840x2160 at scale 2", ram="16 GB, 4 GB of it for the GPU", role="The newest x86 machine: radeonsi on a Zen 3 APU and the lab's first 4K screen.", baseline=True),
     dict(alias="turbox", name="Turbo-X Sirus Duo", year=2006, cpu="Core 2 Duo T5500, 2 cores", gpu="ATI Mobility Radeon X1600 (RV530, R500)",
@@ -64,6 +71,8 @@ def values(alias, compositor, baseline=None):
     BASELINE, with a baseline directory the compositor's from there."""
     if baseline is not None:
         d = os.path.join(ROOT, baseline, alias, compositor)
+    elif alias in FALLBACK:
+        d = os.path.join(ROOT, FALLBACK[alias], alias, compositor)
     elif compositor == "hypoland":
         d = os.path.join(ROOT, HYPOLAND_RUN, alias, HYPOLAND_BLOCKS.get(alias, "hypoland"))
     else:
@@ -78,7 +87,9 @@ def values(alias, compositor, baseline=None):
     return v, sessions
 
 def has(alias):
-    """Whether the night (or both nights) has the machine."""
+    """Whether the night (or both nights, or the machine's FALLBACK night) has the machine."""
+    if alias in FALLBACK:
+        return all(os.path.isdir(os.path.join(ROOT, FALLBACK[alias], alias, c)) for c in ("hypoland", "hyprland"))
     return (os.path.isdir(os.path.join(ROOT, HYPOLAND_RUN, alias, HYPOLAND_BLOCKS.get(alias, "hypoland")))
             and os.path.isdir(os.path.join(ROOT, BASELINE, alias, "hyprland")))
 
