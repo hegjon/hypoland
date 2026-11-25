@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
 # Writes web/lab.html, the page about the test machines: the hardware table (the facts below), and every machine's
-# numbers against stock Hyprland, since 2026-11-24 from docs/baseline/20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2
-# and, for the three machines it does not show, the 11-17 night (the P14s) and the 11-14 night (the Galaxy Book and the
-# Mac mini 2014) (values.txt and raw.txt per machine and compositor; since 2026-11-25 the X200 and the Turbo-X from
-# docs/baseline/20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2, the 0.4.0 release; the nights and
-# the machines are in labdata.py); from 2026-11-15 to 21 all from the 11-14 night. From 2026-11-13 to 15
-# Hypoland's came from docs/baseline/20261112-all-machines-r991-realtime-off-vs-on and Hyprland's from
-# docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1. Before, both came from one baseline: the r957 one of
-# 2026-11-10 from 2026-11-11, the 0.3.0 one of 2026-11-03 from 2026-11-04, the r871 one of 2026-10-30 from 2026-11-02, the
-# 0.56.2 one of 2026-10-27 before. No number on the page is typed by hand. Run it again after a new baseline, from
-# anywhere: scripts/web/lab.py
+# numbers against stock Hyprland, since 2026-11-25 the Hypoland 0.4.0 release against Hyprland 0.57.2 only (the runs and
+# the machines are in labdata.py, with the history of the nights the page used before). No number on the page is typed
+# by hand. Run it again after a new baseline, from anywhere: scripts/web/lab.py
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from labdata import ROOT, HYPRLAND, RUN, TWO_NIGHTS, RAW, MACHINES, RETIRED, values, sessions_text, cell, E, head, FOOTER
@@ -35,9 +28,10 @@ for m in MACHINES:
     rows_hw.append(f"          <tr><td>{E(m['name'])}</td><td>{m['year']}</td><td>{E(m['cpu'])}</td><td>{E(m['gpu'])}<br><code>{E(m['driver'])}</code></td>"
                    f"<td>{E(m['screen'])}</td><td>{E(m['ram'])}</td><td>{E(m['role'])}</td></tr>")
 
-# cells that are no measurement: the client never mapped a window (the Turbo-X's 1 GB: Chromium's clients list is empty
-# and 0 frames reach the screen in every session, under both compositors)
-NO_CLIENT = {("turbox", "cpu.shm-fullwindow.percent")}
+# cells left empty, no measurement of what the column means: on the Turbo-X's 1 GB Chromium never maps a window (its
+# clients list is empty and 0 frames reach the screen in every session, under both compositors), and most of either
+# compositor sits in swap, which PSS does not count (on 11-25 Hypoland had 5 MiB in RAM and 16.5 MiB in swap)
+NO_CLIENT = {("turbox", "cpu.shm-fullwindow.percent"), ("turbox", "mem.start.Pss_kB")}
 
 rows_num, sessions = [], {}
 for m in MACHINES:
@@ -46,6 +40,7 @@ for m in MACHINES:
     sv, ss = values(m["alias"], "hyprland")
     sessions[m["alias"]] = (hs, ss)
     hv = {k: x for k, x in hv.items() if (m["alias"], k) not in NO_CLIENT}
+    sv = {k: x for k, x in sv.items() if (m["alias"], k) not in NO_CLIENT}
     cells = "".join(cell(hv.get(k) * sc if hv.get(k) is not None else None, sv.get(k) * sc if sv.get(k) is not None else None, unit, lower)
                     for k, _, unit, lower, sc in METRICS)
     rows_num.append(f"          <tr><td>{E(m['name'])}</td>{cells}</tr>")
@@ -56,7 +51,7 @@ FEW = 5
 few = [m for m in MACHINES if m["alias"] in sessions and min(sessions[m["alias"]]) < FEW]
 FEW_NOTE = "".join(f" {E(m['name'])}: {min(sessions[m['alias']])} sessions of each only, so its numbers are less sure." for m in few)
 # machines of the lab without numbers in this baseline, and why
-NODATA_NOTE = "".join(f" {E(m['name'])}: not in the table, it {E(m['nodata'])}." for m in MACHINES if not m["baseline"] and m.get("nodata"))
+NODATA_NOTE = "".join(f" The {E(m['name'])} {E(m['nodata'])}." for m in MACHINES if not m["baseline"] and m.get("nodata"))
 
 page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on, from a 2006 Core 2 Duo laptop to a Snapdragon X Elite laptop, and every machine's numbers against stock Hyprland.", "The test machines Hypoland is measured on, and every machine's numbers against stock Hyprland.", "lab.html")}
 
@@ -110,18 +105,16 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
         </tbody>
       </table></div>
       <p class="note">
-        Compositor CPU in percent of one core, medians of {sessions_text(sessions.values(), FEW)} per machine, {RUN}.
-        {TWO_NIGHTS}{FEW_NOTE}{NODATA_NOTE} Both ran without realtime scheduling, which Omarchy turns off for Hyprland now
-        (<code>HYPRLAND_NO_RT=1</code>), except on the Galaxy Book. Green where
-        Hypoland is at least 5% better, red where it is at least 5% worse. On the X200 and the Turbo-X, Hyprland ran with
-        Omarchy's GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>; on the
-        Turbo-X with its GPU check widened to the R500), since it does not start there otherwise. Hyprland ran with <code>quirks:skip_non_kms_dmabuf_formats = false</code>,
-        Hypoland's default: with its own default one machine's session came up without a wallpaper and GL clients that ask
-        for alpha got no config. The frames are the compositor's own page flips; the Galaxy Book's screen runs at
-        120&nbsp;Hz, and the Mac mini M1's display driver reports none. The memory holds the shell's shared pages too; on the Turbo-X, with 1&nbsp;GB of RAM, part of either
-        compositor sits in swap, so its memory reads low for both, and Chromium opens no window there.
-        Four terminals side by side on every machine: <a href="terminals.html">terminals</a>; games and 3D
-        benchmarks: <a href="games.html">games</a>; three file managers: <a href="files.html">files</a>.
+        Compositor CPU in percent of one core; medians of {sessions_text(sessions.values(), FEW)} per machine,
+        {RUN}. {TWO_NIGHTS}{FEW_NOTE}{NODATA_NOTE} Both ran without realtime scheduling (<code>HYPRLAND_NO_RT=1</code>,
+        as Omarchy runs Hyprland), except on the Galaxy Book; Hyprland with
+        <code>quirks:skip_non_kms_dmabuf_formats = false</code>, Hypoland's default, and on the X200 and the Turbo-X with
+        Omarchy's GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), without
+        which it does not start there. Green: Hypoland at least 5% better; red: at least 5% worse. Frames are the
+        compositor's page flips (the Galaxy Book runs at 120&nbsp;Hz; the Mac mini M1 reports none). Memory includes the
+        shell's shared pages. The Turbo-X has no memory or Chromium cell: on its 1&nbsp;GB most of either compositor sits
+        in swap, which the memory does not count, and Chromium opens no window there. More:
+        <a href="terminals.html">terminals</a>, <a href="games.html">games</a>, <a href="files.html">file managers</a>.
         {RAW}
       </p>
     </div>

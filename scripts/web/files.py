@@ -1,29 +1,21 @@
 #!/usr/bin/env python3
-# Writes web/files.html: the file managers of the benchmark (Nautilus, Flea, Folio) under Hypoland and stock Hyprland on
-# every machine, one table per measure, so no number on the page is typed by hand: Flea and Folio from the lab page's
-# night (labdata.py, since 2026-11-15), Nautilus from the night of 2026-11-11 (NAUTILUS_RUN), the last one with Nautilus
-# on the machines (Omarchy's update of 2026-11-13 removed it). From 2026-11-13 to 15 Nautilus and Flea came from the lab
-# page's two nights and Folio from the night of 2026-11-11 alone; all three from there before. Run it again after a new
-# baseline with the file managers, from anywhere: scripts/web/files.py
+# Writes web/files.html: the file managers of the benchmark (Flea, Folio) under Hypoland and stock Hyprland on every
+# machine, one table per measure, from the lab page's runs (labdata.py), so no number on the page is typed by hand. Since
+# 2026-11-25 only the Hypoland 0.4.0 release against Hyprland 0.57.2, so Nautilus is gone from the page: its numbers came
+# from the night of 2026-11-11 (r966 against 0.57.1, docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1), the last
+# with Nautilus on the machines (Omarchy's update of 2026-11-13 removed it). Run it again after a new baseline with the
+# file managers, from anywhere: scripts/web/files.py
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from labdata import ROOT, HYPRLAND, RUN, TWO_NIGHTS, RAW, MACHINES, values, has, sessions_text, cell, fmt, E, head, FOOTER
 
 OUT = os.path.join(ROOT, "web", "files.html")
-# Omarchy's update of 2026-11-13 removed Nautilus from the machines: its numbers come from the last night that had it,
-# where the two compositors alternated too (Hypoland r966, Hyprland 0.57.1-2)
-NAUTILUS_RUN = "docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1"
-NAUTILUS_RUN_TEXT = ("the night of 2026-11-11 to 12, alternating Hypoland master r966 with Hyprland 0.57.1-2, the last night "
-                     "with Nautilus on the machines (Omarchy's update of 2026-11-13 removed it)")
-
 # name, version in the night, how it is made, its two workloads: scrolling and the other one, and where its numbers come
 # from: None for the lab page's nights, or a baseline of their own
 MANAGERS = [
-    ("Nautilus", "51.1", "GNOME's file manager, GTK&nbsp;4: drawn with Vulkan or OpenGL into GPU buffers, on the X200 "
-     "with cairo into shared memory.", "nautilus-scroll", "nautilus", NAUTILUS_RUN),
     ("Flea", "0.4.3", "A keyboard-first file manager for Omarchy, written in Rust with GPUI (the Zed editor's UI "
      "toolkit) and drawn on the GPU through wgpu.", "flea-scroll", "flea", None),
-    ("Folio", "0.6.1 (Omarchy's package)", "Omarchy's own file manager, written in C++ with Qt Quick.",
+    ("Folio", "0.6.1 (0.7.1 on the MSI Claw)", "Omarchy's own file manager, written in C++ with Qt Quick.",
      "folio-scroll", "folio", None),
 ]
 
@@ -39,7 +31,7 @@ MEASURES = [
      "The compositor's page flips a second. The file manager moves its cursor 40 times a second (the key repeat of "
      "Omarchy's session), so about 40 is all there is to show; Folio redraws more often than that."),
     ("other-frame", "Icons and paging: the compositor's CPU per frame", "cpu.{w}.ms_per_frame", "ms/frame", True, 1,
-     "Nautilus and Folio show a folder of icons in their grid with the window's fullscreen toggled twice a second, Flea "
+     "Folio shows a folder of icons in its grid with the window's fullscreen toggled twice a second, Flea "
      "pages through 25000 files with four keys a second. The compositor's CPU per frame on the screen."),
     ("other-fps", "Icons and paging: frames on the screen", "fps.{w}.screen", "fps", False, 1,
      "The compositor's page flips a second: each fullscreen toggle animates the window, a page of Flea is a frame or two."),
@@ -48,16 +40,12 @@ MEASURES = [
      "The file manager's own memory, which the compositor hardly changes: it tells the three apart."),
 ]
 
-# the machines with the lab page's numbers; per machine and source (None or NAUTILUS_RUN) the Hypoland and Hyprland
-# values, empty for a machine that joined after NAUTILUS_RUN
+# the machines with the lab page's numbers; per machine and source (None: the lab page's runs) the Hypoland and Hyprland
+# values
 rows = [m for m in MACHINES if m["baseline"] and has(m["alias"])]
-def nautilus_values(alias):
-    if not os.path.isdir(os.path.join(ROOT, NAUTILUS_RUN, alias, "hyprland")):
-        return ({}, 0), ({}, 0)
-    return values(alias, "hypoland", NAUTILUS_RUN), values(alias, "hyprland", NAUTILUS_RUN)
-data = {m["alias"]: {None: (values(m["alias"], "hypoland"), values(m["alias"], "hyprland")),
-                     NAUTILUS_RUN: nautilus_values(m["alias"])}
-        for m in rows}
+data = {m["alias"]: {None: (values(m["alias"], "hypoland"), values(m["alias"], "hyprland"))} for m in rows}
+# cells left empty: on the Turbo-X's 1 GB most of the file manager sits in swap, which PSS does not count
+BLANK = {("turbox", "client-mem")}
 
 def counts_flips(v):
     # the Mac mini M1's display driver reports no page flips: no frames on the screen to count there
@@ -83,6 +71,8 @@ def tables():
                 (hv, _), (sv, _) = data[m["alias"]][run]
                 w = (scroll, other)[which]
                 ho, so = opened(hv, w), opened(sv, w)
+                if (m["alias"], sid) in BLANK:
+                    ho = so = None
                 h, s = value(hv, key, w, unit), value(sv, key, w, unit)
                 # the file manager opened its window under one compositor only
                 if ho and so is False and h is not None:
@@ -109,13 +99,10 @@ def tables():
     return "\n".join(out)
 
 sessions = [(data[m["alias"]][None][0][1], data[m["alias"]][None][1][1]) for m in rows]
-nautilus_sessions = [min(data[m["alias"]][NAUTILUS_RUN][0][1], data[m["alias"]][NAUTILUS_RUN][1][1]) for m in rows
-                     if data[m["alias"]][NAUTILUS_RUN][0][1]]
-nautilus_missing = [m["name"] for m in rows if not data[m["alias"]][NAUTILUS_RUN][0][1]]
 manager_rows = "\n".join(f"          <tr><td>{n}</td><td>{E(v)}</td><td>{d}</td></tr>" for n, v, d, *_ in MANAGERS)
 nav = "".join(f'\n    <li><a href="#{sid}">{i + 2}</a></li>' for i, (sid, *_) in enumerate(MEASURES))
 
-page = f"""{head("Hypoland: file managers", "Nautilus, Flea and Folio scrolling a folder of 5000 files under Hypoland and under Hyprland " + HYPRLAND + f" on {len(rows)} machines: the compositor's CPU, its frames and the memory.", "Nautilus, Flea and Folio under Hypoland and Hyprland " + HYPRLAND + f", on {len(rows)} machines.", "files.html")}
+page = f"""{head("Hypoland: file managers", "Flea and Folio scrolling a folder of 5000 files under Hypoland and under Hyprland " + HYPRLAND + f" on {len(rows)} machines: the compositor's CPU, its frames and the memory.", "Flea and Folio under Hypoland and Hyprland " + HYPRLAND + f", on {len(rows)} machines.", "files.html")}
 <!-- Generated by scripts/web/files.py from the night's values, do not edit by hand. -->
 <nav class="bar" aria-label="Sections">
   <ul class="ws">
@@ -134,7 +121,7 @@ page = f"""{head("Hypoland: file managers", "Nautilus, Flea and Folio scrolling 
 <main class="desk" id="top">
 
   <section class="win full" aria-labelledby="t-files">
-    <h2 class="title" id="t-files">Nautilus, Flea, Folio</h2>
+    <h2 class="title" id="t-files">Flea, Folio</h2>
     <div class="body">
       <p>
         Each file manager opens a folder of 5000 empty files in its list view, and the Down key is held for 12 seconds
@@ -150,22 +137,14 @@ page = f"""{head("Hypoland: file managers", "Nautilus, Flea and Folio scrolling 
         </tbody>
       </table></div>
       <p class="note">
-        Flea and Folio: medians of {sessions_text(sessions, 1)} per machine, {RUN}. {TWO_NIGHTS} Nautilus: medians of
-        {min(nautilus_sessions)} to {max(nautilus_sessions)} fresh sessions of each compositor per machine,
-        {NAUTILUS_RUN_TEXT}; {E(" and ".join(nautilus_missing)) or "no machine"} joined after it, and the Mac mini 2014
-        ran on a headless output then. Folio is Omarchy's package 0.6.1, installed on every machine an hour before that
-        night started: the benchmark's own pinned build is gone since 2026-11-18. The P14s's and the Mac mini M1's night
-        (r1029, 11-17 to 18) ran Folio commit 2e2a716 (<a href="https://github.com/omacom/folio/pull/79">folio#79</a>,
-        after 0.5.0) built on every machine, which scrolls the list to the cursor on Down; the Galaxy Book's and the Mac
-        mini 2014's night had Omarchy's Folio 0.4.0, which does not (<a
-        href="https://github.com/omacom/folio/pull/18">folio#18</a>): the cursor walks off the bottom and the view stays,
-        so their Folio scrolling cells measure the cursor and the details pane redrawn. Flea is 0.4.3 on the machines of
-        this night (0.4.2 on the P14s's, and the Mac mini M1's own night had none installed); it opens no window on the
-        X200 and the Turbo-X (it needs more than OpenGL&nbsp;2.1). Under Hyprland Nautilus opened no window on the X200 in its night. On the X200 and the Turbo-X Hyprland runs with
-        Omarchy's GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which
-        the file managers get too. The Mac mini M1's display driver reports no page flips, so it has no frames on the
-        screen.
-        {RAW} Nautilus's night: <a href="https://github.com/hegjon/hypoland/tree/master/{NAUTILUS_RUN}">{NAUTILUS_RUN.split("/")[-1]}</a>.
+        Medians of {sessions_text(sessions, 1)} per machine, {RUN}. {TWO_NIGHTS} Folio is Omarchy's package 0.6.1
+        (0.7.1 on the MSI Claw), Flea 0.4.3; Flea opens no window on the X200 and the Turbo-X (it needs more than
+        OpenGL&nbsp;2.1). On those two Hyprland runs with Omarchy's GLES&nbsp;3 override (<a
+        href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which the file managers get too. The Mac
+        mini M1's display driver reports no page flips, so it has no frames on the screen. The Turbo-X has no memory cell:
+        on its 1&nbsp;GB most of the file manager sits in swap. Nautilus is not here: Omarchy removed it on 2026-11-13,
+        before 0.4.0.
+        {RAW}
       </p>
     </div>
   </section>

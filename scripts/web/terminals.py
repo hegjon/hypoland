@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Writes web/terminals.html: the terminals of the benchmark (foot, Alacritty, Ghostty, kitty) under Hypoland and stock
-# Hyprland on every machine, one table per measure, from the same night as the lab page (labdata.py), so no number on
-# the page is typed by hand. Run it again after a new baseline, from anywhere: scripts/web/terminals.py
+# Hyprland on every machine, one table per measure, from the same runs as the lab page (labdata.py: since 2026-11-25 the
+# Hypoland 0.4.0 release against Hyprland 0.57.2 only), so no number on the page is typed by hand. Run it again after a new baseline, from anywhere: scripts/web/terminals.py
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from labdata import ROOT, HYPRLAND, RUN, TWO_NIGHTS, RAW, MACHINES, values, sessions_text, cell, E, head, FOOTER

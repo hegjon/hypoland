@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # Writes web/games.html: the games and 3D benchmarks of the benchmark (Xonotic, GravityMark, SuperTuxKart, Yamagi Quake II,
 # vkmark, ElectroBench) under Hypoland and stock Hyprland on every machine, one table per benchmark, from the lab page's
-# night (labdata.py; until 2026-11-13 its r957 baseline, and the short run docs/baseline/20261111-games-r964-vs-hyprland-0.57.1
-# for SuperTuxKart, Yamagi Quake II and vkmark, which that night did not have), so no number on the page is typed by
+# runs (labdata.py: since 2026-11-25 the Hypoland 0.4.0 release against Hyprland 0.57.2 only; until 2026-11-13 the r957
+# baseline and the short run docs/baseline/20261111-games-r964-vs-hyprland-0.57.1), so no number on the page is typed by
 # hand. Run it again after a new baseline, from anywhere: scripts/web/games.py
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -124,11 +124,11 @@ def tables():
 NOTES = {
     "gravitymark-gl": " The HP Notebook (A6-7310) ran without GravityMark: its GPU hung under it (an amdgpu ring timeout that needs a power cycle).",
     "gravitymark-vk": " The HP Notebook (A6-7310) ran without GravityMark: its GPU hung under it (an amdgpu ring timeout that needs a power cycle).",
-    "supertuxkart-vk": " Under Hypoland r966 (the night of 2026-11-11) the race stalled in some sessions (a Steady FPS of 0), "
-                       "in every one on the Galaxy Book: its measured direct scanout (<code>render:direct_scanout = auto</code>, "
-                       "the default) changed the fullscreen window's buffer formats, and every change made the game rebuild "
-                       "its Vulkan swapchain. Fixed since (<code>f934dd1ea</code>); in this night one race of 10 on the "
-                       "T460s still had a Steady FPS of 0 under Hypoland, none under Hyprland.",
+    "supertuxkart-vk": " A Steady FPS of 0 is a race that stalled. Under Hypoland that still happens in some sessions, "
+                       "6 of 19 on the MSI Claw, 2 of 11 on the XPS and 1 of 11 on the T460s, never under Hyprland: "
+                       "Hypoland's measured direct scanout (<code>render:direct_scanout = auto</code>, the default) can "
+                       "change the fullscreen window's buffer formats, and the game rebuilds its Vulkan swapchain at "
+                       "every change (limited since <code>f934dd1ea</code>, which ended the stalls on the Galaxy Book).",
 }
 
 nav = "".join(f'\n    <li><a href="#{sid}">{i + 2}</a></li>' for i, (sid, *_) in enumerate(SECTIONS))

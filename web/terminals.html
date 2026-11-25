@@ -60,12 +60,12 @@
         </tbody>
       </table></div>
       <p class="note">
-        Medians of 5 to 16 fresh sessions of Hypoland and 5 to 16 of Hyprland per machine, Hypoland master r1030 (after 0.3.0) as a PGO build against Hyprland 0.57.2-2, alternating through the night of 2026-11-18 to 19; released packages are plain builds, and those measured 4 to 6 % more compositor CPU. The two alternated, a fresh session each, so a drift of the machine hits both the same. The Samsung Galaxy Book4 Edge and the Mac mini Late 2014 were not in that night: theirs are from the night of 2026-11-14 to 15, Hypoland master r992 against the same Hyprland 0.57.2-2. The ThinkPad P14s and the Mac mini M1 are from the night of 2026-11-17 to 18 (Hypoland master r1029, a plain build): the P14s's PGO sessions aborted in the video workload in every one of them, and the M1's whole night moved, its stock Hyprland at 1.19 times the CPU and 1.40 the latencies it measured on 11-17, so neither machine's PGO pair is shown. The ThinkPad X200 and the Turbo-X are from the Hypoland 0.4.0 release, a plain build, against the same Hyprland 0.57.2-2, alternating through 2026-11-24 to 25: 5 fresh sessions of each on the X200 so far, 12 on the Turbo-X. The Mac mini M1's display
+        Medians of 5 to 21 fresh sessions of Hypoland and 5 to 21 of Hyprland per machine, the Hypoland 0.4.0 release against Hyprland 0.57.2-2, alternating through the night of 2026-11-24 to 25. The two alternated in fresh sessions, so a drift of the machine hits both. The X200 and the Turbo-X hung in a Hyprland session that night; theirs add the sessions of 11-25. The Mac mini M1's display
         driver reports no page flips, so it has no frames on
         the screen. Ghostty and kitty need OpenGL&nbsp;3.3: not on the X200 and the Turbo-X, and Ghostty does not start on the Chromebook and
         the Samsung (Bay Trail and Ivy Bridge). On the X200 and the Turbo-X Hyprland runs with Omarchy's GLES&nbsp;3 override
         (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which the terminals get too.
-        Raw data, every session's values and the scripts: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2">20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2</a>, for the P14s and the Mac mini M1 <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2">20261117-all-machines-r1029-vs-hyprland-0.57.2</a>, for the Galaxy Book and the Mac mini 2014 <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2">20261114-all-machines-r992-vs-hyprland-0.57.2</a>, and for the X200 and the Turbo-X <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2">20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2</a>.
+        Raw data and scripts: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261124-all-machines-0.4.0-vs-hyprland-0.57.2">20261124-all-machines-0.4.0-vs-hyprland-0.57.2</a>, <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2">20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2</a>.
       </p>
     </div>
   </section>
@@ -78,18 +78,18 @@
         <tbody>
           <tr><td>Turbo-X Sirus Duo</td><td class="no">16.8% / 15.9%</td><td class="yes">5.3% / 6.1%</td><td>&ndash;</td><td>&ndash;</td></tr>
           <tr><td>Lenovo ThinkPad X200</td><td class="yes">9.2% / 14.7%</td><td class="no">4.5% / 4.3%</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">2.5% / 13.2%</td><td class="yes">4.2% / 5.7%</td><td class="yes">4.2% / 5.8%</td><td class="yes">4.1% / 5.0%</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">4.1% / 16.1%</td><td class="no">5.1% / 3.9%</td><td>&ndash;</td><td>4.3% / 4.2%</td></tr>
-          <tr><td>Apple Mac mini Late 2014</td><td class="yes">3.8% / 22.8%</td><td class="yes">4.8% / 5.6%</td><td class="yes">4.8% / 5.2%</td><td>3.8% / 4.0%</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td class="yes">5.0% / 15.6%</td><td class="yes">4.5% / 6.7%</td><td>&ndash;</td><td class="yes">3.3% / 4.6%</td></tr>
-          <tr><td>Lenovo ThinkPad T550</td><td class="yes">3.2% / 12.6%</td><td class="yes">4.8% / 6.6%</td><td class="yes">5.5% / 7.4%</td><td class="yes">4.3% / 6.2%</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td class="yes">3.3% / 22.6%</td><td class="yes">5.2% / 7.6%</td><td>6.1% / 6.2%</td><td class="yes">5.3% / 6.4%</td></tr>
-          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">3.0% / 9.8%</td><td class="yes">4.1% / 5.8%</td><td class="yes">4.9% / 6.4%</td><td class="yes">4.1% / 5.5%</td></tr>
-          <tr><td>HP Notebook (A6-7310)</td><td class="yes">4.9% / 14.0%</td><td class="yes">6.2% / 6.5%</td><td class="yes">5.5% / 5.9%</td><td class="yes">5.7% / 6.0%</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td class="yes">4.0% / 15.5%</td><td class="yes">3.8% / 4.6%</td><td class="yes">5.5% / 7.3%</td><td class="yes">3.7% / 4.8%</td></tr>
-          <tr><td>Apple Mac mini M1</td><td class="yes">5.6% / 7.2%</td><td class="yes">2.8% / 3.7%</td><td class="yes">2.2% / 3.2%</td><td class="yes">2.4% / 3.5%</td></tr>
-          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td class="yes">3.1% / 20.1%</td><td class="yes">2.2% / 2.6%</td><td class="yes">2.3% / 3.0%</td><td class="yes">2.3% / 2.8%</td></tr>
-          <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td class="yes">7.5% / 8.4%</td><td class="yes">3.4% / 4.2%</td><td class="yes">2.6% / 3.5%</td><td class="yes">2.8% / 4.0%</td></tr>
+          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">2.3% / 18.4%</td><td class="yes">4.4% / 5.3%</td><td class="yes">4.7% / 5.4%</td><td class="yes">3.2% / 3.4%</td></tr>
+          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">4.2% / 16.1%</td><td class="no">5.4% / 4.1%</td><td>&ndash;</td><td>4.4% / 4.2%</td></tr>
+          <tr><td>Apple Mac mini Late 2014</td><td class="yes">3.8% / 23.4%</td><td class="yes">4.8% / 5.8%</td><td class="yes">5.0% / 5.3%</td><td>4.0% / 4.1%</td></tr>
+          <tr><td>Dell Chromebook 11 3120</td><td class="yes">5.2% / 15.6%</td><td class="yes">4.8% / 6.4%</td><td>&ndash;</td><td class="yes">3.4% / 4.5%</td></tr>
+          <tr><td>Lenovo ThinkPad T550</td><td class="yes">3.3% / 12.1%</td><td class="yes">5.0% / 6.6%</td><td class="yes">5.7% / 7.3%</td><td class="yes">4.6% / 6.2%</td></tr>
+          <tr><td>Dell XPS 13 9343</td><td class="yes">3.4% / 22.8%</td><td class="yes">5.3% / 7.5%</td><td>6.2% / 6.1%</td><td class="yes">5.5% / 6.4%</td></tr>
+          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">3.2% / 9.9%</td><td class="yes">4.4% / 5.8%</td><td class="yes">5.2% / 6.4%</td><td class="yes">4.3% / 5.5%</td></tr>
+          <tr><td>HP Notebook (A6-7310)</td><td class="yes">5.4% / 14.0%</td><td>6.5% / 6.5%</td><td>5.9% / 6.0%</td><td>6.0% / 6.1%</td></tr>
+          <tr><td>Lenovo ThinkPad T490</td><td class="yes">4.3% / 15.5%</td><td class="yes">4.0% / 4.5%</td><td class="yes">5.8% / 7.2%</td><td class="yes">3.9% / 4.8%</td></tr>
+          <tr><td>Apple Mac mini M1</td><td class="yes">5.4% / 6.2%</td><td class="yes">2.7% / 3.7%</td><td class="yes">2.1% / 3.2%</td><td class="yes">2.4% / 3.4%</td></tr>
+          <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td class="yes">6.6% / 7.4%</td><td class="yes">3.5% / 4.4%</td><td class="yes">2.9% / 3.5%</td><td class="yes">2.9% / 4.0%</td></tr>
+          <tr><td>MSI Claw A1M</td><td class="no">58.8% / 8.8%</td><td>8.4% / 8.8%</td><td class="yes">5.6% / 6.0%</td><td class="yes">6.4% / 7.9%</td></tr>
         </tbody>
       </table></div>
       <p class="note">Percent of one core over the 12 s of scrolling: the compositor alone, all its threads.</p>
@@ -104,18 +104,18 @@
         <tbody>
           <tr><td>Turbo-X Sirus Duo</td><td>7.91 ms / 8.29 ms</td><td class="yes">1.35 ms / 1.68 ms</td><td>&ndash;</td><td>&ndash;</td></tr>
           <tr><td>Lenovo ThinkPad X200</td><td class="yes">2.96 ms / 5.49 ms</td><td class="yes">1.00 ms / 1.36 ms</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">0.72 ms / 3.95 ms</td><td class="yes">0.70 ms / 0.96 ms</td><td class="yes">0.72 ms / 0.98 ms</td><td class="yes">0.72 ms / 0.95 ms</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">0.91 ms / 5.38 ms</td><td class="yes">0.98 ms / 1.27 ms</td><td>&ndash;</td><td class="yes">0.90 ms / 1.29 ms</td></tr>
-          <tr><td>Apple Mac mini Late 2014</td><td class="yes">1.04 ms / 7.84 ms</td><td class="yes">0.82 ms / 1.25 ms</td><td class="yes">1.03 ms / 1.49 ms</td><td class="yes">0.92 ms / 1.23 ms</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td class="yes">1.69 ms / 6.99 ms</td><td class="yes">1.25 ms / 1.87 ms</td><td>&ndash;</td><td class="yes">1.28 ms / 1.91 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T550</td><td class="yes">0.72 ms / 2.67 ms</td><td class="yes">0.79 ms / 1.10 ms</td><td class="yes">0.95 ms / 1.33 ms</td><td class="yes">0.72 ms / 1.03 ms</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td class="yes">0.80 ms / 6.21 ms</td><td class="yes">0.86 ms / 1.54 ms</td><td class="yes">1.36 ms / 2.01 ms</td><td class="yes">0.97 ms / 1.45 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">0.66 ms / 2.26 ms</td><td class="yes">0.69 ms / 0.97 ms</td><td class="yes">0.83 ms / 1.10 ms</td><td class="yes">0.68 ms / 0.92 ms</td></tr>
-          <tr><td>HP Notebook (A6-7310)</td><td class="yes">1.84 ms / 5.23 ms</td><td class="yes">1.60 ms / 2.03 ms</td><td class="yes">1.57 ms / 1.97 ms</td><td class="yes">1.53 ms / 2.01 ms</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td class="yes">0.74 ms / 3.22 ms</td><td class="yes">0.63 ms / 0.76 ms</td><td class="yes">0.91 ms / 1.22 ms</td><td class="yes">0.62 ms / 0.81 ms</td></tr>
+          <tr><td>Desktop, AMD A8-6600K APU</td><td class="yes">0.81 ms / 6.70 ms</td><td class="yes">0.74 ms / 0.96 ms</td><td class="yes">0.81 ms / 1.02 ms</td><td class="yes">0.82 ms / 1.00 ms</td></tr>
+          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">0.95 ms / 5.36 ms</td><td class="yes">1.02 ms / 1.34 ms</td><td>&ndash;</td><td class="yes">0.90 ms / 1.31 ms</td></tr>
+          <tr><td>Apple Mac mini Late 2014</td><td class="yes">0.94 ms / 7.66 ms</td><td class="yes">0.82 ms / 1.27 ms</td><td class="yes">1.04 ms / 1.50 ms</td><td class="yes">0.91 ms / 1.22 ms</td></tr>
+          <tr><td>Dell Chromebook 11 3120</td><td class="yes">1.77 ms / 7.01 ms</td><td class="yes">1.30 ms / 1.87 ms</td><td>&ndash;</td><td class="yes">1.35 ms / 1.90 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T550</td><td class="yes">0.74 ms / 2.65 ms</td><td class="yes">0.84 ms / 1.10 ms</td><td class="yes">0.97 ms / 1.32 ms</td><td class="yes">0.76 ms / 1.03 ms</td></tr>
+          <tr><td>Dell XPS 13 9343</td><td class="yes">0.82 ms / 6.22 ms</td><td class="yes">0.88 ms / 1.49 ms</td><td class="yes">1.39 ms / 1.95 ms</td><td class="yes">1.02 ms / 1.45 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T460s</td><td class="yes">0.70 ms / 2.31 ms</td><td class="yes">0.73 ms / 0.98 ms</td><td class="yes">0.89 ms / 1.11 ms</td><td class="yes">0.73 ms / 0.92 ms</td></tr>
+          <tr><td>HP Notebook (A6-7310)</td><td class="yes">2.01 ms / 5.25 ms</td><td class="yes">1.71 ms / 2.05 ms</td><td class="yes">1.67 ms / 1.99 ms</td><td class="yes">1.65 ms / 2.04 ms</td></tr>
+          <tr><td>Lenovo ThinkPad T490</td><td class="yes">0.80 ms / 3.21 ms</td><td class="yes">0.66 ms / 0.76 ms</td><td class="yes">0.97 ms / 1.20 ms</td><td class="yes">0.66 ms / 0.81 ms</td></tr>
           <tr><td>Apple Mac mini M1</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td class="yes">0.76 ms / 5.08 ms</td><td class="yes">0.36 ms / 0.43 ms</td><td class="yes">0.39 ms / 0.50 ms</td><td class="yes">0.38 ms / 0.47 ms</td></tr>
-          <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td class="yes">1.02 ms / 1.17 ms</td><td class="yes">0.30 ms / 0.42 ms</td><td class="yes">0.23 ms / 0.29 ms</td><td class="yes">0.30 ms / 0.42 ms</td></tr>
+          <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td class="yes">1.05 ms / 1.18 ms</td><td class="yes">0.33 ms / 0.44 ms</td><td class="yes">0.25 ms / 0.30 ms</td><td class="yes">0.32 ms / 0.43 ms</td></tr>
+          <tr><td>MSI Claw A1M</td><td class="no">10.80 ms / 1.68 ms</td><td class="yes">0.70 ms / 0.74 ms</td><td class="yes">0.46 ms / 0.50 ms</td><td class="yes">0.53 ms / 0.66 ms</td></tr>
         </tbody>
       </table></div>
       <p class="note">The same per frame the compositor put on the screen, so a compositor that shows more frames is not read as one that costs more.</p>
@@ -130,18 +130,18 @@
         <tbody>
           <tr><td>Turbo-X Sirus Duo</td><td class="yes">21 fps / 19 fps</td><td>39 fps / 37 fps</td><td>&ndash;</td><td>&ndash;</td></tr>
           <tr><td>Lenovo ThinkPad X200</td><td class="yes">31 fps / 27 fps</td><td class="yes">46 fps / 32 fps</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Desktop, AMD A8-6600K APU</td><td>34 fps / 34 fps</td><td>60 fps / 59 fps</td><td>60 fps / 59 fps</td><td class="yes">57 fps / 53 fps</td></tr>
-          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">45 fps / 30 fps</td><td class="yes">53 fps / 30 fps</td><td>&ndash;</td><td class="yes">48 fps / 31 fps</td></tr>
-          <tr><td>Apple Mac mini Late 2014</td><td class="yes">37 fps / 29 fps</td><td class="yes">58 fps / 44 fps</td><td class="yes">46 fps / 35 fps</td><td class="yes">42 fps / 33 fps</td></tr>
-          <tr><td>Dell Chromebook 11 3120</td><td class="yes">29 fps / 22 fps</td><td>36 fps / 35 fps</td><td>&ndash;</td><td class="yes">26 fps / 24 fps</td></tr>
-          <tr><td>Lenovo ThinkPad T550</td><td class="no">45 fps / 47 fps</td><td>60 fps / 60 fps</td><td class="yes">59 fps / 56 fps</td><td>60 fps / 60 fps</td></tr>
-          <tr><td>Dell XPS 13 9343</td><td class="yes">42 fps / 36 fps</td><td class="yes">60 fps / 49 fps</td><td class="yes">44 fps / 31 fps</td><td class="yes">54 fps / 44 fps</td></tr>
+          <tr><td>Desktop, AMD A8-6600K APU</td><td>28 fps / 28 fps</td><td class="yes">60 fps / 54 fps</td><td class="yes">59 fps / 53 fps</td><td class="yes">39 fps / 35 fps</td></tr>
+          <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td class="yes">44 fps / 30 fps</td><td class="yes">53 fps / 31 fps</td><td>&ndash;</td><td class="yes">48 fps / 31 fps</td></tr>
+          <tr><td>Apple Mac mini Late 2014</td><td class="yes">38 fps / 31 fps</td><td class="yes">58 fps / 45 fps</td><td class="yes">48 fps / 35 fps</td><td class="yes">44 fps / 33 fps</td></tr>
+          <tr><td>Dell Chromebook 11 3120</td><td class="yes">29 fps / 22 fps</td><td class="yes">36 fps / 34 fps</td><td>&ndash;</td><td>25 fps / 24 fps</td></tr>
+          <tr><td>Lenovo ThinkPad T550</td><td>44 fps / 46 fps</td><td>60 fps / 60 fps</td><td>58 fps / 56 fps</td><td>60 fps / 60 fps</td></tr>
+          <tr><td>Dell XPS 13 9343</td><td class="yes">42 fps / 37 fps</td><td class="yes">60 fps / 50 fps</td><td class="yes">45 fps / 31 fps</td><td class="yes">54 fps / 44 fps</td></tr>
           <tr><td>Lenovo ThinkPad T460s</td><td class="yes">46 fps / 43 fps</td><td>60 fps / 60 fps</td><td>59 fps / 58 fps</td><td>60 fps / 59 fps</td></tr>
           <tr><td>HP Notebook (A6-7310)</td><td>27 fps / 27 fps</td><td class="yes">38 fps / 32 fps</td><td class="yes">35 fps / 30 fps</td><td class="yes">37 fps / 30 fps</td></tr>
-          <tr><td>Lenovo ThinkPad T490</td><td class="yes">53 fps / 48 fps</td><td>60 fps / 60 fps</td><td>60 fps / 60 fps</td><td>60 fps / 59 fps</td></tr>
+          <tr><td>Lenovo ThinkPad T490</td><td class="yes">54 fps / 48 fps</td><td>60 fps / 60 fps</td><td>60 fps / 60 fps</td><td>60 fps / 59 fps</td></tr>
           <tr><td>Apple Mac mini M1</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td></tr>
-          <tr><td>Lenovo ThinkPad P14s Gen 2a</td><td>40 fps / 40 fps</td><td>60 fps / 60 fps</td><td>60 fps / 60 fps</td><td>60 fps / 59 fps</td></tr>
-          <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td>73 fps / 72 fps</td><td class="yes">113 fps / 99 fps</td><td>117 fps / 118 fps</td><td>94 fps / 95 fps</td></tr>
+          <tr><td>Samsung Galaxy Book4 Edge 14&quot;</td><td>62 fps / 64 fps</td><td class="yes">107 fps / 99 fps</td><td>117 fps / 118 fps</td><td>96 fps / 93 fps</td></tr>
+          <tr><td>MSI Claw A1M</td><td>54 fps / 52 fps</td><td>120 fps / 120 fps</td><td>120 fps / 120 fps</td><td>119 fps / 119 fps</td></tr>
         </tbody>
       </table></div>
       <p class="note">The compositor's page flips a second. The terminals print as fast as they can, so this is how many of their frames reach the screen; the Galaxy Book's screen runs at 120&nbsp;Hz.</p>
