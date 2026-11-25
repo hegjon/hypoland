@@ -76,11 +76,11 @@
           <li><a href="#electrobench-lines">ElectroBench, lines</a></li>
       </ul>
       <p class="note">
-        From the night of the lab page: Hypoland master r1030 (after 0.3.0) as a PGO build against Hyprland 0.57.2-2, alternating through the night of 2026-11-18 to 19; released packages are plain builds, and those measured 4 to 6 % more compositor CPU. The two alternated, a fresh session each, so a drift of the machine hits both the same. The Samsung Galaxy Book4 Edge and the Mac mini Late 2014 were not in that night: theirs are from the night of 2026-11-14 to 15, Hypoland master r992 against the same Hyprland 0.57.2-2. The ThinkPad P14s and the Mac mini M1 are from the night of 2026-11-17 to 18 (Hypoland master r1029, a plain build): the P14s's PGO sessions aborted in the video workload in every one of them, and the M1's whole night moved, its stock Hyprland at 1.19 times the CPU and 1.40 the latencies it measured on 11-17, so neither machine's PGO pair is shown. A fullscreen game under Hypoland can go straight to the screen (direct
+        From the night of the lab page: Hypoland master r1030 (after 0.3.0) as a PGO build against Hyprland 0.57.2-2, alternating through the night of 2026-11-18 to 19; released packages are plain builds, and those measured 4 to 6 % more compositor CPU. The two alternated, a fresh session each, so a drift of the machine hits both the same. The Samsung Galaxy Book4 Edge and the Mac mini Late 2014 were not in that night: theirs are from the night of 2026-11-14 to 15, Hypoland master r992 against the same Hyprland 0.57.2-2. The ThinkPad P14s and the Mac mini M1 are from the night of 2026-11-17 to 18 (Hypoland master r1029, a plain build): the P14s's PGO sessions aborted in the video workload in every one of them, and the M1's whole night moved, its stock Hyprland at 1.19 times the CPU and 1.40 the latencies it measured on 11-17, so neither machine's PGO pair is shown. The ThinkPad X200 and the Turbo-X are from the Hypoland 0.4.0 release, a plain build, against the same Hyprland 0.57.2-2, alternating through 2026-11-24 to 25: 5 fresh sessions of each on the X200 so far, 12 on the Turbo-X. A fullscreen game under Hypoland can go straight to the screen (direct
         scanout): Hypoland measures each fullscreen window both ways and keeps the better. The Mac mini M1's display driver reports
-        no page flips. On the X200 Hyprland runs with Omarchy's GLES&nbsp;3 override
+        no page flips. On the X200 and the Turbo-X Hyprland runs with Omarchy's GLES&nbsp;3 override
         (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which the games get too.
-        Raw data, every session's values and the scripts: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2">20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2</a>, for the P14s and the Mac mini M1 <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2">20261117-all-machines-r1029-vs-hyprland-0.57.2</a>, and for those two other machines <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2">20261114-all-machines-r992-vs-hyprland-0.57.2</a>.
+        Raw data, every session's values and the scripts: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2">20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2</a>, for the P14s and the Mac mini M1 <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2">20261117-all-machines-r1029-vs-hyprland-0.57.2</a>, for the Galaxy Book and the Mac mini 2014 <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2">20261114-all-machines-r992-vs-hyprland-0.57.2</a>, and for the X200 and the Turbo-X <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2">20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2</a>.
       </p>
     </div>
   </section>
@@ -92,7 +92,8 @@
       <div class="scroll"><table>
         <thead><tr><th>Hypoland / Hyprland 0.57.2</th><th>The game&#x27;s frame rate</th><th>Frames on the screen</th></tr></thead>
         <tbody>
-          <tr><td>Lenovo ThinkPad X200</td><td class="yes">57.5 fps / 51.7 fps</td><td class="yes">52 fps / 25 fps</td></tr>
+          <tr><td>Turbo-X Sirus Duo</td><td>37.0 fps / 38.8 fps</td><td class="yes">40 fps / 8 fps</td></tr>
+          <tr><td>Lenovo ThinkPad X200</td><td class="yes">57.1 fps / 51.0 fps</td><td class="yes">52 fps / 25 fps</td></tr>
           <tr><td>Desktop, AMD A8-6600K APU</td><td>168 fps / 167 fps</td><td>60 fps / 60 fps</td></tr>
           <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td>82.0 fps / 82.0 fps</td><td>59 fps / 58 fps</td></tr>
           <tr><td>Apple Mac mini Late 2014</td><td class="yes">90.5 fps / 83.0 fps</td><td>58 fps / 56 fps</td></tr>
@@ -117,7 +118,7 @@
       <div class="scroll"><table>
         <thead><tr><th>Hypoland / Hyprland 0.57.2</th><th>The game&#x27;s frame rate</th><th>Frames on the screen</th></tr></thead>
         <tbody>
-          <tr><td>Lenovo ThinkPad X200</td><td>5.2 fps / 5.0 fps</td><td class="yes">5 fps / 3 fps</td></tr>
+          <tr><td>Lenovo ThinkPad X200</td><td>5.2 fps / 5.2 fps</td><td class="yes">5 fps / 3 fps</td></tr>
           <tr><td>Samsung Series 7 Ultra (NP730U3E)</td><td>17.5 fps / 17.1 fps</td><td class="yes">17 fps / 10 fps</td></tr>
           <tr><td>Apple Mac mini Late 2014</td><td class="yes">35.3 fps / 31.8 fps</td><td class="yes">36 fps / 20 fps</td></tr>
           <tr><td>Dell Chromebook 11 3120</td><td>11.3 fps / 11.2 fps</td><td class="yes">10 fps / 7 fps</td></tr>
@@ -154,7 +155,7 @@
   <section class="win full" id="gravitymark-vk" aria-labelledby="t-gravitymark-vk">
     <h2 class="title" id="t-gravitymark-vk">GravityMark, Vulkan</h2>
     <div class="body">
-      <p>The same with its Vulkan renderer: not on the r600 desktop (no Vulkan) nor the X200.</p>
+      <p>The same with its Vulkan renderer: not on the r600 desktop (no Vulkan) nor the X200 and the Turbo-X.</p>
       <div class="scroll"><table>
         <thead><tr><th>Hypoland / Hyprland 0.57.2</th><th>The game&#x27;s frame rate</th><th>Frames on the screen</th></tr></thead>
         <tbody>

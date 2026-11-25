@@ -28,7 +28,7 @@ SECTIONS = [
      "Tellusim's GravityMark 1.89 fullscreen without vsync, an X11 client through Xwayland, its own mean frame rate over "
      "its 167&nbsp;s run. Its OpenGL renderer needs OpenGL&nbsp;4.5 and crashes on several machines, so few rows."),
     ("gravitymark-vk", "GravityMark, Vulkan", "gravitymark-vk", [GAME, SCREEN],
-     "The same with its Vulkan renderer: not on the r600 desktop (no Vulkan) nor the X200."),
+     "The same with its Vulkan renderer: not on the r600 desktop (no Vulkan) nor the X200 and the Turbo-X."),
     ("supertuxkart-vk", "SuperTuxKart, Vulkan", "supertuxkart-vk", [GAME, STEADY, SCREEN],
      "SuperTuxKart 1.5's <code>--benchmark</code>: the replay of a race on black_forest, Vulkan, Ultimate effects, no frame "
      "limit and no vsync, fullscreen at the monitor's size. The game's frame rate is the race's frames over its time; "
@@ -169,7 +169,7 @@ page = f"""{head("Hypoland: games and 3D", "Xonotic, GravityMark, SuperTuxKart, 
       <p class="note">
         From the night of the lab page: {RUN}. {TWO_NIGHTS} A fullscreen game under Hypoland can go straight to the screen (direct
         scanout): Hypoland measures each fullscreen window both ways and keeps the better. The Mac mini M1's display driver reports
-        no page flips. On the X200 Hyprland runs with Omarchy's GLES&nbsp;3 override
+        no page flips. On the X200 and the Turbo-X Hyprland runs with Omarchy's GLES&nbsp;3 override
         (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which the games get too.
         {RAW}
       </p>

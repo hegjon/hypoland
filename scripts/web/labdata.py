@@ -23,7 +23,15 @@ BASELINE = "docs/baseline/20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2"
 # the plain r1029 night, the one to compare a later plain build with
 PREV_RUN = "docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2"
 FALLBACK_RUN = "docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2"
-FALLBACK = {"galaxybook": FALLBACK_RUN, "macmini-intel": FALLBACK_RUN, "p14s": PREV_RUN, "macmini-m1": PREV_RUN}
+# Since 2026-11-25 the X200 and the Turbo-X come from the Hypoland 0.4.0 release (a plain build) against the same
+# Hyprland 0.57.2-2, the sessions of two runs together: night-20261124-040 (both machines hung in a stock block that night,
+# the X200 at 20:12 after 3 sessions of each, the Turbo-X at 03:32 out of memory after 11 and 10) and night-20261125 (the
+# X200 still running when this was made: 2 of each; the Turbo-X stopped by the user at 15:33 for its fan: 1 and 2). The
+# user's choice, to be replaced by the X200's full night of 11-25 to 26 (test-results/night-20261125, its morning job).
+# Built by its combine.sh (README.md there): night 1's blocks keep their numbers, night 2's are 101, 102.
+X200_TURBOX_RUN = "docs/baseline/20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2"
+FALLBACK = {"galaxybook": FALLBACK_RUN, "macmini-intel": FALLBACK_RUN, "p14s": PREV_RUN, "macmini-m1": PREV_RUN,
+            "x200": X200_TURBOX_RUN, "turbox": X200_TURBOX_RUN}
 HYPOLAND_RUN = BASELINE
 HYPOLAND_BLOCKS = {}
 # the night the numbers come from, for the pages' notes
@@ -35,11 +43,15 @@ TWO_NIGHTS = ("The two alternated, a fresh session each, so a drift of the machi
               "15, Hypoland master r992 against the same Hyprland " + HYPRLAND + "-2. The ThinkPad P14s and the Mac mini "
               "M1 are from the night of 2026-11-17 to 18 (Hypoland master r1029, a plain build): the P14s's PGO sessions "
               "aborted in the video workload in every one of them, and the M1's whole night moved, its stock Hyprland at "
-              "1.19 times the CPU and 1.40 the latencies it measured on 11-17, so neither machine's PGO pair is shown.")
+              "1.19 times the CPU and 1.40 the latencies it measured on 11-17, so neither machine's PGO pair is shown. The "
+              "ThinkPad X200 and the Turbo-X are from the Hypoland 0.4.0 release, a plain build, against the same Hyprland "
+              + HYPRLAND + "-2, alternating through 2026-11-24 to 25: 5 fresh sessions of each on the X200 so far, 12 on the "
+              "Turbo-X.")
 # the raw data of the nights, for the pages' notes
 _link = lambda d: f'<a href="https://github.com/hegjon/hypoland/tree/master/{d}">{d.split("/")[-1]}</a>'
 RAW = (f"Raw data, every session's values and the scripts: {_link(BASELINE)}, for the P14s and the Mac mini M1 "
-       f"{_link(PREV_RUN)}, and for those two other machines {_link(FALLBACK_RUN)}.")
+       f"{_link(PREV_RUN)}, for the Galaxy Book and the Mac mini 2014 {_link(FALLBACK_RUN)}, and for the X200 and the "
+       f"Turbo-X {_link(X200_TURBOX_RUN)}.")
 
 # alias, machine, year, CPU, GPU, Mesa driver and GLES level, screen, RAM, what it stands for; baseline: has a column
 MACHINES = [
@@ -70,8 +82,7 @@ MACHINES = [
     dict(alias="p14s", name="Lenovo ThinkPad P14s Gen 2a", year=2021, cpu="Ryzen 7 PRO 5850U, 16 threads", gpu="AMD Radeon Vega 8 (Cezanne)",
          driver="radeonsi, GLES 3.2", screen="3840x2160 at scale 2", ram="16 GB, 4 GB of it for the GPU", role="Radeonsi on a Zen 3 APU, and the lab's first 4K screen.", baseline=True),
     dict(alias="turbox", name="Turbo-X Sirus Duo", year=2006, cpu="Core 2 Duo T5500, 2 cores", gpu="ATI Mobility Radeon X1600 (RV530, R500)",
-         driver="r300, GLES 2.0 only", screen="1280x800", ram="1 GB", role="The oldest machine and the only R500: GLES 2.0 like the X200, with 1 GB of RAM and a spinning disk; stock Hyprland does not start on it.", baseline=False,
-         nodata="has not been through a night yet"),
+         driver="r300, GLES 2.0 only", screen="1280x800", ram="1 GB", role="The oldest machine and the only R500: GLES 2.0 like the X200, with 1 GB of RAM and a spinning disk; stock Hyprland does not start on it.", baseline=True),
     dict(alias="msi-claw", name="MSI Claw A1M", year=2024, cpu="Core Ultra 7 155H, 22 threads", gpu="Intel Arc Graphics (Meteor Lake, Xe-LPG)",
          driver="iris, GLES 3.2", screen="1920x1080 at scale 2, 120 Hz", ram="16 GB", role="The handheld, and the newest Intel GPU of the lab: Arc on Meteor Lake; 120 Hz.", baseline=False,
          nodata="has not been through a night yet"),

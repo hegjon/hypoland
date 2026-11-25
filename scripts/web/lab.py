@@ -35,12 +35,17 @@ for m in MACHINES:
     rows_hw.append(f"          <tr><td>{E(m['name'])}</td><td>{m['year']}</td><td>{E(m['cpu'])}</td><td>{E(m['gpu'])}<br><code>{E(m['driver'])}</code></td>"
                    f"<td>{E(m['screen'])}</td><td>{E(m['ram'])}</td><td>{E(m['role'])}</td></tr>")
 
+# cells that are no measurement: the client never mapped a window (the Turbo-X's 1 GB: Chromium's clients list is empty
+# and 0 frames reach the screen in every session, under both compositors)
+NO_CLIENT = {("turbox", "cpu.shm-fullwindow.percent")}
+
 rows_num, sessions = [], {}
 for m in MACHINES:
     if not m["baseline"]: continue
     hv, hs = values(m["alias"], "hypoland")
     sv, ss = values(m["alias"], "hyprland")
     sessions[m["alias"]] = (hs, ss)
+    hv = {k: x for k, x in hv.items() if (m["alias"], k) not in NO_CLIENT}
     cells = "".join(cell(hv.get(k) * sc if hv.get(k) is not None else None, sv.get(k) * sc if sv.get(k) is not None else None, unit, lower)
                     for k, _, unit, lower, sc in METRICS)
     rows_num.append(f"          <tr><td>{E(m['name'])}</td>{cells}</tr>")
@@ -108,12 +113,13 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
         Compositor CPU in percent of one core, medians of {sessions_text(sessions.values(), FEW)} per machine, {RUN}.
         {TWO_NIGHTS}{FEW_NOTE}{NODATA_NOTE} Both ran without realtime scheduling, which Omarchy turns off for Hyprland now
         (<code>HYPRLAND_NO_RT=1</code>), except on the Galaxy Book. Green where
-        Hypoland is at least 5% better, red where it is at least 5% worse. On the X200, Hyprland ran with Omarchy's
-        GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), since it does
-        not start there otherwise. Hyprland ran with <code>quirks:skip_non_kms_dmabuf_formats = false</code>,
+        Hypoland is at least 5% better, red where it is at least 5% worse. On the X200 and the Turbo-X, Hyprland ran with
+        Omarchy's GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>; on the
+        Turbo-X with its GPU check widened to the R500), since it does not start there otherwise. Hyprland ran with <code>quirks:skip_non_kms_dmabuf_formats = false</code>,
         Hypoland's default: with its own default one machine's session came up without a wallpaper and GL clients that ask
         for alpha got no config. The frames are the compositor's own page flips; the Galaxy Book's screen runs at
-        120&nbsp;Hz, and the Mac mini M1's display driver reports none. The memory holds the shell's shared pages too.
+        120&nbsp;Hz, and the Mac mini M1's display driver reports none. The memory holds the shell's shared pages too; on the Turbo-X, with 1&nbsp;GB of RAM, part of either
+        compositor sits in swap, so its memory reads low for both, and Chromium opens no window there.
         Four terminals side by side on every machine: <a href="terminals.html">terminals</a>; games and 3D
         benchmarks: <a href="games.html">games</a>; three file managers: <a href="files.html">files</a>.
         {RAW}

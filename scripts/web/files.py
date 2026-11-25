@@ -161,7 +161,7 @@ page = f"""{head("Hypoland: file managers", "Nautilus, Flea and Folio scrolling 
         href="https://github.com/omacom/folio/pull/18">folio#18</a>): the cursor walks off the bottom and the view stays,
         so their Folio scrolling cells measure the cursor and the details pane redrawn. Flea is 0.4.3 on the machines of
         this night (0.4.2 on the P14s's, and the Mac mini M1's own night had none installed); it opens no window on the
-        X200 (it needs more than OpenGL&nbsp;2.1). Under Hyprland Nautilus opened no window on the X200 in its night. On the X200 Hyprland runs with
+        X200 and the Turbo-X (it needs more than OpenGL&nbsp;2.1). Under Hyprland Nautilus opened no window on the X200 in its night. On the X200 and the Turbo-X Hyprland runs with
         Omarchy's GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which
         the file managers get too. The Mac mini M1's display driver reports no page flips, so it has no frames on the
         screen.

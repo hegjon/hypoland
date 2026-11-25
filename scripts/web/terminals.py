@@ -106,8 +106,8 @@ page = f"""{head("Hypoland: terminals", "foot, Alacritty, Ghostty and kitty scro
       <p class="note">
         Medians of {sessions_text(sessions, FEW)} per machine, {RUN}. {TWO_NIGHTS} The Mac mini M1's display
         driver reports no page flips, so it has no frames on
-        the screen. Ghostty and kitty need OpenGL&nbsp;3.3: not on the X200, and Ghostty does not start on the Chromebook and
-        the Samsung (Bay Trail and Ivy Bridge). On the X200 Hyprland runs with Omarchy's GLES&nbsp;3 override
+        the screen. Ghostty and kitty need OpenGL&nbsp;3.3: not on the X200 and the Turbo-X, and Ghostty does not start on the Chromebook and
+        the Samsung (Bay Trail and Ivy Bridge). On the X200 and the Turbo-X Hyprland runs with Omarchy's GLES&nbsp;3 override
         (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which the terminals get too.
         {RAW}
       </p>
