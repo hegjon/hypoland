@@ -1,0 +1,150 @@
+blocks per machine (0.4.0 / stock 11-24, PGO / stock 11-18, r1029 / stock 11-17):
+  t550           12 /  12    11 /  11    11 /  11
+  xps            11 /  11    10 /  10    10 /  10
+  lianli         14 /  14    13 /  13    13 /  13
+  chromebook     11 /  11    10 /  10     9 /   9
+  t460s          11 /  11    10 /  10    10 /  10
+  t490           12 /  12    10 /  10    10 /  10
+  samsung-i5     13 /  13    11 /  11    11 /  11
+  macmini-m1     14 /  14    13 /  13    13 /  13
+  hp-amd         21 /  21    16 /  16    15 /  15
+  macmini-intel  12 /  12    11 /  11     0 /   0
+  msi-claw       19 /  19     0 /   0     0 /   0
+  galaxybook     19 /  19     0 /   0     0 /   0
+
+### cpu %: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    0.4.0/r1029       stock 24/17         0.4.0/PGO       stock 24/18   hyp/stock 11-24   hyp/stock 11-17
+t550                 1.000 (44)        0.999 (44)        1.053 (44)        0.992 (44)        0.598 (45)        0.594 (44)
+xps                  0.967 (44)        1.000 (44)        1.025 (44)        0.993 (44)        0.582 (45)        0.613 (44)
+lianli               1.000 (38)        1.011 (38)        1.068 (38)        1.012 (38)        0.883 (39)        0.869 (38)
+chromebook           0.997 (42)        1.000 (43)        1.047 (43)        1.000 (43)        0.746 (44)        0.727 (43)
+t460s                1.014 (45)        1.016 (45)        1.055 (45)        1.004 (45)        0.628 (46)        0.625 (45)
+t490                 1.001 (45)        0.999 (45)        1.060 (45)        1.003 (45)        0.642 (46)        0.618 (45)
+samsung-i5           1.004 (42)        1.017 (42)        1.047 (42)        1.007 (42)        0.598 (43)        0.568 (42)
+macmini-m1           0.977 (39)        0.999 (39)        1.027 (41)        0.850 (41)        0.779 (42)        0.791 (39)
+hp-amd               1.010 (33)        1.005 (33)        1.073 (33)        1.010 (33)        0.754 (33)        0.756 (33)
+macmini-intel                 -                 -        1.040 (46)        0.998 (46)        0.832 (47)                 -
+msi-claw                      -                 -                 -                 -        0.875 (33)                 -
+galaxybook                    -                 -                 -                 -        0.887 (32)                 -
+
+### cpu ms/frame: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    0.4.0/r1029       stock 24/17         0.4.0/PGO       stock 24/18   hyp/stock 11-24   hyp/stock 11-17
+t550                 1.000 (43)        0.998 (43)        1.053 (43)        0.993 (43)        0.641 (44)        0.604 (43)
+xps                  0.975 (43)        1.002 (43)        1.028 (43)        0.996 (43)        0.558 (44)        0.555 (43)
+lianli               1.025 (38)        1.025 (38)        1.099 (38)        1.029 (38)        0.846 (39)        0.828 (38)
+chromebook           0.995 (40)        0.996 (40)        1.048 (40)        0.997 (40)        0.707 (41)        0.692 (40)
+t460s                1.012 (45)        1.018 (45)        1.061 (45)        1.010 (45)        0.627 (46)        0.626 (45)
+t490                 1.000 (45)        1.000 (45)        1.055 (45)        1.000 (45)        0.640 (46)        0.634 (45)
+samsung-i5           1.008 (42)        1.019 (42)        1.043 (42)        1.006 (42)        0.573 (43)        0.552 (42)
+macmini-m1                    -                 -                 -                 -                 -                 -
+hp-amd               1.008 (33)        1.004 (33)        1.073 (33)        1.009 (33)        0.692 (33)        0.710 (33)
+macmini-intel                 -                 -        1.047 (43)        0.997 (43)        0.683 (44)                 -
+msi-claw                      -                 -                 -                 -        0.885 (33)                 -
+galaxybook                    -                 -                 -                 -        0.885 (31)                 -
+
+### latency: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    0.4.0/r1029       stock 24/17         0.4.0/PGO       stock 24/18   hyp/stock 11-24   hyp/stock 11-17
+t550                 0.990 (26)        0.987 (26)        1.019 (26)        1.002 (26)        0.312 (26)        0.379 (26)
+xps                  0.978 (26)        1.016 (26)        1.000 (26)        1.003 (26)        0.258 (26)        0.283 (26)
+lianli               1.037 (26)        1.042 (26)        1.094 (26)        1.031 (26)        0.951 (26)        0.947 (26)
+chromebook           0.964 (26)        0.973 (26)        0.986 (26)        0.957 (26)        0.932 (26)        0.948 (26)
+t460s                0.993 (26)        1.016 (26)        1.001 (26)        1.003 (26)        0.325 (26)        0.340 (26)
+t490                 1.000 (26)        1.002 (26)        1.024 (26)        1.000 (26)        0.251 (26)        0.280 (26)
+samsung-i5           1.009 (26)        1.059 (26)        1.028 (26)        1.043 (26)        0.285 (26)        0.324 (26)
+macmini-m1           0.983 (26)        0.989 (26)        0.985 (26)        0.749 (26)        0.983 (26)        0.936 (26)
+hp-amd               1.000 (26)        1.001 (26)        1.025 (26)        1.005 (26)        0.378 (26)        0.376 (26)
+macmini-intel                 -                 -        0.997 (26)        0.994 (26)        0.902 (26)                 -
+msi-claw                      -                 -                 -                 -        0.440 (26)                 -
+galaxybook                    -                 -                 -                 -        0.594 (26)                 -
+
+### fps: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    0.4.0/r1029       stock 24/17         0.4.0/PGO       stock 24/18   hyp/stock 11-24   hyp/stock 11-17
+t550                 1.000 (68)        1.000 (68)        1.000 (68)        1.000 (68)        1.000 (70)        1.000 (68)
+xps                  1.000 (68)        1.000 (68)        1.000 (68)        1.000 (68)        1.017 (70)        1.014 (68)
+lianli               0.997 (56)        0.996 (56)        0.998 (56)        0.997 (56)        1.000 (59)        1.000 (56)
+chromebook           1.000 (65)        1.000 (66)        1.000 (65)        1.000 (65)        1.009 (67)        1.008 (65)
+t460s                1.000 (70)        1.000 (70)        1.000 (70)        1.000 (70)        1.000 (72)        1.002 (70)
+t490                 1.000 (70)        1.000 (70)        1.000 (70)        1.000 (70)        1.000 (72)        1.000 (70)
+samsung-i5           1.000 (65)        1.000 (65)        1.000 (65)        1.000 (65)        1.023 (67)        1.017 (65)
+macmini-m1           1.000 (21)        1.000 (21)        1.000 (21)        0.998 (21)        1.017 (22)        1.023 (21)
+hp-amd               1.000 (46)        1.000 (46)        1.000 (46)        1.000 (46)        1.003 (46)        1.001 (46)
+macmini-intel                 -                 -        1.000 (68)        1.000 (68)        1.033 (70)                 -
+msi-claw                      -                 -                 -                 -        1.000 (47)                 -
+galaxybook                    -                 -                 -                 -        1.000 (43)                 -
+
+### pss start: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    0.4.0/r1029       stock 24/17         0.4.0/PGO       stock 24/18   hyp/stock 11-24   hyp/stock 11-17
+t550                  1.002 (1)         1.000 (1)         1.078 (1)         1.001 (1)         0.343 (1)         0.342 (1)
+xps                   1.008 (1)         1.000 (1)         1.084 (1)         1.000 (1)         0.346 (1)         0.344 (1)
+lianli                1.005 (1)         1.001 (1)         1.079 (1)         1.000 (1)         0.351 (1)         0.350 (1)
+chromebook            1.003 (1)         1.001 (1)         1.082 (1)         1.000 (1)         0.351 (1)         0.350 (1)
+t460s                 1.001 (1)         1.000 (1)         1.077 (1)         1.000 (1)         0.342 (1)         0.341 (1)
+t490                  1.000 (1)         1.000 (1)         1.079 (1)         1.000 (1)         0.342 (1)         0.342 (1)
+samsung-i5            0.998 (1)         0.999 (1)         1.077 (1)         0.999 (1)         0.345 (1)         0.346 (1)
+macmini-m1            1.002 (1)         1.000 (1)         1.006 (1)         0.989 (1)         0.380 (1)         0.379 (1)
+hp-amd                1.002 (1)         1.002 (1)         1.060 (1)         1.000 (1)         0.397 (1)         0.397 (1)
+macmini-intel                 -                 -         1.075 (1)         0.999 (1)         0.354 (1)                 -
+msi-claw                      -                 -                 -                 -         0.348 (1)                 -
+galaxybook                    -                 -                 -                 -         0.275 (1)                 -
+
+### startup: median ratio over the metrics (count); below 1 is less (better for cpu, latency, pss; worse for fps)
+                    0.4.0/r1029       stock 24/17         0.4.0/PGO       stock 24/18   hyp/stock 11-24   hyp/stock 11-17
+t550                  1.001 (9)         1.003 (9)         0.996 (9)         1.006 (9)         0.873 (9)         0.876 (9)
+xps                   0.986 (9)         1.000 (9)         0.997 (9)         0.993 (9)         0.942 (9)         0.957 (9)
+lianli                1.000 (9)         1.012 (9)         1.004 (9)         1.020 (9)         0.894 (9)         0.944 (9)
+chromebook            0.965 (9)         0.971 (9)         0.972 (9)         0.971 (9)         0.900 (9)         0.913 (9)
+t460s                 1.011 (9)         1.001 (9)         1.007 (9)         1.000 (9)         0.845 (9)         0.831 (9)
+t490                  1.004 (9)         1.006 (9)         1.002 (9)         1.005 (9)         0.966 (9)         0.984 (9)
+samsung-i5            1.009 (9)         1.051 (9)         1.006 (9)         1.058 (9)         0.844 (9)         0.920 (9)
+macmini-m1            1.474 (9)         1.497 (9)         1.488 (9)         1.500 (9)         0.973 (9)         0.965 (9)
+hp-amd                0.994 (9)         0.995 (9)         1.003 (9)         1.003 (9)         0.903 (9)         0.895 (9)
+macmini-intel                 -                 -         0.991 (9)         0.990 (9)         0.859 (9)                 -
+msi-claw                      -                 -                 -                 -         0.874 (9)                 -
+galaxybook                    -                 -                 -                 -         1.047 (9)                 -
+
+### metrics where 0.4.0 moved against r1029 by more than 10%, stock moved less than half as much,
+### and 0.4.0's median is outside r1029's per-block range (out=yes)
+machine       metric                                              r1029      0.4.0    ratio    stock        r1029 range  out
+xps           latency.resize.redrawn_ms                           33.35      49.40    1.481    0.966    30.50..42.70     yes
+lianli        cpu.gtk3-scroll.percent                             20.26      25.49    1.258    1.054    19.75..20.39     yes
+chromebook    gpu.folio-scroll.busy_ms_per_frame                   3.84       4.70    1.224    0.997     3.57..4.05      yes
+xps           latency.workspace-switch.focus_ms                    2.70       2.30    0.852    1.022     2.50..2.90      yes
+lianli        cpu.qt-quick-scroll.ms_per_frame                     0.72       0.81    1.125    1.024     0.71..0.73      yes
+lianli        cpu.qt-quick-scroll.percent                          4.31       4.84    1.123    1.021     4.25..4.39      yes
+lianli        cpu.xonotic-low.percent                              7.22       8.07    1.118    1.033     7.11..7.42      yes
+t460s         fps.many-windows-10.screen                          46.15      41.50    0.899    0.950    41.80..49.50     yes
+lianli        latency.workspace-switch.workspace_ms                4.80       8.65    1.802    0.950     1.50..11.60      no
+macmini-m1    latency.many-windows-10.focus_ms                     0.70       1.20    1.714    1.027     0.60..1.50       no
+macmini-m1    latency.workspace-switch.workspace_ms                1.30       0.60    0.462    0.967     0.50..1.40       no
+t460s         latency.many-windows-40.workspace_ms                 4.10       6.10    1.488    1.091     3.10..8.50       no
+macmini-m1    latency.many-windows-40.workspace_ms                 1.30       1.80    1.385    0.969     1.00..2.00       no
+macmini-m1    latency.many-windows-20.workspace_ms                 1.70       1.05    0.618    1.111     0.70..1.90       no
+chromebook    gpu.xonotic-low.busy_ms_per_frame                    8.06      10.90    1.352    0.998     7.57..11.57      no
+macmini-m1    latency.many-windows-10.workspace_ms                 5.20       3.40    0.654    0.938     1.50..6.20       no
+lianli        latency.resize.resize_ms                             1.70       1.20    0.706    1.000     1.20..2.40       no
+chromebook    cpu.electrobench-ocean-window.ms_per_frame           1.72       2.15    1.250    1.026     1.68..2.47       no
+lianli        latency.notifications.toast_ms                      20.50      25.10    1.224    1.079    17.40..30.50      no
+t460s         latency.notifications.toast_ms                      25.60      20.20    0.789    0.972    15.70..31.90      no
+lianli        latency.dev.type_ms                                  7.90       9.50    1.203    1.000     7.20..11.30      no
+chromebook    cpu.xonotic-low.ms_per_frame                         1.06       1.26    1.189    1.006     0.99..1.27       no
+chromebook    cpu.xonotic-low.percent                              5.97       6.98    1.169    1.010     5.58..6.99       no
+chromebook    latency.notifications.toast_ms                      21.60      25.20    1.167    0.980    18.70..47.30      no
+macmini-m1    cpu.video-window.percent                             1.12       0.94    0.839    0.940     0.74..1.49       no
+macmini-m1    startup.cpu_ms                                     190.00     220.00    1.158    1.067   170.00..240.00     no
+chromebook    fps.menu.screen                                      7.70       8.80    1.143    1.012     7.20..9.40       no
+t460s         cpu.yquake2-vk.ms_per_frame                          0.92       1.04    1.137    1.048     0.82..1.14       no
+lianli        cpu.tk-canvas.percent                                3.52       4.00    1.135    1.014     3.38..4.35       no
+chromebook    latency.many-windows-10.workspace_ms                10.60       9.20    0.868    0.983     8.20..13.70      no
+lianli        cpu.tk-canvas.ms_per_frame                           0.59       0.67    1.127    1.012     0.56..0.72       no
+macmini-m1    latency.many-windows-20.focus_ms                     0.80       0.70    0.875    0.961     0.60..1.60       no
+t460s         latency.resize.resize_ms                             2.85       3.20    1.123    1.020     1.30..3.60       no
+lianli        fps.many-windows-20.screen                          46.20      40.85    0.884    0.986    40.40..48.00      no
+macmini-m1    latency.notifications.toast_ms                      19.10      21.30    1.115    1.055     6.80..30.80      no
+t460s         gpu.video.busy_ms_per_frame                          8.95       9.91    1.107    0.985     8.75..11.03      no
+chromebook    cpu.menu.percent                                     1.57       1.73    1.102    0.953     1.52..1.82       no
+t460s         cpu.yquake2-vk.percent                               1.99       2.19    1.101    1.031     1.74..2.35       no
+t460s         latency.idle-windows.focus_ms                        2.10       1.90    0.905    1.019     1.80..2.40       no
+xps           latency.idle-windows.focus_ms                        2.65       2.40    0.906    1.018     2.40..3.00       no
+chromebook    latency.dev.scroll_ms                               54.10      49.00    0.906    0.958    43.30..57.10      no
+lianli        fps.electrobench-guns-window                         1.10       1.00    0.909    1.000     1.00..1.10       no
+samsung-i5    cpu.supertuxkart-vk.percent                          1.98       1.80    0.909    1.040     1.77..2.30       no

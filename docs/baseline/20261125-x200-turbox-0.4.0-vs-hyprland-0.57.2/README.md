@@ -1,8 +1,8 @@
 # X200 and Turbo-X: Hypoland 0.4.0 against Hyprland 0.57.2-2
 
 The lab pages' numbers for the ThinkPad X200 and the Turbo-X Sirus Duo since 2026-11-25 (`scripts/web/labdata.py`,
-`X200_TURBOX_RUN` in `FALLBACK`). The other machines' numbers come from
-`20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2` and the nights named there.
+`X200_TURBOX_RUN` in `FALLBACK`). The other machines' numbers come from the same packages' night,
+`20261124-all-machines-0.4.0-vs-hyprland-0.57.2`.
 
 - Hypoland: the 0.4.0 release package, a plain build (`hypoland-0.4.0-1-x86_64.pkg.tar.zst` of the v0.4.0 GitHub
   release, tag v0.4.0, commit 8c78483ff; `/usr/bin/hypoland` 12770928 B). scripts/bench of the same commit.

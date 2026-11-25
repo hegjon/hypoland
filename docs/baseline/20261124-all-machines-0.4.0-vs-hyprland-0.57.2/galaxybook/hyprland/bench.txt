@@ -1,0 +1,4 @@
+machine: galaxybook, 7.3.0-71-omarchy, 12 cores, 15418 MiB
+compositor: /usr/bin/Hyprland, pid 2011584, user a, instance 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947_1795558554_1527738540
+package: hyprland 0.57.2-2
+clocksource: arch_sys_counter

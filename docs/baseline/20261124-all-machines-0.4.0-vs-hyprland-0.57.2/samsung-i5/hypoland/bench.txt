@@ -1,0 +1,4 @@
+machine: samsung-i5, 7.2.15-2-omarchy, 4 cores, 3786 MiB
+compositor: /usr/bin/hypoland, pid 712913, user a, instance 8c78483ff697822919d686c559b90e379971190b_1795574306_1113710202
+package: hypoland 0.4.0-1
+clocksource: tsc

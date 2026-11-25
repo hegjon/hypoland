@@ -1,0 +1,4 @@
+machine: msi-claw, 7.2.15-4-omarchy, 22 cores, 15487 MiB
+compositor: /usr/bin/hypoland, pid 1322074, user a, instance 8c78483ff697822919d686c559b90e379971190b_1795560605_1964501887
+package: hypoland 0.4.0-1
+clocksource: tsc

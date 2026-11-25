@@ -1,0 +1,70 @@
+Night 2026-11-24/25: the Hypoland 0.4.0 release (tag v0.4.0, 8c78483ff, plain build; /usr/bin/hypoland 12470 kB on x86_64,
+11731 kB on aarch64) against stock Hyprland 0.57.2-2 + omarchy-hyprland-titlebars 0.4.0-1, alternating fresh sessions
+16:50 until 09:00, on fourteen machines (p14s left out: the btrpkg machine). 0.4.0 has the same src/ as r1029 (no change
+under src/ or subprojects/ between 5773660bf and 8c78483ff); since r1029 the benchmark gained the glmark2 workload.
+Collected with report.sh (report.log, twelve hosts), table.py (table.txt, its hosts list cut to the twelve), compare.py
+(compare.txt; new: 0.4.0 against night-20261117's r1029 plain, the like-for-like build, and night-20261118's r1030 PGO).
+
+Blocks (Hypoland / stock): t550 12/12, xps 11/11, lianli 14/14, chromebook 11/11, t460s 11/11, t490 12/12, samsung-i5 13/13,
+macmini-m1 14/14, hp-amd 21/21, macmini-intel 12/12, msi-claw 19/19, galaxybook 19/19. All twelve DONE between 07:44 and
+08:59, restored: hypoland 0.4.0-1, hypoland --watchdog-fd as a, governor back on the value before (schedutil, powersave on
+t460s/t490/msi-claw, performance on the M1), no failed units, no "no session".
+
+x200: HUNG at about 20:12 on 11-24, in round 4's stock block (Hyprland 0.57.2 with the pr GLES 3 override, ElectroBench
+running; the block started 19:51). Since then it does not answer ARP ("No route to host"; turbox at least answers ping).
+Its netconsole and forwarded journal end at 20:08 / 20:12:28 with ordinary lines: no GPU HANG, no oops, no memory
+pressure. Not fetched. On its disk in /root/abnight/night-20261124-040: round 1 to 3 complete (3 Hypoland + 3 stock
+blocks) plus round 4's stock block that hung (skip it, put it in night-20261124-040/x200.skip). Not restored: it still has
+stock Hyprland 0.57.2 installed, the pr files in Omarchy's default/hypr and envs.lua patched (the original is
+/root/abnight/night-20261124-040/envs.lua.orig). After the power cycle and disk password: install
+hypoland-0.4.0-1 again, put envs.lua back and remove intel-gles2.lua, omarchy-hw-intel-gles2 and stock-quirks.lua (what
+abnight.sh's restore() does), then `bash report.sh night-20261124-040 x200`.
+
+turbox: HUNG at about 03:32 (memory-starvation livelock on its 1 GB, see ~/Work/infrastructure/machines/turbox.md). Answers
+ping, ssh dies in the banner exchange, no KVM. Not fetched; its finished blocks (up to the one that started about 03:15,
+which hung) are on its disk. After the reboot: check which compositor is installed (restore as for the x200 if stock),
+then `bash report.sh night-20261124-040 turbox` with that block in turbox.skip.
+x200 and turbox claims could not be renewed (the claim lives on the machine) and expire at 09:30.
+
+Session checks (round 1): Hypoland passed every check on all twelve (103/0, or 76/0 and 77/0 where the scale skips render
+checks, xps 102/0). Stock failed render checks as in the nights before (xps 59, galaxybook 56, macmini-m1 32, 3 to 8 on
+the rest). galaxybook's pending-migrations notification did not cost Hypoland a check. macmini-m1 103/0 this time (9 FAILs
+on 11-18).
+
+0.4.0 against r1029 (night-20261117; median ratio per metric group, stock drift between the nights in brackets):
+  compositor CPU %          0.967 to 1.014 (stock 0.999 to 1.017)
+  compositor CPU ms/frame   0.975 to 1.025 (stock 0.996 to 1.025)
+  latencies                 0.964 to 1.037 (stock 0.973 to 1.059)
+  fps                       0.997 to 1.000
+  Pss at the start          0.998 to 1.008
+  startup times             0.965 to 1.011; macmini-m1 1.47 for both compositors (stock 1.50): the machine
+  => the same as r1029, as the unchanged source says.
+0.4.0 against r1030 PGO (night-20261118): CPU 1.025 to 1.073, Pss at the start 1.060 to 1.084 on x86 (stock 0.99 to 1.01):
+the PGO build's advantage, as expected for a plain release. macmini-m1 (plain both nights) is not comparable with 11-18
+(stock 0.85: the M1 was freshly booted that night).
+
+Hypoland against stock (this night): compositor CPU 0.58 to 0.89 of stock's, CPU per frame 0.56 to 0.89, latencies 0.25 to
+0.98, screen fps equal or higher (1.000 to 1.033), Pss at the start 40 to 51 MiB against 115 to 154 (0.28 to 0.40),
+startup 0.85 to 0.97 (galaxybook 1.05).
+Behind stock: msi-claw foot scrolling 58.8 % CPU at 54 fps against 8.8 % (10.8 against 1.7 ms/frame), dragging a split
+74.0 % at 83 fps against 11.7 % at 120 fps, qt-software-scroll 63.7 % against 14.7 % (same 87.5 fps) - the same shape as
+the one round of 11-24 and the quick round of 11-23, steady over all 19 blocks: Hypoland's own, on the Claw's 120 Hz
+scale-2 panel. Known open items as before: t550 many-windows-10 28.9 against 49.0 fps, galaxybook's menu (7.7 against 4.5
+ms/frame), lianli's workspace switch (8.6 against 1.9 ms), launch.closed about 105 ms (the closing window's fade) against
+2 to 31, notification toast a few ms late on t550/chromebook/macmini-m1, t490 velocitty 28.3 against 32.0 fps.
+
+Single metrics that moved against r1029, outside its per-block range (compare.txt):
+- lianli gtk3-scroll: 45.3 fps (was 59.7) at 25.5 % CPU (was 20.3); stock fell too, 59.7 -> 38.8 fps. lianli was off from
+  11-19 to 11-24 13:53 (fresh boot, no package updates): the machine, not the build. qt-quick-scroll/xonotic-low CPU on lianli
+  +12 % with stock +2 to 3 %, to watch.
+- xps resize redraw latency 33 -> 49 ms: a bimodal value (about 32 or 42 to 53 ms per block; 11-18 had both), all blocks in the
+  upper mode this night. Stock 41 to 49.
+- chromebook folio-scroll GPU 3.84 -> 4.70 ms/frame (11-18 already 4.63), stock unchanged. Small, GPU side, still to watch.
+
+GPU hangs and core dumps:
+- xps: one i915 GPU HANG with an rcs0 reset at 01:04:41, during glmark2 at the end of Hypoland block 6; the block finished
+  (712 values, glmark2 205 against about 210 fps). xps has had 11 such resets since 11-01, under both compositors.
+- Core dumps: GravityMark on t550 (24) and xps (22), Xwayland at session ends on chromebook (2), samsung-i5 (4),
+  macmini-intel (4), SuperTuxKart on hp-amd (2). All known; no compositor crashed on the twelve.
+
+Claims of the twelve released at 09:15 on 11-25 (LAB_WHO=hermes).
