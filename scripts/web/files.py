@@ -137,13 +137,10 @@ page = f"""{head("Hypoland: file managers", "Flea and Folio scrolling a folder o
         </tbody>
       </table></div>
       <p class="note">
-        Medians of {sessions_text(sessions, 1)} per machine, {RUN}. {TWO_NIGHTS} Folio is Omarchy's package 0.6.1
-        (0.7.1 on the MSI Claw), Flea 0.4.3; Flea opens no window on the X200 and the Turbo-X (it needs more than
-        OpenGL&nbsp;2.1). On those two Hyprland runs with Omarchy's GLES&nbsp;3 override (<a
-        href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), which the file managers get too. The Mac
-        mini M1's display driver reports no page flips, so it has no frames on the screen. The Turbo-X has no memory cell:
-        on its 1&nbsp;GB most of the file manager sits in swap. Nautilus is not here: Omarchy removed it on 2026-11-13,
-        before 0.4.0.
+        Medians of {sessions_text(sessions, 1)} per machine, {RUN}. {TWO_NIGHTS} Flea opens no window on those two (it
+        needs more than OpenGL&nbsp;2.1), where Hyprland runs with Omarchy's GLES&nbsp;3 override (<a
+        href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>). The Mac mini M1 reports no page flips;
+        the Turbo-X's file manager is mostly in swap, so it has no memory cell. Nautilus left Omarchy on 2026-11-13.
         {RAW}
       </p>
     </div>

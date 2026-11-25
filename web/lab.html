@@ -95,8 +95,8 @@
         </tbody>
       </table></div>
       <p class="note">
-        Compositor CPU in percent of one core; medians of 5 to 21 fresh sessions of Hypoland and 5 to 21 of Hyprland per machine,
-        the Hypoland 0.4.0 release against Hyprland 0.57.2-2, alternating through the night of 2026-11-24 to 25. The two alternated in fresh sessions, so a drift of the machine hits both. The X200 and the Turbo-X hung in a Hyprland session that night; theirs add the sessions of 11-25. The Lenovo ThinkPad P14s Gen 2a was not in the 0.4.0 runs. Both ran without realtime scheduling (<code>HYPRLAND_NO_RT=1</code>,
+        Compositor CPU in percent of one core; medians of 5 to 21 fresh sessions of each per machine,
+        Hypoland 0.4.0 against Hyprland 0.57.2-2, alternating through the night of 2026-11-24. The X200 and the Turbo-X hung in a Hyprland session that night and add the sessions of 11-25. The Lenovo ThinkPad P14s Gen 2a was not in the 0.4.0 runs. Both ran without realtime scheduling (<code>HYPRLAND_NO_RT=1</code>,
         as Omarchy runs Hyprland), except on the Galaxy Book; Hyprland with
         <code>quirks:skip_non_kms_dmabuf_formats = false</code>, Hypoland's default, and on the X200 and the Turbo-X with
         Omarchy's GLES&nbsp;3 override (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>), without
@@ -105,7 +105,7 @@
         shell's shared pages. The Turbo-X has no memory or Chromium cell: on its 1&nbsp;GB most of either compositor sits
         in swap, which the memory does not count, and Chromium opens no window there. More:
         <a href="terminals.html">terminals</a>, <a href="games.html">games</a>, <a href="files.html">file managers</a>.
-        Raw data and scripts: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261124-all-machines-0.4.0-vs-hyprland-0.57.2">20261124-all-machines-0.4.0-vs-hyprland-0.57.2</a>, <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2">20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2</a>.
+        Raw data: <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261124-all-machines-0.4.0-vs-hyprland-0.57.2">20261124-all-machines-0.4.0-vs-hyprland-0.57.2</a>, <a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline/20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2">20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2</a>.
       </p>
     </div>
   </section>

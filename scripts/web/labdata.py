@@ -19,13 +19,12 @@ FALLBACK = {"x200": X200_TURBOX_RUN, "turbox": X200_TURBOX_RUN}
 HYPOLAND_RUN = BASELINE
 HYPOLAND_BLOCKS = {}
 # the runs the numbers come from, for the pages' notes
-RUN = ("the Hypoland 0.4.0 release against Hyprland " + HYPRLAND + "-2, alternating through the night of 2026-11-24 to 25")
+RUN = ("Hypoland 0.4.0 against Hyprland " + HYPRLAND + "-2, alternating through the night of 2026-11-24")
 # what that means for reading them
-TWO_NIGHTS = ("The two alternated in fresh sessions, so a drift of the machine hits both. The X200 and the Turbo-X hung in "
-              "a Hyprland session that night; theirs add the sessions of 11-25.")
+TWO_NIGHTS = "The X200 and the Turbo-X hung in a Hyprland session that night and add the sessions of 11-25."
 # the raw data of the nights, for the pages' notes
 _link = lambda d: f'<a href="https://github.com/hegjon/hypoland/tree/master/{d}">{d.split("/")[-1]}</a>'
-RAW = f"Raw data and scripts: {_link(BASELINE)}, {_link(X200_TURBOX_RUN)}."
+RAW = f"Raw data: {_link(BASELINE)}, {_link(X200_TURBOX_RUN)}."
 
 # alias, machine, year, CPU, GPU, Mesa driver and GLES level, screen, RAM, what it stands for; baseline: has a column
 MACHINES = [
@@ -97,7 +96,8 @@ def sessions_text(pairs, few):
     machines that have at least few of each."""
     full = [p for p in pairs if min(p) >= few]
     span = lambda xs: f"{min(xs)}" if min(xs) == max(xs) else f"{min(xs)} to {max(xs)}"
-    return f"{span([h for h, _ in full])} fresh sessions of Hypoland and {span([s for _, s in full])} of Hyprland"
+    hs, ss = span([h for h, _ in full]), span([s for _, s in full])
+    return f"{hs} fresh sessions of each" if hs == ss else f"{hs} fresh sessions of Hypoland and {ss} of Hyprland"
 
 def fmt(x, unit):
     if unit == "%": return f"{x:.1f}%"
