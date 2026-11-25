@@ -184,6 +184,7 @@ footer img { vertical-align: middle; image-rendering: pixelated; }
 @media (max-width: 860px) {
   .win, .win.third { grid-column: 1 / -1; }
   .bar .right span.opt { display: none; }
+  .bar .right span.opt + span:not(.opt):before { content: ""; }
 }
 @media (max-width: 480px) {
   td code { word-break: break-all; }

@@ -128,6 +128,12 @@ E = html.escape
 # as workspaces, and the same links on every page, the current one marked. index.html and 404.html carry a copy by
 # hand: keep them in step.
 POTATO = ('<svg viewBox="0 0 25 19" shape-rendering="crispEdges" aria-hidden="true"><path fill="#4a2a10" d="M16 0h2v1h-2zM13 1h3v1h-3zM18 1h3v1h-3zM11 2h2v1h-2zM21 2h1v1h-1zM8 3h3v1h-3zM22 3h1v1h-1zM5 4h3v1h-3zM23 4h1v1h-1zM3 5h2v1h-2zM23 5h1v1h-1zM2 6h1v1h-1zM14 6h2v1h-2zM23 6h1v1h-1zM1 7h1v1h-1zM24 7h1v1h-1zM1 8h1v1h-1zM24 8h1v1h-1zM0 9h1v1h-1zM7 9h2v1h-2zM24 9h1v1h-1zM0 10h1v1h-1zM23 10h1v1h-1zM0 11h1v1h-1zM17 11h2v1h-2zM23 11h1v1h-1zM0 12h1v1h-1zM4 12h1v1h-1zM23 12h1v1h-1zM0 13h1v1h-1zM22 13h1v1h-1zM0 14h1v1h-1zM10 14h2v1h-2zM21 14h1v1h-1zM1 15h1v1h-1zM19 15h2v1h-2zM1 16h1v1h-1zM17 16h2v1h-2zM2 17h2v1h-2zM14 17h3v1h-3zM4 18h10v1h-10z"/><path fill="#b07a3c" d="M21 3h1v1h-1zM22 4h1v1h-1zM22 6h1v1h-1zM21 7h1v1h-1zM23 7h1v1h-1zM22 8h2v1h-2zM21 9h3v1h-3zM20 10h1v1h-1zM22 10h1v1h-1zM19 11h1v1h-1zM21 11h2v1h-2zM18 12h1v1h-1zM20 12h3v1h-3zM17 13h1v1h-1zM19 13h3v1h-3zM14 14h1v1h-1zM16 14h5v1h-5zM11 15h1v1h-1zM13 15h1v1h-1zM15 15h4v1h-4zM2 16h1v1h-1zM4 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM10 16h1v1h-1zM12 16h5v1h-5zM4 17h10v1h-10z"/><path fill="#d9a05b" d="M16 1h2v1h-2zM13 2h8v1h-8zM11 3h1v1h-1zM14 3h7v1h-7zM8 4h1v1h-1zM13 4h9v1h-9zM5 5h1v1h-1zM10 5h13v1h-13zM3 6h2v1h-2zM7 6h7v1h-7zM16 6h6v1h-6zM2 7h19v1h-19zM22 7h1v1h-1zM2 8h20v1h-20zM1 9h6v1h-6zM9 9h12v1h-12zM1 10h19v1h-19zM21 10h1v1h-1zM1 11h16v1h-16zM20 11h1v1h-1zM1 12h3v1h-3zM5 12h13v1h-13zM19 12h1v1h-1zM1 13h16v1h-16zM18 13h1v1h-1zM1 14h9v1h-9zM12 14h2v1h-2zM15 14h1v1h-1zM2 15h9v1h-9zM12 15h1v1h-1zM14 15h1v1h-1zM3 16h1v1h-1zM5 16h1v1h-1zM7 16h1v1h-1zM9 16h1v1h-1zM11 16h1v1h-1z"/><path fill="#f2cd98" d="M12 3h2v1h-2zM9 4h4v1h-4zM6 5h4v1h-4zM5 6h2v1h-2z"/></svg>')
+# The OpenGL ES version Hypoland stops at, and its shading language, each linked to Khronos' own reference. Hidden on
+# narrow screens (.opt in style.css).
+SPECS = [("https://registry.khronos.org/OpenGL-Refpages/es2.0/", "GLES 2.0",
+          "The OpenGL ES 2.0 reference pages, at Khronos"),
+         ("https://registry.khronos.org/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf", "GLSL ES 1.00",
+          "The OpenGL ES Shading Language 1.00 specification, at Khronos (PDF)")]
 LINKS = [("lab.html", "lab"), ("terminals.html", "terminals"), ("games.html", "games"), ("files.html", "files"),
          ("https://github.com/hegjon/hypoland", "github")]
 
@@ -135,7 +141,9 @@ def bar(sections, current=None):
     """The <nav> bar: sections is [(id, number)] after workspace 1 (#top), current the page's file name."""
     ws = "".join(f'\n    <li><a href="#{sid}">{n}</a></li>' for sid, n in sections)
     cur = lambda href: ' aria-current="page"' if href == current else ""
-    links = "".join(f'\n    <span><a href="{href}"{cur(href)}>{label}</a></span>' for href, label in LINKS)
+    links = "".join(f'\n    <span class="opt"><a href="{href}" title="{title}">{label}</a></span>'
+                    for href, label, title in SPECS)
+    links += "".join(f'\n    <span><a href="{href}"{cur(href)}>{label}</a></span>' for href, label in LINKS)
     return f"""<nav class="bar" aria-label="Sections">
   <a class="logo" href="/" aria-label="Hypoland, the home page">{POTATO}</a>
   <ul class="ws">
