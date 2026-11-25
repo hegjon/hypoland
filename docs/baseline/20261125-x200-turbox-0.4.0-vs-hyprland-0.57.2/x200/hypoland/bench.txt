@@ -1,0 +1,4 @@
+machine: x200, 7.2.15-2-omarchy, 2 cores, 5809 MiB
+compositor: /usr/bin/hypoland, pid 6713, user a, instance 8c78483ff697822919d686c559b90e379971190b_1795606181_2120406444
+package: hypoland 0.4.0-1
+clocksource: hpet

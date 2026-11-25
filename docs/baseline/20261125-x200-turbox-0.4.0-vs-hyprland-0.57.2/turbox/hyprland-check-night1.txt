@@ -1,0 +1,45 @@
+machine: turbox, 7.2.15-2-omarchy, 2 cores, 946 MiB
+compositor: /usr/bin/Hyprland, pid 500594, user a, instance 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947_1795534058_2089658975
+package: hyprland 0.57.2-2
+apps: folio 0.6.1-1, flea 0.4.3-1
+clocksource: hpet
+PASS  compositor running, hyprctl responds
+INFO  Hyprland 0.57.2 built from branch v0.57.2 at commit 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947 clean
+INFO  
+PASS  config loads without errors
+PASS  setting an option returns ok
+PASS  setting a removed option returns ok
+PASS  output LVDS-1: 1280x800@59.91000
+PASS  no lock screen in the way
+INFO  4 layer surfaces (bar, wallpaper, notifications)
+PASS  test window mapped
+PASS  the screen shows the window (83% of the scanned-out buffer is the test color)
+PASS  test window drawn (83% of the screen is the test color)
+INFO  render: radeon's legacy modesetting does not tell which buffer the screen shows, capturing the compositor's frames instead
+FAIL  render whole: 157552 pixels of hypoland-render-a differ from what it drew, first at 7,2: (148, 93, 72) shown as (154, 93, 78)
+PASS  render whole: the screen is what a full repaint shows (screencopy)
+FAIL  render screenshot: 158028 pixels of hypoland-render-a differ from what it drew, first at 7,2: (148, 93, 72) shown as (154, 93, 78)
+FAIL  render screenshot again: 157403 pixels of hypoland-render-a differ from what it drew, first at 7,2: (19, 8, 66) shown as (23, 11, 69)
+FAIL  Chromium did not map a window
+PASS  GTK 3 window drawn (85% of the screen is the test color, after 3 s)
+PASS  GTK 3 window at 28 fps (renderer cairo)
+FAIL  GTK 4 window did not map: (hypoland-gtk4-test:565914): Gdk-WARNING **: 17:57:10.738: vkEnumeratePhysicalDevices(): Initialization of an object could not be completed for implementation-specific reasons. (VK_ERROR_INITIALIZATION_FAILED) (-3)
+PASS  GTK 3 (Xwayland) window drawn (82% of the screen is the test color, after 2 s)
+PASS  GTK 3 (Xwayland) window at 55 fps (renderer cairo)
+PASS  Qt Quick window drawn (84% of the screen is the test color, after 2 s)
+PASS  Qt Quick window at 49 fps (renderer opengl)
+PASS  Qt Quick (software) window drawn (86% of the screen is the test color, after 1 s)
+PASS  Qt Quick (software) window at 54 fps (renderer software)
+PASS  Tk window (Xwayland) drawn (86% of the screen is the test color, after 1 s)
+PASS  Tk menu above its window, where Tk put it
+PASS  Tk dialog floats over its window
+PASS  Tk dialog shown whole
+PASS  GPU client (weston-simple-egl) at 55 fps
+SKIP  X11 client: glxgears is not installed
+INFO  compositor memory: Rss: 22 MiB, Pss: 17 MiB, Anonymous: 7 MiB
+PASS  no GL or shader errors in the compositor's log
+PASS  no new crash reports
+INFO  core dumps since the compositor started: 4.8M 3x
+PASS  the compositor ran through without a restart
+screenshots: /tmp/hypoland-measure.s6qVmL on turbox
+RESULT: FAIL

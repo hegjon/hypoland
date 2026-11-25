@@ -1,0 +1,4 @@
+machine: turbox, 7.2.15-2-omarchy, 2 cores, 946 MiB
+compositor: /usr/bin/Hyprland, pid 70939, user a, instance 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947_1795608256_2087624434
+package: hyprland 0.57.2-2
+clocksource: hpet

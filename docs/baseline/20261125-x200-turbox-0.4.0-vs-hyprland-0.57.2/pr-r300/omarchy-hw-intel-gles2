@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# night-20261123 kit, turbox only: stands in for omarchy PR 14764's Intel Gen4/Gen5 detector so that its GLES 3.0
+# override (intel-gles2.lua) also applies on ATI R300-R500 GPUs, which Mesa's r300 driver runs at GLES 2.0 only.
+# Matches the GPU of turbox (Mobility Radeon X1600, 1002:71c5) and its R500 siblings by the kernel driver radeon
+# plus the device id range 0x7100-0x7299 (RV515/RV530/R520/R580). Untested territory for stock Hyprland.
+shopt -s nullglob
+for device in /sys/bus/pci/devices/*; do
+  [[ $(< "$device/vendor") == "0x1002" ]] || continue
+  [[ $(< "$device/class") == 0x03* ]] || continue
+  id=$(( $(< "$device/device") ))
+  (( id >= 0x7100 && id <= 0x7299 )) && exit 0
+done
+exit 1
