@@ -10,25 +10,36 @@ HYPRLAND = "0.57.2"
 # with realtime as Omarchy has it), Hyprland's from docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1; before,
 # from one baseline. HYPOLAND_RUN and HYPOLAND_BLOCKS stay for such a pair of nights: Hypoland's blocks are
 # HYPOLAND_RUN/<machine>/<HYPOLAND_BLOCKS.get(machine, "hypoland")>.
-# Since 2026-11-21 BASELINE is the night of 2026-11-17 to 18, Hypoland master r1029 (plain build, as released; the night of
-# 11-18 ran a PGO build) against Hyprland 0.57.2-2 on eleven machines. The two it did not have keep the night of 11-14 to 15
-# (r992 against the same Hyprland), in FALLBACK: the Galaxy Book (reinstalled as stock Omarchy on 11-17) and the Mac mini
-# 2014 (sshd off).
-BASELINE = "docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2"
+# Since 2026-11-24 BASELINE is the night of 2026-11-18 to 19: Hypoland master r1030 as a PGO build against Hyprland
+# 0.57.2-2 on twelve machines. It is the first PGO night, and the released packages are plain builds: PGO measured 4 to
+# 6 % less compositor CPU and 6 to 7 % less memory at the start than the plain r1029 night of 11-17 (PREV_RUN), with the
+# same fps, so RUN names the build on every page. Four machines are not read from here, in FALLBACK: the Galaxy Book
+# (reinstalled as stock Omarchy on 11-17) and the Mac mini 2014 (sshd off) keep the night of 11-14 to 15 (r992 against
+# the same Hyprland), and the ThinkPad P14s and the Mac mini M1 keep the plain r1029 night of 11-17 to 18: the P14s's PGO
+# build aborted in the video workload in every one of its eleven Hypoland sessions there, and the M1's whole night moved
+# (it ran on the fresh boot of the day it was found at its disk prompt, and stock itself measured 1.19 times the CPU and
+# 1.40 the latencies of its 11-17 night).
+BASELINE = "docs/baseline/20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2"
+# the plain r1029 night, the one to compare a later plain build with
+PREV_RUN = "docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2"
 FALLBACK_RUN = "docs/baseline/20261114-all-machines-r992-vs-hyprland-0.57.2"
-FALLBACK = {"galaxybook": FALLBACK_RUN, "macmini-intel": FALLBACK_RUN}
+FALLBACK = {"galaxybook": FALLBACK_RUN, "macmini-intel": FALLBACK_RUN, "p14s": PREV_RUN, "macmini-m1": PREV_RUN}
 HYPOLAND_RUN = BASELINE
 HYPOLAND_BLOCKS = {}
 # the night the numbers come from, for the pages' notes
-RUN = ("Hypoland master r1029 (after 0.3.0) against Hyprland " + HYPRLAND + "-2, alternating through the night of "
-       "2026-11-17 to 18")
-# what that means for reading them, and the machines from the night before
+RUN = ("Hypoland master r1030 (after 0.3.0) as a PGO build against Hyprland " + HYPRLAND + "-2, alternating through the "
+       "night of 2026-11-18 to 19; released packages are plain builds, and those measured 4 to 6 % more compositor CPU")
+# what that means for reading them, and the machines from another night
 TWO_NIGHTS = ("The two alternated, a fresh session each, so a drift of the machine hits both the same. The Samsung Galaxy "
-              "Book4 Edge and the Mac mini Late 2014 were not in that night: theirs are from the night of 2026-11-14 to 15, "
-              "Hypoland master r992 against the same Hyprland " + HYPRLAND + "-2.")
+              "Book4 Edge and the Mac mini Late 2014 were not in that night: theirs are from the night of 2026-11-14 to "
+              "15, Hypoland master r992 against the same Hyprland " + HYPRLAND + "-2. The ThinkPad P14s and the Mac mini "
+              "M1 are from the night of 2026-11-17 to 18 (Hypoland master r1029, a plain build): the P14s's PGO sessions "
+              "aborted in the video workload in every one of them, and the M1's whole night moved, its stock Hyprland at "
+              "1.19 times the CPU and 1.40 the latencies it measured on 11-17, so neither machine's PGO pair is shown.")
 # the raw data of the nights, for the pages' notes
 _link = lambda d: f'<a href="https://github.com/hegjon/hypoland/tree/master/{d}">{d.split("/")[-1]}</a>'
-RAW = f"Raw data, every session's values and the scripts: {_link(BASELINE)}, and for those two {_link(FALLBACK_RUN)}."
+RAW = (f"Raw data, every session's values and the scripts: {_link(BASELINE)}, for the P14s and the Mac mini M1 "
+       f"{_link(PREV_RUN)}, and for those two other machines {_link(FALLBACK_RUN)}.")
 
 # alias, machine, year, CPU, GPU, Mesa driver and GLES level, screen, RAM, what it stands for; baseline: has a column
 MACHINES = [

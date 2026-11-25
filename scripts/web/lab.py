@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # Writes web/lab.html, the page about the test machines: the hardware table (the facts below), and every machine's
-# numbers against stock Hyprland, since 2026-11-21 from docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2 and,
-# for the two machines it does not have, the 11-14 night (values.txt and raw.txt per machine and compositor; the nights and
+# numbers against stock Hyprland, since 2026-11-24 from docs/baseline/20261118-all-machines-r1030-pgo-vs-hyprland-0.57.2
+# and, for the three machines it does not show, the 11-17 night (the P14s) and the 11-14 night (the Galaxy Book and the
+# Mac mini 2014) (values.txt and raw.txt per machine and compositor; since 2026-11-25 the X200 and the Turbo-X from
+# docs/baseline/20261125-x200-turbox-0.4.0-vs-hyprland-0.57.2, the 0.4.0 release; the nights and
 # the machines are in labdata.py); from 2026-11-15 to 21 all from the 11-14 night. From 2026-11-13 to 15
 # Hypoland's came from docs/baseline/20261112-all-machines-r991-realtime-off-vs-on and Hyprland's from
 # docs/baseline/20261111-all-machines-r966-vs-hyprland-0.57.1. Before, both came from one baseline: the r957 one of
