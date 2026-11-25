@@ -14,7 +14,18 @@
 <body>
 
 <nav class="bar" aria-label="Site">
-  <a href="/">hypoland.org</a>
+  <!-- The same bar as scripts/web/labdata.py's bar(), with absolute paths: keep the two in step. -->
+  <a class="logo" href="/" aria-label="Hypoland, the home page"><svg viewBox="0 0 1024 1024" aria-hidden="true"><path transform="matrix(1 0 0 -1 0 1024)" d="M70 70H549V0H0V1024H1024V0H626V70H954V954H70ZM884 140H140V884H551V814H210V210H814V814H736V884H884ZM471 140H549V70H471ZM473 954H551V884H473ZM0 551H210V473H0Z"/></svg></a>
+  <ul class="ws">
+    <li><a class="on" href="/">1</a></li>
+  </ul>
+  <div class="right">
+    <span><a href="/lab.html">lab</a></span>
+    <span><a href="/terminals.html">terminals</a></span>
+    <span><a href="/games.html">games</a></span>
+    <span><a href="/files.html">files</a></span>
+    <span><a href="https://github.com/hegjon/hypoland">github</a></span>
+  </div>
 </nav>
 
 <main class="desk narrow">

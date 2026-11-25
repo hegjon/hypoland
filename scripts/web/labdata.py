@@ -123,6 +123,28 @@ def cell(h, s, unit, lower_better):
 
 E = html.escape
 
+# The status bar every page has, drawn like Omarchy's Waybar: Omarchy's mark (the glyph U+E900 of its font
+# omarchy.ttf, as an inline path, so no web font) back to the home page, the page's sections as workspaces, and the
+# same links on every page, the current one marked. index.html and 404.html carry a copy by hand: keep them in step.
+OMARCHY_MARK = ('<svg viewBox="0 0 1024 1024" aria-hidden="true"><path transform="matrix(1 0 0 -1 0 1024)" '
+                'd="M70 70H549V0H0V1024H1024V0H626V70H954V954H70ZM884 140H140V884H551V814H210V210H814V814H736V884H884ZM471 140H549V70H471ZM473 954H551V884H473ZM0 551H210V473H0Z"/></svg>')
+LINKS = [("lab.html", "lab"), ("terminals.html", "terminals"), ("games.html", "games"), ("files.html", "files"),
+         ("https://github.com/hegjon/hypoland", "github")]
+
+def bar(sections, current=None):
+    """The <nav> bar: sections is [(id, number)] after workspace 1 (#top), current the page's file name."""
+    ws = "".join(f'\n    <li><a href="#{sid}">{n}</a></li>' for sid, n in sections)
+    cur = lambda href: ' aria-current="page"' if href == current else ""
+    links = "".join(f'\n    <span><a href="{href}"{cur(href)}>{label}</a></span>' for href, label in LINKS)
+    return f"""<nav class="bar" aria-label="Sections">
+  <a class="logo" href="/" aria-label="Hypoland, the home page">{OMARCHY_MARK}</a>
+  <ul class="ws">
+    <li><a class="on" href="#top">1</a></li>{ws}
+  </ul>
+  <div class="right">{links}
+  </div>
+</nav>"""
+
 def head(title, description, og_description, path):
     """The page's <head> and the opening <body>; path is its file name under web/."""
     attr = lambda x: html.escape(x, quote=False).replace('"', "&quot;")
