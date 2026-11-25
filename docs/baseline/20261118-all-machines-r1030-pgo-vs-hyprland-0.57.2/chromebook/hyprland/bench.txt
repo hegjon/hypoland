@@ -1,0 +1,4 @@
+machine: chromebook, 7.2.15-2-omarchy, 2 cores, 3815 MiB
+compositor: /usr/bin/Hyprland, pid 2034930, user a, instance 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947_1795066495_2082692976
+package: hyprland 0.57.2-2
+clocksource: tsc

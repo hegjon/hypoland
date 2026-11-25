@@ -1,0 +1,4 @@
+machine: macmini-m1, 7.2.11-16-1-ARCH, 8 cores, 7573 MiB
+compositor: /usr/bin/Hyprland, pid 2068295, user a, instance 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947_1795055990_1101208113
+package: hyprland 0.57.2-2
+clocksource: arch_sys_counter

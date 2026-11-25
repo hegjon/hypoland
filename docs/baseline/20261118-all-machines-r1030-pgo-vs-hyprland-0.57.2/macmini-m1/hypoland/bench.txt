@@ -1,0 +1,4 @@
+machine: macmini-m1, 7.2.11-16-1-ARCH, 8 cores, 7573 MiB
+compositor: /usr/bin/hypoland, pid 2182311, user a, instance 154befc6b8a43f38c4cc4aac0789bb65c6fff41c_1795057577_85132570
+package: hypoland 0.3.0.r1030.g154befc-1
+clocksource: arch_sys_counter

@@ -1,0 +1,4 @@
+machine: t550, 7.2.15-2-omarchy, 4 cores, 15676 MiB
+compositor: /usr/bin/Hyprland, pid 6919, user a, instance 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947_1795061816_919059816
+package: hyprland 0.57.2-2
+clocksource: tsc

@@ -1,0 +1,4 @@
+machine: chromebook, 7.2.15-2-omarchy, 2 cores, 3815 MiB
+compositor: /usr/bin/hypoland, pid 2122906, user a, instance 154befc6b8a43f38c4cc4aac0789bb65c6fff41c_1795068676_1629420731
+package: hypoland 0.3.0.r1030.g154befc6b-1
+clocksource: tsc

@@ -1,0 +1,58 @@
+Night 2026-11-18/19: master r1030 (154befc6b) as a PGO build (profile from pgo-20261118, trained on x200, chromebook,
+lianli, p14s, t460s, xps; /usr/bin/hypoland 9379 kB against 12471 kB for r1029's plain build) against stock Hyprland
+0.57.2-2, alternating fresh sessions 20:34 until 09:00, on twelve machines (galaxybook left out: stock Omarchy reinstall).
+macmini-m1 ran a plain r1030 build (PGO is x86-only; 11731 kB, as r1029). macmini-intel's first night (no 11-17 baseline).
+r1029 -> r1030 changes no src/: the difference against night-20261117 is the PGO build (and the uncommitted bench-script
+changes listed in machines/all.md).
+Collected with report.sh (report.log), table.py (table.txt), compare.py (compare.txt; night-20261117's, names moved on by
+one night, macmini-intel added). All machines DONE by 09:02.
+
+Blocks (Hypoland / stock): x200 12/12, t550 11/11, xps 10/10, lianli 13/13, chromebook 10/10, t460s 10/10, t490 10/10,
+samsung-i5 11/11, macmini-m1 13/13, hp-amd 16/16, p14s 11/11, macmini-intel 11/11.
+
+p14s: INVALID for Hypoland. The compositor (hypoland --watchdog-fd 4) aborted (SIGABRT) in the video workload about 3 min
+into every one of its 11 blocks (20:39, 22:28, 22:59, ... 07:43), restarted in safe mode (hence 11 hyprland-dialog
+SIGSEGV, the "Safe Mode" dialog, at each block's end), and every later workload measured the safe-mode session (0.00
+compositor CPU, folio/resize/workspace-switch 0 fps, video 1.7 fps). Session check: Hypoland 98/3 (render layer, render
+fullscreen, render fullscreen smaller centred). Crash reports in p14s:/home/a/.cache/hyprland/hyprlandCrashReport*.txt,
+backtrace without symbols (the debug package is in ../pgo-20261118/). p14s was reinstalled on 11-18 and ran r1029 cleanly
+on 11-17 (before the reinstall), and its PGO training run passed every check, so: PGO build vs reinstalled system not yet
+separated. No other machine shows a Hypoland crash.
+
+PGO r1030 against plain r1029 (median ratio per metric group; stock drift between the nights in brackets), p14s left out:
+  compositor CPU %          0.937 to 0.964 on every x86 machine (stock 0.987 to 1.015)
+  compositor CPU ms/frame   0.939 to 0.968 (stock 0.984 to 1.015)
+  latencies                 0.953 to 1.000 (stock 0.977 to 1.032)
+  fps                       1.000 everywhere
+  Pss at the start          0.926 to 0.945 (stock 0.999 to 1.003); x200 38.1 MB against 40.8
+  startup times             0.969 to 1.008 (stock 0.982 to 1.007)
+  => PGO: about 4 to 6 % less compositor CPU and 6 to 7 % less Pss at the start, same fps, latencies equal or a little lower.
+macmini-m1 (plain build) is not comparable this night: stock itself moved CPU 1.19 and latencies 1.40 against 11-17 (the
+M1 was found at the disk prompt on 11-18 and unlocked at 17:42, a fresh boot), Hypoland CPU 0.937.
+Hypoland against stock: compositor CPU 0.57 to 0.81 of stock's, CPU per frame 0.49 to 0.80, latencies 0.24 to 0.94, Pss at
+the start 0.32 to 0.38 (x86), fps equal or higher (x200 1.13).
+
+Single metrics that moved, outside r1029's per-block range (compare.txt, last section; p14s left out):
+- x200 gtk3-scroll GPU ms/frame 9.88 -> 5.01: the known 5-or-10 bimodal value, not PGO.
+- macmini-m1 workspace-switch bar latency 9.4 -> 12.6 ms: the M1's whole night moved (see above).
+- chromebook folio-scroll GPU 3.84 -> 4.63 ms/frame (stock 1.02). Small, GPU side; to watch.
+- The rest are CPU drops of 8 to 15 % (PGO).
+
+x200: GPU wedged at 05:28, no data after it. i915 GPU hangs (with chip resets) through the night: xonotic-sdl at 00:50
+(stock block 6), 01:36 (Hypoland block 7) and 05:14 (stock block 12), Hyprland itself at 02:13 (stock block 8, "some
+invalid", the 4 Hyprland cores of 02:13), then QSGRenderThread (the qt-quick client) at 05:28 in Hypoland block 12, after
+which the reset failed ("failed to set rcs0 head to zero", about 6000 times since). Block 12 was killed after 40 min (319
+values, some invalid), block 13's startup got 17 values, and from 06:26 no session started (the sddm greeter's Hyprland
+and sddm-greeter-qt6 crash-looped: the other 34 Hyprland and 36 sddm-greeter cores). The night of 11-17 had no GPU hang
+on the x200, same kernel 7.2.15-2 and mesa 26.2.7 (booted 11-18 17:41). Hangs hit both compositors, so not clearly PGO.
+x200's numbers: blocks 1 to 11 are good (x200 12/12 above counts the broken block 12). The x200 needs a reboot (LUKS, no
+KVM: someone at the machine); its governor was left on performance by the killed measure.sh and was set back to
+schedutil by hand at about 10:45.
+
+Core dumps, no Hypoland crash outside p14s:
+- GravityMark SIGSEGV on t550 (22) and xps (20), as before.
+- x200: 25 python3 (the GTK 4 client's SIGFPE under stock, known), 1 ElectroBench, 1 Xwayland; the Hyprland and
+  sddm-greeter cores are the GPU hang above.
+- Xwayland at session end: chromebook 2, samsung-i5 3, macmini-intel 2. SuperTuxKart: hp-amd 3.
+
+Claims (expired at 09:30) released at about 10:30 on 11-19 (LAB_WHO=hermes); lab status shows all thirteen free.

@@ -1,0 +1,4 @@
+machine: macmini-intel, 7.2.15-2-omarchy, 4 cores, 3778 MiB
+compositor: /usr/bin/Hyprland, pid 2335001, user a, instance 11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947_1795063493_295982847
+package: hyprland 0.57.2-2
+clocksource: tsc

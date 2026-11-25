@@ -1,0 +1,6 @@
+The 2026-11-18/19 night's p14s Hypoland sessions are invalid: the PGO build aborted (SIGABRT, hypoland
+--watchdog-fd 4) in the video workload about 3 min into every one of the 11 blocks and continued in safe mode, so the
+workloads after it measured a safe-mode session (0.00 compositor CPU, folio/resize/workspace-switch 0 fps).
+
+scripts/web/labdata.py gives p14s a FALLBACK to docs/baseline/20261117-all-machines-r1029-vs-hyprland-0.57.2, so no
+number here is shown on any page. The hyprland/ column of this night is usable on its own.
