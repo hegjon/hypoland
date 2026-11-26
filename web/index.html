@@ -144,21 +144,17 @@ $ <span class="w">hypoland</span>
         </tbody>
       </table></div>
       <p class="note">
-        Measured on the test machine running the full <a href="https://omarchy.org/">Omarchy</a> session
-        (Quickshell bar, wallpaper, notifications). Stock Hyprland does not start on the same machine;
-        for the comparison above it ran with Omarchy's GLES&nbsp;3 override
-        (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>). The Hypoland 0.4.0 release against
-        Hyprland 0.57.2-2, medians of 23 fresh sessions of each, alternating from 2026-11-24 to 26, the frames counted as
-        the compositor's own page flips; the glmark2 score is the median of three runs on 2026-11-23 (r1040). On the
-        eleven other machines of <a href="lab.html">the lab</a>, from a 2006 Core 2 Duo laptop to a Snapdragon X Elite
-        laptop, the compositor costs less with a GPU client (62 to 95% of Hyprland's CPU) and with Chromium in a full
-        window (55 to 97%), and switching workspaces on all but two (36 to 60%; the MSI Claw's 90%, the Galaxy Book's
-        120%). Scrolling foot costs 15 to 38% of Hyprland's CPU on seven of them, 87 to 106% on three, and 6.7 times as
-        much on the MSI Claw. Memory: 40&ndash;51&nbsp;MiB against 115&ndash;154, the Turbo-X's left out (swap)
+        Measured on the X200 in the full <a href="https://omarchy.org/">Omarchy</a> session (Quickshell bar,
+        wallpaper, notifications); stock Hyprland starts there only with Omarchy's GLES&nbsp;3 override
+        (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>). Hypoland 0.4.0 against Hyprland
+        0.57.2-2: medians of 23 fresh sessions of each (2026-11-24 to 26), frames as page flips; glmark2: median of three
+        runs (r1040). On the <a href="lab.html">lab's</a> eleven other machines (2006 Core 2 Duo to Snapdragon X Elite),
+        Hypoland's CPU as a share of Hyprland's: GPU client 62&ndash;95%, Chromium 55&ndash;97%, workspace switch
+        36&ndash;60% (MSI Claw 90%, Galaxy Book 120%), foot scrolling 15&ndash;38% on seven, 87&ndash;106% on three,
+        670% on the MSI Claw. Memory 40&ndash;51&nbsp;MiB against 115&ndash;154, Turbo-X left out (swap)
         (<a href="https://github.com/hegjon/hypoland/tree/master/docs/baseline">raw data and scripts</a>).
-        Hypoland's own optimizations for this hardware include drawing straight into the scanout buffer,
-        clearing only damaged areas, showing terminals and Qt windows from their own buffers without a copy, and
-        drawing panels only where they have pixels.
+        Hypoland's own optimizations: drawing straight into the scanout buffer, clearing only damage, terminals and Qt
+        windows shown from their own buffers, panels drawn only where they have pixels.
       </p>
     </div>
   </section>
