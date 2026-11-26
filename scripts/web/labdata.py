@@ -134,6 +134,7 @@ SPECS = [("https://en.wikipedia.org/wiki/OpenGL_ES#OpenGL_ES_2.0_2", "GLES 2.0",
          ("https://registry.khronos.org/OpenGL/specs/es/2.0/GLSL_ES_Specification_1.00.pdf", "GLSL ES 1.00",
           "The OpenGL ES Shading Language 1.00 specification, at Khronos (PDF)")]
 LINKS = [("lab.html", "lab"), ("terminals.html", "terminals"), ("games.html", "games"), ("files.html", "files"),
+         ("energy.html", "energy"),
          ("https://github.com/hegjon/hypoland", "github")]
 
 def bar(sections, current=None):

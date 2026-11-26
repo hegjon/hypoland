@@ -100,7 +100,7 @@ page = f"""{head("Hypoland: the lab", "The test machines Hypoland is measured on
         compositor's page flips (the Galaxy Book runs at 120&nbsp;Hz; the Mac mini M1 reports none). Memory includes the
         shell's shared pages. The Turbo-X has no memory or Chromium cell: on its 1&nbsp;GB most of either compositor sits
         in swap, which the memory does not count, and Chromium opens no window there. More:
-        <a href="terminals.html">terminals</a>, <a href="games.html">games</a>, <a href="files.html">file managers</a>.
+        <a href="terminals.html">terminals</a>, <a href="games.html">games</a>, <a href="files.html">file managers</a>, <a href="energy.html">energy</a>.
         {RAW}
       </p>
     </div>
