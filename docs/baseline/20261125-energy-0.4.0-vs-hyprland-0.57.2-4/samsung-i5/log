@@ -1,0 +1,160 @@
+2026-11-25 17:54:28 until 2026-11-26 09:00:00 on samsung-i5, user a, hypoland /root/energy/hypoland-0.4.0-1-x86_64.pkg.tar.zst, hyprland /var/cache/pacman/pkg/hyprland-0.57.2-4-x86_64.pkg.tar.zst /var/cache/pacman/pkg/omarchy-hyprland-titlebars-0.4.0-3-x86_64.pkg.tar.zst, profile balanced
+2026-11-25 17:54:28 workloads idle,gpu-client,video,video-window,gtk3-scroll,gtk4-scroll,qt-quick-scroll,qt-software-scroll,gtk3-x11-scroll,gtk4-spinner,qt-software-sprites,tk-canvas,workspace-switch,idle-windows,dev,notifications,menu,nautilus-scroll
+2026-11-25 17:54:28 stopped timers: archlinux-keyring-wkd-sync.timer man-db.timer plocate-updatedb.timer shadow.timer snapper-cleanup.timer systemd-tmpfiles-clean.timer 
+2026-11-25 17:54:34 hypoland up: hypoland 0.4.0-1
+2026-11-25 17:54:43 stopped an update check
+2026-11-25 18:12:09 hypoland round 1: 398 values, profile balanced
+2026-11-25 18:12:19 hyprland up: hyprland 0.57.2-4
+2026-11-25 18:12:26 stopped an update check
+2026-11-25 18:29:55 hyprland round 1: 398 values, profile balanced
+2026-11-25 18:30:02 hyprland up: hyprland 0.57.2-4
+2026-11-25 18:30:10 stopped an update check
+2026-11-25 18:47:40 hyprland round 2: 398 values, profile balanced
+2026-11-25 18:47:50 hypoland up: hypoland 0.4.0-1
+2026-11-25 18:47:55 stopped an update check
+2026-11-25 19:05:24 hypoland round 2: 398 values, profile balanced
+2026-11-25 19:05:29 hypoland up: hypoland 0.4.0-1
+2026-11-25 19:05:37 stopped an update check
+2026-11-25 19:23:04 hypoland round 3: 398 values, profile balanced
+2026-11-25 19:23:14 hyprland up: hyprland 0.57.2-4
+2026-11-25 19:23:19 stopped an update check
+2026-11-25 19:40:48 hyprland round 3: 398 values, profile balanced
+2026-11-25 19:40:56 hyprland up: hyprland 0.57.2-4
+2026-11-25 19:41:03 stopped an update check
+2026-11-25 19:58:29 hyprland round 4: 398 values, profile balanced
+2026-11-25 19:58:39 hypoland up: hypoland 0.4.0-1
+2026-11-25 19:58:47 stopped an update check
+2026-11-25 20:16:13 hypoland round 4: 398 values, profile balanced
+2026-11-25 20:16:19 hypoland up: hypoland 0.4.0-1
+2026-11-25 20:16:25 stopped an update check
+2026-11-25 20:33:53 hypoland round 5: 398 values, profile balanced
+2026-11-25 20:34:03 hyprland up: hyprland 0.57.2-4
+2026-11-25 20:34:07 stopped an update check
+2026-11-25 20:51:38 hyprland round 5: 398 values, profile balanced
+2026-11-25 20:51:46 hyprland up: hyprland 0.57.2-4
+2026-11-25 20:51:51 stopped an update check
+2026-11-25 21:09:21 hyprland round 6: 398 values, profile balanced
+2026-11-25 21:09:31 hypoland up: hypoland 0.4.0-1
+2026-11-25 21:09:35 stopped an update check
+2026-11-25 21:27:04 hypoland round 6: 398 values, profile balanced
+2026-11-25 21:27:09 hypoland up: hypoland 0.4.0-1
+2026-11-25 21:27:18 stopped an update check
+2026-11-25 21:44:43 hypoland round 7: 398 values, profile balanced
+2026-11-25 21:44:53 hyprland up: hyprland 0.57.2-4
+2026-11-25 21:45:00 stopped an update check
+2026-11-25 22:02:29 hyprland round 7: 398 values, profile balanced
+2026-11-25 22:02:36 hyprland up: hyprland 0.57.2-4
+2026-11-25 22:02:40 stopped an update check
+2026-11-25 22:20:11 hyprland round 8: 398 values, profile balanced
+2026-11-25 22:20:21 hypoland up: hypoland 0.4.0-1
+2026-11-25 22:20:30 stopped an update check
+2026-11-25 22:37:56 hypoland round 8: 398 values, profile balanced
+2026-11-25 22:38:01 hypoland up: hypoland 0.4.0-1
+2026-11-25 22:38:07 stopped an update check
+2026-11-25 22:55:34 hypoland round 9: 398 values, profile balanced
+2026-11-25 22:55:44 hyprland up: hyprland 0.57.2-4
+2026-11-25 22:55:49 stopped an update check
+2026-11-25 23:13:19 hyprland round 9: 398 values, profile balanced
+2026-11-25 23:13:26 hyprland up: hyprland 0.57.2-4
+2026-11-25 23:13:34 stopped an update check
+2026-11-25 23:30:59 hyprland round 10: 398 values, profile balanced
+2026-11-25 23:31:08 hypoland up: hypoland 0.4.0-1
+2026-11-25 23:31:13 stopped an update check
+2026-11-25 23:48:40 hypoland round 10: 398 values, profile balanced
+2026-11-25 23:48:45 hypoland up: hypoland 0.4.0-1
+2026-11-25 23:48:51 stopped an update check
+2026-11-26 00:06:20 hypoland round 11: 398 values, profile balanced
+2026-11-26 00:06:29 hyprland up: hyprland 0.57.2-4
+2026-11-26 00:06:39 stopped an update check
+2026-11-26 00:24:02 hyprland round 11: 398 values, profile balanced
+2026-11-26 00:24:10 hyprland up: hyprland 0.57.2-4
+2026-11-26 00:24:18 stopped an update check
+2026-11-26 00:41:46 hyprland round 12: 398 values, profile balanced
+2026-11-26 00:41:57 hypoland up: hypoland 0.4.0-1
+2026-11-26 00:42:03 stopped an update check
+2026-11-26 00:59:30 hypoland round 12: 398 values, profile balanced
+2026-11-26 00:59:37 hypoland up: hypoland 0.4.0-1
+2026-11-26 00:59:46 stopped an update check
+2026-11-26 01:17:12 hypoland round 13: 398 values, profile balanced
+2026-11-26 01:17:22 hyprland up: hyprland 0.57.2-4
+2026-11-26 01:17:29 stopped an update check
+2026-11-26 01:34:55 hyprland round 13: 398 values, profile balanced
+2026-11-26 01:35:03 hyprland up: hyprland 0.57.2-4
+2026-11-26 01:35:08 stopped an update check
+2026-11-26 01:52:36 hyprland round 14: 398 values, profile balanced
+2026-11-26 01:52:46 hypoland up: hypoland 0.4.0-1
+2026-11-26 01:52:53 stopped an update check
+2026-11-26 02:10:20 hypoland round 14: 398 values, profile balanced
+2026-11-26 02:10:26 hypoland up: hypoland 0.4.0-1
+2026-11-26 02:10:31 stopped an update check
+2026-11-26 02:27:58 hypoland round 15: 398 values, profile balanced
+2026-11-26 02:28:08 hyprland up: hyprland 0.57.2-4
+2026-11-26 02:28:14 stopped an update check
+2026-11-26 02:45:43 hyprland round 15: 398 values, profile balanced
+2026-11-26 02:45:50 hyprland up: hyprland 0.57.2-4
+2026-11-26 02:45:55 stopped an update check
+2026-11-26 03:03:24 hyprland round 16: 398 values, profile balanced
+2026-11-26 03:03:34 hypoland up: hypoland 0.4.0-1
+2026-11-26 03:03:39 stopped an update check
+2026-11-26 03:21:08 hypoland round 16: 398 values, profile balanced
+2026-11-26 03:21:13 hypoland up: hypoland 0.4.0-1
+2026-11-26 03:21:23 stopped an update check
+2026-11-26 03:38:48 hypoland round 17: 398 values, profile balanced
+2026-11-26 03:38:58 hyprland up: hyprland 0.57.2-4
+2026-11-26 03:39:05 stopped an update check
+2026-11-26 03:56:32 hyprland round 17: 398 values, profile balanced
+2026-11-26 03:56:39 hyprland up: hyprland 0.57.2-4
+2026-11-26 03:56:46 stopped an update check
+2026-11-26 04:14:12 hyprland round 18: 398 values, profile balanced
+2026-11-26 04:14:21 hypoland up: hypoland 0.4.0-1
+2026-11-26 04:31:53 hypoland round 18: 398 values, profile balanced
+2026-11-26 04:31:59 hypoland up: hypoland 0.4.0-1
+2026-11-26 04:32:04 stopped an update check
+2026-11-26 04:49:33 hypoland round 19: 398 values, profile balanced
+2026-11-26 04:49:42 hyprland up: hyprland 0.57.2-4
+2026-11-26 04:49:47 stopped an update check
+2026-11-26 05:07:18 hyprland round 19: 398 values, profile balanced
+2026-11-26 05:07:25 hyprland up: hyprland 0.57.2-4
+2026-11-26 05:07:32 stopped an update check
+2026-11-26 05:25:02 hyprland round 20: 398 values, profile balanced
+2026-11-26 05:25:12 hypoland up: hypoland 0.4.0-1
+2026-11-26 05:25:18 stopped an update check
+2026-11-26 05:42:45 hypoland round 20: 398 values, profile balanced
+2026-11-26 05:42:50 hypoland up: hypoland 0.4.0-1
+2026-11-26 05:42:56 stopped an update check
+2026-11-26 06:00:24 hypoland round 21: 398 values, profile balanced
+2026-11-26 06:00:34 hyprland up: hyprland 0.57.2-4
+2026-11-26 06:00:39 stopped an update check
+2026-11-26 06:00:44 stopped an update check
+2026-11-26 06:18:08 hyprland round 21: 398 values, profile balanced
+2026-11-26 06:18:15 hyprland up: hyprland 0.57.2-4
+2026-11-26 06:18:25 stopped an update check
+2026-11-26 06:35:50 hyprland round 22: 398 values, profile balanced
+2026-11-26 06:36:00 hypoland up: hypoland 0.4.0-1
+2026-11-26 06:36:05 stopped an update check
+2026-11-26 06:53:32 hypoland round 22: 398 values, profile balanced
+2026-11-26 06:53:38 hypoland up: hypoland 0.4.0-1
+2026-11-26 06:53:44 stopped an update check
+2026-11-26 07:11:12 hypoland round 23: 398 values, profile balanced
+2026-11-26 07:11:22 hyprland up: hyprland 0.57.2-4
+2026-11-26 07:11:27 stopped an update check
+2026-11-26 07:29:00 hyprland round 23: 398 values, profile balanced
+2026-11-26 07:29:09 hyprland up: hyprland 0.57.2-4
+2026-11-26 07:29:18 stopped an update check
+2026-11-26 07:46:46 hyprland round 24: 398 values, profile balanced
+2026-11-26 07:46:56 hypoland up: hypoland 0.4.0-1
+2026-11-26 07:47:03 stopped an update check
+2026-11-26 08:04:28 hypoland round 24: 398 values, profile balanced
+2026-11-26 08:04:34 hypoland up: hypoland 0.4.0-1
+2026-11-26 08:04:42 stopped an update check
+2026-11-26 08:22:07 hypoland round 25: 398 values, profile balanced
+2026-11-26 08:22:18 hyprland up: hyprland 0.57.2-4
+2026-11-26 08:22:25 stopped an update check
+2026-11-26 08:39:53 hyprland round 25: 398 values, profile balanced
+2026-11-26 08:39:53 no time for round 26
+2026-11-26 08:39:53 back to hypoland
+2026-11-26 08:40:04 hypoland up: hypoland 0.4.0-1
+2026-11-26 08:40:11 stopped an update check
+2026-11-26 08:41:05 profile performance
+2026-11-26 08:41:05 started the timers again
+2026-11-26 08:41:05 done

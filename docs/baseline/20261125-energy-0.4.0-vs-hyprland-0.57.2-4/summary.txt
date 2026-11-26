@@ -1,0 +1,45 @@
+Energy A/B energy-20261125: Hypoland 0.4.0-1 (x86 release package, binary 12471 kB) against stock Hyprland 0.57.2-4
++ omarchy-hyprland-titlebars 0.4.0-3, alternating fresh sessions, 2026-11-25 17:54 to 2026-11-26 09:00.
+measure.sh --mode energy --meter rapl: 30 s per workload, 10 s idle baselines, balanced power profile, governor left
+alone (schedutil; t460s/t490 powersave), on AC. Apps: folio 0.6.1-1, flea 0.4.3-1 under both.
+Files: energy-20261125/<host>/{hypoland,hyprland}-N.txt and values.txt, report.log, table.txt.
+
+Blocks (Hyprland / Hypoland): t550 26/26, xps 25/25, chromebook 24/24, macmini-intel 25/25, t460s 25/25, t490 26/26,
+samsung-i5 25/25. 0 left out. No invalid workload, no killed measure.sh, no "no session". Every host wrote done
+between 08:26 and 09:00, Hypoland 0.4.0-1 back, timers running, governor as before. Claims released 09:2x.
+
+Idle: the same under both (idle session, idle, idle-windows within +-2%, 0.26 W chromebook to 3.50 W macmini-intel).
+psys idle: t460s 1.43 W, t490 1.99 W under both.
+
+CPU package power, Hyprland -> Hypoland, the active workloads:
+- lower in nearly every workload on every host: scrolling (GTK 3/4, Qt Quick, Qt software) -14 to -53%, gtk4-spinner
+  -13 to -52%, gpu-client -3 to -29%, workspace-switch -13 to -30%, tk-canvas -9 to -40%, dev -8 to -24%,
+  video -2 to -13%, video-window -3 to -22%, menu -3 to -16%.
+- net W above the idle session: biggest drops macmini-intel tk-canvas -9.1 W (19.5 -> 10.4), xps tk-canvas -4.7,
+  samsung-i5 gtk3-x11-scroll -4.6, xps qt-quick-scroll -4.0 / gtk4-scroll -3.7.
+- per frame on the screen (mJ above idle) every workload down except: t460s notifications +38%, t490 menu +16%
+  (0.12 W), t550 menu +0.1%.
+- Higher W that is more frames: chromebook qt-software-sprites +10.8% W at 25.7 -> 53.6 fps (-46% per frame);
+  samsung-i5 gtk3-scroll +0.5% W at 30.9 -> 47.9 fps (-36% per frame). xps/macmini-intel/samsung-i5 gtk3-scroll and
+  gtk3-x11-scroll also draw 10 to 22 fps more under Hypoland for less power.
+- Real regression: t460s notifications 1.80 -> 2.26 W (+26%), psys 5.62 -> 6.20 W (+10%), at the same 29 fps, in all
+  25 blocks (Hypoland 2.23-2.29 W every block, stock 1.56-2.29 W). The compositor itself is cheaper (6.6% CPU against
+  9.1%, 424 against 711 M instructions, GPU busy 11.9 against 13.3%), but the session's other processes are busier:
+  total_percent 50.8 against 35.7, machine 71.5 against 57.8. Only on the t460s (the only fractional scale, 1.5):
+  every other host has lower total_percent under Hypoland. Same +25% in the 11-12 run, so it is not new.
+  Probably the shell's toast drawn at 1.5 (Quickshell) doing more work under Hypoland: look at which process takes it.
+
+Whole machine (psys), Hyprland -> Hypoland:
+- t460s: -3 to -24% in every active workload (gtk3-scroll 13.9 -> 10.9 W, qt-software-sprites 9.7 -> 7.4 W) except
+  notifications +10%.
+- t490: -1 to -22% (qt-software-scroll 8.2 -> 6.4 W, gtk3-scroll 11.7 -> 9.7 W), menu +0.8%.
+
+Compositor instructions: -3% to -92% everywhere (gtk3-scroll and qt-software-* about -90%, menu -72 to -82%).
+
+Against energy-20261112 (Hypoland r972 against Hyprland 0.57.1, only 2 Hyprland / 1 Hypoland block per host):
+- the same picture, the ratios mostly within a few points; this run has 24 to 26 blocks per compositor, so it is
+  the first one with a usable spread. nautilus-scroll is gone (Nautilus no longer installed).
+- macmini-intel draws more under BOTH compositors than on 11-12 (idle session 2.95 -> 3.50 W stock, video 10.4 -> 14.0,
+  gtk3-x11-scroll 13.6 -> 23.3, tk-canvas 11.2 -> 23.1 W stock): the machine moved, not either build; its 11-12 ratios
+  are not comparable. Its gtk3-x11-scroll went from +14.6% (one block) to -18.3%.
+- t460s notifications +25% both runs; t490 menu +0.6% -> +3.8%.
