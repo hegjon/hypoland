@@ -6,7 +6,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 HYPRLAND = "0.57.2"
 # Since 2026-11-25 every page compares nothing but the Hypoland 0.4.0 release (a plain build) against Hyprland
 # 0.57.2-2 (the user's decision): BASELINE is the night of 2026-11-24 to 25 on twelve machines. The X200 and the Turbo-X
-# hung in a stock session that night, so theirs (FALLBACK) pool the sessions of that night and of 11-25, the same
+# hung in a stock session that night, so theirs (FALLBACK) pool the sessions of that night and of 11-25 to 26, the same
 # packages (X200_TURBOX_RUN, built by its combine.sh, README.md there). The P14s was not in those runs and has no row.
 # Before, the pages mixed builds: from 2026-11-24 the r1030 PGO night of 11-18 with r1029 and r992 nights for four
 # machines, from 11-21 the r1029 night of 11-17, from 11-15 the r992 night of 11-14; from 2026-11-13 to 15 Hypoland's
@@ -21,7 +21,7 @@ HYPOLAND_BLOCKS = {}
 # the runs the numbers come from, for the pages' notes
 RUN = ("Hypoland 0.4.0 against Hyprland " + HYPRLAND + "-2, alternating through the night of 2026-11-24")
 # what that means for reading them
-TWO_NIGHTS = "The X200 and the Turbo-X hung in a Hyprland session that night and add the sessions of 11-25."
+TWO_NIGHTS = "The X200 and the Turbo-X hung in a Hyprland session that night and add the sessions of 11-25 to 26."
 # the raw data of the nights, for the pages' notes
 _link = lambda d: f'<a href="https://github.com/hegjon/hypoland/tree/master/{d}">{d.split("/")[-1]}</a>'
 RAW = f"Raw data: {_link(BASELINE)}, {_link(X200_TURBOX_RUN)}."

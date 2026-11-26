@@ -125,7 +125,7 @@ $ <span class="w">hypoland</span>
     <div class="body">
       <div class="stats">
         <div class="stat"><b>0.02%</b><span>compositor CPU on an idle desktop</span></div>
-        <div class="stat"><b>60 fps</b><span>GPU client, compositor at 2.6% CPU</span></div>
+        <div class="stat"><b>60 fps</b><span>GPU client, compositor at 2.5% CPU</span></div>
         <div class="stat"><b>58&ndash;60</b><span>fps with 4 windows, blur, shadows, rounding and animations on</span></div>
         <div class="stat"><b>40 MiB</b><span>compositor PSS on an idle Omarchy desktop</span></div>
         <div class="stat"><b>166</b><span><code>glmark2-es2-wayland</code> score, fullscreen</span></div>
@@ -133,13 +133,13 @@ $ <span class="w">hypoland</span>
       <div class="scroll"><table>
         <thead><tr><th>Compositor on the X200</th><th>Hypoland</th><th>Hyprland 0.57.2</th><th></th></tr></thead>
         <tbody>
-          <tr><td>CPU, GPU client at 60&nbsp;fps</td><td>2.6%</td><td>4.2%</td><td class="yes">&minus;38%</td></tr>
-          <tr><td>CPU, terminal scrolling fast</td><td>9.2%</td><td>14.7%</td><td class="yes">&minus;38%</td></tr>
-          <tr><td>CPU, Chromium in a full window</td><td>8.4%</td><td>14.9%</td><td class="yes">&minus;44%</td></tr>
+          <tr><td>CPU, GPU client at 60&nbsp;fps</td><td>2.5%</td><td>4.2%</td><td class="yes">&minus;39%</td></tr>
+          <tr><td>CPU, terminal scrolling fast</td><td>9.1%</td><td>14.6%</td><td class="yes">&minus;37%</td></tr>
+          <tr><td>CPU, Chromium in a full window</td><td>8.6%</td><td>16.0%</td><td class="yes">&minus;46%</td></tr>
           <tr><td>CPU, workspace switching with animations</td><td>4.1%</td><td>8.0%</td><td class="yes">&minus;48%</td></tr>
           <tr><td>Memory (PSS), 60&nbsp;s after the start</td><td>40&nbsp;MiB</td><td>115&nbsp;MiB</td><td class="yes">&minus;65%</td></tr>
-          <tr><td>Frames on the screen, a GTK&nbsp;3 window scrolling</td><td>60&nbsp;fps</td><td>31&nbsp;fps</td><td class="yes">&plus;96%</td></tr>
-          <tr><td>Frames on the screen, dragging a window split</td><td>60&nbsp;fps</td><td>30&nbsp;fps</td><td class="yes">&plus;100%</td></tr>
+          <tr><td>Frames on the screen, a GTK&nbsp;3 window scrolling</td><td>60&nbsp;fps</td><td>30&nbsp;fps</td><td class="yes">&plus;96%</td></tr>
+          <tr><td>Frames on the screen, dragging a window split</td><td>60&nbsp;fps</td><td>30&nbsp;fps</td><td class="yes">&plus;99%</td></tr>
         </tbody>
       </table></div>
       <p class="note">
@@ -147,7 +147,7 @@ $ <span class="w">hypoland</span>
         (Quickshell bar, wallpaper, notifications). Stock Hyprland does not start on the same machine;
         for the comparison above it ran with Omarchy's GLES&nbsp;3 override
         (<a href="https://github.com/omacom/omarchy/pull/14764">omarchy#14764</a>). The Hypoland 0.4.0 release against
-        Hyprland 0.57.2-2, medians of 5 fresh sessions of each, alternating on 2026-11-24 and 25, the frames counted as
+        Hyprland 0.57.2-2, medians of 23 fresh sessions of each, alternating from 2026-11-24 to 26, the frames counted as
         the compositor's own page flips; the glmark2 score is the median of three runs on 2026-11-23 (r1040). On the
         eleven other machines of <a href="lab.html">the lab</a>, from a 2006 Core 2 Duo laptop to a Snapdragon X Elite
         laptop, the compositor costs less with a GPU client (62 to 95% of Hyprland's CPU) and with Chromium in a full
