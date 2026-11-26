@@ -20,14 +20,19 @@ pkgdesc='A fork of the Hyprland Wayland compositor for OpenGL ES 2.0 hardware'
 arch=(x86_64 aarch64)
 url='https://github.com/hegjon/hypoland'
 license=(BSD-3-Clause MIT)
+# the libhypr*.so entries become soname versions at build time (libhyprgraphics.so=6-64): an update that bumps one of
+# them then waits for a rebuilt package instead of leaving a binary that fails at the next login
 depends=(
   cairo
   glib2
   glibc
   'hyprgraphics>=0.6.0'
+  libhyprgraphics.so
   hyprlang
   'hyprutils>=0.14.3'
+  libhyprutils.so
   hyprwire
+  libhyprwire.so
   lcms2
   libcanberra
   libdisplay-info
